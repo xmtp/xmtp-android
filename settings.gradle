@@ -10,6 +10,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/xmtp/proto")
+        }
     }
 }
 rootProject.name = "XMTP Android"
