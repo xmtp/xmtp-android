@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "org.xmtp.android.example"
-        minSdk 28
+        minSdk 27
         targetSdk 33
         versionCode 1
         versionName "1.0"
