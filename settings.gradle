@@ -15,8 +15,8 @@ dependencyResolutionManagement {
         maven {
             url = uri("https://maven.pkg.github.com/xmtp/proto")
             credentials {
-                username = githubProperties.getProperty("gpr.user")
-                password = githubProperties.getProperty("gpr.key")
+                username = githubProperties.getProperty("gpr.user") ?: System.getenv("GPR_USER")
+                password = githubProperties.getProperty("gpr.key") ?: System.getenv("GPR_TOKEN")
             }
         }
     }

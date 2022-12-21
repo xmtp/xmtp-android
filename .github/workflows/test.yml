@@ -1,4 +1,4 @@
-name: Android XMTP Tests
+name: Test
 on:
   push:
     branches:
@@ -6,7 +6,7 @@ on:
   pull_request:
 jobs:
   library:
-    name: Test (Library)
+    name: Library
     runs-on: ubuntu-latest
     steps:
       - name: Checkout project sources
@@ -16,6 +16,9 @@ jobs:
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
       - name: Run build with Gradle Wrapper
+        env:
+          GPR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPR_USER: ${{ secrets.GITHUB_ACTOR }}
         run: ./gradlew build
       - name: Gradle Run Tests
         run: ./gradlew library:testDebug
