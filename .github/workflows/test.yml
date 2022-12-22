@@ -15,10 +15,8 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
-      - name: Run build with Gradle Wrapper
+      - name: Gradle Run Tests
         env:
           GPR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPR_USER: ${{ secrets.GITHUB_ACTOR }}
-        run: ./gradlew build
-      - name: Gradle Run Tests
         run: ./gradlew library:testDebug
