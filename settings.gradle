@@ -12,7 +12,7 @@ dependencyResolutionManagement {
         mavenCentral()
         def user = System.getenv("GPR_USER")
         def token = System.getenv("GPR_TOKEN")
-        if (token == null || token.allWhitespace || user == null || user.allWhitespace) {
+        if (token == null || token.allWhitespace) {
             println 'We get in here because'
             println token
             println user
