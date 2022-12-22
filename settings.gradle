@@ -13,6 +13,9 @@ dependencyResolutionManagement {
         def user = System.getenv("GPR_USER")
         def token = System.getenv("GPR_TOKEN")
         if (token == null || token.allWhitespace || user == null || user.allWhitespace) {
+            println 'We get in here because'
+            println token
+            println user
             def githubProperties = new Properties()
             githubProperties.load(new FileInputStream(file("github.properties" ?: "gradle.properties")))
             user = githubProperties.getProperty("gpr.user")
