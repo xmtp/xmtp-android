@@ -1,0 +1,28 @@
+package org.xmtp.android.library.messages
+
+sealed class Topic {
+    data class userPrivateStoreKeyBundle(val v1: String) : Topic()
+    data class contact(val v1: String) : Topic()
+    data class userIntro(val v1: String) : Topic()
+    data class userInvite(val v1: String) : Topic()
+    data class directMessageV1(val v1: String, val v2: String) : Topic()
+    data class directMessageV2(val v1: String) : Topic()
+
+    val description: String
+        get() {
+            when (this) {
+                is userPrivateStoreKeyBundle -> return wrap("privatestore-${v1}")
+                is contact -> return wrap("contact-${v1}")
+                is userIntro -> return wrap("intro-${v1}")
+                is userInvite -> return wrap("invite-${v1}")
+                is directMessageV1 -> {
+                    val addresses = listOf(v1, v2).sorted().joinToString(separator = "-")
+                    return wrap("dm-${addresses}")
+                }
+                is directMessageV2 -> return wrap("m-${v1}")
+            }
+        }
+
+    private fun wrap(value: String) : String =
+        "/xmtp/0/${value}/proto"
+}
