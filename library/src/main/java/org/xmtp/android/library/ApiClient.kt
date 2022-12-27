@@ -1,10 +1,7 @@
 package org.xmtp.android.library
 
 import androidx.annotation.VisibleForTesting
-import io.grpc.Grpc
-import io.grpc.InsecureChannelCredentials
-import io.grpc.ManagedChannel
-import io.grpc.Metadata
+import io.grpc.*
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.*
@@ -29,7 +26,11 @@ data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = tru
     private val channel: ManagedChannel = Grpc.newChannelBuilderForAddress(
         environment.rawValue,
         5556,
-        InsecureChannelCredentials.create()
+        if (secure) {
+            TlsChannelCredentials.create()
+        } else {
+            InsecureChannelCredentials.create()
+        }
     ).build()
 
     private val client: MessageApiGrpcKt.MessageApiCoroutineStub =
