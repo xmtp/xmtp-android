@@ -2,7 +2,6 @@ package org.xmtp.android.library.messages
 
 import com.google.protobuf.kotlin.toByteString
 import org.bouncycastle.crypto.digests.SHA256Digest
-import org.kethereum.extensions.toByteArray
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.extensions.millisecondsSinceEpoch
@@ -45,7 +44,7 @@ fun PublicKey.recoverKeySignedPublicKey(): PublicKey {
     slimKey.timestamp = timestamp
     val bytesToSign = slimKey.build().toByteArray()
     val pubKeyData = Sign.signedMessageToKey(
-        SHA256Digest(bytesToSign).hashCode().toByteArray(),
+        SHA256Digest(bytesToSign).encodedState,
         Sign.SignatureData(
             signature.toByteArray(),
             signature.toByteArray(),

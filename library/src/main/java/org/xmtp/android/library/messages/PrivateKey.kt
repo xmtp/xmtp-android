@@ -2,15 +2,14 @@ package org.xmtp.android.library.messages
 
 import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
-import fr.acinq.secp256k1.Secp256k1
 import org.bouncycastle.crypto.digests.SHA256Digest
-import org.kethereum.extensions.toByteArray
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.Crypto
 import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
+import java.security.SecureRandom
 import java.util.*
 
 typealias PrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
@@ -20,7 +19,6 @@ class PrivateKeyFactory {
         fun create(privateKeyData: ByteArray): PrivateKey {
             val builder = PrivateKey.newBuilder()
             builder.timestamp = (Date().millisecondsSinceEpoch).toLong()
-            Secp256k1.get()
             builder.secp256K1Builder.bytes = privateKeyData.toByteString()
             val publicData = ECKeyPair.create(privateKeyData)
             builder.publicKeyBuilder.secp256K1UncompressedBuilder.bytes =
@@ -51,7 +49,7 @@ suspend fun PrivateKey.sign(message: String): Signature {
 }
 
 fun PrivateKey.generate(): PrivateKey {
-    return PrivateKeyFactory.create(Crypto.secureRandomBytes(count = 32).toByteArray())
+    return PrivateKeyFactory.create(SecureRandom().generateSeed(32))
 }
 
 val PrivateKey.walletAddress: String
@@ -59,9 +57,9 @@ val PrivateKey.walletAddress: String
 
 fun PrivateKey.sign(key: PublicKeyOuterClass.UnsignedPublicKey): PublicKeyOuterClass.SignedPublicKey {
     val bytes = key.secp256K1Uncompressed.bytes
-    val digest = SHA256Digest(bytes.toByteArray()).hashCode()
+    val digest = SHA256Digest(bytes.toByteArray()).encodedState
     val signedPublicKey = PublicKeyOuterClass.SignedPublicKey.newBuilder()
-    val signature = sign(digest.toByteArray())
+    val signature = sign(digest)
     signedPublicKey.signature = signature
     signedPublicKey.keyBytes = bytes
     return signedPublicKey.build()

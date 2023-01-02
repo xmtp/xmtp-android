@@ -1,0 +1,72 @@
+package org.xmtp.android.library
+
+import com.google.crypto.tink.subtle.Hkdf
+import com.google.protobuf.kotlin.toByteString
+import org.xmtp.proto.message.contents.CiphertextOuterClass
+import java.security.GeneralSecurityException
+import java.security.SecureRandom
+import javax.crypto.Cipher
+import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.SecretKeySpec
+
+
+typealias CipherText = CiphertextOuterClass.Ciphertext
+
+class Crypto {
+    companion object {
+
+        fun encrypt(
+            secret: ByteArray,
+            message: ByteArray,
+            additionalData: ByteArray = byteArrayOf()
+        ): CipherText? {
+            return try {
+                val salt = SecureRandom().generateSeed(32)
+                val nonceData = SecureRandom().generateSeed(12)
+                val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+
+                val key = Hkdf.computeHkdf("HMACSHA256", secret, salt, additionalData, 32)
+                val keySpec = SecretKeySpec(key, "HmacSHA256")
+                val gcmSpec = GCMParameterSpec(32, nonceData)
+
+                cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec)
+                val payload = cipher.doFinal(message)
+
+                val builder = CiphertextOuterClass.Ciphertext.newBuilder()
+                builder.aes256GcmHkdfSha256Builder.payload = payload.toByteString()
+                builder.aes256GcmHkdfSha256Builder.hkdfSalt = salt.toByteString()
+                builder.aes256GcmHkdfSha256Builder.gcmNonce = nonceData.toByteString()
+
+                builder.build()
+            } catch (e: GeneralSecurityException) {
+                e.printStackTrace()
+                null
+            }
+        }
+
+        fun decrypt(
+            secret: ByteArray,
+            ciphertext: CipherText,
+            additionalData: ByteArray = byteArrayOf()
+        ): ByteArray? {
+            return try {
+                val salt = ciphertext.aes256GcmHkdfSha256.hkdfSalt.toByteArray()
+                val nonceData = ciphertext.aes256GcmHkdfSha256.gcmNonce.toByteArray()
+                val payload = ciphertext.aes256GcmHkdfSha256.payload.toByteArray()
+                val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+
+                val key = Hkdf.computeHkdf("HMACSHA256", secret, salt, additionalData, 32)
+                val keySpec = SecretKeySpec(key, "HmacSHA256")
+                val gcmSpec = GCMParameterSpec(32, nonceData)
+
+                cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec)
+                val message = payload.take(payload.size - 16).toByteArray()
+                val tag = payload.takeLast(16)
+                cipher.doFinal(message)
+            } catch (e: GeneralSecurityException) {
+                e.printStackTrace()
+                null
+            }
+        }
+    }
+}
