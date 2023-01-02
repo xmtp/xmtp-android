@@ -26,8 +26,8 @@ class Crypto {
                 val cipher = Cipher.getInstance("AES/GCM/NoPadding")
 
                 val key = Hkdf.computeHkdf("HMACSHA256", secret, salt, additionalData, 32)
-                val keySpec = SecretKeySpec(key, "HmacSHA256")
-                val gcmSpec = GCMParameterSpec(32, nonceData)
+                val keySpec = SecretKeySpec(key, "AES")
+                val gcmSpec = GCMParameterSpec(128, nonceData)
 
                 cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec)
                 val payload = cipher.doFinal(message)
@@ -56,13 +56,11 @@ class Crypto {
                 val cipher = Cipher.getInstance("AES/GCM/NoPadding")
 
                 val key = Hkdf.computeHkdf("HMACSHA256", secret, salt, additionalData, 32)
-                val keySpec = SecretKeySpec(key, "HmacSHA256")
-                val gcmSpec = GCMParameterSpec(32, nonceData)
+                val keySpec = SecretKeySpec(key, "AES")
+                val gcmSpec = GCMParameterSpec(128, nonceData)
 
                 cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec)
-                val message = payload.take(payload.size - 16).toByteArray()
-                val tag = payload.takeLast(16)
-                cipher.doFinal(message)
+                cipher.doFinal(payload)
             } catch (e: GeneralSecurityException) {
                 e.printStackTrace()
                 null

@@ -9,11 +9,13 @@ data class AuthorizedIdentity(
     var authorized: PublicKey,
     var identity: PrivateKey) {
 
-    suspend fun createAuthToken() : String {
+    fun createAuthToken() : String {
         val publicKey = authorized.toBuilder()
         val authData = AuthDataFactory.create(walletAddress = address)
         val authDataBytes = authData.toByteArray()
-        val signature = identity.sign(Util.keccak256(authDataBytes))
+        val privateKeyFactory = PrivateKeyFactory()
+        privateKeyFactory.setPrivateKey(identity)
+        val signature = privateKeyFactory.sign(Util.keccak256(authDataBytes))
         publicKey.signature = signature
         publicKey.build()
         val tokenBuilder = Token.newBuilder()
@@ -22,11 +24,11 @@ data class AuthorizedIdentity(
         tokenBuilder.authDataSignature = signature
         return encodeToString(tokenBuilder.build().toByteArray(), android.util.Base64.DEFAULT).trim()
     }
-    val toBundle: PrivateKeyOuterClass.PrivateKeyBundleV1
+    val toBundle: PrivateKeyBundle
         get() {
-            val bundleBuilder = PrivateKeyOuterClass.PrivateKeyBundle.newBuilder().v1Builder
-            bundleBuilder.identityKey = identity
-            bundleBuilder.identityKeyBuilder.publicKey = authorized
+            val bundleBuilder = PrivateKeyOuterClass.PrivateKeyBundle.newBuilder()
+            bundleBuilder.v1Builder.identityKey = identity
+            bundleBuilder.v1Builder.identityKeyBuilder.publicKey = authorized
             return bundleBuilder.build()
         }
 }
