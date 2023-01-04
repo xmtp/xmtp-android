@@ -1,11 +1,11 @@
 package org.xmtp.android.library.messages
 
 import com.google.protobuf.kotlin.toByteString
-import com.google.protobuf.kotlin.toByteStringUtf8
 import org.bouncycastle.crypto.digests.SHA256Digest
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
-import org.xmtp.android.library.Crypto
+import org.web3j.crypto.Sign.SignatureData
+import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.SigningKey
 import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
@@ -13,21 +13,39 @@ import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.security.SecureRandom
 import java.util.*
 
+
 typealias PrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
 
 class PrivateKeyFactory : SigningKey {
     companion object {
-        var privateKey: PrivateKey = PrivateKey.newBuilder().build()
+        var privateKey: PrivateKey = PrivateKey.newBuilder().apply {
+            val time = (Date().millisecondsSinceEpoch).toLong()
+            timestamp = time
+            val privateKeyData = SecureRandom().generateSeed(32)
+            secp256K1Builder.bytes = privateKeyData.toByteString()
+            val publicData = ECKeyPair.create(privateKeyData)
+            publicKeyBuilder.apply {
+                timestamp = time
+                secp256K1UncompressedBuilder.apply {
+                    bytes = publicData.publicKey.toByteArray().toByteString()
+                }.build()
+            }.build()
+        }.build()
 
         fun create(privateKeyData: ByteArray): PrivateKey {
-            val builder = PrivateKey.newBuilder()
-            builder.timestamp = (Date().millisecondsSinceEpoch).toLong()
-            builder.secp256K1Builder.bytes = privateKeyData.toByteString()
-            val publicData = ECKeyPair.create(privateKeyData)
-            builder.publicKeyBuilder.secp256K1UncompressedBuilder.bytes =
-                publicData.publicKey.toByteArray().toByteString()
-            builder.publicKeyBuilder.timestamp = builder.timestamp
-            privateKey = builder.build()
+            privateKey = PrivateKey.newBuilder().apply {
+                val time = (Date().millisecondsSinceEpoch).toLong()
+                timestamp = time
+                secp256K1Builder.bytes = privateKeyData.toByteString()
+                val publicData = ECKeyPair.create(privateKeyData)
+                val uncompressedKey = byteArrayOf(0x4.toByte()) + publicData.publicKey.toByteArray()
+                publicKeyBuilder.apply {
+                    timestamp = time
+                    secp256K1UncompressedBuilder.apply {
+                        bytes = uncompressedKey.toByteString()
+                    }.build()
+                }.build()
+            }.build()
             return privateKey
         }
     }
@@ -35,15 +53,23 @@ class PrivateKeyFactory : SigningKey {
     fun setPrivateKey(key: PrivateKey) {
         privateKey = key
     }
+
     override val address: String
         get() = privateKey.walletAddress
 
     override fun sign(data: ByteArray): Signature {
         val signatureData =
-            Sign.signMessage(data, ECKeyPair.create(privateKey.secp256K1.bytes.toByteArray()), false)
+            Sign.signMessage(
+                data,
+                ECKeyPair.create(privateKey.secp256K1.bytes.toByteArray()),
+                false
+            )
         val signature = SignatureOuterClass.Signature.newBuilder()
-        signature.ecdsaCompactBuilder.bytes = signatureData.toString().take(64).toByteStringUtf8()
-        signature.ecdsaCompactBuilder.recovery = signatureData.toString()[64].digitToInt()
+        val signatureKey = KeyUtil.getSignatureBytes(signatureData)
+        signature.ecdsaCompactBuilder.apply {
+            bytes = signatureKey.take(64).toByteArray().toByteString()
+            recovery = signatureKey[64].toInt()
+        }.build()
         return signature.build()
     }
 
@@ -53,7 +79,8 @@ class PrivateKeyFactory : SigningKey {
     }
 }
 
-fun PrivateKey.matches(publicKey: PublicKey): Boolean = publicKey.recoverKeySignedPublicKey() == (publicKey.recoverKeySignedPublicKey())
+fun PrivateKey.matches(publicKey: PublicKey): Boolean =
+    publicKey.recoverKeySignedPublicKey() == (publicKey.recoverKeySignedPublicKey())
 
 fun PrivateKey.generate(): PrivateKey {
     return PrivateKeyFactory.create(SecureRandom().generateSeed(32))

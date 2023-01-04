@@ -43,12 +43,16 @@ fun PublicKey.recoverKeySignedPublicKey(): PublicKey {
     slimKey.secp256K1UncompressedBuilder.bytes = secp256K1Uncompressed.bytes
     slimKey.timestamp = timestamp
     val bytesToSign = slimKey.build().toByteArray()
+    val v = signature.toByteArray().last()
+    val r = signature.toByteArray().take(32).toByteArray()
+    val s = signature.toByteArray().takeLast(33).dropLast(1).toByteArray()
+
     val pubKeyData = Sign.signedMessageToKey(
         SHA256Digest(bytesToSign).encodedState,
         Sign.SignatureData(
-            signature.toByteArray(),
-            signature.toByteArray(),
-            signature.toByteArray()
+            v,
+            r,
+            s
         )
     )
     return PublicKeyFactory.createFromBytes(pubKeyData.toByteArray())

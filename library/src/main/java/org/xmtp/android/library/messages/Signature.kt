@@ -1,17 +1,23 @@
 package org.xmtp.android.library.messages
 
-import org.xmtp.android.library.Util
+import org.bouncycastle.jcajce.provider.digest.Keccak
+import org.bouncycastle.util.encoders.Hex
+import org.web3j.crypto.Hash
+import org.web3j.utils.Numeric
+import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.toHex
-import java.nio.charset.StandardCharsets.US_ASCII
-import java.nio.charset.StandardCharsets.UTF_8
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+
 
 typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
 
+    private const val MESSAGE_PREFIX = "\u0019Ethereum Signed Message:\n"
+
 fun Signature.ethHash(message: String): ByteArray {
-    val prefix = "\\u0019Ethereum Signed Message:\n${message.length}"
-    val data = prefix.toByteArray(charset = US_ASCII)
-    data.plus(message.toByteArray(charset = UTF_8))
-    return Util.keccak256(data)
+    val input = MESSAGE_PREFIX + message.length + message
+    val digest256 = Keccak.Digest256()
+    return digest256.digest(input.toByteArray())
 }
 
 fun Signature.createIdentityText(key: ByteArray): String =
