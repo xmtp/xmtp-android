@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import com.google.protobuf.kotlin.toByteString
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -11,7 +12,7 @@ class CryptoTests {
         val secret = byteArrayOf(1, 2, 3, 4)
         val encrypted = Crypto.encrypt(secret, message)
         val decrypted = Crypto.decrypt(secret, encrypted!!)
-        assertEquals(message, decrypted)
+        assertEquals(message.toByteString(), decrypted!!.toByteString())
     }
 
     @Test
@@ -24,11 +25,13 @@ class CryptoTests {
             207, 91, 45, 45, 16, 171, 146, 125, 143, 60, 152, 128,
             0, 120, 18, 12, 219, 247, 207, 184, 141, 179, 171, 100,
             251, 171, 120, 137, 26, 19, 216, 215, 152, 167, 118, 59,
-            93, 177, 53, 242, 147, 10, 87, 143, 27, 245, 154, 169, 109)
-        val bytes = ints.foldIndexed(ByteArray(ints.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
+            93, 177, 53, 242, 147, 10, 87, 143, 27, 245, 154, 169, 109
+        )
+        val bytes =
+            ints.foldIndexed(ByteArray(ints.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
         val encrypted = CipherText.parseFrom(bytes)
         val decrypted = Crypto.decrypt(secret, encrypted)
-        assertEquals(message, decrypted)
+        assertEquals(message.toByteString(), decrypted!!.toByteString())
     }
 }
 

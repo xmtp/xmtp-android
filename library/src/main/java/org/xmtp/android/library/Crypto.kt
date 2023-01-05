@@ -9,12 +9,10 @@ import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-
 typealias CipherText = CiphertextOuterClass.Ciphertext
 
 class Crypto {
     companion object {
-
         fun encrypt(
             secret: ByteArray,
             message: ByteArray,
@@ -25,11 +23,14 @@ class Crypto {
                 val nonceData = SecureRandom().generateSeed(12)
                 val cipher = Cipher.getInstance("AES/GCM/NoPadding")
 
-                val key = Hkdf.computeHkdf("HMACSHA256", secret, salt, additionalData, 32)
+                val key = Hkdf.computeHkdf("HMACSHA256", secret, salt, null, 32)
                 val keySpec = SecretKeySpec(key, "AES")
                 val gcmSpec = GCMParameterSpec(128, nonceData)
 
                 cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec)
+                if (additionalData.isNotEmpty()) {
+                    cipher.updateAAD(additionalData)
+                }
                 val payload = cipher.doFinal(message)
 
                 val builder = CiphertextOuterClass.Ciphertext.newBuilder()
@@ -55,11 +56,14 @@ class Crypto {
                 val payload = ciphertext.aes256GcmHkdfSha256.payload.toByteArray()
                 val cipher = Cipher.getInstance("AES/GCM/NoPadding")
 
-                val key = Hkdf.computeHkdf("HMACSHA256", secret, salt, additionalData, 32)
+                val key = Hkdf.computeHkdf("HMACSHA256", secret, salt, null, 32)
                 val keySpec = SecretKeySpec(key, "AES")
                 val gcmSpec = GCMParameterSpec(128, nonceData)
 
                 cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec)
+                if (additionalData.isNotEmpty()) {
+                    cipher.updateAAD(additionalData)
+                }
                 cipher.doFinal(payload)
             } catch (e: GeneralSecurityException) {
                 e.printStackTrace()
