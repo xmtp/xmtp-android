@@ -6,15 +6,16 @@ import org.xmtp.android.library.SigningKey
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import java.security.SecureRandom
 
-typealias PrivateKeyBundle = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundle
+typealias PrivateKeyBundle = PrivateKeyOuterClass.PrivateKeyBundle
 
-fun PrivateKeyBundle.encrypted(key: SigningKey) : EncryptedPrivateKeyBundle {
-    val bundleBytes = byteArrayOf()
+fun PrivateKeyBundle.encrypted(key: SigningKey): EncryptedPrivateKeyBundle {
+    val bundleBytes = toByteArray()
     val walletPreKey = SecureRandom().generateSeed(32)
-    val signature = key.sign(message = Signature.newBuilder().build().enableIdentityText(key = walletPreKey))
+    val signature =
+        key.sign(message = Signature.newBuilder().build().enableIdentityText(key = walletPreKey))
     val cipherText = Crypto.encrypt(signature.rawData, bundleBytes)
-    val encryptedBundle = PrivateKeyOuterClass.EncryptedPrivateKeyBundle.newBuilder()
-    encryptedBundle.v1Builder.walletPreKey = walletPreKey.toByteString()
-    encryptedBundle.v1Builder.ciphertext = cipherText
-    return encryptedBundle.build()
+    return EncryptedPrivateKeyBundle.newBuilder().apply {
+        v1Builder.walletPreKey = walletPreKey.toByteString()
+        v1Builder.ciphertext = cipherText
+    }.build()
 }
