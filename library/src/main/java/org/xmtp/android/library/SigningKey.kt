@@ -4,6 +4,7 @@ import com.google.protobuf.kotlin.toByteString
 import org.web3j.crypto.ECDSASignature
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
+import org.web3j.utils.Numeric
 import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import org.xmtp.android.library.messages.*
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
@@ -42,7 +43,7 @@ fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): Author
     val signatureData = KeyUtil.getSignatureData(signature.rawData.toByteString().toByteArray())
     val publicKey = Sign.recoverFromSignature(
         BigInteger(signatureData.v).toInt(),
-        ECDSASignature(BigInteger(signatureData.r), BigInteger(signatureData.s)),
+        ECDSASignature(BigInteger(1, signatureData.r), BigInteger(signatureData.s)),
         digest
     )
 

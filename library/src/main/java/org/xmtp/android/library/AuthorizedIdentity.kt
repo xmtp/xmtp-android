@@ -1,15 +1,17 @@
 package org.xmtp.android.library
 
-import android.util.Base64.encodeToString
+import android.util.Base64
+import com.google.crypto.tink.subtle.Base64.*
 import org.xmtp.android.library.messages.*
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 
 data class AuthorizedIdentity(
     var address: String,
     var authorized: PublicKey,
-    var identity: PrivateKey) {
+    var identity: PrivateKey
+) {
 
-    fun createAuthToken() : String {
+    fun createAuthToken(): String {
         val publicKey = authorized.toBuilder()
         val authData = AuthDataFactory.create(walletAddress = address)
         val authDataBytes = authData.toByteArray()
@@ -22,8 +24,10 @@ data class AuthorizedIdentity(
         tokenBuilder.identityKey = authorized
         tokenBuilder.authDataBytes = authData.toByteString()
         tokenBuilder.authDataSignature = signature
-        return encodeToString(tokenBuilder.build().toByteArray(), android.util.Base64.DEFAULT).trim()
+        val token = tokenBuilder.build().toByteArray()
+        return encodeToString(token, Base64.DEFAULT)
     }
+
     val toBundle: PrivateKeyBundle
         get() {
             val bundleBuilder = PrivateKeyOuterClass.PrivateKeyBundle.newBuilder()
