@@ -4,7 +4,6 @@ import com.google.protobuf.kotlin.toByteString
 import org.web3j.crypto.ECDSASignature
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
-import org.web3j.utils.Numeric
 import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import org.xmtp.android.library.messages.*
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
@@ -13,21 +12,12 @@ import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.math.BigInteger
 import java.util.*
 
+interface SigningKey {
+    val address : String
 
-public interface SigningKey {
-    val address/// A wallet address for this key
-            : String
+    fun sign(data : ByteArray): SignatureOuterClass.Signature
 
-    fun sign(
-        data/// Sign the data and return a secp256k1 compact recoverable signature.
-        : ByteArray
-    ): SignatureOuterClass.Signature
-
-    fun sign(
-        message/// Pass a personal Ethereum signed message string text to be signed, returning
-        /// a secp256k1 compact recoverable signature. You can use ``Signature.ethPersonalMessage`` to generate this text.
-        : String
-    ): SignatureOuterClass.Signature
+    fun sign(message : String): SignatureOuterClass.Signature
 }
 
 fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): AuthorizedIdentity {

@@ -48,7 +48,7 @@ data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = tru
 
         val headers = Metadata()
         headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $authToken")
-       return client.query(request, headers = headers)
+        return client.query(request, headers = headers)
     }
 
     suspend fun publish(envelopes: List<Envelope>): PublishResponse {

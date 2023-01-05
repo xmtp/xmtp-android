@@ -1,18 +1,11 @@
 package org.xmtp.android.library.messages
 
 import org.bouncycastle.jcajce.provider.digest.Keccak
-import org.bouncycastle.util.encoders.Hex
-import org.web3j.crypto.Hash
-import org.web3j.utils.Numeric
-import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.toHex
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
-
 
 typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
 
-    private const val MESSAGE_PREFIX = "\u0019Ethereum Signed Message:\n"
+private const val MESSAGE_PREFIX = "\u0019Ethereum Signed Message:\n"
 
 fun Signature.ethHash(message: String): ByteArray {
     val input = MESSAGE_PREFIX + message.length + message

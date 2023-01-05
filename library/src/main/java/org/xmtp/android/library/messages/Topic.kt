@@ -10,19 +10,19 @@ sealed class Topic {
 
     val description: String
         get() {
-            when (this) {
-                is userPrivateStoreKeyBundle -> return wrap("privatestore-${v1}")
-                is contact -> return wrap("contact-${v1}")
-                is userIntro -> return wrap("intro-${v1}")
-                is userInvite -> return wrap("invite-${v1}")
+            return when (this) {
+                is userPrivateStoreKeyBundle -> wrap("privatestore-${v1}")
+                is contact -> wrap("contact-${v1}")
+                is userIntro -> wrap("intro-${v1}")
+                is userInvite -> wrap("invite-${v1}")
                 is directMessageV1 -> {
                     val addresses = listOf(v1, v2).sorted().joinToString(separator = "-")
-                    return wrap("dm-${addresses}")
+                    wrap("dm-${addresses}")
                 }
-                is directMessageV2 -> return wrap("m-${v1}")
+                is directMessageV2 -> wrap("m-${v1}")
             }
         }
 
-    private fun wrap(value: String) : String =
+    private fun wrap(value: String): String =
         "/xmtp/0/${value}/proto"
 }

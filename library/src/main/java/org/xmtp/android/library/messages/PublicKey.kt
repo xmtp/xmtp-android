@@ -13,12 +13,9 @@ typealias PublicKey = org.xmtp.proto.message.contents.PublicKeyOuterClass.Public
 class PublicKeyFactory {
     companion object {
         fun create(signedPublicKey: PublicKeyOuterClass.SignedPublicKey): PublicKey {
-            val builder = PublicKey.newBuilder()
-            val unsignedPublicKey =
-                PublicKeyOuterClass.UnsignedPublicKey.newBuilder()
-//            unsignedPublicKey = signedPublicKey.keyBytes
-            unsignedPublicKey.build()
-            builder.timestamp = unsignedPublicKey.createdNs
+            val unsignedPublicKey = PublicKey.parseFrom(signedPublicKey.keyBytes)
+            val builder = unsignedPublicKey.toBuilder()
+            builder.timestamp = unsignedPublicKey.timestamp
             val secp256K1Builder = builder.secp256K1UncompressedBuilder
             secp256K1Builder.bytes = unsignedPublicKey.secp256K1Uncompressed.bytes
             secp256K1Builder.build()
@@ -36,9 +33,8 @@ class PublicKeyFactory {
 
 fun PublicKey.recoverKeySignedPublicKey(): PublicKey {
     if (!hasSignature()) {
-//        throw PublicKeyError.noSignature
+        throw IllegalArgumentException("No signature found")
     }
-    // We don't want to include the signature in the key bytes
     val slimKey = PublicKey.newBuilder()
     slimKey.secp256K1UncompressedBuilder.bytes = secp256K1Uncompressed.bytes
     slimKey.timestamp = timestamp
