@@ -1,6 +1,7 @@
 package org.xmtp.android.library.messages
 
 import org.bouncycastle.jcajce.provider.digest.Keccak
+import org.web3j.crypto.ECDSASignature
 import org.xmtp.android.library.toHex
 
 typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
@@ -21,3 +22,11 @@ fun Signature.enableIdentityText(key: ByteArray): String =
 
 val Signature.rawData: ByteArray
     get() = ecdsaCompact.bytes.toByteArray() + listOf(ecdsaCompact.recovery.toByte()).toByteArray()
+
+
+fun Signature.verify(signedBy: PublicKey, digest: ByteArray) : Boolean {
+    val recoverySignature = ECDSASignature(compactRepresentation = ecdsaCompact.bytes, recoveryId = Int32(ecdsaCompact.recovery))
+    val ecdsaSignature = recoverySignature.normalize
+    val signingKey = secp256k1.Signing.PublicKey(rawRepresentation = signedBy.secp256K1Uncompressed.bytes, format = .uncompressed)
+    return signingKey.ecdsa.isValidSignature(ecdsaSignature, for = digest)
+}

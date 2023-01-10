@@ -54,6 +54,10 @@ class PrivateKeyFactory : SigningKey {
         privateKey = key
     }
 
+    fun getPrivateKey(): PrivateKey {
+        return privateKey
+    }
+
     override val address: String
         get() = privateKey.walletAddress
 

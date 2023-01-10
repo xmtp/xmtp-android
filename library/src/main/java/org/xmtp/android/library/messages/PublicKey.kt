@@ -10,26 +10,23 @@ import java.util.*
 
 typealias PublicKey = org.xmtp.proto.message.contents.PublicKeyOuterClass.PublicKey
 
-class PublicKeyFactory {
-    companion object {
-        fun create(signedPublicKey: PublicKeyOuterClass.SignedPublicKey): PublicKey {
-            val unsignedPublicKey = PublicKey.parseFrom(signedPublicKey.keyBytes)
-            val builder = unsignedPublicKey.toBuilder()
-            builder.timestamp = unsignedPublicKey.timestamp
-            val secp256K1Builder = builder.secp256K1UncompressedBuilder
-            secp256K1Builder.bytes = unsignedPublicKey.secp256K1Uncompressed.bytes
-            secp256K1Builder.build()
-            return builder.build()
-        }
-
-        fun createFromBytes(data: ByteArray): PublicKey {
-            val builder = PublicKey.newBuilder()
-            builder.timestamp = Date().millisecondsSinceEpoch.toLong()
-            builder.secp256K1UncompressedBuilder.bytes = data.toByteString()
-            return builder.build()
-        }
-    }
+fun PublicKey.parseFrom(signedPublicKey: PublicKeyOuterClass.SignedPublicKey): PublicKey {
+    val unsignedPublicKey = PublicKey.parseFrom(signedPublicKey.keyBytes)
+    val builder = unsignedPublicKey.toBuilder()
+    builder.timestamp = unsignedPublicKey.timestamp
+    val secp256K1Builder = builder.secp256K1UncompressedBuilder
+    secp256K1Builder.bytes = unsignedPublicKey.secp256K1Uncompressed.bytes
+    secp256K1Builder.build()
+    return builder.build()
 }
+
+fun PublicKey.createFromBytes(data: ByteArray): PublicKey {
+    val builder = PublicKey.newBuilder()
+    builder.timestamp = Date().millisecondsSinceEpoch.toLong()
+    builder.secp256K1UncompressedBuilder.bytes = data.toByteString()
+    return builder.build()
+}
+
 
 fun PublicKey.recoverKeySignedPublicKey(): PublicKey {
     if (!hasSignature()) {
@@ -51,7 +48,7 @@ fun PublicKey.recoverKeySignedPublicKey(): PublicKey {
             s
         )
     )
-    return PublicKeyFactory.createFromBytes(pubKeyData.toByteArray())
+    return slimKey.build().createFromBytes(pubKeyData.toByteArray())
 }
 
 val PublicKeyOuterClass.PublicKey.walletAddress: String
