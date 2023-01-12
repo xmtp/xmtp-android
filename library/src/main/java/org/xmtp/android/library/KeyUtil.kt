@@ -9,8 +9,8 @@ object KeyUtil {
         if (v < 27) {
             (v.plus(27))
         }
-        val r = Arrays.copyOfRange(signatureBytes, 0, 32) as ByteArray
-        val s = Arrays.copyOfRange(signatureBytes, 32, 64) as ByteArray
+        val r = signatureBytes.copyOfRange(0, 32) as ByteArray
+        val s = signatureBytes.copyOfRange(32, 64) as ByteArray
         return SignatureData(v, r, s)
     }
 

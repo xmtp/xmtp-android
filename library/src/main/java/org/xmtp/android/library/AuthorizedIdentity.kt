@@ -12,27 +12,28 @@ data class AuthorizedIdentity(
 ) {
 
     fun createAuthToken(): String {
-        val publicKey = authorized.toBuilder()
-        val authData = AuthDataFactory.create(walletAddress = address)
-        val authDataBytes = authData.toByteArray()
-        val privateKeyFactory = PrivateKeyFactory()
-        privateKeyFactory.setPrivateKey(identity)
-        val signature = privateKeyFactory.sign(Util.keccak256(authDataBytes))
-        publicKey.signature = signature
-        publicKey.build()
-        val tokenBuilder = Token.newBuilder()
-        tokenBuilder.identityKey = authorized
-        tokenBuilder.authDataBytes = authData.toByteString()
-        tokenBuilder.authDataSignature = signature
-        val token = tokenBuilder.build().toByteArray()
+        val authData = AuthDataBuilder.buildFromWalletAddress(walletAddress = address)
+        val signature = PrivateKeyBuilder(identity).sign(Util.keccak256(authData.toByteArray()))
+        authorized.toBuilder().apply {
+            this.signature = signature
+        }.build()
+        val token = Token.newBuilder().apply {
+            identityKey = authorized
+            authDataBytes = authData.toByteString()
+            authDataSignature = signature
+        }.build().toByteArray()
         return encodeToString(token, Base64.DEFAULT)
     }
 
     val toBundle: PrivateKeyBundle
         get() {
-            val bundleBuilder = PrivateKeyOuterClass.PrivateKeyBundle.newBuilder()
-            bundleBuilder.v1Builder.identityKey = identity
-            bundleBuilder.v1Builder.identityKeyBuilder.publicKey = authorized
-            return bundleBuilder.build()
+            return PrivateKeyOuterClass.PrivateKeyBundle.newBuilder().apply {
+                v1Builder.apply {
+                    identityKey = identity
+                    identityKeyBuilder.apply {
+                        publicKey = authorized
+                    }.build()
+                }.build()
+            }.build()
         }
 }

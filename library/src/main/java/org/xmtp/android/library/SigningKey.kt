@@ -4,13 +4,11 @@ import com.google.protobuf.kotlin.toByteString
 import org.web3j.crypto.ECDSASignature
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
-import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import org.xmtp.android.library.messages.*
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.math.BigInteger
-import java.util.*
 
 interface SigningKey {
     val address : String
@@ -21,12 +19,12 @@ interface SigningKey {
 }
 
 fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): AuthorizedIdentity {
-    val slimKey = PublicKeyOuterClass.PublicKey.newBuilder()
-    slimKey.timestamp = Date().millisecondsSinceEpoch.toLong()
-    slimKey.secp256K1Uncompressed = identity.publicKey.secp256K1Uncompressed
+    val slimKey = PublicKeyOuterClass.PublicKey.newBuilder().apply {
+        timestamp = System.currentTimeMillis()
+        secp256K1Uncompressed = identity.publicKey.secp256K1Uncompressed
+    }.build()
     val signatureClass = Signature.newBuilder().build()
-    val key = slimKey.build().toByteArray()
-    val signatureText = signatureClass.createIdentityText(key = key)
+    val signatureText = signatureClass.createIdentityText(key = slimKey.toByteArray())
     val digest = signatureClass.ethHash(message = signatureText)
     val signature = sign(digest)
 
@@ -37,14 +35,14 @@ fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): Author
         digest
     )
 
-    val authorized = PublicKey.newBuilder()
-    authorized.secp256K1Uncompressed = slimKey.secp256K1Uncompressed
-    authorized.timestamp = slimKey.timestamp
-    authorized.signature = signature
+    val authorized = PublicKey.newBuilder(). apply {
+        secp256K1Uncompressed = slimKey.secp256K1Uncompressed
+        timestamp = slimKey.timestamp
+        this.signature = signature
+    }
     return AuthorizedIdentity(
         address = Keys.getAddress(publicKey),
         authorized = authorized.build(),
         identity = identity
     )
 }
-

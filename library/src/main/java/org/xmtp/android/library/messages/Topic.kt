@@ -6,7 +6,7 @@ sealed class Topic {
     data class userIntro(val v1: String) : Topic()
     data class userInvite(val v1: String) : Topic()
     data class directMessageV1(val v1: String, val v2: String) : Topic()
-    data class directMessageV2(val v1: String) : Topic()
+    data class directMessageV2(val v2: String) : Topic()
 
     val description: String
         get() {
@@ -19,7 +19,7 @@ sealed class Topic {
                     val addresses = listOf(v1, v2).sorted().joinToString(separator = "-")
                     wrap("dm-${addresses}")
                 }
-                is directMessageV2 -> wrap("m-${v1}")
+                is directMessageV2 -> wrap("m-${v2}")
             }
         }
 

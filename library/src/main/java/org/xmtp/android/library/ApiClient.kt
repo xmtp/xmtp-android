@@ -8,21 +8,17 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass.*
 import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
-interface ApiClient {
-    val environment: XMTPEnvironment
-    fun setAuthToken(token: String)
-    suspend fun query(topics: List<Topic>) : QueryResponse
-    suspend fun publish(envelopes: List<Envelope>) : PublishResponse
-}
-
-data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: Boolean = true) : ApiClient, Closeable {
+data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = true) : Closeable {
     companion object {
+        @VisibleForTesting
         val AUTHORIZATION_HEADER_KEY: Metadata.Key<String> =
             Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER)
 
+        @VisibleForTesting
         val CLIENT_VERSION_HEADER_KEY: Metadata.Key<String> =
-            Metadata.Key.of("X-org.xmtp.android.library.Client-Version", Metadata.ASCII_STRING_MARSHALLER)
+            Metadata.Key.of("X-Client-Version", Metadata.ASCII_STRING_MARSHALLER)
 
+        @VisibleForTesting
         val APP_VERSION_HEADER_KEY: Metadata.Key<String> =
             Metadata.Key.of("X-App-Version", Metadata.ASCII_STRING_MARSHALLER)
     }
@@ -39,27 +35,32 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
 
     private val client: MessageApiGrpcKt.MessageApiCoroutineStub =
         MessageApiGrpcKt.MessageApiCoroutineStub(channel)
-    private var authToken: String = ""
+    private var authToken: String? = null
 
-    override fun setAuthToken(token: String) {
+    fun setAuthToken(token: String): String {
         authToken = token
+        return token
     }
 
-    override suspend fun query(topics: List<Topic>): QueryResponse {
+    suspend fun query(topics: List<Topic>): QueryResponse {
         val request = QueryRequest.newBuilder()
             .addAllContentTopics(topics.map { it.description }).build()
 
         val headers = Metadata()
-        headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $authToken")
+        authToken?.let { token ->
+            headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
+        }
         return client.query(request, headers = headers)
     }
 
-    override suspend fun publish(envelopes: List<Envelope>): PublishResponse {
+    suspend fun publish(envelopes: List<Envelope>): PublishResponse {
         val request = PublishRequest.newBuilder().addAllEnvelopes(envelopes).build()
         val headers = Metadata()
-        headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $authToken")
-        headers.put(CLIENT_VERSION_HEADER_KEY, Constants().version)
-        headers.put(APP_VERSION_HEADER_KEY, Constants().version)
+        authToken?.let { token ->
+            headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
+        }
+        headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
+        headers.put(APP_VERSION_HEADER_KEY, Constants.VERSION)
         return client.publish(request, headers = headers)
     }
 

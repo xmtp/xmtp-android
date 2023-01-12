@@ -4,6 +4,6 @@ import org.junit.Test
 
 class ApiClientTest {
     @Test fun testCanGetApiClient() {
-        GRPCApiClient(environment = XMTPEnvironment.LOCAL)
+        ApiClient(environment = XMTPEnvironment.LOCAL)
     }
 }

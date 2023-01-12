@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import com.google.crypto.tink.subtle.Hkdf
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.proto.message.contents.CiphertextOuterClass
@@ -13,6 +14,7 @@ typealias CipherText = CiphertextOuterClass.Ciphertext
 
 class Crypto {
     companion object {
+        private const val TAG = "Crypto"
         fun encrypt(
             secret: ByteArray,
             message: ByteArray,
@@ -31,16 +33,17 @@ class Crypto {
                 if (additionalData.isNotEmpty()) {
                     cipher.updateAAD(additionalData)
                 }
-                val payload = cipher.doFinal(message)
+                val final = cipher.doFinal(message)
 
-                val builder = CiphertextOuterClass.Ciphertext.newBuilder()
-                builder.aes256GcmHkdfSha256Builder.payload = payload.toByteString()
-                builder.aes256GcmHkdfSha256Builder.hkdfSalt = salt.toByteString()
-                builder.aes256GcmHkdfSha256Builder.gcmNonce = nonceData.toByteString()
-
-                builder.build()
-            } catch (e: GeneralSecurityException) {
-                e.printStackTrace()
+                CiphertextOuterClass.Ciphertext.newBuilder().apply {
+                    aes256GcmHkdfSha256Builder.apply {
+                        payload = final.toByteString()
+                        hkdfSalt = salt.toByteString()
+                        gcmNonce = nonceData.toByteString()
+                    }.build()
+                }.build()
+            } catch (err: GeneralSecurityException) {
+                Log.e(TAG, err.message.toString())
                 null
             }
         }
@@ -65,8 +68,8 @@ class Crypto {
                     cipher.updateAAD(additionalData)
                 }
                 cipher.doFinal(payload)
-            } catch (e: GeneralSecurityException) {
-                e.printStackTrace()
+            } catch (err: GeneralSecurityException) {
+                Log.e(TAG, err.message.toString())
                 null
             }
         }
