@@ -4,29 +4,32 @@ import com.google.protobuf.kotlin.toByteString
 import org.bouncycastle.crypto.digests.SHA256Digest
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
+import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import java.util.*
 
 typealias PublicKey = org.xmtp.proto.message.contents.PublicKeyOuterClass.PublicKey
 
-class PublicKeyFactory {
+class PublicKeyBuilder {
     companion object {
-        fun create(signedPublicKey: PublicKeyOuterClass.SignedPublicKey): PublicKey {
+        fun buildFromSignedPublicKey(signedPublicKey: PublicKeyOuterClass.SignedPublicKey): PublicKey {
             val unsignedPublicKey = PublicKey.parseFrom(signedPublicKey.keyBytes)
-            val builder = unsignedPublicKey.toBuilder()
-            builder.timestamp = unsignedPublicKey.timestamp
-            val secp256K1Builder = builder.secp256K1UncompressedBuilder
-            secp256K1Builder.bytes = unsignedPublicKey.secp256K1Uncompressed.bytes
-            secp256K1Builder.build()
-            return builder.build()
+            return unsignedPublicKey.toBuilder().apply {
+                timestamp = unsignedPublicKey.timestamp
+                secp256K1UncompressedBuilder.apply {
+                    bytes = unsignedPublicKey.secp256K1Uncompressed.bytes
+                }.build()
+            }.build()
         }
 
-        fun createFromBytes(data: ByteArray): PublicKey {
-            val builder = PublicKey.newBuilder()
-            builder.timestamp = Date().millisecondsSinceEpoch.toLong()
-            builder.secp256K1UncompressedBuilder.bytes = data.toByteString()
-            return builder.build()
+        fun buildFromBytes(data: ByteArray): PublicKey {
+            return PublicKey.newBuilder().apply {
+                timestamp = Date().millisecondsSinceEpoch.toLong()
+                secp256K1UncompressedBuilder.apply {
+                    bytes = data.toByteString()
+                }.build()
+            }.build()
         }
     }
 }
@@ -35,23 +38,18 @@ fun PublicKey.recoverKeySignedPublicKey(): PublicKey {
     if (!hasSignature()) {
         throw IllegalArgumentException("No signature found")
     }
-    val slimKey = PublicKey.newBuilder()
-    slimKey.secp256K1UncompressedBuilder.bytes = secp256K1Uncompressed.bytes
-    slimKey.timestamp = timestamp
-    val bytesToSign = slimKey.build().toByteArray()
-    val v = signature.toByteArray().last()
-    val r = signature.toByteArray().take(32).toByteArray()
-    val s = signature.toByteArray().takeLast(33).dropLast(1).toByteArray()
+    val bytesToSign = PublicKey.newBuilder().apply {
+        secp256K1UncompressedBuilder.apply {
+            bytes = secp256K1Uncompressed.bytes
+        }.build()
+        this.timestamp = timestamp
+    }.build().toByteArray()
 
     val pubKeyData = Sign.signedMessageToKey(
         SHA256Digest(bytesToSign).encodedState,
-        Sign.SignatureData(
-            v,
-            r,
-            s
-        )
+        KeyUtil.getSignatureData(signature.toByteArray())
     )
-    return PublicKeyFactory.createFromBytes(pubKeyData.toByteArray())
+    return PublicKeyBuilder.buildFromBytes(pubKeyData.toByteArray())
 }
 
 val PublicKeyOuterClass.PublicKey.walletAddress: String

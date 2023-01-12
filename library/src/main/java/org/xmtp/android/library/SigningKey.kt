@@ -21,12 +21,12 @@ interface SigningKey {
 }
 
 fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): AuthorizedIdentity {
-    val slimKey = PublicKeyOuterClass.PublicKey.newBuilder()
-    slimKey.timestamp = Date().millisecondsSinceEpoch.toLong()
-    slimKey.secp256K1Uncompressed = identity.publicKey.secp256K1Uncompressed
+    val slimKey = PublicKeyOuterClass.PublicKey.newBuilder().apply {
+        timestamp = Date().millisecondsSinceEpoch.toLong()
+        secp256K1Uncompressed = identity.publicKey.secp256K1Uncompressed
+    }.build()
     val signatureClass = Signature.newBuilder().build()
-    val key = slimKey.build().toByteArray()
-    val signatureText = signatureClass.createIdentityText(key = key)
+    val signatureText = signatureClass.createIdentityText(key = slimKey.toByteArray())
     val digest = signatureClass.ethHash(message = signatureText)
     val signature = sign(digest)
 
@@ -37,10 +37,11 @@ fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): Author
         digest
     )
 
-    val authorized = PublicKey.newBuilder()
-    authorized.secp256K1Uncompressed = slimKey.secp256K1Uncompressed
-    authorized.timestamp = slimKey.timestamp
-    authorized.signature = signature
+    val authorized = PublicKey.newBuilder(). apply {
+        secp256K1Uncompressed = slimKey.secp256K1Uncompressed
+        timestamp = slimKey.timestamp
+        this.signature = signature
+    }
     return AuthorizedIdentity(
         address = Keys.getAddress(publicKey),
         authorized = authorized.build(),

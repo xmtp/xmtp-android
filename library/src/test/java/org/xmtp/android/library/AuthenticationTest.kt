@@ -10,8 +10,8 @@ class AuthenticationTest {
 
     @Test
     fun testCreateToken() {
-        val privateKey = PrivateKeyFactory()
-        val identity = PrivateKeyFactory.privateKey.generate()
+        val privateKey = PrivateKeyBuilder()
+        val identity = PrivateKeyBuilder.privateKey.generate()
         // Prompt them to sign "XMTP : Create Identity ..."
         val authorized = privateKey.createIdentity(identity)
         // Create the `Authorization: Bearer $authToken` for API calls.
@@ -29,7 +29,7 @@ class AuthenticationTest {
 
     @Test
     fun testEnablingSavingAndLoadingOfStoredKeys() {
-        val alice = PrivateKeyFactory()
+        val alice = PrivateKeyBuilder()
         val identity = PrivateKey.newBuilder().build().generate()
         val authorized = alice.createIdentity(identity)
         val bundle = authorized.toBundle

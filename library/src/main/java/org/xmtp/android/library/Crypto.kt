@@ -31,14 +31,15 @@ class Crypto {
                 if (additionalData.isNotEmpty()) {
                     cipher.updateAAD(additionalData)
                 }
-                val payload = cipher.doFinal(message)
+                val final = cipher.doFinal(message)
 
-                val builder = CiphertextOuterClass.Ciphertext.newBuilder()
-                builder.aes256GcmHkdfSha256Builder.payload = payload.toByteString()
-                builder.aes256GcmHkdfSha256Builder.hkdfSalt = salt.toByteString()
-                builder.aes256GcmHkdfSha256Builder.gcmNonce = nonceData.toByteString()
-
-                builder.build()
+                CiphertextOuterClass.Ciphertext.newBuilder().apply {
+                    aes256GcmHkdfSha256Builder.apply {
+                        payload = final.toByteString()
+                        hkdfSalt = salt.toByteString()
+                        gcmNonce = nonceData.toByteString()
+                    }.build()
+                }.build()
             } catch (e: GeneralSecurityException) {
                 e.printStackTrace()
                 null

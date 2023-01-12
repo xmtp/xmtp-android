@@ -4,7 +4,6 @@ import com.google.protobuf.kotlin.toByteString
 import org.bouncycastle.crypto.digests.SHA256Digest
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
-import org.web3j.crypto.Sign.SignatureData
 import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.SigningKey
 import org.xmtp.android.library.extensions.millisecondsSinceEpoch
@@ -16,9 +15,13 @@ import java.util.*
 
 typealias PrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
 
-class PrivateKeyFactory : SigningKey {
-    companion object {
-        var privateKey: PrivateKey = PrivateKey.newBuilder().apply {
+class PrivateKeyBuilder : SigningKey {
+    constructor(key: PrivateKey) {
+        privateKey = key
+    }
+
+    constructor() {
+        privateKey = PrivateKey.newBuilder().apply {
             val time = (Date().millisecondsSinceEpoch).toLong()
             timestamp = time
             val privateKeyData = SecureRandom().generateSeed(32)
@@ -31,8 +34,12 @@ class PrivateKeyFactory : SigningKey {
                 }.build()
             }.build()
         }.build()
+    }
 
-        fun create(privateKeyData: ByteArray): PrivateKey {
+    companion object {
+        lateinit var privateKey: PrivateKey
+
+        fun buildFromPrivateKey(privateKeyData: ByteArray): PrivateKey {
             privateKey = PrivateKey.newBuilder().apply {
                 val time = (Date().millisecondsSinceEpoch).toLong()
                 timestamp = time
@@ -83,7 +90,7 @@ fun PrivateKey.matches(publicKey: PublicKey): Boolean =
     publicKey.recoverKeySignedPublicKey() == (publicKey.recoverKeySignedPublicKey())
 
 fun PrivateKey.generate(): PrivateKey {
-    return PrivateKeyFactory.create(SecureRandom().generateSeed(32))
+    return PrivateKeyBuilder.buildFromPrivateKey(SecureRandom().generateSeed(32))
 }
 
 val PrivateKey.walletAddress: String
@@ -93,7 +100,7 @@ fun PrivateKey.sign(key: PublicKeyOuterClass.UnsignedPublicKey): PublicKeyOuterC
     val bytes = key.secp256K1Uncompressed.bytes
     val digest = SHA256Digest(bytes.toByteArray()).encodedState
     val signedPublicKey = PublicKeyOuterClass.SignedPublicKey.newBuilder()
-    val signature = PrivateKeyFactory().sign(digest)
+    val signature = PrivateKeyBuilder().sign(digest)
     signedPublicKey.signature = signature
     signedPublicKey.keyBytes = bytes
     return signedPublicKey.build()
