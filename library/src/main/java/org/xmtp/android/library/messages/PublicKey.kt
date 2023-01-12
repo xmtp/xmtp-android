@@ -5,9 +5,7 @@ import org.bouncycastle.crypto.digests.SHA256Digest
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
-import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
-import java.util.*
 
 typealias PublicKey = org.xmtp.proto.message.contents.PublicKeyOuterClass.PublicKey
 
@@ -25,7 +23,7 @@ class PublicKeyBuilder {
 
         fun buildFromBytes(data: ByteArray): PublicKey {
             return PublicKey.newBuilder().apply {
-                timestamp = Date().millisecondsSinceEpoch.toLong()
+                timestamp = System.currentTimeMillis()
                 secp256K1UncompressedBuilder.apply {
                     bytes = data.toByteString()
                 }.build()

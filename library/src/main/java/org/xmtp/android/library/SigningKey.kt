@@ -4,13 +4,11 @@ import com.google.protobuf.kotlin.toByteString
 import org.web3j.crypto.ECDSASignature
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
-import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import org.xmtp.android.library.messages.*
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.math.BigInteger
-import java.util.*
 
 interface SigningKey {
     val address : String
@@ -22,7 +20,7 @@ interface SigningKey {
 
 fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): AuthorizedIdentity {
     val slimKey = PublicKeyOuterClass.PublicKey.newBuilder().apply {
-        timestamp = Date().millisecondsSinceEpoch.toLong()
+        timestamp = System.currentTimeMillis()
         secp256K1Uncompressed = identity.publicKey.secp256K1Uncompressed
     }.build()
     val signatureClass = Signature.newBuilder().build()

@@ -6,7 +6,6 @@ import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.SigningKey
-import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.security.SecureRandom
@@ -22,7 +21,7 @@ class PrivateKeyBuilder : SigningKey {
 
     constructor() {
         privateKey = PrivateKey.newBuilder().apply {
-            val time = (Date().millisecondsSinceEpoch).toLong()
+            val time = System.currentTimeMillis()
             timestamp = time
             val privateKeyData = SecureRandom().generateSeed(32)
             secp256K1Builder.bytes = privateKeyData.toByteString()
@@ -41,7 +40,7 @@ class PrivateKeyBuilder : SigningKey {
 
         fun buildFromPrivateKey(privateKeyData: ByteArray): PrivateKey {
             privateKey = PrivateKey.newBuilder().apply {
-                val time = (Date().millisecondsSinceEpoch).toLong()
+                val time = System.currentTimeMillis()
                 timestamp = time
                 secp256K1Builder.bytes = privateKeyData.toByteString()
                 val publicData = ECKeyPair.create(privateKeyData)
@@ -105,10 +104,3 @@ fun PrivateKey.sign(key: PublicKeyOuterClass.UnsignedPublicKey): PublicKeyOuterC
     signedPublicKey.keyBytes = bytes
     return signedPublicKey.build()
 }
-
-
-
-
-
-
-
