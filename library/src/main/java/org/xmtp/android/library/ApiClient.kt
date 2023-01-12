@@ -47,7 +47,9 @@ data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = tru
             .addAllContentTopics(topics.map { it.description }).build()
 
         val headers = Metadata()
-        headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $authToken")
+        authToken?.let { token ->
+            headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
+        }
         return client.query(request, headers = headers)
     }
 
