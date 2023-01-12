@@ -39,7 +39,7 @@ data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = tru
 
     fun setAuthToken(token: String): String {
         authToken = token
-        return authToken as String
+        return token
     }
 
     suspend fun query(topics: List<Topic>): QueryResponse {
@@ -56,7 +56,9 @@ data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = tru
     suspend fun publish(envelopes: List<Envelope>): PublishResponse {
         val request = PublishRequest.newBuilder().addAllEnvelopes(envelopes).build()
         val headers = Metadata()
-        headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $authToken")
+        authToken?.let { token ->
+            headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
+        }
         headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
         headers.put(APP_VERSION_HEADER_KEY, Constants.VERSION)
         return client.publish(request, headers = headers)
