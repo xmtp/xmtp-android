@@ -1,10 +1,7 @@
 package org.xmtp.android.library
 
 import androidx.annotation.VisibleForTesting
-import io.grpc.Grpc
-import io.grpc.InsecureChannelCredentials
-import io.grpc.ManagedChannel
-import io.grpc.Metadata
+import io.grpc.*
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.*
@@ -29,16 +26,20 @@ data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = tru
     private val channel: ManagedChannel = Grpc.newChannelBuilderForAddress(
         environment.rawValue,
         5556,
-        InsecureChannelCredentials.create()
+        if (secure) {
+            TlsChannelCredentials.create()
+        } else {
+            InsecureChannelCredentials.create()
+        }
     ).build()
 
     private val client: MessageApiGrpcKt.MessageApiCoroutineStub =
         MessageApiGrpcKt.MessageApiCoroutineStub(channel)
-    private var authToken: String = ""
+    private var authToken: String? = null
 
     fun setAuthToken(token: String): String {
         authToken = token
-        return authToken
+        return token
     }
 
     suspend fun query(topics: List<Topic>): QueryResponse {
@@ -46,16 +47,20 @@ data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = tru
             .addAllContentTopics(topics.map { it.description }).build()
 
         val headers = Metadata()
-        headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $authToken")
-       return client.query(request, headers = headers)
+        authToken?.let { token ->
+            headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
+        }
+        return client.query(request, headers = headers)
     }
 
     suspend fun publish(envelopes: List<Envelope>): PublishResponse {
         val request = PublishRequest.newBuilder().addAllEnvelopes(envelopes).build()
         val headers = Metadata()
-        headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $authToken")
-        headers.put(CLIENT_VERSION_HEADER_KEY, Constants().version)
-        headers.put(APP_VERSION_HEADER_KEY, Constants().version)
+        authToken?.let { token ->
+            headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
+        }
+        headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
+        headers.put(APP_VERSION_HEADER_KEY, Constants.VERSION)
         return client.publish(request, headers = headers)
     }
 
