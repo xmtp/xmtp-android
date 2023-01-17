@@ -1,7 +1,7 @@
 package org.xmtp.android.library
 
 import android.util.Base64
-import android.util.Base64.encodeToString
+import com.google.crypto.tink.subtle.Base64.encodeToString
 import org.xmtp.android.library.messages.AuthDataBuilder
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
