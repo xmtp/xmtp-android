@@ -11,7 +11,6 @@ import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.security.SecureRandom
 import java.util.*
 
-
 typealias PrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
 
 class PrivateKeyBuilder : SigningKey {
@@ -68,7 +67,7 @@ class PrivateKeyBuilder : SigningKey {
             Sign.signMessage(
                 data,
                 ECKeyPair.create(privateKey.secp256K1.bytes.toByteArray()),
-                false
+                false,
             )
         val signature = SignatureOuterClass.Signature.newBuilder()
         val signatureKey = KeyUtil.getSignatureBytes(signatureData)

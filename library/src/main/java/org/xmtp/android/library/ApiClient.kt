@@ -30,7 +30,7 @@ data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = tru
             TlsChannelCredentials.create()
         } else {
             InsecureChannelCredentials.create()
-        }
+        },
     ).build()
 
     private val client: MessageApiGrpcKt.MessageApiCoroutineStub =

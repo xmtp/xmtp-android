@@ -22,3 +22,28 @@ jobs:
         uses: gradle/wrapper-validation-action@v1
       - name: Gradle Run Tests
         run: ./gradlew library:testDebug
+    static-analysis:
+      name: Static Analysis
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+
+        - name: Gradle Run ktlint
+          run: ./gradlew ktlintCheck --continue
+
+        - uses: actions/upload-artifact@v2
+          name: Upload ktlint report
+          if: ${{ failure() }}
+          with:
+            name: ktlint
+            path: '**/build/reports/ktlint/'
+
+        - name: Gradle Android lint
+          run: ./gradlew :library:lintDebug
+
+        - uses: actions/upload-artifact@v2
+          name: Upload lint report
+          if: ${{ failure() }}
+          with:
+            name: lint
+            path: 'app/build/reports/lint-results-**.html'
