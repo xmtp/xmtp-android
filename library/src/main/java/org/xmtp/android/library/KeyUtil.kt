@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import org.web3j.crypto.Sign.SignatureData
-import java.util.*
 
 object KeyUtil {
     fun getSignatureData(signatureBytes: ByteArray): SignatureData {
@@ -17,7 +16,7 @@ object KeyUtil {
     fun getSignatureBytes(sig: SignatureData): ByteArray {
         val v = sig.v[0]
         val fixedV = if (v >= 27) (v - 27).toByte() else v
-        return KeyUtil.merge(
+        return merge(
             sig.r,
             sig.s,
             byteArrayOf(fixedV),
