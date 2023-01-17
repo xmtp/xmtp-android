@@ -4,11 +4,19 @@ import androidx.annotation.VisibleForTesting
 import io.grpc.*
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.*
 import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
-data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = true) : Closeable {
+interface ApiClient(open val environment: XMTPEnvironment, val secure: Boolean = true) {
+    val environment: XMTPEnvironment
+    fun setAuthToken(token: String)
+    suspend fun query(topics: List<Topic>) : QueryResponse
+    suspend fun publish(envelopes: List<MessageApiOuterClass.Envelope>) : PublishResponse
+}
+
+data class GRPCApiClient(override val environment: XMTPEnvironment) : ApiClient, Closeable {
     companion object {
         @VisibleForTesting
         val AUTHORIZATION_HEADER_KEY: Metadata.Key<String> =
@@ -37,12 +45,11 @@ data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = tru
         MessageApiGrpcKt.MessageApiCoroutineStub(channel)
     private var authToken: String? = null
 
-    fun setAuthToken(token: String): String {
+    override fun setAuthToken(token: String){
         authToken = token
-        return token
     }
 
-    suspend fun query(topics: List<Topic>): QueryResponse {
+    override suspend fun query(topics: List<Topic>): QueryResponse {
         val request = QueryRequest.newBuilder()
             .addAllContentTopics(topics.map { it.description }).build()
 
@@ -53,7 +60,7 @@ data class ApiClient(val environment: XMTPEnvironment, val secure: Boolean = tru
         return client.query(request, headers = headers)
     }
 
-    suspend fun publish(envelopes: List<Envelope>): PublishResponse {
+    override suspend fun publish(envelopes: List<Envelope>): PublishResponse {
         val request = PublishRequest.newBuilder().addAllEnvelopes(envelopes).build()
         val headers = Metadata()
         authToken?.let { token ->

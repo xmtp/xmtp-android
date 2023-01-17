@@ -1,7 +1,13 @@
-android.library.messages
+package org.xmtp.android.library.messages
 
+import com.google.protobuf.kotlin.toByteString
+import org.web3j.crypto.ECDSASignature
+import org.xmtp.android.library.messages.PublicKey
 import org.bouncycastle.jcajce.provider.digest.Keccak
+import org.web3j.crypto.Sign
+import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.toHex
+import java.math.BigInteger
 
 typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
 
@@ -23,8 +29,14 @@ val Signature.rawData: ByteArray
     get() = ecdsaCompact.bytes.toByteArray() + listOf(ecdsaCompact.recovery.toByte()).toByteArray()
 
 fun Signature.verify(signedBy: PublicKey, digest: ByteArray) : Boolean {
-    val recoverySignature = ECDSASignature(compactRepresentation = ecdsaCompact.bytes, recoveryId = Int32(ecdsaCompact.recovery))
-    val ecdsaSignature = recoverySignature.normalize
+    val signatureData = KeyUtil.getSignatureData(signature.rawData.toByteString().toByteArray())
+    val publicKey = Sign.recoverFromSignature(
+        BigInteger(signatureData.v).toInt(),
+        ECDSASignature(BigInteger(1, signatureData.r), BigInteger(signatureData.s)),
+        digest
+    )
+    val recoverySignature = ECDSASignature(BigInteger(ecdsaCompact.toByteArray()), ecdsaCompact.recovery.toBigInteger())
+    val ecdsaSignature = recoverySignature
     val signingKey = secp256k1.Signing.PublicKey(rawRepresentation = signedBy.secp256K1Uncompressed.bytes, format = .uncompressed)
-    return signingKey.ecdsa.isValidSignature(ecdsaSignature, for = digest)
+    return signingKey.ecdsa.isValidSignature(ecdsaSignature, digest)
 }

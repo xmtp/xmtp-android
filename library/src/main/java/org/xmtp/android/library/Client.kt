@@ -1,7 +1,12 @@
 package org.xmtp.android.library
 
+import org.xmtp.android.library.messages.Topic
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 
+typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
+typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 
 data class ClientOptions(val api: Api = Api()) {
     data class Api(val env: XMTPEnvironment = XMTPEnvironment.DEV, val isSecure: Boolean = true)
@@ -58,9 +63,8 @@ class Client {
         publish(envelopes = envelopes)
     }
 
-    fun getUserContact(peerAddress: String): ContactBundle? {
-        return await
-        contacts.find(peerAddress)
+    fun getUserContact(peerAddress: String): Contact.ContactBundle {
+        return contacts.find(peerAddress)
     }
 
 }

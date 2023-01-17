@@ -54,3 +54,25 @@ val PublicKeyOuterClass.PublicKey.walletAddress: String
     get() {
         return Keys.toChecksumAddress(Keys.getAddress(secp256K1Uncompressed.bytes.toString()))
     }
+
+
+fun PublicKey.recoverWalletSignerPublicKey() : PublicKey {
+    if (!hasSignature()) {
+        throw IllegalArgumentException("No signature found")
+
+    }
+    val slimKey = PublicKey.newBuilder().apply {
+        this.timestamp = timestamp
+        secp256K1UncompressedBuilder.apply {
+            bytes = secp256K1Uncompressed.bytes
+        }.build()
+    }.build()
+    val signatureClass = Signature.newBuilder().build()
+    val sigText = signatureClass.createIdentityText(slimKey.toByteArray())
+    val sigHash = signatureClass.ethHash(sigText)
+    val pubKeyData = Sign.signedMessageToKey(
+        sigHash,
+        KeyUtil.getSignatureData(signature.toByteArray())
+    )
+    return PublicKeyBuilder.buildFromBytes(pubKeyData.toByteArray())
+}

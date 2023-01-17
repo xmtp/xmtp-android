@@ -9,8 +9,6 @@ import org.xmtp.android.library.SigningKey
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.security.SecureRandom
-import java.util.*
-
 
 typealias PrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
 
@@ -60,10 +58,14 @@ class PrivateKeyBuilder : SigningKey {
         privateKey = key
     }
 
+    fun getPrivateKey() : PrivateKey{
+        return privateKey
+    }
+
     override val address: String
         get() = privateKey.walletAddress
 
-    override fun sign(data: ByteArray): Signature {
+    override fun sign(data: ByteArray): SignatureOuterClass.Signature {
         val signatureData =
             Sign.signMessage(
                 data,
@@ -79,7 +81,7 @@ class PrivateKeyBuilder : SigningKey {
         return signature.build()
     }
 
-    override fun sign(message: String): Signature {
+    override fun sign(message: String): SignatureOuterClass.Signature {
         val digest = Signature.newBuilder().build().ethHash(message)
         return sign(digest)
     }

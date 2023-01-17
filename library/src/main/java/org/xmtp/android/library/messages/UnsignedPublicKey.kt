@@ -18,7 +18,7 @@ fun UnsignedPublicKey.generate() : UnsignedPublicKey {
 
 class UnsignedPublicKeyBuilder {
     companion object {
-        fun build(publicKey: PublicKey): UnsignedPublicKey {
+        fun buildFromPublicKey(publicKey: PublicKey): UnsignedPublicKey {
             return UnsignedPublicKey.newBuilder().apply {
                 createdNs = publicKey.timestamp
                 secp256K1UncompressedBuilder.bytes = publicKey.secp256K1Uncompressed.bytes
