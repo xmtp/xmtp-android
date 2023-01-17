@@ -11,15 +11,15 @@ sealed class Topic {
     val description: String
         get() {
             return when (this) {
-                is userPrivateStoreKeyBundle -> wrap("privatestore-${v1}")
-                is contact -> wrap("contact-${v1}")
-                is userIntro -> wrap("intro-${v1}")
-                is userInvite -> wrap("invite-${v1}")
+                is userPrivateStoreKeyBundle -> wrap("privatestore-$v1")
+                is contact -> wrap("contact-$v1")
+                is userIntro -> wrap("intro-$v1")
+                is userInvite -> wrap("invite-$v1")
                 is directMessageV1 -> {
                     val addresses = listOf(v1, v2).sorted().joinToString(separator = "-")
-                    wrap("dm-${addresses}")
+                    wrap("dm-$addresses")
                 }
-                is directMessageV2 -> wrap("m-${v2}")
+                is directMessageV2 -> wrap("m-$v2")
             }
         }
 

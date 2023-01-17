@@ -70,7 +70,7 @@ class PrivateKeyBuilder : SigningKey {
             Sign.signMessage(
                 data,
                 ECKeyPair.create(privateKey.secp256K1.bytes.toByteArray()),
-                false
+                false,
             )
         val signature = SignatureOuterClass.Signature.newBuilder()
         val signatureKey = KeyUtil.getSignatureBytes(signatureData)

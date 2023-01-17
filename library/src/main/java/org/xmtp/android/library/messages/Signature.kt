@@ -28,15 +28,18 @@ fun Signature.enableIdentityText(key: ByteArray): String =
 val Signature.rawData: ByteArray
     get() = ecdsaCompact.bytes.toByteArray() + listOf(ecdsaCompact.recovery.toByte()).toByteArray()
 
-fun Signature.verify(signedBy: PublicKey, digest: ByteArray) : Boolean {
+fun Signature.verify(signedBy: PublicKey, digest: ByteArray): Boolean {
     val signatureData = KeyUtil.getSignatureData(signature.rawData.toByteString().toByteArray())
     val publicKey = Sign.recoverFromSignature(
         BigInteger(signatureData.v).toInt(),
         ECDSASignature(BigInteger(1, signatureData.r), BigInteger(signatureData.s)),
         digest
     )
-    val recoverySignature = ECDSASignature(BigInteger(ecdsaCompact.toByteArray()), ecdsaCompact.recovery.toBigInteger())
+    val recoverySignature =
+        ECDSASignature(BigInteger(ecdsaCompact.toByteArray()), ecdsaCompact.recovery.toBigInteger())
     val ecdsaSignature = recoverySignature
-    val signingKey = secp256k1.Signing.PublicKey(rawRepresentation = signedBy.secp256K1Uncompressed.bytes, format = .uncompressed)
+    val signingKey = secp256k1.Signing.PublicKey(
+        rawRepresentation = signedBy.secp256K1Uncompressed.bytes,
+        format = . uncompressed)
     return signingKey.ecdsa.isValidSignature(ecdsaSignature, digest)
 }

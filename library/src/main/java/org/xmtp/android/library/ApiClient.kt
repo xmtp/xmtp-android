@@ -1,11 +1,19 @@
 package org.xmtp.android.library
 
 import androidx.annotation.VisibleForTesting
-import io.grpc.*
+import io.grpc.Grpc
+import io.grpc.InsecureChannelCredentials
+import io.grpc.ManagedChannel
+import io.grpc.Metadata
+import io.grpc.TlsChannelCredentials
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.*
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishRequest
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
@@ -38,7 +46,7 @@ data class GRPCApiClient(override val environment: XMTPEnvironment) : ApiClient,
             TlsChannelCredentials.create()
         } else {
             InsecureChannelCredentials.create()
-        }
+        },
     ).build()
 
     private val client: MessageApiGrpcKt.MessageApiCoroutineStub =

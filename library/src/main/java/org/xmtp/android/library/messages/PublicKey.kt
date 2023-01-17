@@ -45,18 +45,17 @@ fun PublicKey.recoverKeySignedPublicKey(): PublicKey {
 
     val pubKeyData = Sign.signedMessageToKey(
         SHA256Digest(bytesToSign).encodedState,
-        KeyUtil.getSignatureData(signature.toByteArray())
+        KeyUtil.getSignatureData(signature.toByteArray()),
     )
     return PublicKeyBuilder.buildFromBytes(pubKeyData.toByteArray())
 }
 
-val PublicKeyOuterClass.PublicKey.walletAddress: String
+val PublicKey.walletAddress: String
     get() {
         return Keys.toChecksumAddress(Keys.getAddress(secp256K1Uncompressed.bytes.toString()))
     }
 
-
-fun PublicKey.recoverWalletSignerPublicKey() : PublicKey {
+fun PublicKey.recoverWalletSignerPublicKey(): PublicKey {
     if (!hasSignature()) {
         throw IllegalArgumentException("No signature found")
 
@@ -76,3 +75,4 @@ fun PublicKey.recoverWalletSignerPublicKey() : PublicKey {
     )
     return PublicKeyBuilder.buildFromBytes(pubKeyData.toByteArray())
 }
+
