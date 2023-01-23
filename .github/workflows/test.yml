@@ -12,7 +12,7 @@ env:
 jobs:
   library:
     name: Library
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout project sources
         uses: actions/checkout@v3
