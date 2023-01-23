@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.EncryptedPrivateKeyBundle
 import org.xmtp.android.library.messages.Envelope
@@ -25,20 +26,28 @@ data class ClientOptions(val api: Api = Api()) {
     data class Api(val env: XMTPEnvironment = XMTPEnvironment.DEV, val isSecure: Boolean = true)
 }
 
-class Client(
-    val address: String,
-    val privateKeyBundleV1: PrivateKeyBundleV1,
-    val apiClient: ApiClient
-) {
-    val conversations: Conversations = Conversations(this)
+class Client() {
+    var address: String? = null
+    var privateKeyBundleV1: PrivateKeyBundleV1? = null
+    var apiClient: ApiClient = GRPCApiClient(XMTPEnvironment.DEV, true)
+    val environment: XMTPEnvironment = apiClient.environment
     val contacts: Contacts = Contacts(client = this)
-    val environment: XMTPEnvironment = this.apiClient.environment
 
-    suspend fun create(account: SigningKey, options: ClientOptions? = null): Client {
+    constructor(
+        address: String,
+        privateKeyBundleV1: PrivateKeyBundleV1,
+        apiClient: ApiClient
+    ) : this() {
+        this.address = address
+        this.privateKeyBundleV1 = privateKeyBundleV1
+        this.apiClient = apiClient
+    }
+
+    fun create(account: SigningKey, options: ClientOptions? = null): Client {
         val clientOptions = options ?: ClientOptions()
         val apiClient =
             GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
-        return create(account = account, apiClient = apiClient)
+        return runBlocking { create(account = account, apiClient = apiClient) }
     }
 
     suspend fun create(account: SigningKey, apiClient: ApiClient): Client {
@@ -95,11 +104,13 @@ class Client(
         val envelopes: List<MessageApiOuterClass.Envelope> = mutableListOf()
         if (legacy) {
             val contactBundle = ContactBundle.newBuilder().apply {
-                v1Builder.keyBundle = privateKeyBundleV1.toPublicKeyBundle()
+                v1Builder.keyBundle = privateKeyBundleV1?.toPublicKeyBundle()
             }.build()
 
             val envelope = MessageApiOuterClass.Envelope.newBuilder().apply {
-                contentTopic = Topic.contact(address).description
+                address?.let {
+                    contentTopic = Topic.contact(it).description
+                }
                 timestampNs = System.currentTimeMillis() * 1_000_000
                 message = contactBundle.toByteString()
             }.build()
@@ -107,11 +118,13 @@ class Client(
             envelopes.plus(envelope)
         }
         val contactBundle = ContactBundle.newBuilder().apply {
-            v2Builder.keyBundle = keys.getPublicKeyBundle()
+            v2Builder.keyBundle = keys?.getPublicKeyBundle()
         }.build()
         contactBundle.v2.keyBundle.identityKey.signature.ensureWalletSignature()
         val envelope = MessageApiOuterClass.Envelope.newBuilder().apply {
-            contentTopic = Topic.contact(address).description
+            address?.let {
+                contentTopic = Topic.contact(it).description
+            }
             timestampNs = System.currentTimeMillis() * 1_000_000
             message = contactBundle.toByteString()
         }
@@ -129,26 +142,33 @@ class Client(
 
 
     suspend fun publish(envelopes: List<Envelope>): PublishResponse {
-        val authorized = AuthorizedIdentity(
-            address = address,
-            authorized = privateKeyBundleV1.identityKey.publicKey,
-            identity = privateKeyBundleV1.identityKey
-        )
-        val authToken = authorized.createAuthToken()
-        apiClient.setAuthToken(authToken)
+        privateKeyBundleV1?.let {
+            address?.let { address ->
+                val authorized = AuthorizedIdentity(
+                    address = address,
+                    authorized = it.identityKey.publicKey,
+                    identity = it.identityKey
+                )
+                val authToken = authorized.createAuthToken()
+                apiClient.setAuthToken(authToken)
+            }
+        }
+
         return apiClient.publish(envelopes = envelopes)
     }
 
     suspend fun ensureUserContactPublished() {
-        val contact = getUserContact(peerAddress = address)
-        if (contact != null && keys.getPublicKeyBundle() == contact.v2.keyBundle) {
-            return
+        address?.let {
+            val contact = getUserContact(peerAddress = it)
+            if (contact != null && keys?.getPublicKeyBundle() == contact.v2.keyBundle) {
+                return
+            }
         }
+
         publishUserContact(legacy = true)
     }
 
-    val keys: PrivateKeyBundleV2
-        get() = privateKeyBundleV1.toV2()
-
+    val keys: PrivateKeyBundleV2?
+        get() = privateKeyBundleV1?.toV2()
 
 }

@@ -5,11 +5,10 @@ typealias SignedPublicKeyBundle = org.xmtp.proto.message.contents.PublicKeyOuter
 class SignedPublicKeyBundleBuilder {
     companion object {
         fun buildFromKeyBundle(publicKeyBundle: PublicKeyBundle) : SignedPublicKeyBundle {
-            val signedPublicKey = SignedPublicKey.newBuilder().build()
             return SignedPublicKeyBundle.newBuilder().apply {
-                identityKey = signedPublicKey.fromLegacy(publicKeyBundle.identityKey)
+                identityKey = SignedPublicKeyBuilder.buildFromLegacy(publicKeyBundle.identityKey)
                 identityKeyBuilder.signature = publicKeyBundle.identityKey.signature
-                preKey = signedPublicKey.fromLegacy(publicKeyBundle.preKey)
+                preKey = SignedPublicKeyBuilder.buildFromLegacy(publicKeyBundle.preKey)
                 preKeyBuilder.signature = publicKeyBundle.preKey.signature
             }.build()
         }
