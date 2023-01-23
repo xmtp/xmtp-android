@@ -7,28 +7,33 @@ import org.xmtp.proto.message.contents.PublicKeyOuterClass
 
 typealias SignedPublicKey = org.xmtp.proto.message.contents.PublicKeyOuterClass.SignedPublicKey
 
-fun SignedPublicKey.fromLegacy(legacyKey: PublicKey, signedByWallet: Boolean? = false) : SignedPublicKey {
-    val publicKey = PublicKey.newBuilder().apply {
-        secp256K1Uncompressed = legacyKey.secp256K1Uncompressed
-        timestamp = legacyKey.timestamp
-    }.build()
-    return SignedPublicKey.newBuilder().apply {
-        keyBytes = publicKey.toByteString()
-        signature = legacyKey.signature
-    }.build()
+class SignedPublicKeyBuilder {
+    companion object {
+        fun buildFromLegacy(legacyKey: PublicKey, signedByWallet: Boolean? = false) : SignedPublicKey {
+            val publicKey = PublicKey.newBuilder().apply {
+                secp256K1Uncompressed = legacyKey.secp256K1Uncompressed
+                timestamp = legacyKey.timestamp
+            }.build()
+            return SignedPublicKey.newBuilder().apply {
+                keyBytes = publicKey.toByteString()
+                signature = legacyKey.signature
+            }.build()
+        }
+
+        fun parseFromPublicKey(publicKey: PublicKey, sig: Signature) : SignedPublicKey {
+            val builder = SignedPublicKey.newBuilder().apply {
+                signature = sig
+            }
+            val unsignedKey = PublicKey.newBuilder().apply {
+                timestamp = publicKey.timestamp
+                secp256K1UncompressedBuilder.bytes = publicKey.secp256K1Uncompressed.bytes
+            }.build()
+            builder.keyBytes = unsignedKey.toByteString()
+            return builder.build()
+        }
+    }
 }
 
-fun SignedPublicKey.parseFrom(publicKey: PublicKey, sig: Signature) : SignedPublicKey{
-    val builder = SignedPublicKey.newBuilder().apply {
-        signature = sig
-    }
-    val unsignedKey = PublicKey.newBuilder().apply {
-        timestamp = publicKey.timestamp
-        secp256K1UncompressedBuilder.bytes = publicKey.secp256K1Uncompressed.bytes
-    }.build()
-    builder.keyBytes = unsignedKey.toByteString()
-    return builder.build()
-}
 val SignedPublicKey.secp256K1Uncompressed: PublicKeyOuterClass.PublicKey.Secp256k1Uncompressed
     get() {
         // swiftlint:disable force_try
@@ -41,11 +46,11 @@ fun SignedPublicKey.verify(key: SignedPublicKey) : Boolean {
     if (!key.hasSignature()) {
         return false
     }
-    return signature.verify(PublicKey.newBuilder().build().parseFrom(key), key.keyBytes.toByteArray())
+    return signature.verify(PublicKeyBuilder.buildFromSignedPublicKey(key), key.keyBytes.toByteArray())
 }
 
 fun SignedPublicKey.recoverKeySignedPublicKey() : PublicKey {
-    val publicKey = PublicKey.newBuilder().build().parseFrom(this)
+    val publicKey = PublicKeyBuilder.buildFromSignedPublicKey(this)
     val slimKey = PublicKey.newBuilder()
     slimKey.secp256K1UncompressedBuilder.bytes = secp256K1Uncompressed.toByteString()
     slimKey.timestamp = publicKey.timestamp

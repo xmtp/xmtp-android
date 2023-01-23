@@ -6,8 +6,10 @@ import org.xmtp.android.library.messages.AuthDataBuilder
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundle
+import org.xmtp.android.library.messages.PrivateKeyBundleV1
 import org.xmtp.android.library.messages.PublicKey
 import org.xmtp.android.library.messages.Token
+import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 
 data class AuthorizedIdentity(
@@ -15,6 +17,12 @@ data class AuthorizedIdentity(
     var authorized: PublicKey,
     var identity: PrivateKey,
 ) {
+
+    constructor(privateKeyBundleV1: PrivateKeyBundleV1) : this(
+        privateKeyBundleV1.identityKey.walletAddress,
+        privateKeyBundleV1.identityKey.publicKey,
+        privateKeyBundleV1.identityKey,
+    )
 
     fun createAuthToken(): String {
         val authData = AuthDataBuilder.buildFromWalletAddress(walletAddress = address)

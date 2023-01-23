@@ -1,13 +1,14 @@
 package org.xmtp.android.library.messages
 
 import com.google.protobuf.kotlin.toByteString
-import org.web3j.crypto.ECDSASignature
-import org.xmtp.android.library.messages.PublicKey
 import org.bouncycastle.jcajce.provider.digest.Keccak
-import org.web3j.crypto.Sign
+import org.web3j.crypto.ECDSASignature
 import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.toHex
+import org.xmtp.proto.message.contents.SignatureOuterClass
+import org.xmtp.proto.message.contents.SignatureOuterClass.Signature.UnionCase
 import java.math.BigInteger
+import java.security.Signature as ECDSASig
 
 typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
 
@@ -29,17 +30,22 @@ val Signature.rawData: ByteArray
     get() = ecdsaCompact.bytes.toByteArray() + listOf(ecdsaCompact.recovery.toByte()).toByteArray()
 
 fun Signature.verify(signedBy: PublicKey, digest: ByteArray): Boolean {
-    val signatureData = KeyUtil.getSignatureData(signature.rawData.toByteString().toByteArray())
-    val publicKey = Sign.recoverFromSignature(
-        BigInteger(signatureData.v).toInt(),
-        ECDSASignature(BigInteger(1, signatureData.r), BigInteger(signatureData.s)),
-        digest
-    )
-    val recoverySignature =
-        ECDSASignature(BigInteger(ecdsaCompact.toByteArray()), ecdsaCompact.recovery.toBigInteger())
-    val ecdsaSignature = recoverySignature
-    val signingKey = secp256k1.Signing.PublicKey(
-        rawRepresentation = signedBy.secp256K1Uncompressed.bytes,
-        format = . uncompressed)
-    return signingKey.ecdsa.isValidSignature(ecdsaSignature, digest)
+    val ecdsaVerify = ECDSASig.getInstance("SHA256withECDSA")
+
+    return ecdsaVerify.verify(signedBy.signature.rawData)
+}
+
+fun Signature.ensureWalletSignature() {
+    when (unionCase) {
+        SignatureOuterClass.Signature.UnionCase.ECDSA_COMPACT -> {
+            val walletEcdsa = SignatureOuterClass.Signature.WalletECDSACompact.newBuilder().apply {
+                bytes = ecdsaCompact.bytes
+                recovery = ecdsaCompact.recovery
+            }.build()
+            this.toBuilder().apply{
+                walletEcdsaCompact = walletEcdsa
+            }.build()
+        }
+        else -> return
+    }
 }

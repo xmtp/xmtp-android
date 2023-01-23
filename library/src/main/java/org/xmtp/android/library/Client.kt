@@ -1,9 +1,22 @@
 package org.xmtp.android.library
 
+import org.xmtp.android.library.messages.ContactBundle
+import org.xmtp.android.library.messages.EncryptedPrivateKeyBundle
+import org.xmtp.android.library.messages.Envelope
+import org.xmtp.android.library.messages.EnvelopeBuilder
+import org.xmtp.android.library.messages.PrivateKeyBundleBuilder
+import org.xmtp.android.library.messages.PrivateKeyBundleV1
+import org.xmtp.android.library.messages.PrivateKeyBundleV2
 import org.xmtp.android.library.messages.Topic
+import org.xmtp.android.library.messages.decrypted
+import org.xmtp.android.library.messages.encrypted
+import org.xmtp.android.library.messages.ensureWalletSignature
+import org.xmtp.android.library.messages.generate
+import org.xmtp.android.library.messages.getPublicKeyBundle
+import org.xmtp.android.library.messages.toPublicKeyBundle
+import org.xmtp.android.library.messages.toV2
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
-import org.xmtp.proto.message.contents.Contact
-import org.xmtp.proto.message.contents.PrivateKeyOuterClass
+import java.util.Date
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
@@ -12,59 +25,130 @@ data class ClientOptions(val api: Api = Api()) {
     data class Api(val env: XMTPEnvironment = XMTPEnvironment.DEV, val isSecure: Boolean = true)
 }
 
-class Client {
-    lateinit var address: String
-    lateinit var privateKeyBundleV1: PrivateKeyOuterClass.PrivateKeyBundleV1
-    lateinit var apiClient: ApiClient
+class Client(
+    val address: String,
+    val privateKeyBundleV1: PrivateKeyBundleV1,
+    val apiClient: ApiClient
+) {
+    val conversations: Conversations = Conversations(this)
+    val contacts: Contacts = Contacts(client = this)
+    val environment: XMTPEnvironment = this.apiClient.environment
 
-    val conversations: Conversations by lazy.init(client = this)
-        val contacts : Contacts = Contacts(client = this)
-    val environment: XMTPEnvironment = apiClient.environment
-
-    fun create(account: SigningKey, options: ClientOptions? = null): Client {
+    suspend fun create(account: SigningKey, options: ClientOptions? = null): Client {
         val clientOptions = options ?: ClientOptions()
-        val apiClient = GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
+        val apiClient =
+            GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
         return create(account = account, apiClient = apiClient)
     }
 
-    fun create(account: SigningKey, apiClient: ApiClient): Client {
-        val privateKeyBundleV1 = await
-        loadOrCreateKeys(for = account, apiClient = apiClient)
-        val client = Client(
-            address = account.address,
-            privateKeyBundleV1 = privateKeyBundleV1,
-            apiClient = apiClient
-        )
+    suspend fun create(account: SigningKey, apiClient: ApiClient): Client {
+        val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
+        val client = Client(account.address, privateKeyBundleV1, apiClient)
         client.ensureUserContactPublished()
         return client
     }
 
-
-    fun publishUserContact(legacy: Boolean = false) {
-        var envelopes: List<Envelope> = listOf()
-        if (legacy) {
-            var contactBundle = ContactBundle()
-            contactBundle.v1.keyBundle = privateKeyBundleV1.toPublicKeyBundle()
-            var envelope = Envelope()
-            envelope.contentTopic = Topic.contact(address).description
-            envelope.timestampNs = UInt64(Date().millisecondsSinceEpoch * 1_000_000)
-            envelope.message = contactBundle.serializedData()
-            envelopes.append(envelope)
+    suspend fun loadOrCreateKeys(account: SigningKey, apiClient: ApiClient): PrivateKeyBundleV1 {
+        val keys = loadPrivateKeys(account, apiClient)
+        if (keys != null) {
+            return keys
+        } else {
+            val v1Keys = PrivateKeyBundleV1.newBuilder().build().generate(account)
+            val keyBundle = PrivateKeyBundleBuilder.buildFromV1Key(v1Keys)
+            val encryptedKeys = keyBundle.encrypted(account)
+            val authorizedIdentity = AuthorizedIdentity(privateKeyBundleV1 = v1Keys)
+            authorizedIdentity.address = account.address
+            val authToken = authorizedIdentity.createAuthToken()
+            apiClient.setAuthToken(authToken)
+            apiClient.publish(
+                envelopes = listOf(
+                    EnvelopeBuilder.buildFromTopic(
+                        topic = Topic.userPrivateStoreKeyBundle(account.address),
+                        timestamp = Date(),
+                        message = encryptedKeys.toByteArray()
+                    )
+                )
+            )
+            return v1Keys
         }
-        var contactBundle = ContactBundle()
-        contactBundle.v2.keyBundle = keys.getPublicKeyBundle()
+    }
+
+
+    suspend fun loadPrivateKeys(account: SigningKey, apiClient: ApiClient): PrivateKeyBundleV1? {
+        val topics: List<Topic> = listOf(Topic.userPrivateStoreKeyBundle(account.address))
+        val res = apiClient.query(topics = topics)
+        for (envelope in res.envelopesList) {
+            try {
+                val encryptedBundle = EncryptedPrivateKeyBundle.parseFrom(envelope.message)
+                val bundle = encryptedBundle.decrypted(account)
+                return bundle.v1
+            } catch (e: Throwable) {
+                print("Error decoding encrypted private key bundle: $e")
+                continue
+            }
+        }
+        return null
+    }
+
+
+    suspend fun publishUserContact(legacy: Boolean = false) {
+        val envelopes: List<MessageApiOuterClass.Envelope> = mutableListOf()
+        if (legacy) {
+            val contactBundle = ContactBundle.newBuilder().apply {
+                v1Builder.keyBundle = privateKeyBundleV1.toPublicKeyBundle()
+            }.build()
+
+            val envelope = MessageApiOuterClass.Envelope.newBuilder().apply {
+                contentTopic = Topic.contact(address).description
+                timestampNs = System.currentTimeMillis() * 1_000_000
+                message = contactBundle.toByteString()
+            }.build()
+
+            envelopes.plus(envelope)
+        }
+        val contactBundle = ContactBundle.newBuilder().apply {
+            v2Builder.keyBundle = keys.getPublicKeyBundle()
+        }.build()
         contactBundle.v2.keyBundle.identityKey.signature.ensureWalletSignature()
-        var envelope = Envelope()
-        envelope.contentTopic = Topic.contact(address).description
-        envelope.timestampNs = UInt64(Date().millisecondsSinceEpoch * 1_000_000)
-        envelope.message = contactBundle.serializedData()
-        envelopes.append(envelope)
-        await
+        val envelope = MessageApiOuterClass.Envelope.newBuilder().apply {
+            contentTopic = Topic.contact(address).description
+            timestampNs = System.currentTimeMillis() * 1_000_000
+            message = contactBundle.toByteString()
+        }
+        envelopes.plus(envelope)
         publish(envelopes = envelopes)
     }
 
-    fun getUserContact(peerAddress: String): Contact.ContactBundle {
+    fun getUserContact(peerAddress: String): ContactBundle? {
         return contacts.find(peerAddress)
     }
+
+    suspend fun query(topics: List<Topic>): QueryResponse {
+        return apiClient.query(topics = topics)
+    }
+
+
+    suspend fun publish(envelopes: List<Envelope>): PublishResponse {
+        val authorized = AuthorizedIdentity(
+            address = address,
+            authorized = privateKeyBundleV1.identityKey.publicKey,
+            identity = privateKeyBundleV1.identityKey
+        )
+        val authToken = authorized.createAuthToken()
+        apiClient.setAuthToken(authToken)
+        return apiClient.publish(envelopes = envelopes)
+    }
+
+    suspend fun ensureUserContactPublished() {
+        val contact = getUserContact(peerAddress = address)
+        if (contact != null && keys.getPublicKeyBundle() == contact.v2.keyBundle) {
+            return
+        }
+        publishUserContact(legacy = true)
+    }
+
+    val keys: PrivateKeyBundleV2
+        get() = privateKeyBundleV1.toV2()
+
 
 }

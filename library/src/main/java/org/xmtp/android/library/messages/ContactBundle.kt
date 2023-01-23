@@ -8,17 +8,21 @@ typealias ContactBundle = org.xmtp.proto.message.contents.Contact.ContactBundle
 typealias ContactBundleV1 = org.xmtp.proto.message.contents.Contact.ContactBundleV1
 typealias ContactBundleV2 = org.xmtp.proto.message.contents.Contact.ContactBundleV2
 
-fun ContactBundle.from(envelope: MessageApiOuterClass.Envelope): ContactBundle {
-    val data = envelope.message
-    val contactBundle = ContactBundle.newBuilder()
-    // Try to deserialize legacy v1 bundle
-    val publicKeyBundle = PublicKeyBundle.parseFrom(data)
-    contactBundle.v1Builder.keyBundle = publicKeyBundle
-    // It's not a legacy bundle so just deserialize as a ContactBundle
-    if (contactBundle.v1.keyBundle.identityKey.secp256K1Uncompressed.bytes.isEmpty) {
-        contactBundle.merge(serializedData = data)
+class ContactBundleBuilder {
+    companion object {
+        fun buildFromEnvelope(envelope: MessageApiOuterClass.Envelope): ContactBundle {
+            val data = envelope.message
+            val contactBundle = ContactBundle.newBuilder()
+            // Try to deserialize legacy v1 bundle
+            val publicKeyBundle = PublicKeyBundle.parseFrom(data)
+            contactBundle.v1Builder.keyBundle = publicKeyBundle
+            // It's not a legacy bundle so just deserialize as a ContactBundle
+            if (contactBundle.v1.keyBundle.identityKey.secp256K1Uncompressed.bytes.isEmpty) {
+                contactBundle.v1.keyBundle.identityKey.secp256K1Uncompressed.bytes.toByteArray().plus(data.toByteArray())
+            }
+            return contactBundle.build()
+        }
     }
-    return contactBundle.build()
 }
 
 fun ContactBundle.toPublicKeyBundle(): PublicKeyBundle {

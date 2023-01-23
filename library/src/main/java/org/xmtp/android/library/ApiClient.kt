@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import androidx.annotation.VisibleForTesting
 import io.grpc.Grpc
 import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
@@ -8,7 +7,6 @@ import io.grpc.Metadata
 import io.grpc.TlsChannelCredentials
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
@@ -17,24 +15,22 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
-interface ApiClient(open val environment: XMTPEnvironment, val secure: Boolean = true) {
+interface ApiClient {
     val environment: XMTPEnvironment
     fun setAuthToken(token: String)
-    suspend fun query(topics: List<Topic>) : QueryResponse
-    suspend fun publish(envelopes: List<MessageApiOuterClass.Envelope>) : PublishResponse
+    suspend fun query(topics: List<Topic>): QueryResponse
+    suspend fun publish(envelopes: List<Envelope>): PublishResponse
 }
 
-data class GRPCApiClient(override val environment: XMTPEnvironment) : ApiClient, Closeable {
+data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: Boolean = true) :
+    ApiClient, Closeable {
     companion object {
-        @VisibleForTesting
         val AUTHORIZATION_HEADER_KEY: Metadata.Key<String> =
             Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER)
 
-        @VisibleForTesting
         val CLIENT_VERSION_HEADER_KEY: Metadata.Key<String> =
             Metadata.Key.of("X-Client-Version", Metadata.ASCII_STRING_MARSHALLER)
 
-        @VisibleForTesting
         val APP_VERSION_HEADER_KEY: Metadata.Key<String> =
             Metadata.Key.of("X-App-Version", Metadata.ASCII_STRING_MARSHALLER)
     }
@@ -53,7 +49,7 @@ data class GRPCApiClient(override val environment: XMTPEnvironment) : ApiClient,
         MessageApiGrpcKt.MessageApiCoroutineStub(channel)
     private var authToken: String? = null
 
-    override fun setAuthToken(token: String){
+    override fun setAuthToken(token: String) {
         authToken = token
     }
 
