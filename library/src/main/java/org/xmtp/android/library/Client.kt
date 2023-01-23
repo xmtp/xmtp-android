@@ -50,14 +50,14 @@ class Client() {
         return runBlocking { create(account = account, apiClient = apiClient) }
     }
 
-    suspend fun create(account: SigningKey, apiClient: ApiClient): Client {
+    private suspend fun create(account: SigningKey, apiClient: ApiClient): Client {
         val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
         val client = Client(account.address, privateKeyBundleV1, apiClient)
         client.ensureUserContactPublished()
         return client
     }
 
-    suspend fun loadOrCreateKeys(account: SigningKey, apiClient: ApiClient): PrivateKeyBundleV1 {
+    private suspend fun loadOrCreateKeys(account: SigningKey, apiClient: ApiClient): PrivateKeyBundleV1 {
         val keys = loadPrivateKeys(account, apiClient)
         if (keys != null) {
             return keys
@@ -83,7 +83,7 @@ class Client() {
     }
 
 
-    suspend fun loadPrivateKeys(account: SigningKey, apiClient: ApiClient): PrivateKeyBundleV1? {
+    private suspend fun loadPrivateKeys(account: SigningKey, apiClient: ApiClient): PrivateKeyBundleV1? {
         val topics: List<Topic> = listOf(Topic.userPrivateStoreKeyBundle(account.address))
         val res = apiClient.query(topics = topics)
         for (envelope in res.envelopesList) {
