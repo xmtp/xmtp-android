@@ -58,7 +58,6 @@ val PublicKey.walletAddress: String
 fun PublicKey.recoverWalletSignerPublicKey(): PublicKey {
     if (!hasSignature()) {
         throw IllegalArgumentException("No signature found")
-
     }
     val slimKey = PublicKey.newBuilder().apply {
         this.timestamp = timestamp
@@ -75,4 +74,3 @@ fun PublicKey.recoverWalletSignerPublicKey(): PublicKey {
     )
     return PublicKeyBuilder.buildFromBytes(pubKeyData.toByteArray())
 }
-
