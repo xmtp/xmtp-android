@@ -35,7 +35,7 @@ data class AuthorizedIdentity(
             authDataBytes = authData.toByteString()
             authDataSignature = signature
         }.build().toByteArray()
-        return encodeToString(token, Base64.DEFAULT)
+        return encodeToString(token, Base64.NO_WRAP)
     }
 
     val toBundle: PrivateKeyBundle

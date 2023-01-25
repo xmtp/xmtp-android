@@ -1,5 +1,7 @@
 package org.xmtp.android.library
 
+import com.google.common.base.CharMatcher
+import io.grpc.CallCredentials
 import io.grpc.CallOptions
 import io.grpc.Grpc
 import io.grpc.InsecureChannelCredentials
@@ -59,6 +61,7 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
             .addAllContentTopics(topics.map { it.description }).build()
 
         val headers = Metadata()
+
         authToken?.let { token ->
             headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
         }
@@ -67,18 +70,16 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
 
     override suspend fun publish(envelopes: List<Envelope>): PublishResponse {
         val request = PublishRequest.newBuilder().addAllEnvelopes(envelopes).build()
-        val headers = Metadata()
-        var callOptions = CallOptions.DEFAULT
+        var headers = Metadata()
 
         authToken?.let { token ->
-            callOptions = callOptions.withOption(CallOptions.Key.of("authorization", "authorization"), "Bearer $token")
             headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
         }
+
         headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
         headers.put(APP_VERSION_HEADER_KEY, Constants.VERSION)
-        val client2 = MessageApiGrpcKt.MessageApiCoroutineStub(channel, callOptions)
 
-        return client2.publish(request)
+        return client.publish(request, headers)
     }
 
     override fun close() {
