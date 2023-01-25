@@ -4,7 +4,7 @@ typealias SignedPublicKeyBundle = org.xmtp.proto.message.contents.PublicKeyOuter
 
 class SignedPublicKeyBundleBuilder {
     companion object {
-        fun buildFromKeyBundle(publicKeyBundle: PublicKeyBundle) : SignedPublicKeyBundle {
+        fun buildFromKeyBundle(publicKeyBundle: PublicKeyBundle): SignedPublicKeyBundle {
             return SignedPublicKeyBundle.newBuilder().apply {
                 identityKey = SignedPublicKeyBuilder.buildFromLegacy(publicKeyBundle.identityKey)
                 identityKeyBuilder.signature = publicKeyBundle.identityKey.signature
@@ -15,7 +15,8 @@ class SignedPublicKeyBundleBuilder {
     }
 }
 
-fun SignedPublicKeyBundle.equals(other: SignedPublicKeyBundle) : Boolean =
+fun SignedPublicKeyBundle.equals(other: SignedPublicKeyBundle): Boolean =
     identityKey == other.identityKey && preKey == other.preKey
+
 val SignedPublicKeyBundle.walletAddress: String
     get() = identityKey.recoverWalletSignerPublicKey().walletAddress

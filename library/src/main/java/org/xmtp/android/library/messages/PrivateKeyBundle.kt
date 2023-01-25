@@ -10,7 +10,7 @@ typealias PrivateKeyBundle = PrivateKeyOuterClass.PrivateKeyBundle
 
 class PrivateKeyBundleBuilder {
     companion object {
-        fun buildFromV1Key(v1: PrivateKeyBundleV1) : PrivateKeyBundle {
+        fun buildFromV1Key(v1: PrivateKeyBundleV1): PrivateKeyBundle {
             return PrivateKeyBundle.newBuilder().apply {
                 this.v1 = v1
             }.build()

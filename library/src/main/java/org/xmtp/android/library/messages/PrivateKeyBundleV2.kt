@@ -43,7 +43,7 @@ fun PrivateKeyBundleV2.sharedSecret(privateData: ByteArray, publicData: ByteArra
     return publicKey.secp256K1Uncompressed.bytes.toByteArray().plus(privateData)
 }
 
-fun PrivateKeyBundleV2.findPreKey(myPreKey: SignedPublicKey) : SignedPrivateKey {
+fun PrivateKeyBundleV2.findPreKey(myPreKey: SignedPublicKey): SignedPrivateKey {
     for (preKey in preKeysList) {
         if (preKey.matches(myPreKey)) {
             return preKey
@@ -52,14 +52,14 @@ fun PrivateKeyBundleV2.findPreKey(myPreKey: SignedPublicKey) : SignedPrivateKey 
     throw IllegalArgumentException("No Pre key set")
 }
 
-fun PrivateKeyBundleV2.toV1() : PrivateKeyBundleV1 {
+fun PrivateKeyBundleV2.toV1(): PrivateKeyBundleV1 {
     return PrivateKeyBundleV1.newBuilder().apply {
         identityKey = PrivateKeyBuilder(identityKey).getPrivateKey()
         addAllPreKeys(preKeysList.map { PrivateKeyBuilder(it).getPrivateKey() })
     }.build()
 }
 
-fun PrivateKeyBundleV2.getPublicKeyBundle() : SignedPublicKeyBundle {
+fun PrivateKeyBundleV2.getPublicKeyBundle(): SignedPublicKeyBundle {
     return SignedPublicKeyBundle.newBuilder().apply {
         this.identityKey = identityKey
         this.identityKeyBuilder.signature = identityKey.signature

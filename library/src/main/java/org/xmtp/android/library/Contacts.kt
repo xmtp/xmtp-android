@@ -6,7 +6,6 @@ import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.ContactBundleBuilder
 import org.xmtp.android.library.messages.Topic
 
-
 data class Contacts(
     var client: Client,
     var knownBundles: Map<String, ContactBundle> = mapOf(),
@@ -24,7 +23,8 @@ data class Contacts(
         if (knownBundle != null) {
             return knownBundle
         }
-        val response = runBlocking(Dispatchers.IO) { client.query(topics = listOf(Topic.contact(peerAddress))) }
+        val response =
+            runBlocking(Dispatchers.IO) { client.query(topics = listOf(Topic.contact(peerAddress))) }
         for (envelope in response.envelopesList) {
             val contactBundle = ContactBundleBuilder.buildFromEnvelope(envelope)
             knownBundles.toMutableMap()[peerAddress] = contactBundle

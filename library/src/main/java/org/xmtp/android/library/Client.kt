@@ -57,7 +57,10 @@ class Client() {
         return client
     }
 
-    private suspend fun loadOrCreateKeys(account: SigningKey, apiClient: ApiClient): PrivateKeyBundleV1 {
+    private suspend fun loadOrCreateKeys(
+        account: SigningKey,
+        apiClient: ApiClient
+    ): PrivateKeyBundleV1 {
         val keys = loadPrivateKeys(account, apiClient)
         if (keys != null) {
             return keys
@@ -82,8 +85,10 @@ class Client() {
         }
     }
 
-
-    private suspend fun loadPrivateKeys(account: SigningKey, apiClient: ApiClient): PrivateKeyBundleV1? {
+    private suspend fun loadPrivateKeys(
+        account: SigningKey,
+        apiClient: ApiClient
+    ): PrivateKeyBundleV1? {
         val topics: List<Topic> = listOf(Topic.userPrivateStoreKeyBundle(account.address))
         val res = apiClient.query(topics = topics)
         for (envelope in res.envelopesList) {
@@ -98,7 +103,6 @@ class Client() {
         }
         return null
     }
-
 
     suspend fun publishUserContact(legacy: Boolean = false) {
         val envelopes: List<MessageApiOuterClass.Envelope> = mutableListOf()
@@ -140,7 +144,6 @@ class Client() {
         return apiClient.query(topics = topics)
     }
 
-
     suspend fun publish(envelopes: List<Envelope>): PublishResponse {
         privateKeyBundleV1?.let {
             address?.let { address ->
@@ -170,5 +173,4 @@ class Client() {
 
     val keys: PrivateKeyBundleV2?
         get() = privateKeyBundleV1?.toV2()
-
 }

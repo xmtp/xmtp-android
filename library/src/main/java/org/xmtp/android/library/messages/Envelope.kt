@@ -8,7 +8,7 @@ typealias Envelope = org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope
 
 class EnvelopeBuilder {
     companion object {
-        fun buildFromString(topic: String, timestamp: Date, message: ByteArray) : Envelope {
+        fun buildFromString(topic: String, timestamp: Date, message: ByteArray): Envelope {
             return Envelope.newBuilder().apply {
                 contentTopic = topic
                 timestampNs = (timestamp.millisecondsSinceEpoch * 1_000_000).toLong()
@@ -16,7 +16,7 @@ class EnvelopeBuilder {
             }.build()
         }
 
-        fun buildFromTopic(topic: Topic, timestamp: Date, message: ByteArray) : Envelope {
+        fun buildFromTopic(topic: Topic, timestamp: Date, message: ByteArray): Envelope {
             return Envelope.newBuilder().apply {
                 contentTopic = topic.description
                 timestampNs = (timestamp.millisecondsSinceEpoch * 1_000_000).toLong()

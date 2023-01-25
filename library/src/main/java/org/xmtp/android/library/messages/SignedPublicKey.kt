@@ -9,7 +9,10 @@ typealias SignedPublicKey = org.xmtp.proto.message.contents.PublicKeyOuterClass.
 
 class SignedPublicKeyBuilder {
     companion object {
-        fun buildFromLegacy(legacyKey: PublicKey, signedByWallet: Boolean? = false) : SignedPublicKey {
+        fun buildFromLegacy(
+            legacyKey: PublicKey,
+            signedByWallet: Boolean? = false
+        ): SignedPublicKey {
             val publicKey = PublicKey.newBuilder().apply {
                 secp256K1Uncompressed = legacyKey.secp256K1Uncompressed
                 timestamp = legacyKey.timestamp
@@ -20,7 +23,7 @@ class SignedPublicKeyBuilder {
             }.build()
         }
 
-        fun parseFromPublicKey(publicKey: PublicKey, sig: Signature) : SignedPublicKey {
+        fun parseFromPublicKey(publicKey: PublicKey, sig: Signature): SignedPublicKey {
             val builder = SignedPublicKey.newBuilder().apply {
                 signature = sig
             }
@@ -42,24 +45,30 @@ val SignedPublicKey.secp256K1Uncompressed: PublicKeyOuterClass.PublicKey.Secp256
         return key.secp256K1Uncompressed
     }
 
-fun SignedPublicKey.verify(key: SignedPublicKey) : Boolean {
+fun SignedPublicKey.verify(key: SignedPublicKey): Boolean {
     if (!key.hasSignature()) {
         return false
     }
-    return signature.verify(PublicKeyBuilder.buildFromSignedPublicKey(key), key.keyBytes.toByteArray())
+    return signature.verify(
+        PublicKeyBuilder.buildFromSignedPublicKey(key),
+        key.keyBytes.toByteArray()
+    )
 }
 
-fun SignedPublicKey.recoverKeySignedPublicKey() : PublicKey {
+fun SignedPublicKey.recoverKeySignedPublicKey(): PublicKey {
     val publicKey = PublicKeyBuilder.buildFromSignedPublicKey(this)
     val slimKey = PublicKey.newBuilder()
     slimKey.secp256K1UncompressedBuilder.bytes = secp256K1Uncompressed.toByteString()
     slimKey.timestamp = publicKey.timestamp
     val bytesToSign = slimKey.build().toByteArray()
-    val pubKeyData = Sign.signedMessageToKey(Keccak.Digest256().digest(bytesToSign), KeyUtil.getSignatureData(signature.rawData))
+    val pubKeyData = Sign.signedMessageToKey(
+        Keccak.Digest256().digest(bytesToSign),
+        KeyUtil.getSignatureData(signature.rawData)
+    )
     return PublicKey.parseFrom(pubKeyData.toByteArray())
 }
 
-fun SignedPublicKey.recoverWalletSignerPublicKey() : PublicKey {
+fun SignedPublicKey.recoverWalletSignerPublicKey(): PublicKey {
     val sig = Signature.newBuilder().build()
     val sigText = sig.createIdentityText(keyBytes.toByteArray())
     val sigHash = sig.ethHash(sigText)

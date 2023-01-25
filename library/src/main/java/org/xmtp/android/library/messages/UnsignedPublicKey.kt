@@ -1,13 +1,11 @@
 package org.xmtp.android.library.messages
 
-import com.google.protobuf.kotlin.toByteString
-import org.web3j.crypto.ECKeyPair
 import org.xmtp.android.library.extensions.millisecondsSinceEpoch
-import java.util.*
+import java.util.Date
 
 typealias UnsignedPublicKey = org.xmtp.proto.message.contents.PublicKeyOuterClass.UnsignedPublicKey
 
-fun UnsignedPublicKey.generate() : UnsignedPublicKey {
+fun UnsignedPublicKey.generate(): UnsignedPublicKey {
     val unsigned = UnsignedPublicKey.newBuilder()
     val key = PrivateKey.newBuilder().build().generate()
     val createdNs = Date().millisecondsSinceEpoch

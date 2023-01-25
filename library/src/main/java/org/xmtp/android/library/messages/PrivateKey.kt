@@ -1,8 +1,8 @@
 package org.xmtp.android.library.messages
 
 import com.google.protobuf.kotlin.toByteString
-import org.bouncycastle.crypto.digests.SHA256Digest
 import org.web3j.crypto.ECKeyPair
+import org.web3j.crypto.Hash
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.SigningKey
@@ -58,7 +58,7 @@ class PrivateKeyBuilder : SigningKey {
         privateKey = key
     }
 
-    fun getPrivateKey() : PrivateKey{
+    fun getPrivateKey(): PrivateKey {
         return privateKey
     }
 
@@ -98,11 +98,11 @@ val PrivateKey.walletAddress: String
     get() = publicKey.walletAddress
 
 fun PrivateKey.sign(key: PublicKeyOuterClass.UnsignedPublicKey): PublicKeyOuterClass.SignedPublicKey {
-    val bytes = key.secp256K1Uncompressed.bytes
-    val digest = SHA256Digest(bytes.toByteArray()).encodedState
+    val bytes = key.toByteArray()
+    val digest = Hash.sha256(bytes)
     val signedPublicKey = PublicKeyOuterClass.SignedPublicKey.newBuilder()
     val signature = PrivateKeyBuilder().sign(digest)
     signedPublicKey.signature = signature
-    signedPublicKey.keyBytes = bytes
+    signedPublicKey.keyBytes = bytes.toByteString()
     return signedPublicKey.build()
 }

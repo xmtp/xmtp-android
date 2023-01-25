@@ -1,13 +1,8 @@
 package org.xmtp.android.library.messages
 
-import com.google.protobuf.kotlin.toByteString
 import org.bouncycastle.jcajce.provider.digest.Keccak
-import org.web3j.crypto.ECDSASignature
-import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.contents.SignatureOuterClass
-import org.xmtp.proto.message.contents.SignatureOuterClass.Signature.UnionCase
-import java.math.BigInteger
 import java.security.Signature as ECDSASig
 
 typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
@@ -42,7 +37,7 @@ fun Signature.ensureWalletSignature() {
                 bytes = ecdsaCompact.bytes
                 recovery = ecdsaCompact.recovery
             }.build()
-            this.toBuilder().apply{
+            this.toBuilder().apply {
                 walletEcdsaCompact = walletEcdsa
             }.build()
         }
