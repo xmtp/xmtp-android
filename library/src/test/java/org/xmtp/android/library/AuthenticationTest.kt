@@ -23,7 +23,7 @@ class AuthenticationTest {
         // Create the `Authorization: Bearer $authToken` for API calls.
         val authToken = authorized.createAuthToken()
         val tokenData = authToken.toByteStringUtf8().toByteArray()
-        val base64TokenData = com.google.crypto.tink.subtle.Base64.decode(tokenData, 0)
+        val base64TokenData = com.google.crypto.tink.subtle.Base64.decode(tokenData, 2)
         if (tokenData.isEmpty() || base64TokenData.isEmpty()) {
             fail("could not get token data")
             return
