@@ -55,7 +55,7 @@ class CryptoTest {
         val encrypted = Crypto.encrypt(aliceSecret, decrypted)
         val bobSecret = bob.sharedSecret(peer = alicePublic, myPreKey = bobPublic.preKey, isRecipient = true)
         val bobDecrypted = Crypto.decrypt(bobSecret, encrypted!!)
-        val decryptedText = bobDecrypted.toString()
+        val decryptedText = String(bobDecrypted!!, Charsets.UTF_8)
         assertEquals(decryptedText, msg)
     }
 }

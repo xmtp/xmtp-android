@@ -25,7 +25,7 @@ fun Signature.enableIdentityText(key: ByteArray): String =
     ("XMTP : Enable Identity\n" + "${key.toHex()}\n" + "\n" + "For more info: https://xmtp.org/signatures/")
 
 val Signature.rawData: ByteArray
-    get() = ecdsaCompact.bytes.toByteArray() + listOf(ecdsaCompact.recovery.toByte()).toByteArray()
+    get() = ecdsaCompact.bytes.toByteArray() + ecdsaCompact.recovery.toByte()
 
 val Signature.rawDataWithNormalizedRecovery: ByteArray
     get() {

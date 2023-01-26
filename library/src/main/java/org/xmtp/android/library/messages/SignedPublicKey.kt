@@ -1,6 +1,5 @@
 package org.xmtp.android.library.messages
 
-import org.bouncycastle.jcajce.provider.digest.Keccak
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
@@ -57,15 +56,16 @@ fun SignedPublicKey.verify(key: SignedPublicKey): Boolean {
 
 fun SignedPublicKey.recoverKeySignedPublicKey(): PublicKey {
     val publicKey = PublicKeyBuilder.buildFromSignedPublicKey(this)
-    val slimKey = PublicKey.newBuilder()
-    slimKey.secp256K1UncompressedBuilder.bytes = secp256K1Uncompressed.toByteString()
-    slimKey.timestamp = publicKey.timestamp
-    val bytesToSign = slimKey.build().toByteArray()
+    val slimKey = PublicKey.newBuilder().apply {
+        secp256K1UncompressedBuilder.bytes = secp256K1Uncompressed.toByteString()
+        timestamp = publicKey.timestamp
+    }.build()
+
     val pubKeyData = Sign.signedMessageToKey(
-        Keccak.Digest256().digest(bytesToSign),
-        KeyUtil.getSignatureData(signature.rawData)
+        slimKey.toByteArray(),
+        KeyUtil.getSignatureData(publicKey.signature.rawDataWithNormalizedRecovery)
     )
-    return PublicKey.parseFrom(pubKeyData.toByteArray())
+    return PublicKeyBuilder.buildFromBytes(pubKeyData.toByteArray())
 }
 
 fun SignedPublicKey.recoverWalletSignerPublicKey(): PublicKey {

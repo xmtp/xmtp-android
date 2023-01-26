@@ -1,6 +1,6 @@
 package org.xmtp.android.library.messages
 
-public typealias SignedPrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.SignedPrivateKey
+typealias SignedPrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.SignedPrivateKey
 
 class SignedPrivateKeyBuilder {
     companion object {
@@ -24,4 +24,4 @@ fun SignedPrivateKey.sign(data: ByteArray): Signature {
 }
 
 fun SignedPrivateKey.matches(signedPublicKey: SignedPublicKey): Boolean =
-    publicKey.recoverKeySignedPublicKey().walletAddress == (signedPublicKey.recoverKeySignedPublicKey().walletAddress)
+    publicKey == signedPublicKey

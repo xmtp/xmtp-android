@@ -13,11 +13,18 @@ class PublicKeyBuilder {
     companion object {
         fun buildFromSignedPublicKey(signedPublicKey: PublicKeyOuterClass.SignedPublicKey): PublicKey {
             val unsignedPublicKey = PublicKey.parseFrom(signedPublicKey.keyBytes)
-            return unsignedPublicKey.toBuilder().apply {
+            return PublicKey.newBuilder().apply {
                 timestamp = unsignedPublicKey.timestamp
-                secp256K1UncompressedBuilder.apply {
-                    bytes = unsignedPublicKey.secp256K1Uncompressed.bytes
-                }.build()
+                secp256K1UncompressedBuilder.bytes = unsignedPublicKey.secp256K1Uncompressed.bytes
+
+                var sig = signedPublicKey.signature
+                if (!sig.walletEcdsaCompact.bytes.isEmpty) {
+                    sig = sig.toBuilder().apply {
+                        ecdsaCompactBuilder.bytes = signedPublicKey.signature.walletEcdsaCompact.bytes
+                        ecdsaCompactBuilder.recovery = signedPublicKey.signature.walletEcdsaCompact.recovery
+                    }.build()
+                }
+                signature = sig
             }.build()
         }
 

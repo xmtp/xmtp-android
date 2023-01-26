@@ -49,8 +49,9 @@ fun PrivateKeyBundleV1.toV2(): PrivateKeyBundleV2 {
 }
 
 fun PrivateKeyBundleV1.toPublicKeyBundle(): PublicKeyBundle {
+    val pubKey = this.identityKey.publicKey
     return PublicKeyBundle.newBuilder().apply {
-        this.identityKey = identityKey
+        this.identityKey = pubKey
         this.preKey = preKeysList[0].publicKey
     }.build()
 }
