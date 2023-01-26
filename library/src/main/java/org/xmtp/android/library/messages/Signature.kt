@@ -1,9 +1,12 @@
 package org.xmtp.android.library.messages
 
 import org.bouncycastle.jcajce.provider.digest.Keccak
+import org.web3j.crypto.ECDSASignature
+import org.web3j.crypto.Sign
+import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.contents.SignatureOuterClass
-import java.security.Signature as ECDSASig
+import java.math.BigInteger
 
 typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
 
@@ -36,9 +39,14 @@ val Signature.rawDataWithNormalizedRecovery: ByteArray
     }
 
 fun Signature.verify(signedBy: PublicKey, digest: ByteArray): Boolean {
-    val ecdsaVerify = ECDSASig.getInstance("SHA256withECDSA")
+    val signatureData = KeyUtil.getSignatureData(ecdsaCompact.bytes.toByteArray() + ecdsaCompact.recovery.toByte())
+    val publicKey = Sign.recoverFromSignature(
+        BigInteger(1, signatureData.v).toInt(),
+        ECDSASignature(BigInteger(1, signatureData.r), BigInteger(1, signatureData.s)),
+        digest,
+    )
 
-    return ecdsaVerify.verify(signedBy.signature.rawData)
+    return publicKey.toByteArray().contentEquals(signedBy.secp256K1Uncompressed.bytes.toByteArray())
 }
 
 fun Signature.ensureWalletSignature() {

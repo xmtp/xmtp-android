@@ -34,8 +34,8 @@ fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): Author
 
     val signatureData = KeyUtil.getSignatureData(signature.rawData.toByteString().toByteArray())
     val publicKey = Sign.recoverFromSignature(
-        BigInteger(signatureData.v).toInt(),
-        ECDSASignature(BigInteger(1, signatureData.r), BigInteger(signatureData.s)),
+        BigInteger(1, signatureData.v).toInt(),
+        ECDSASignature(BigInteger(1, signatureData.r), BigInteger(1, signatureData.s)),
         digest,
     )
 

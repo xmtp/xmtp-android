@@ -9,7 +9,7 @@ import org.xmtp.android.library.messages.verify
 class SignatureTest {
     @Test
     fun testVerify() {
-        val digest = Hash.sha256("Hello world".toByteStringUtf8().toByteArray())
+        val digest = "Hello world".toByteStringUtf8().toByteArray()
         val signingKey = PrivateKeyBuilder()
         val signature = signingKey.sign(digest)
         assert(
