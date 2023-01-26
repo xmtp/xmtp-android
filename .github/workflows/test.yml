@@ -30,7 +30,7 @@ jobs:
         run: |
           mkdir -p ~/.docker/machine/cache
           curl -Lo ~/.docker/machine/cache/boot2docker.iso https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso
-          brew install docker docker-machine
+          brew install docker docker-machine docker-compose
       - name: Start local test server
         run: docker-compose -p xmtp -f dev/local/docker-compose.yml up -d
       - name: Gradle Run Integration Tests
