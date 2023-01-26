@@ -10,22 +10,32 @@ fun PrivateKeyBundleV1.generate(wallet: SigningKey): PrivateKeyBundleV1 {
     val privateKey = PrivateKeyBuilder()
     privateKey.setPrivateKey(PrivateKey.newBuilder().build().generate())
     val authorizedIdentity = wallet.createIdentity(privateKey.getPrivateKey())
-    val bundle = authorizedIdentity.toBundle
-    val preKey = PrivateKey.newBuilder().build().generate()
+    var bundle = authorizedIdentity.toBundle
+    var preKey = PrivateKey.newBuilder().build().generate()
     val bytesToSign = UnsignedPublicKeyBuilder.buildFromPublicKey(preKey.publicKey).toByteArray()
     val signature = privateKey.sign(Hash.sha256(bytesToSign))
-    val bundleBuilder = bundle.toBuilder()
-    bundleBuilder.v1Builder.identityKey = authorizedIdentity.identity
-    bundleBuilder.v1Builder.identityKeyBuilder.publicKey = authorizedIdentity.authorized
-    val preKeyBuilder = preKey.toBuilder()
-    preKeyBuilder.publicKeyBuilder.signature = signature
-    preKeyBuilder.build()
+
+    preKey = preKey.toBuilder().apply {
+        publicKeyBuilder.signature = signature
+    }.build()
+
     val signedPublicKey = privateKey.getPrivateKey()
         .sign(key = UnsignedPublicKeyBuilder.buildFromPublicKey(preKey.publicKey))
-    preKeyBuilder.publicKey = PublicKey.parseFrom(signedPublicKey.keyBytes)
-    preKeyBuilder.publicKeyBuilder.signature = signedPublicKey.signature
-    bundleBuilder.v1Builder.addPreKeys(preKey)
-    return bundleBuilder.build().v1
+
+    preKey = preKey.toBuilder().apply {
+        publicKey = PublicKey.parseFrom(signedPublicKey.keyBytes)
+        publicKeyBuilder.signature = signedPublicKey.signature
+    }.build()
+
+    bundle = bundle.toBuilder().apply {
+        v1Builder.apply {
+            identityKey = authorizedIdentity.identity
+            identityKeyBuilder.publicKey = authorizedIdentity.authorized
+            addPreKeys(preKey)
+        }.build()
+    }.build()
+
+    return bundle.v1
 }
 
 fun PrivateKeyBundleV1.toV2(): PrivateKeyBundleV2 {
@@ -44,3 +54,10 @@ fun PrivateKeyBundleV1.toPublicKeyBundle(): PublicKeyBundle {
         this.preKey = preKeysList[0].publicKey
     }.build()
 }
+
+fun PrivateKeyBundleV1.sharedSecret(peer: PublicKeyBundle, myPreKey: PublicKey, isRecipient: Boolean) : ByteArray{
+    val peerBundle = SignedPublicKeyBundleBuilder.buildFromKeyBundle(peer)
+    val preKey = SignedPublicKeyBuilder.buildFromLegacy(myPreKey)
+    return toV2().sharedSecret(peer = peerBundle, myPreKey = preKey, isRecipient = isRecipient)
+}
+

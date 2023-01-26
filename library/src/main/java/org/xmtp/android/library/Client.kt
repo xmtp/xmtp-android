@@ -1,10 +1,12 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.EncryptedPrivateKeyBundle
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
+import org.xmtp.android.library.messages.PrivateKeyBundle
 import org.xmtp.android.library.messages.PrivateKeyBundleBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1
 import org.xmtp.android.library.messages.PrivateKeyBundleV2
@@ -14,8 +16,10 @@ import org.xmtp.android.library.messages.encrypted
 import org.xmtp.android.library.messages.ensureWalletSignature
 import org.xmtp.android.library.messages.generate
 import org.xmtp.android.library.messages.getPublicKeyBundle
+import org.xmtp.android.library.messages.recoverWalletSignerPublicKey
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.toV2
+import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import java.util.Date
 
@@ -55,6 +59,16 @@ class Client() {
         val client = Client(account.address, privateKeyBundleV1, apiClient)
         client.ensureUserContactPublished()
         return client
+    }
+
+    fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null) : Client =
+        buildFromV1Bundle(v1Bundle = bundle.v1, options = options)
+
+    fun buildFromV1Bundle(v1Bundle: PrivateKeyBundleV1, options: ClientOptions? = null) : Client {
+        val address = v1Bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
+        val newOptions = options ?: ClientOptions()
+        val apiClient = GRPCApiClient(environment = newOptions.api.env, secure = newOptions.api.isSecure)
+        return Client(address = address, privateKeyBundleV1 = v1Bundle, apiClient = apiClient)
     }
 
     private suspend fun loadOrCreateKeys(
@@ -170,6 +184,12 @@ class Client() {
 
         publishUserContact(legacy = true)
     }
+
+    val privateKeyBundle: PrivateKeyBundle?
+        get() = privateKeyBundleV1?.let { PrivateKeyBundleBuilder.buildFromV1Key(it) }
+
+    val v1keys: PrivateKeyBundleV1?
+        get() = privateKeyBundleV1
 
     val keys: PrivateKeyBundleV2?
         get() = privateKeyBundleV1?.toV2()

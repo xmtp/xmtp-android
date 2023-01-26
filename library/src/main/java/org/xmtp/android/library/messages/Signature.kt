@@ -24,6 +24,17 @@ fun Signature.enableIdentityText(key: ByteArray): String =
 val Signature.rawData: ByteArray
     get() = ecdsaCompact.bytes.toByteArray() + listOf(ecdsaCompact.recovery.toByte()).toByteArray()
 
+val Signature.rawDataWithNormalizedRecovery: ByteArray
+    get() {
+        val data = rawData
+        if (data[64] == 0.toByte()) {
+            data[64] = 27.toByte()
+        } else if (data[64] == 1.toByte()) {
+            data[64] = 28.toByte()
+        }
+        return data
+    }
+
 fun Signature.verify(signedBy: PublicKey, digest: ByteArray): Boolean {
     val ecdsaVerify = ECDSASig.getInstance("SHA256withECDSA")
 

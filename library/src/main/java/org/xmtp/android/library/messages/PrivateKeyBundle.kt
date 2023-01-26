@@ -23,7 +23,7 @@ fun PrivateKeyBundle.encrypted(key: SigningKey): EncryptedPrivateKeyBundle {
     val walletPreKey = SecureRandom().generateSeed(32)
     val signature =
         key.sign(message = Signature.newBuilder().build().enableIdentityText(key = walletPreKey))
-    val cipherText = Crypto.encrypt(signature.rawData, bundleBytes)
+    val cipherText = Crypto.encrypt(signature.rawDataWithNormalizedRecovery, bundleBytes)
     return EncryptedPrivateKeyBundle.newBuilder().apply {
         v1Builder.walletPreKey = walletPreKey.toByteString()
         v1Builder.ciphertext = cipherText
