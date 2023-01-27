@@ -62,7 +62,7 @@ fun PrivateKeyBundleV2.findPreKey(myPreKey: SignedPublicKey): SignedPrivateKey {
 fun PrivateKeyBundleV2.toV1(): PrivateKeyBundleV1 {
     return PrivateKeyBundleV1.newBuilder().apply {
         identityKey = PrivateKeyBuilder(identityKey).getPrivateKey()
-        addAllPreKeys(preKeysList.map { PrivateKeyBuilder(it).getPrivateKey() })
+        addAllPreKeys(preKeysList.map { it })
     }.build()
 }
 

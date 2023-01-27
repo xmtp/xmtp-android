@@ -4,6 +4,7 @@ import org.bouncycastle.jcajce.provider.digest.Keccak
 import org.web3j.crypto.ECDSASignature
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
+import org.xmtp.android.library.Util
 import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.math.BigInteger
@@ -14,8 +15,7 @@ private const val MESSAGE_PREFIX = "\u0019Ethereum Signed Message:\n"
 
 fun Signature.ethHash(message: String): ByteArray {
     val input = MESSAGE_PREFIX + message.length + message
-    val digest256 = Keccak.Digest256()
-    return digest256.digest(input.toByteArray())
+    return Util.keccak256(input.toByteArray())
 }
 
 fun Signature.createIdentityText(key: ByteArray): String =

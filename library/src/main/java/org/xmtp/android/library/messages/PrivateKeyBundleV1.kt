@@ -2,6 +2,7 @@ package org.xmtp.android.library.messages
 
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.SigningKey
+import org.xmtp.android.library.Util
 import org.xmtp.android.library.createIdentity
 
 typealias PrivateKeyBundleV1 = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV1
@@ -10,9 +11,9 @@ fun PrivateKeyBundleV1.generate(wallet: SigningKey): PrivateKeyBundleV1 {
     val privateKey = PrivateKeyBuilder()
     val authorizedIdentity = wallet.createIdentity(privateKey.getPrivateKey())
     var bundle = authorizedIdentity.toBundle
-    var preKey = PrivateKeyBuilder().getPrivateKey()
+    var preKey = PrivateKey.newBuilder().build().generate()
     val bytesToSign = UnsignedPublicKeyBuilder.buildFromPublicKey(preKey.publicKey).toByteArray()
-    val signature = privateKey.sign(Hash.sha256(bytesToSign))
+    val signature = privateKey.sign(Util.keccak256(bytesToSign))
 
     preKey = preKey.toBuilder().apply {
         publicKeyBuilder.signature = signature
