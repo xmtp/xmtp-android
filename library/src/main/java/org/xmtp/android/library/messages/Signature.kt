@@ -52,9 +52,9 @@ fun Signature.verify(signedBy: PublicKey, digest: ByteArray): Boolean {
 fun Signature.ensureWalletSignature() {
     when (unionCase) {
         SignatureOuterClass.Signature.UnionCase.ECDSA_COMPACT -> {
-            val walletEcdsa = SignatureOuterClass.Signature.WalletECDSACompact.newBuilder().apply {
-                bytes = ecdsaCompact.bytes
-                recovery = ecdsaCompact.recovery
+            val walletEcdsa = SignatureOuterClass.Signature.WalletECDSACompact.newBuilder().also {
+                it.bytes = ecdsaCompact.bytes
+                it.recovery = ecdsaCompact.recovery
             }.build()
             this.toBuilder().apply {
                 walletEcdsaCompact = walletEcdsa

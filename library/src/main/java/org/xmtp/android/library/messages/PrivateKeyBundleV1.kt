@@ -38,20 +38,17 @@ fun PrivateKeyBundleV1.generate(wallet: SigningKey): PrivateKeyBundleV1 {
 }
 
 fun PrivateKeyBundleV1.toV2(): PrivateKeyBundleV2 {
-    val privateKey = this.identityKey
-    val privateKeyList = this.preKeysList
-    return PrivateKeyBundleV2.newBuilder().apply {
-        this.identityKey =
-            SignedPrivateKeyBuilder.buildFromLegacy(privateKey, signedByWallet = false)
-        this.addAllPreKeys(privateKeyList.map { SignedPrivateKeyBuilder.buildFromLegacy(it) })
+    return PrivateKeyBundleV2.newBuilder().also {
+        it.identityKey =
+            SignedPrivateKeyBuilder.buildFromLegacy(identityKey, signedByWallet = false)
+        it.addAllPreKeys(preKeysList.map { key -> SignedPrivateKeyBuilder.buildFromLegacy(key) })
     }.build()
 }
 
 fun PrivateKeyBundleV1.toPublicKeyBundle(): PublicKeyBundle {
-    val pubKey = this.identityKey.publicKey
-    return PublicKeyBundle.newBuilder().apply {
-        this.identityKey = pubKey
-        this.preKey = preKeysList[0].publicKey
+    return PublicKeyBundle.newBuilder().also {
+        it.identityKey = identityKey.publicKey
+        it.preKey = preKeysList[0].publicKey
     }.build()
 }
 

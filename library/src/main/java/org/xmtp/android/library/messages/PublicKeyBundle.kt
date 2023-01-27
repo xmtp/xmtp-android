@@ -16,5 +16,5 @@ class PublicKeyBundleBuilder {
 }
 
 val PublicKeyBundle.walletAddress: String
-    get() = // swiftlint:disable no_optional_try
+    get() =
         (try { identityKey.recoverWalletSignerPublicKey().walletAddress } catch (e: Throwable) { null }) ?: ""

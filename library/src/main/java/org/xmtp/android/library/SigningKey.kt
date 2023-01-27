@@ -39,10 +39,10 @@ fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): Author
         digest,
     )
 
-    val authorized = PublicKey.newBuilder().apply {
-        secp256K1Uncompressed = slimKey.secp256K1Uncompressed
-        timestamp = slimKey.timestamp
-        this.signature = signature
+    val authorized = PublicKey.newBuilder().also {
+        it.secp256K1Uncompressed = slimKey.secp256K1Uncompressed
+        it.timestamp = slimKey.timestamp
+        it.signature = signature
     }
     return AuthorizedIdentity(
         address = Keys.getAddress(publicKey),

@@ -27,25 +27,23 @@ data class AuthorizedIdentity(
     fun createAuthToken(): String {
         val authData = AuthDataBuilder.buildFromWalletAddress(walletAddress = address)
         val signature = PrivateKeyBuilder(identity).sign(Util.keccak256(authData.toByteArray()))
-        authorized.toBuilder().apply {
-            this.signature = signature
+        authorized.toBuilder().also {
+            it.signature = signature
         }.build()
-        val token = Token.newBuilder().apply {
-            identityKey = authorized
-            authDataBytes = authData.toByteString()
-            authDataSignature = signature
+        val token = Token.newBuilder().also {
+            it.identityKey = authorized
+            it.authDataBytes = authData.toByteString()
+            it.authDataSignature = signature
         }.build().toByteArray()
         return encodeToString(token, Base64.NO_WRAP)
     }
 
     val toBundle: PrivateKeyBundle
         get() {
-            return PrivateKeyOuterClass.PrivateKeyBundle.newBuilder().apply {
-                v1Builder.apply {
-                    identityKey = identity
-                    identityKeyBuilder.apply {
-                        publicKey = authorized
-                    }.build()
+            return PrivateKeyOuterClass.PrivateKeyBundle.newBuilder().also {
+                it.v1Builder.also { v1Builder ->
+                    v1Builder.identityKey = identity
+                    v1Builder.identityKeyBuilder.publicKey = authorized
                 }.build()
             }.build()
         }

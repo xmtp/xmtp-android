@@ -121,8 +121,8 @@ class Client() {
     suspend fun publishUserContact(legacy: Boolean = false) {
         val envelopes: List<MessageApiOuterClass.Envelope> = mutableListOf()
         if (legacy) {
-            val contactBundle = ContactBundle.newBuilder().apply {
-                v1Builder.keyBundle = privateKeyBundleV1?.toPublicKeyBundle()
+            val contactBundle = ContactBundle.newBuilder().also {
+                it.v1Builder.keyBundle = privateKeyBundleV1?.toPublicKeyBundle()
             }.build()
 
             val envelope = MessageApiOuterClass.Envelope.newBuilder().apply {
@@ -135,8 +135,8 @@ class Client() {
 
             envelopes.plus(envelope)
         }
-        val contactBundle = ContactBundle.newBuilder().apply {
-            v2Builder.keyBundle = keys?.getPublicKeyBundle()
+        val contactBundle = ContactBundle.newBuilder().also {
+            it.v2Builder.keyBundle = keys?.getPublicKeyBundle()
         }.build()
         contactBundle.v2.keyBundle.identityKey.signature.ensureWalletSignature()
         val envelope = MessageApiOuterClass.Envelope.newBuilder().apply {

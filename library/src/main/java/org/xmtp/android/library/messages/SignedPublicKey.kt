@@ -38,9 +38,7 @@ class SignedPublicKeyBuilder {
 
 val SignedPublicKey.secp256K1Uncompressed: PublicKeyOuterClass.PublicKey.Secp256k1Uncompressed
     get() {
-        // swiftlint:disable force_try
         val key = PublicKey.parseFrom(keyBytes)
-        // swiftlint:enable force_try
         return key.secp256K1Uncompressed
     }
 
@@ -56,9 +54,9 @@ fun SignedPublicKey.verify(key: SignedPublicKey): Boolean {
 
 fun SignedPublicKey.recoverKeySignedPublicKey(): PublicKey {
     val publicKey = PublicKeyBuilder.buildFromSignedPublicKey(this)
-    val slimKey = PublicKey.newBuilder().apply {
-        secp256K1UncompressedBuilder.bytes = secp256K1Uncompressed.toByteString()
-        timestamp = publicKey.timestamp
+    val slimKey = PublicKey.newBuilder().also {
+        it.secp256K1UncompressedBuilder.bytes = secp256K1Uncompressed.toByteString()
+        it.timestamp = publicKey.timestamp
     }.build()
 
     val pubKeyData = Sign.signedMessageToKey(
