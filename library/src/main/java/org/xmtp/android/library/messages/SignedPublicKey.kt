@@ -9,8 +9,7 @@ typealias SignedPublicKey = org.xmtp.proto.message.contents.PublicKeyOuterClass.
 class SignedPublicKeyBuilder {
     companion object {
         fun buildFromLegacy(
-            legacyKey: PublicKey,
-            signedByWallet: Boolean? = false
+            legacyKey: PublicKey
         ): SignedPublicKey {
             val publicKey = PublicKey.newBuilder().apply {
                 secp256K1Uncompressed = legacyKey.secp256K1Uncompressed

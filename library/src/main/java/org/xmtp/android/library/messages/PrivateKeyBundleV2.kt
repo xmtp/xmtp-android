@@ -4,7 +4,7 @@ import org.bouncycastle.asn1.sec.SECNamedCurves
 import org.bouncycastle.crypto.params.ECDomainParameters
 import java.math.BigInteger
 
-public typealias PrivateKeyBundleV2 = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV2
+typealias PrivateKeyBundleV2 = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV2
 
 fun PrivateKeyBundleV2.sharedSecret(
     peer: SignedPublicKeyBundle,
@@ -60,9 +60,9 @@ fun PrivateKeyBundleV2.findPreKey(myPreKey: SignedPublicKey): SignedPrivateKey {
 }
 
 fun PrivateKeyBundleV2.toV1(): PrivateKeyBundleV1 {
-    return PrivateKeyBundleV1.newBuilder().apply {
-        identityKey = PrivateKeyBuilder(identityKey).getPrivateKey()
-        addAllPreKeys(preKeysList.map { it })
+    return PrivateKeyBundleV1.newBuilder().also {
+        it.identityKey = PrivateKeyBuilder.buildFromSignedPrivateKey(identityKey)
+        it.addAllPreKeys(preKeysList.map { key -> PrivateKeyBuilder.buildFromSignedPrivateKey(key) })
     }.build()
 }
 

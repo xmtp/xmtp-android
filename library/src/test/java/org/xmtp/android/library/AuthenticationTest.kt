@@ -17,7 +17,7 @@ class AuthenticationTest {
     @Test
     fun testCreateToken() {
         val privateKey = PrivateKeyBuilder()
-        val identity = PrivateKeyBuilder.privateKey.generate()
+        val identity = PrivateKey.newBuilder().build().generate()
         // Prompt them to sign "XMTP : Create Identity ..."
         val authorized = privateKey.createIdentity(identity)
         // Create the `Authorization: Bearer $authToken` for API calls.

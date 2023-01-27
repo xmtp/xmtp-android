@@ -1,6 +1,5 @@
 package org.xmtp.android.library.messages
 
-import org.bouncycastle.jcajce.provider.digest.Keccak
 import org.web3j.crypto.ECDSASignature
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil

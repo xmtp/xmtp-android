@@ -4,13 +4,12 @@ typealias SignedPrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClas
 
 class SignedPrivateKeyBuilder {
     companion object {
-        fun buildFromLegacy(key: PrivateKey, signedByWallet: Boolean? = false): SignedPrivateKey {
+        fun buildFromLegacy(key: PrivateKey): SignedPrivateKey {
             return SignedPrivateKey.newBuilder().apply {
                 createdNs = key.timestamp * 1_000_000
                 secp256K1Builder.bytes = key.secp256K1.bytes
                 publicKey = SignedPublicKeyBuilder.buildFromLegacy(
                     key.publicKey,
-                    signedByWallet = signedByWallet
                 )
                 publicKeyBuilder.signature = key.publicKey.signature
             }.build()

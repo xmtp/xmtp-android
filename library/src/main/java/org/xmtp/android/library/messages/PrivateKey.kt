@@ -6,15 +6,16 @@ import org.web3j.crypto.Hash
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.SigningKey
-import org.xmtp.android.library.Util
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.security.SecureRandom
 
 typealias PrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
 
-class PrivateKeyBuilder() : SigningKey {
-    init {
+class PrivateKeyBuilder : SigningKey {
+    private var privateKey: PrivateKey
+
+    constructor() {
         privateKey = PrivateKey.newBuilder().also {
             val time = System.currentTimeMillis()
             it.timestamp = time
@@ -29,15 +30,13 @@ class PrivateKeyBuilder() : SigningKey {
         }.build()
     }
 
-    constructor(key: PrivateKey) : this() {
+    constructor(key: PrivateKey) {
         privateKey = key
     }
 
     companion object {
-        lateinit var privateKey: PrivateKey
-
         fun buildFromPrivateKeyData(privateKeyData: ByteArray): PrivateKey {
-            privateKey = PrivateKey.newBuilder().apply {
+            return PrivateKey.newBuilder().apply {
                 val time = System.currentTimeMillis()
                 timestamp = time
                 secp256K1Builder.bytes = privateKeyData.toByteString()
@@ -50,7 +49,14 @@ class PrivateKeyBuilder() : SigningKey {
                     }.build()
                 }.build()
             }.build()
-            return privateKey
+        }
+
+        fun buildFromSignedPrivateKey(signedPrivateKey: SignedPrivateKey): PrivateKey {
+            return PrivateKey.newBuilder().apply {
+                timestamp = signedPrivateKey.createdNs / 1_000_000
+                secp256K1Builder.bytes = signedPrivateKey.secp256K1.bytes
+                publicKey = PublicKeyBuilder.buildFromSignedPublicKey(signedPrivateKey.publicKey)
+            }.build()
         }
     }
 
@@ -96,7 +102,7 @@ val PrivateKey.walletAddress: String
 fun PrivateKey.sign(key: PublicKeyOuterClass.UnsignedPublicKey): PublicKeyOuterClass.SignedPublicKey {
     val bytes = key.toByteArray()
     val signedPublicKey = PublicKeyOuterClass.SignedPublicKey.newBuilder()
-    val signature = PrivateKeyBuilder(this).sign(Util.keccak256(bytes))
+    val signature = PrivateKeyBuilder(this).sign(Hash.sha256(bytes))
     signedPublicKey.signature = signature
     signedPublicKey.keyBytes = bytes.toByteString()
     return signedPublicKey.build()
