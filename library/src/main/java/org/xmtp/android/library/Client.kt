@@ -119,7 +119,7 @@ class Client() {
     }
 
     suspend fun publishUserContact(legacy: Boolean = false) {
-        val envelopes: List<MessageApiOuterClass.Envelope> = mutableListOf()
+        val envelopes: MutableList<MessageApiOuterClass.Envelope> = mutableListOf()
         if (legacy) {
             val contactBundle = ContactBundle.newBuilder().also {
                 it.v1Builder.keyBundle = privateKeyBundleV1?.toPublicKeyBundle()
@@ -145,8 +145,8 @@ class Client() {
             }
             timestampNs = System.currentTimeMillis() * 1_000_000
             message = contactBundle.toByteString()
-        }
-        envelopes.plus(envelope)
+        }.build()
+        envelopes.add(envelope)
         publish(envelopes = envelopes)
     }
 
