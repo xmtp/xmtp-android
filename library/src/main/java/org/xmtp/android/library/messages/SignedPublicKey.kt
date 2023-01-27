@@ -69,9 +69,10 @@ fun SignedPublicKey.recoverKeySignedPublicKey(): PublicKey {
 }
 
 fun SignedPublicKey.recoverWalletSignerPublicKey(): PublicKey {
+    val publicKey = PublicKeyBuilder.buildFromSignedPublicKey(this)
     val sig = Signature.newBuilder().build()
     val sigText = sig.createIdentityText(keyBytes.toByteArray())
     val sigHash = sig.ethHash(sigText)
-    val pubKeyData = Sign.signedMessageToKey(sigHash, KeyUtil.getSignatureData(signature.rawData))
-    return PublicKey.parseFrom(pubKeyData.toByteArray())
+    val pubKeyData = Sign.signedMessageHashToKey(sigHash, KeyUtil.getSignatureData(publicKey.signature.rawDataWithNormalizedRecovery))
+    return PublicKeyBuilder.buildFromBytes(KeyUtil.addUncompressedByte(pubKeyData.toByteArray()))
 }

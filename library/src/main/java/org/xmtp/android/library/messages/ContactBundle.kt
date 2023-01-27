@@ -1,8 +1,13 @@
 package org.xmtp.android.library.messages
 
+import com.google.protobuf.kotlin.toByteString
+import org.bouncycastle.util.Arrays
+import org.web3j.crypto.Hash
 import org.web3j.crypto.Keys
+import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Contact
+import java.math.BigInteger
 
 typealias ContactBundle = org.xmtp.proto.message.contents.Contact.ContactBundle
 typealias ContactBundleV1 = org.xmtp.proto.message.contents.Contact.ContactBundleV1
@@ -18,7 +23,7 @@ class ContactBundleBuilder {
             contactBundle.v1Builder.keyBundle = publicKeyBundle
             // It's not a legacy bundle so just deserialize as a ContactBundle
             if (contactBundle.v1.keyBundle.identityKey.secp256K1Uncompressed.bytes.isEmpty) {
-                contactBundle.v1.keyBundle.identityKey.secp256K1Uncompressed.bytes.toByteArray().plus(data.toByteArray())
+                contactBundle.mergeFrom(data)
             }
             return contactBundle.build()
         }
@@ -45,26 +50,26 @@ val ContactBundle.walletAddress: String?
     get() {
         when (versionCase) {
             Contact.ContactBundle.VersionCase.V1 -> {
-                val key = try {
-                    v1.keyBundle.identityKey.recoverWalletSignerPublicKey()
-                } catch (e: Throwable) {
-                    null
-                }
-                if (key != null) {
-                    return Keys.toChecksumAddress(Keys.getAddress(key.secp256K1Uncompressed.bytes.toString()))
-                }
-                return null
+                val key = v1.keyBundle.identityKey.recoverWalletSignerPublicKey()
+                val address = Keys.getAddress(
+                    Arrays.copyOfRange(
+                        key.secp256K1Uncompressed.bytes.toByteArray(),
+                        1,
+                        key.secp256K1Uncompressed.bytes.toByteArray().size
+                    )
+                )
+                return Keys.toChecksumAddress(address.toHex())
             }
             Contact.ContactBundle.VersionCase.V2 -> {
-                val key = try {
-                    v2.keyBundle.identityKey.recoverWalletSignerPublicKey()
-                } catch (e: Throwable) {
-                    null
-                }
-                if (key != null) {
-                    return Keys.toChecksumAddress(Keys.getAddress(key.secp256K1Uncompressed.bytes.toString()))
-                }
-                return null
+                val key = v2.keyBundle.identityKey.recoverWalletSignerPublicKey()
+                val address = Keys.getAddress(
+                    Arrays.copyOfRange(
+                        key.secp256K1Uncompressed.bytes.toByteArray(),
+                        1,
+                        key.secp256K1Uncompressed.bytes.toByteArray().size
+                    )
+                )
+                return Keys.toChecksumAddress(address.toHex())
             }
             else -> return null
         }

@@ -2,9 +2,11 @@ package org.xmtp.android.library.messages
 
 import com.google.protobuf.kotlin.toByteString
 import org.bouncycastle.crypto.digests.SHA256Digest
+import org.bouncycastle.util.Arrays
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
+import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 
 typealias PublicKey = org.xmtp.proto.message.contents.PublicKeyOuterClass.PublicKey
@@ -20,8 +22,10 @@ class PublicKeyBuilder {
                 var sig = signedPublicKey.signature
                 if (!sig.walletEcdsaCompact.bytes.isEmpty) {
                     sig = sig.toBuilder().apply {
-                        ecdsaCompactBuilder.bytes = signedPublicKey.signature.walletEcdsaCompact.bytes
-                        ecdsaCompactBuilder.recovery = signedPublicKey.signature.walletEcdsaCompact.recovery
+                        ecdsaCompactBuilder.bytes =
+                            signedPublicKey.signature.walletEcdsaCompact.bytes
+                        ecdsaCompactBuilder.recovery =
+                            signedPublicKey.signature.walletEcdsaCompact.recovery
                     }.build()
                 }
                 signature = sig
@@ -59,25 +63,34 @@ fun PublicKey.recoverKeySignedPublicKey(): PublicKey {
 
 val PublicKey.walletAddress: String
     get() {
-        return Keys.toChecksumAddress(Keys.getAddress(secp256K1Uncompressed.bytes.toString()))
+        val address = Keys.getAddress(
+            Arrays.copyOfRange(
+                secp256K1Uncompressed.bytes.toByteArray(),
+                1,
+                secp256K1Uncompressed.bytes.toByteArray().size
+            )
+        )
+        return Keys.toChecksumAddress(address.toHex())
     }
 
 fun PublicKey.recoverWalletSignerPublicKey(): PublicKey {
     if (!hasSignature()) {
         throw IllegalArgumentException("No signature found")
     }
+    val pubKeyBytes = secp256K1Uncompressed.bytes
+    val pubKeyTime = timestamp
     val slimKey = PublicKey.newBuilder().apply {
-        this.timestamp = timestamp
+        this.timestamp = pubKeyTime
         secp256K1UncompressedBuilder.apply {
-            bytes = secp256K1Uncompressed.bytes
+            this.bytes = pubKeyBytes
         }.build()
     }.build()
     val signatureClass = Signature.newBuilder().build()
     val sigText = signatureClass.createIdentityText(slimKey.toByteArray())
     val sigHash = signatureClass.ethHash(sigText)
-    val pubKeyData = Sign.signedMessageToKey(
+    val pubKeyData = Sign.signedMessageHashToKey(
         sigHash,
-        KeyUtil.getSignatureData(signature.toByteArray())
+        KeyUtil.getSignatureData(signature.rawDataWithNormalizedRecovery)
     )
-    return PublicKeyBuilder.buildFromBytes(pubKeyData.toByteArray())
+    return PublicKeyBuilder.buildFromBytes(KeyUtil.addUncompressedByte(pubKeyData.toByteArray()))
 }
