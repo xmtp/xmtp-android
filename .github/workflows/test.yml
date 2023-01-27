@@ -24,8 +24,6 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
-      - name: Gradle Run Unit Tests
-        run: ./gradlew library:testDebug
       - name: Install docker
         run: |
           mkdir -p ~/.docker/machine/cache
@@ -42,6 +40,8 @@ jobs:
           docker ps
       - name: Start local test server
         run: docker-compose -p xmtp -f dev/local/docker-compose.yml up -d
+      - name: Gradle Run Unit Tests
+        run: ./gradlew library:testDebug
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
