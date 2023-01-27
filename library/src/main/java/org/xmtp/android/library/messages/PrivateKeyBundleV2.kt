@@ -67,10 +67,11 @@ fun PrivateKeyBundleV2.toV1(): PrivateKeyBundleV1 {
 }
 
 fun PrivateKeyBundleV2.getPublicKeyBundle(): SignedPublicKeyBundle {
+    val pubKey = identityKey.publicKey
     return SignedPublicKeyBundle.newBuilder().apply {
-        this.identityKey = identityKey
+        this.identityKey = pubKey
         this.identityKeyBuilder.signature = identityKey.signature
-        identityKey.signature.ensureWalletSignature()
+        this.identityKey.signature.ensureWalletSignature()
         preKey = preKeysList[0].publicKey
     }.build()
 }

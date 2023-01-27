@@ -70,7 +70,7 @@ class PrivateKeyBundleTest {
             myPreKey = bobPublicBundle.preKey,
             isRecipient = false
         )
-        assertEquals(aliceSharedSecret, bobSharedSecret)
+        assert(aliceSharedSecret.contentEquals(bobSharedSecret))
     }
 
     @Test
@@ -89,6 +89,6 @@ class PrivateKeyBundleTest {
             myPreKey = meBundle.preKeysList[0].publicKey,
             isRecipient = true
         )
-        assertEquals(secretData, secret)
+        assert(secretData.contentEquals(secret))
     }
 }
