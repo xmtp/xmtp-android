@@ -24,7 +24,7 @@ class PrivateKeyBuilder : SigningKey {
             val privateKeyData = SecureRandom().generateSeed(32)
             secp256K1Builder.bytes = privateKeyData.toByteString()
             val publicData = KeyUtil.getPublicKey(privateKeyData)
-            val uncompressedKey = byteArrayOf(0x4.toByte()) + publicData
+            val uncompressedKey = KeyUtil.addUncompressedByte(publicData)
             publicKeyBuilder.apply {
                 timestamp = time
                 secp256K1UncompressedBuilder.apply {
@@ -43,7 +43,7 @@ class PrivateKeyBuilder : SigningKey {
                 timestamp = time
                 secp256K1Builder.bytes = privateKeyData.toByteString()
                 val publicData = KeyUtil.getPublicKey(privateKeyData)
-                val uncompressedKey = byteArrayOf(0x4.toByte()) + publicData
+                val uncompressedKey = KeyUtil.addUncompressedByte(publicData)
                 publicKeyBuilder.apply {
                     timestamp = time
                     secp256K1UncompressedBuilder.apply {

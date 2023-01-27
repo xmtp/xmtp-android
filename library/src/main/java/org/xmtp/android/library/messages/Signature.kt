@@ -45,8 +45,8 @@ fun Signature.verify(signedBy: PublicKey, digest: ByteArray): Boolean {
         ECDSASignature(BigInteger(1, signatureData.r), BigInteger(1, signatureData.s)),
         digest,
     )
-
-    return publicKey.toByteArray().contentEquals(signedBy.secp256K1Uncompressed.bytes.toByteArray())
+    val pubKey = KeyUtil.addUncompressedByte(publicKey.toByteArray())
+    return pubKey.contentEquals(signedBy.secp256K1Uncompressed.bytes.toByteArray())
 }
 
 fun Signature.ensureWalletSignature() {
