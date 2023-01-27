@@ -9,7 +9,6 @@ import org.xmtp.android.library.messages.generate
 import org.xmtp.android.library.messages.sharedSecret
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
-import org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
 
 class CryptoTest {
 

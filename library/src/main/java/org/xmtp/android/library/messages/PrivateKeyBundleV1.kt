@@ -8,10 +8,9 @@ typealias PrivateKeyBundleV1 = org.xmtp.proto.message.contents.PrivateKeyOuterCl
 
 fun PrivateKeyBundleV1.generate(wallet: SigningKey): PrivateKeyBundleV1 {
     val privateKey = PrivateKeyBuilder()
-    privateKey.setPrivateKey(PrivateKey.newBuilder().build().generate())
     val authorizedIdentity = wallet.createIdentity(privateKey.getPrivateKey())
     var bundle = authorizedIdentity.toBundle
-    var preKey = PrivateKey.newBuilder().build().generate()
+    var preKey = PrivateKeyBuilder().getPrivateKey()
     val bytesToSign = UnsignedPublicKeyBuilder.buildFromPublicKey(preKey.publicKey).toByteArray()
     val signature = privateKey.sign(Hash.sha256(bytesToSign))
 
@@ -23,7 +22,7 @@ fun PrivateKeyBundleV1.generate(wallet: SigningKey): PrivateKeyBundleV1 {
         .sign(key = UnsignedPublicKeyBuilder.buildFromPublicKey(preKey.publicKey))
 
     preKey = preKey.toBuilder().apply {
-        publicKey = PublicKey.parseFrom(signedPublicKey.keyBytes)
+        publicKey = PublicKeyBuilder.buildFromSignedPublicKey(signedPublicKey)
         publicKeyBuilder.signature = signedPublicKey.signature
     }.build()
 
