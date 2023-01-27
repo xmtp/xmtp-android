@@ -1,15 +1,13 @@
 package org.xmtp.android.library
 
-import org.junit.*
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Test
 import org.web3j.utils.Numeric
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundle
-import org.xmtp.android.library.messages.PrivateKeyBundleBuilder
 import org.xmtp.android.library.messages.PublicKeyBundle
 import org.xmtp.android.library.messages.SignedPublicKeyBundleBuilder
 import org.xmtp.android.library.messages.UnsignedPublicKey
-import org.xmtp.android.library.messages.UnsignedPublicKeyBuilder
 import org.xmtp.android.library.messages.generate
 import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.sharedSecret

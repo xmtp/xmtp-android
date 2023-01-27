@@ -52,9 +52,12 @@ fun PrivateKeyBundleV1.toPublicKeyBundle(): PublicKeyBundle {
     }.build()
 }
 
-fun PrivateKeyBundleV1.sharedSecret(peer: PublicKeyBundle, myPreKey: PublicKey, isRecipient: Boolean) : ByteArray{
+fun PrivateKeyBundleV1.sharedSecret(
+    peer: PublicKeyBundle,
+    myPreKey: PublicKey,
+    isRecipient: Boolean
+): ByteArray {
     val peerBundle = SignedPublicKeyBundleBuilder.buildFromKeyBundle(peer)
     val preKey = SignedPublicKeyBuilder.buildFromLegacy(myPreKey)
     return toV2().sharedSecret(peer = peerBundle, myPreKey = preKey, isRecipient = isRecipient)
 }
-

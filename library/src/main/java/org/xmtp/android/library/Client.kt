@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.EncryptedPrivateKeyBundle
@@ -61,13 +60,14 @@ class Client() {
         return client
     }
 
-    fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null) : Client =
+    fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null): Client =
         buildFromV1Bundle(v1Bundle = bundle.v1, options = options)
 
-    fun buildFromV1Bundle(v1Bundle: PrivateKeyBundleV1, options: ClientOptions? = null) : Client {
+    fun buildFromV1Bundle(v1Bundle: PrivateKeyBundleV1, options: ClientOptions? = null): Client {
         val address = v1Bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
         val newOptions = options ?: ClientOptions()
-        val apiClient = GRPCApiClient(environment = newOptions.api.env, secure = newOptions.api.isSecure)
+        val apiClient =
+            GRPCApiClient(environment = newOptions.api.env, secure = newOptions.api.isSecure)
         return Client(address = address, privateKeyBundleV1 = v1Bundle, apiClient = apiClient)
     }
 

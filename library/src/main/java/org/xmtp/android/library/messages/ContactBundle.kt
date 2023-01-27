@@ -1,13 +1,10 @@
 package org.xmtp.android.library.messages
 
-import com.google.protobuf.kotlin.toByteString
 import org.bouncycastle.util.Arrays
-import org.web3j.crypto.Hash
 import org.web3j.crypto.Keys
 import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Contact
-import java.math.BigInteger
 
 typealias ContactBundle = org.xmtp.proto.message.contents.Contact.ContactBundle
 typealias ContactBundleV1 = org.xmtp.proto.message.contents.Contact.ContactBundleV1

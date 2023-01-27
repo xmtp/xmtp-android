@@ -27,8 +27,14 @@ class ClientTest {
         val bundle = client.privateKeyBundle
         val clientFromV1Bundle = Client().buildFromBundle(bundle!!)
         assertEquals(client.address, clientFromV1Bundle.address)
-        assertEquals(client.privateKeyBundleV1?.identityKey, clientFromV1Bundle.privateKeyBundleV1?.identityKey)
-        assertEquals(client.privateKeyBundleV1?.preKeysList, clientFromV1Bundle.privateKeyBundleV1?.preKeysList)
+        assertEquals(
+            client.privateKeyBundleV1?.identityKey,
+            clientFromV1Bundle.privateKeyBundleV1?.identityKey
+        )
+        assertEquals(
+            client.privateKeyBundleV1?.preKeysList,
+            clientFromV1Bundle.privateKeyBundleV1?.preKeysList
+        )
     }
 
     @Test
@@ -38,8 +44,13 @@ class ClientTest {
         val bundleV1 = client.v1keys
         val clientFromV1Bundle = Client().buildFromV1Bundle(bundleV1!!)
         assertEquals(client.address, clientFromV1Bundle.address)
-        assertEquals(client.privateKeyBundleV1?.identityKey, clientFromV1Bundle.privateKeyBundleV1?.identityKey)
-        assertEquals(client.privateKeyBundleV1?.preKeysList, clientFromV1Bundle.privateKeyBundleV1?.preKeysList)
+        assertEquals(
+            client.privateKeyBundleV1?.identityKey,
+            clientFromV1Bundle.privateKeyBundleV1?.identityKey
+        )
+        assertEquals(
+            client.privateKeyBundleV1?.preKeysList,
+            clientFromV1Bundle.privateKeyBundleV1?.preKeysList
+        )
     }
-
 }
