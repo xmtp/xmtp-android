@@ -35,8 +35,10 @@ class Client() {
     var apiClient: ApiClient = GRPCApiClient(XMTPEnvironment.DEV, true)
     val environment: XMTPEnvironment = apiClient.environment
     val contacts: Contacts = Contacts(client = this)
+    val conversations: Conversations = Conversations(client = this)
 
-    constructor(
+
+            constructor(
         address: String,
         privateKeyBundleV1: PrivateKeyBundleV1,
         apiClient: ApiClient
