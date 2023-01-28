@@ -1,82 +1,85 @@
 package org.xmtp.android.library.messages
 
+import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.CipherText
 import org.xmtp.android.library.Crypto
+import org.xmtp.android.library.extensions.millisecondsSinceEpoch
+import org.xmtp.proto.message.contents.MessageOuterClass
 import java.util.Date
 
 typealias MessageV1 = org.xmtp.proto.message.contents.MessageOuterClass.MessageV1
-enum class MessageV1Error (val rawValue: Error) {
-    cannotDecodeFromBytes(0);
 
+class MessageV1Build {
     companion object {
-        operator fun invoke(rawValue: Error) = MessageV1Error.values().firstOrNull { it.rawValue == rawValue }
+        fun buildEncode(
+            sender: PrivateKeyBundleV1,
+            recipient: PublicKeyBundle,
+            message: ByteArray,
+            timestamp: Date
+        ): MessageV1 {
+            val secret = sender.sharedSecret(
+                peer = recipient,
+                myPreKey = sender.preKeysList[0].publicKey,
+                isRecipient = false
+            )
+            val header = MessageHeaderV1Builder.buildFromPublicBundles(
+                sender = sender.toPublicKeyBundle(),
+                recipient = recipient,
+                timestamp = timestamp.millisecondsSinceEpoch.toLong()
+            )
+            val headerBytes = header.toByteArray()
+            val ciphertext = Crypto.encrypt(secret, message, additionalData = headerBytes)
+            return buildFromCipherText(headerBytes = headerBytes, ciphertext = ciphertext)
+        }
+
+        fun buildFromBytes(bytes: ByteArray): MessageV1 {
+            val message = Message.parseFrom(bytes)
+            val headerBytes: ByteArray
+            val ciphertext: CipherText
+            when (message.versionCase) {
+                MessageOuterClass.Message.VersionCase.V1 -> {
+                    headerBytes = message.v1.headerBytes.toByteArray()
+                    ciphertext = message.v1.ciphertext
+                }
+                MessageOuterClass.Message.VersionCase.V2 -> {
+                    headerBytes = message.v2.headerBytes.toByteArray()
+                    ciphertext = message.v2.ciphertext
+                }
+                else -> throw IllegalArgumentException("Cannot decode from bytes")
+            }
+            return buildFromCipherText(headerBytes, ciphertext)
+        }
+
+        fun buildFromCipherText(headerBytes: ByteArray, ciphertext: CipherText?): MessageV1 {
+            return MessageV1.newBuilder().also {
+                it.headerBytes = headerBytes.toByteString()
+                it.ciphertext = ciphertext
+            }.build()
+        }
     }
 }
 
-fun MessageV1.Companion.encode(sender: PrivateKeyBundleV1, recipient: PublicKeyBundle, message: ByteArray, timestamp: Date) : MessageV1 {
-    val secret = sender.sharedSecret(peer = recipient, myPreKey = sender.preKeys[0].publicKey, isRecipient = false)
-    val header = MessageHeaderV1(sender = sender.toPublicKeyBundle(), recipient = recipient, timestamp = UInt64(timestamp.millisecondsSinceEpoch))
-    val headerBytes = header.serializedData()
-    val ciphertext = Crypto.encrypt(secret, message, additionalData = headerBytes)
-    return MessageV1(headerBytes = headerBytes, ciphertext = ciphertext)
-}
-
-fun MessageV1.Companion.fromBytes(bytes: ByteArray) : MessageV1 {
-    val message = Message(serializedData = bytes)
-    var headerBytes: ByteArray
-    var ciphertext: CipherText
-    when (message.version) {
-        v1 -> {
-            headerBytes = message.v1.headerBytes
-            ciphertext = message.v1.ciphertext
-        }
-        v2 -> {
-            headerBytes = message.v2.headerBytes
-            ciphertext = message.v2.ciphertext
-        }
-        else -> throw MessageV1Error.cannotDecodeFromBytes
-    }
-    return MessageV1(headerBytes = headerBytes, ciphertext = ciphertext)
-}
-
-constructor(MessageV1.headerBytes: Data, ciphertext: CipherText) : this() {    this.headerBytes = headerBytes
-    this.ciphertext = ciphertext
-}
 val MessageV1.header: MessageHeaderV1
-    get() = do {
-        return MessageHeaderV1(serializedData = headerBytes)
-    } catch {
-        print("Error deserializing MessageHeaderV1 ${error}")
-        throw error
-    }
-val MessageV1.senderAddress: String?
-    get() = do {
-        val senderKey = header.sender.identityKey.recoverWalletSignerPublicKey()
-        return senderKey.walletAddress
-    } catch {
-        print("Error getting sender address: ${error}")
-        return null
-    }
-val MessageV1.sentAt: Date
-        Date(timeIntervalSince1970 = Double(header.timestamp / 1000))
-val MessageV1.recipientAddress: String?
-    get() = do {
-        val recipientKey = header.recipient.identityKey.recoverWalletSignerPublicKey()
-        return recipientKey.walletAddress
-    } catch {
-        print("Error getting recipient address: ${error}")
-        return null
-    }
+    get() = MessageHeaderV1.parseFrom(headerBytes)
 
-fun MessageV1.decrypt(viewer: PrivateKeyBundleV1) : ByteArray {
-    val header = MessageHeaderV1(serializedData = headerBytes)
+val MessageV1.senderAddress: String
+    get() = header.sender.identityKey.recoverWalletSignerPublicKey().walletAddress
+
+val MessageV1.sentAt: Date get() = Date((header.timestamp / 1000))
+
+val MessageV1.recipientAddress: String
+    get() = header.recipient.identityKey.recoverWalletSignerPublicKey().walletAddress
+
+fun MessageV1.decrypt(viewer: PrivateKeyBundleV1): ByteArray? {
+    val header = MessageHeaderV1.parseFrom(headerBytes)
     val recipient = header.recipient
     val sender = header.sender
-    var secret: ByteArray
+    val secret: ByteArray
     if (viewer.walletAddress == sender.walletAddress) {
-        secret = viewer.sharedSecret(peer = recipient, myPreKey = sender.preKey, isRecipient = false)
+        secret =
+            viewer.sharedSecret(peer = recipient, myPreKey = sender.preKey, isRecipient = false)
     } else {
         secret = viewer.sharedSecret(peer = sender, myPreKey = recipient.preKey, isRecipient = true)
     }
-    return Crypto.decrypt(secret, ciphertext, additionalData = headerBytes)
+    return Crypto.decrypt(secret, ciphertext, additionalData = headerBytes.toByteArray())
 }

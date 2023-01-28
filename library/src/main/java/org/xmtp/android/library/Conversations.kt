@@ -12,10 +12,11 @@ import java.util.Date
 
 data class Conversations(
     var client: Client,
-    var conversations: List<Conversation> = listOf()) {
+    var conversations: MutableList<Conversation> = mutableListOf()
+) {
 
     public fun newConversation(peerAddress: String, context: Invitation.InvitationV1.Context? = null) : Conversation {
-        if (peerAddress.lowercase() == client.address.lowercase()) {
+        if (peerAddress.lowercase() == client.address?.lowercase()) {
             throw IllegalArgumentException("Recipient is sender")
         }
         val existingConversation = conversations.firstOrNull { it.peerAddress == peerAddress }
@@ -28,15 +29,21 @@ data class Conversations(
             val invitationPeers = listIntroductionPeers()
             val peerSeenAt = invitationPeers[peerAddress]
             if (peerSeenAt != null) {
-                val conversation: Conversation = v1(ConversationV1(client = client, peerAddress = peerAddress, sentAt = peerSeenAt))
-                conversations.plus(conversation)
+                val conversation: Conversation = Conversation.v1(
+                    ConversationV1(
+                        client = client,
+                        peerAddress = peerAddress,
+                        sentAt = peerSeenAt
+                    )
+                )
+                conversations.add(conversation)
                 return conversation
             }
         }
         // If the contact is v1, start a v1 conversation
-        if (v1 = contact.version && context?.conversationId == null || context?.conversationId == "") {
+        if (Conversation.v1 = contact.version && context?.conversationId == null || context?.conversationId == "") {
             val conversation: Conversation = .v1(ConversationV1(client = client, peerAddress = peerAddress, sentAt = Date()))
-            conversations.append(conversation)
+            conversations.add(conversation)
             return conversation
         }
         // See if we have a v2 conversation
@@ -47,7 +54,7 @@ data class Conversations(
             val invite = sealedInvitation.v1.getInvitation(viewer = client.keys)
             if (invite.context.conversationID == context?.conversationId && invite.context.conversationID != "") {
                 val conversation: Conversation = .v2(ConversationV2(topic = invite.topic, keyMaterial = invite.aes256GcmHkdfSha256.keyMaterial, context = invite.context, peerAddress = peerAddress, client = client, header = sealedInvitation.v1.header))
-                conversations.plus(conversation)
+                conversations.add(conversation)
                 return conversation
             }
         }
@@ -56,8 +63,8 @@ data class Conversations(
         val invitation = Invitation.InvitationV1.newBuilder().build().createRandom(context)
         val sealedInvitation = sendInvitation(recipient = recipient, invitation = invitation, created = Date())
         val conversationV2 = ConversationV2.create(client = client, invitation = invitation, header = sealedInvitation.v1.header)
-        val conversation: Conversation = v2(conversationV2)
-        conversations.plus(conversation)
+        val conversation: Conversation = Conversation.v2(conversationV2)
+        conversations.add(conversation)
         return conversation
     }
 
@@ -97,7 +104,7 @@ data class Conversations(
         do {
             val seenPeers = listIntroductionPeers()
             for ((peerAddress, sentAt) in seenPeers) {
-                conversations.append(Conversation.v1(ConversationV1(client = client, peerAddress = peerAddress, sentAt = sentAt)))
+                conversations.add(Conversation.v1(ConversationV1(client = client, peerAddress = peerAddress, sentAt = sentAt)))
             }
         } catch {
             print("Error loading introduction peers: ${error}")
@@ -107,7 +114,7 @@ data class Conversations(
             do {
                 val unsealed = sealedInvitation.v1.getInvitation(viewer = client.keys)
                 val conversation = ConversationV2.create(client = client, invitation = unsealed, header = sealedInvitation.v1.header)
-                conversations.append(Conversation.v2(conversation))
+                conversations.add(Conversation.v2(conversation))
             } catch {
                 print("Error loading invitations: ${error}")
             }
@@ -149,9 +156,9 @@ data class Conversations(
     }
 
     fun listInvitations() : List<SealedInvitation> {
-        val envelopes = client.apiClient.query(topics = listOf(.userInvite(client.address)), pagination = null).envelopes
+        val envelopes = client.apiClient.query(topics = listOf(userInvite(client.address))).envelopes
         return envelopes.compactMap { envelope  ->
-            try { SealedInvitation(serializedData = envelope.message) } catch (e: Throwable) { null }
+            try { SealedInvitation(envelope.message) } catch (e: Throwable) { null }
         }
     }
 
