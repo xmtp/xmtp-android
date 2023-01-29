@@ -21,6 +21,7 @@ import org.xmtp.android.library.messages.toV2
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import java.util.Date
+import java.util.concurrent.Flow
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
@@ -37,8 +38,7 @@ class Client() {
     val contacts: Contacts = Contacts(client = this)
     val conversations: Conversations = Conversations(client = this)
 
-
-            constructor(
+    constructor(
         address: String,
         privateKeyBundleV1: PrivateKeyBundleV1,
         apiClient: ApiClient
@@ -55,11 +55,14 @@ class Client() {
         return runBlocking { create(account = account, apiClient = apiClient) }
     }
 
-    private suspend fun create(account: SigningKey, apiClient: ApiClient): Client {
-        val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
-        val client = Client(account.address, privateKeyBundleV1, apiClient)
-        client.ensureUserContactPublished()
-        return client
+    fun create(account: SigningKey, apiClient: ApiClient): Client {
+        return runBlocking {
+            val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
+            val client = Client(account.address, privateKeyBundleV1, apiClient)
+            client.ensureUserContactPublished()
+            client
+        }
+
     }
 
     fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null): Client =

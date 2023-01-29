@@ -9,7 +9,7 @@ import java.util.Date
 
 typealias MessageV1 = org.xmtp.proto.message.contents.MessageOuterClass.MessageV1
 
-class MessageV1Build {
+class MessageV1Builder {
     companion object {
         fun buildEncode(
             sender: PrivateKeyBundleV1,
@@ -70,16 +70,16 @@ val MessageV1.sentAt: Date get() = Date((header.timestamp / 1000))
 val MessageV1.recipientAddress: String
     get() = header.recipient.identityKey.recoverWalletSignerPublicKey().walletAddress
 
-fun MessageV1.decrypt(viewer: PrivateKeyBundleV1): ByteArray? {
+fun MessageV1.decrypt(viewer: PrivateKeyBundleV1?): ByteArray? {
     val header = MessageHeaderV1.parseFrom(headerBytes)
     val recipient = header.recipient
     val sender = header.sender
     val secret: ByteArray
-    if (viewer.walletAddress == sender.walletAddress) {
+    if (viewer?.walletAddress == sender.walletAddress) {
         secret =
             viewer.sharedSecret(peer = recipient, myPreKey = sender.preKey, isRecipient = false)
     } else {
-        secret = viewer.sharedSecret(peer = sender, myPreKey = recipient.preKey, isRecipient = true)
+        secret = viewer?.sharedSecret(peer = sender, myPreKey = recipient.preKey, isRecipient = true) ?: byteArrayOf()
     }
     return Crypto.decrypt(secret, ciphertext, additionalData = headerBytes.toByteArray())
 }

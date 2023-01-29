@@ -1,58 +1,67 @@
 package org.xmtp.android.library.codecs
 
+import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.EncodedContentCompression
+import org.xmtp.proto.message.contents.Content
 
-enum class CodecError (val rawValue: String) : Error {
-    invalidContent("invalidContent"), codecNotFound("codecNotFound");
+typealias EncodedContent = org.xmtp.proto.message.contents.Content.EncodedContent
 
-    companion object {
-        operator fun invoke(rawValue: String) = CodecError.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-public typealias EncodedContent = org.xmtp.proto.message.contents.Content.EncodedContent
-
-fun <EncodedContent.T> decoded() : T {
+fun <T> EncodedContent.decoded() : T? {
     val codec = Client.codecRegistry.find(for = type)
     var encodedContent = this
     if (hasCompression) {
         encodedContent = decompressContent()
     }
     val content = codec.decode(content = encodedContent) as? T
-    if (content != null) {
-        return content
-    }
-    throw CodecError.invalidContent
+    return content
 }
 
 fun EncodedContent.compress(compression: EncodedContentCompression) : EncodedContent {
-    var copy = this
+    val copy = this.toBuilder()
     when (compression) {
-        deflate -> copy.compression = .deflate
-                gzip -> copy.compression = .gzip
+        EncodedContentCompression.deflate -> {
+            copy.also {
+                it.compression = deflate
+            }
+        }
+        EncodedContentCompression.gzip -> {
+            copy.also {
+                it.compression = gzip
+            }
+        }
     }
-    copy.content = compression.compress(content = content)
-    return copy
+    copy.also {
+        it.content = compression.compress(content = content)
+    }
+    return copy.build()
 }
 
 fun EncodedContent.decompressContent() : EncodedContent {
-    if (!hasCompression) {
+    if (!hasCompression()) {
         return this
     }
     var copy = this
     when (compression) {
-        gzip -> copy.content = EncodedContentCompression.gzip.decompress(content = content)
-        deflate -> copy.content = EncodedContentCompression.deflate.decompress(content = content)
+        Content.Compression.COMPRESSION_DEFLATE -> {
+            copy = copy.toBuilder().also {
+                it.content = EncodedContentCompression.deflate.decompress(content = content.toByteArray()).toByteString()
+            }.build()
+        }
+        Content.Compression.COMPRESSION_GZIP -> {
+            copy = copy.toBuilder().also {
+                it.content = EncodedContentCompression.gzip.decompress(content = content.toByteArray()).toByteString()
+            }.build()
+        }
         else -> return copy
     }
     return copy
 }
 
 public interface ContentCodec: Hashable, Equatable {
-    associatedtype T
-    val contentType: ContentTypeID
-    fun encode(content: T) : EncodedContent
-    fun decode(content: EncodedContent) : T
+    val contentType: ContentTypeId
+    fun encode(content: String) : EncodedContent
+    fun decode(content: EncodedContent) : String
 }
 
 public fun ContentCodec.Companion.==(lhs: Self, rhs: Self) : Boolean =

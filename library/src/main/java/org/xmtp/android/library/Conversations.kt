@@ -1,12 +1,24 @@
 package org.xmtp.android.library
 
+import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1
 import org.xmtp.android.library.messages.MessageV1
+import org.xmtp.android.library.messages.MessageV1Builder
 import org.xmtp.android.library.messages.SealedInvitation
+import org.xmtp.android.library.messages.SealedInvitationBuilder
 import org.xmtp.android.library.messages.SignedPublicKeyBundle
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.createRandom
+import org.xmtp.android.library.messages.decrypt
+import org.xmtp.android.library.messages.getInvitation
+import org.xmtp.android.library.messages.header
+import org.xmtp.android.library.messages.involves
+import org.xmtp.android.library.messages.recipientAddress
+import org.xmtp.android.library.messages.senderAddress
+import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.toSignedPublicKeyBundle
+import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
 
@@ -15,7 +27,10 @@ data class Conversations(
     var conversations: MutableList<Conversation> = mutableListOf()
 ) {
 
-    public fun newConversation(peerAddress: String, context: Invitation.InvitationV1.Context? = null) : Conversation {
+    suspend fun newConversation(
+        peerAddress: String,
+        context: Invitation.InvitationV1.Context? = null
+    ): Conversation {
         if (peerAddress.lowercase() == client.address?.lowercase()) {
             throw IllegalArgumentException("Recipient is sender")
         }
@@ -23,7 +38,8 @@ data class Conversations(
         if (existingConversation != null) {
             return existingConversation
         }
-        val contact = client.contacts.find(peerAddress) ?: throw IllegalArgumentException("Recipient not on network")
+        val contact = client.contacts.find(peerAddress)
+            ?: throw IllegalArgumentException("Recipient not on network")
         // See if we have an existing v1 convo
         if (context?.conversationId == null || context.conversationId == "") {
             val invitationPeers = listIntroductionPeers()
@@ -41,8 +57,14 @@ data class Conversations(
             }
         }
         // If the contact is v1, start a v1 conversation
-        if (Conversation.v1 = contact.version && context?.conversationId == null || context?.conversationId == "") {
-            val conversation: Conversation = .v1(ConversationV1(client = client, peerAddress = peerAddress, sentAt = Date()))
+        if (Contact.ContactBundle.VersionCase.V1 == contact.versionCase && (context?.conversationId == null || context.conversationId == "")) {
+            val conversation: Conversation = Conversation.v1(
+                ConversationV1(
+                    client = client,
+                    peerAddress = peerAddress,
+                    sentAt = Date()
+                )
+            )
             conversations.add(conversation)
             return conversation
         }
@@ -52,8 +74,17 @@ data class Conversations(
                 continue
             }
             val invite = sealedInvitation.v1.getInvitation(viewer = client.keys)
-            if (invite.context.conversationID == context?.conversationId && invite.context.conversationID != "") {
-                val conversation: Conversation = .v2(ConversationV2(topic = invite.topic, keyMaterial = invite.aes256GcmHkdfSha256.keyMaterial, context = invite.context, peerAddress = peerAddress, client = client, header = sealedInvitation.v1.header))
+            if (invite.context.conversationId == context?.conversationId && invite.context.conversationId != "") {
+                val conversation: Conversation = Conversation.v2(
+                    ConversationV2(
+                        topic = invite.topic,
+                        keyMaterial = invite.aes256GcmHkdfSha256.keyMaterial.toByteArray(),
+                        context = invite.context,
+                        peerAddress = peerAddress,
+                        client = client,
+                        header = sealedInvitation.v1.header
+                    )
+                )
                 conversations.add(conversation)
                 return conversation
             }
@@ -61,88 +92,67 @@ data class Conversations(
         // We don't have an existing conversation, make a v2 one
         val recipient = contact.toSignedPublicKeyBundle()
         val invitation = Invitation.InvitationV1.newBuilder().build().createRandom(context)
-        val sealedInvitation = sendInvitation(recipient = recipient, invitation = invitation, created = Date())
-        val conversationV2 = ConversationV2.create(client = client, invitation = invitation, header = sealedInvitation.v1.header)
+        val sealedInvitation =
+            sendInvitation(recipient = recipient, invitation = invitation, created = Date())
+        val conversationV2 = ConversationV2.create(
+            client = client,
+            invitation = invitation,
+            header = sealedInvitation.v1.header
+        )
         val conversation: Conversation = Conversation.v2(conversationV2)
         conversations.add(conversation)
         return conversation
     }
 
-    public fun stream() : ThrowingStream<Conversation, Error> =
-        ThrowingStream { continuation  ->
-            Task {
-                var streamedConversationTopics: Set<String> = listOf()
-                for (envelope in client.subscribe(topics = listOf(.userIntro(client.address), .userInvite(client.address)))) {
-                if (envelope.contentTopic == Topic.userIntro(client.address).description) {
-                    val messageV1 = MessageV1.fromBytes(envelope.message)
-                    val senderAddress = messageV1.header.sender.walletAddress
-                    val recipientAddress = messageV1.header.recipient.walletAddress
-                    val peerAddress = if (client.address == senderAddress) recipientAddress else senderAddress
-                    val conversationV1 = ConversationV1(client = client, peerAddress = peerAddress, sentAt = messageV1.sentAt)
-                    if (streamedConversationTopics.contains(conversationV1.topic.description)) {
-                        continue
-                    }
-                    streamedConversationTopics.insert(conversationV1.topic.description)
-                    continuation.yield(Conversation.v1(conversationV1))
-                }
-                if (envelope.contentTopic == Topic.userInvite(client.address).description) {
-                    val sealedInvitation = SealedInvitation(serializedData = envelope.message)
-                    val unsealed = sealedInvitation.v1.getInvitation(viewer = client.keys)
-                    val conversationV2 = ConversationV2.create(client = client, invitation = unsealed, header = sealedInvitation.v1.header)
-                    if (streamedConversationTopics.contains(conversationV2.topic)) {
-                        continue
-                    }
-                    streamedConversationTopics.insert(conversationV2.topic)
-                    continuation.yield(Conversation.v2(conversationV2))
-                }
-            }
-            }
-        }
-
-    public fun list() : List<Conversation> {
-        var conversations: List<Conversation> = listOf()
-        do {
-            val seenPeers = listIntroductionPeers()
-            for ((peerAddress, sentAt) in seenPeers) {
-                conversations.add(Conversation.v1(ConversationV1(client = client, peerAddress = peerAddress, sentAt = sentAt)))
-            }
-        } catch {
-            print("Error loading introduction peers: ${error}")
+    suspend fun list(): List<Conversation> {
+        val conversations: MutableList<Conversation> = mutableListOf()
+        val seenPeers = listIntroductionPeers()
+        for ((peerAddress, sentAt) in seenPeers) {
+            conversations.add(
+                Conversation.v1(
+                    ConversationV1(
+                        client = client,
+                        peerAddress = peerAddress,
+                        sentAt = sentAt
+                    )
+                )
+            )
         }
         val invitations = listInvitations()
         for (sealedInvitation in invitations) {
-            do {
-                val unsealed = sealedInvitation.v1.getInvitation(viewer = client.keys)
-                val conversation = ConversationV2.create(client = client, invitation = unsealed, header = sealedInvitation.v1.header)
-                conversations.add(Conversation.v2(conversation))
-            } catch {
-                print("Error loading invitations: ${error}")
-            }
+            val unsealed = sealedInvitation.v1.getInvitation(viewer = client.keys)
+            val conversation = ConversationV2.create(
+                client = client,
+                invitation = unsealed,
+                header = sealedInvitation.v1.header
+            )
+            conversations.add(Conversation.v2(conversation))
         }
         return conversations.filter { it.peerAddress != client.address }
     }
 
-    fun listIntroductionPeers() : Map<String, Date> {
-        val envelopes = client.apiClient.query(topics = listOf(.userIntro(client.address)), pagination = null).envelopes
-        val messages = envelopes.compactMap { envelope  ->
-            do {
-                val message = MessageV1.fromBytes(envelope.message)
-                // Attempt to decrypt, just to make sure we can
-                message.decrypt(with = client.privateKeyBundleV1)
-                return@compactMap message
-            } catch {
-                return@compactMap null
-            }
+    suspend fun listIntroductionPeers(): Map<String, Date> {
+        val envelopes =
+            client.apiClient.query(
+                topics = listOf(
+                    Topic.userIntro(
+                        client.address ?: ""
+                    )
+                )
+            ).envelopesList
+        val messages = envelopes.map { envelope ->
+            val message = MessageV1Builder.buildFromBytes(envelope.message.toByteArray())
+            // Attempt to decrypt, just to make sure we can
+            message.decrypt(client.privateKeyBundleV1)
+            message
         }
-        var seenPeers: Map<String, Date> = mapOf()
+        val seenPeers: MutableMap<String, Date> = mutableMapOf()
         for (message in messages) {
             val recipientAddress = message.recipientAddress
             val senderAddress = message.senderAddress
-            if (recipientAddress == null || senderAddress == null) {
-                continue
-            }
             val sentAt = message.sentAt
-            val peerAddress = if (recipientAddress == client.address) senderAddress else recipientAddress
+            val peerAddress =
+                if (recipientAddress == client.address) senderAddress else recipientAddress
             val existing = seenPeers[peerAddress]
             if (existing == null) {
                 seenPeers[peerAddress] = sentAt
@@ -155,15 +165,49 @@ data class Conversations(
         return seenPeers
     }
 
-    fun listInvitations() : List<SealedInvitation> {
-        val envelopes = client.apiClient.query(topics = listOf(userInvite(client.address))).envelopes
-        return envelopes.compactMap { envelope  ->
-            try { SealedInvitation(envelope.message) } catch (e: Throwable) { null }
+    suspend fun listInvitations(): List<SealedInvitation> {
+        val envelopes =
+            client.apiClient.query(
+                topics = listOf(
+                    Topic.userInvite(
+                        client.address ?: ""
+                    )
+                )
+            ).envelopesList
+        return envelopes.map { envelope ->
+            SealedInvitation.parseFrom(envelope.message)
         }
     }
 
-    fun sendInvitation(recipient: SignedPublicKeyBundle, invitation: InvitationV1, created: Date) : SealedInvitation {
-        val sealed = SealedInvitation.createV1(sender = client.keys, recipient = recipient, created = created, invitation = invitation)
-        val peerAddress = recipient.walletAddress
+    suspend fun sendInvitation(
+        recipient: SignedPublicKeyBundle,
+        invitation: InvitationV1,
+        created: Date
+    ): SealedInvitation {
+        client.keys?.let {
+            val sealed = SealedInvitationBuilder.buildFromV1(
+                sender = it,
+                recipient = recipient,
+                created = created,
+                invitation = invitation
+            )
+            val peerAddress = recipient.walletAddress
+
+            client.publish(
+                envelopes = listOf(
+                    EnvelopeBuilder.buildFromTopic(
+                        topic = Topic.userInvite(
+                            client.address ?: ""
+                        ), timestamp = created, message = sealed.toByteArray()
+                    ), EnvelopeBuilder.buildFromTopic(
+                        topic = Topic.userInvite(
+                            peerAddress
+                        ), timestamp = created, message = sealed.toByteArray()
+                    )
+                )
+            )
+            return sealed
+        }
+        return SealedInvitation.newBuilder().build()
     }
 }

@@ -4,7 +4,7 @@ import org.junit.*
 import org.junit.Assert.*
 import org.xmtp.android.library.codecs.CompositeCodec
 import org.xmtp.android.library.codecs.ContentCodec
-import org.xmtp.android.library.codecs.ContentTypeID
+import org.xmtp.android.library.codecs.ContentTypeId
 import org.xmtp.android.library.codecs.DecodedComposite
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
@@ -12,11 +12,11 @@ import org.xmtp.android.library.codecs.TextCodec
 data class NumberCodec: ContentCodec {
     typealias T = Double
     val contentType: XMTP.ContentTypeID
-        get() = ContentTypeID(authorityID = "example.com", typeID = "number", versionMajor = 1, versionMinor = 1)
+        get() = ContentTypeId(authorityID = "example.com", typeID = "number", versionMajor = 1, versionMinor = 1)
 
     fun encode(content: Double) : XMTP.EncodedContent {
         var encodedContent = EncodedContent()
-        encodedContent.type = ContentTypeID(authorityID = "example.com", typeID = "number", versionMajor = 1, versionMinor = 1)
+        encodedContent.type = ContentTypeId(authorityId = "example.com", typeId = "number", versionMajor = 1, versionMinor = 1)
         encodedContent.content = JSONEncoder().encode(content)
         return encodedContent
     }

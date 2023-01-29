@@ -39,14 +39,6 @@ enum class FakeApiClientError (val rawValue: String) : Error {
     }
 }
 
-class FakeStreamHolder: ObservableObject {
-    @Published var envelope: Envelope? = null
-
-    fun send(envelope: Envelope) {
-        this.envelope = envelope
-    }
-}
-
 class FakeApiClient: ApiClient {
     var environment: XMTPEnvironment
     var authToken: String = ""
@@ -70,12 +62,6 @@ class FakeApiClient: ApiClient {
         forbiddingQueries = true
         callback()
         forbiddingQueries = false
-    }
-
-    fun register(message: List<Envelope>, topic: Topic) {
-        var responsesForTopic = responses[topic.description] ?: listOf()
-        responsesForTopic.append(contentsOf = message)
-        responses[topic.description] = responsesForTopic
     }
 
     constructor() {
@@ -103,16 +89,6 @@ class FakeApiClient: ApiClient {
         this.environment = environment
     }
 
-    fun subscribe(topics: List<String>) : ThrowingStream<Envelope, Error> =
-        ThrowingStream { continuation  ->
-            this.cancellable = stream.envelope.sink(receiveValue = { env  ->
-                val env = topics.contains(env.contentTopic)
-                if (env != null) {
-                    continuation.yield(env)
-                }
-            })
-        }
-
     fun setAuthToken(token: String) {
         authToken = token
     }
@@ -135,7 +111,7 @@ class FakeApiClient: ApiClient {
         return queryResponse
     }
 
-    fun query(topics: List<XMTP.Topic>) : XMTP.QueryResponse =
+    suspend fun query(topics: List<XMTP.Topic>) : XMTP.QueryResponse =
         query(topics = topics.map(\.description), pagination = pagination)
 
     fun publish(envelopes: List<XMTP.Envelope>) : XMTP.PublishResponse {

@@ -16,15 +16,15 @@ class SealedInvitationHeaderV1Builder {
     }
 }
 
-enum class CodingKeys (val rawValue: CodingKey) {
+enum class CodingKeys(val rawValue: Int) {
     sender(0), recipient(1), createdNs(2);
 
     companion object {
-        operator fun invoke(rawValue: CodingKey) = CodingKeys.values().firstOrNull { it.rawValue == rawValue }
+        operator fun invoke(rawValue: Int) = CodingKeys.values().firstOrNull { it.rawValue == rawValue }
     }
 }
 
-public fun SealedInvitationHeaderV1.encode(encoder: Encoder) {
+fun SealedInvitationHeaderV1.encode(encoder: Encoder) {
     var container = encoder.container(keyedBy = CodingKeys())
     container.encode(sender, forKey = sender)
     container.encode(recipient, forKey = recipient)

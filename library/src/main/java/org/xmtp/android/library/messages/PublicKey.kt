@@ -1,5 +1,6 @@
 package org.xmtp.android.library.messages
 
+import android.content.res.Resources
 import com.google.protobuf.kotlin.toByteString
 import org.bouncycastle.crypto.digests.SHA256Digest
 import org.bouncycastle.util.Arrays
@@ -45,7 +46,7 @@ class PublicKeyBuilder {
 
 fun PublicKey.recoverKeySignedPublicKey(): PublicKey {
     if (!hasSignature()) {
-        throw IllegalArgumentException("No signature found")
+        throw Resources.NotFoundException("No signature found")
     }
     val bytesToSign = PublicKey.newBuilder().apply {
         secp256K1UncompressedBuilder.apply {
@@ -75,7 +76,7 @@ val PublicKey.walletAddress: String
 
 fun PublicKey.recoverWalletSignerPublicKey(): PublicKey {
     if (!hasSignature()) {
-        throw IllegalArgumentException("No signature found")
+        throw Resources.NotFoundException("No signature found")
     }
     val slimKey = PublicKey.newBuilder().also {
         it.timestamp = timestamp

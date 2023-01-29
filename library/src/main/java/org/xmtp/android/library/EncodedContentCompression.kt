@@ -1,15 +1,15 @@
 package org.xmtp.android.library
 
-public enum class EncodedContentCompression {
+enum class EncodedContentCompression {
     deflate,
-    gzip
+    gzip;
 
 
     fun compress(content: ByteArray) : ByteArray {
         when (this) {
             deflate -> {
                 // 78 9C - Default Compression according to https://www.ietf.org/rfc/rfc1950.txt
-                val header = Data(listOf(0x78, 0x9C))
+                val header = byteArrayOf(0x78, 0x9C.toByte())
                 // Perform rfc1951 compression
                 val compressed = (content as NSData).compressed(using = .zlib) as Data
                 // Needed for rfc1950 compliance

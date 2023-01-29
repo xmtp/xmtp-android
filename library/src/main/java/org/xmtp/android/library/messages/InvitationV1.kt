@@ -3,6 +3,7 @@ package org.xmtp.android.library.messages
 import com.google.crypto.tink.subtle.Base64
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.proto.message.contents.Invitation
+import org.xmtp.proto.message.contents.Invitation.InvitationV1.Context
 import java.security.SecureRandom
 
 typealias InvitationV1 = org.xmtp.proto.message.contents.Invitation.InvitationV1
@@ -52,4 +53,15 @@ fun InvitationV1.createRandom(context: Invitation.InvitationV1.Context? = null):
         context = inviteContext,
         aes256GcmHkdfSha256 = aes256GcmHkdfSha256
     )
+}
+
+class InvitationV1ContextBuilder {
+    companion object {
+        fun buildFromConversation(conversationId: String = "", metadata: Map<String, String> = mapOf()) : Context {
+            return Context.newBuilder().also {
+                it.conversationId = conversationId
+                it.putAllMetadata(metadata)
+            }.build()
+        }
+    }
 }
