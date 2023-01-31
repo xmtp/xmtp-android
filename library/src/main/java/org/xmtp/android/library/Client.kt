@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import androidx.annotation.WorkerThread
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.EncryptedPrivateKeyBundle
@@ -53,14 +54,16 @@ class Client() {
         val clientOptions = options ?: ClientOptions()
         val apiClient =
             GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
-        return runBlocking { create(account = account, apiClient = apiClient) }
+        return create(account = account, apiClient = apiClient)
     }
 
-    private suspend fun create(account: SigningKey, apiClient: ApiClient): Client {
-        val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
-        val client = Client(account.address, privateKeyBundleV1, apiClient)
-        client.ensureUserContactPublished()
-        return client
+    private fun create(account: SigningKey, apiClient: ApiClient): Client {
+        return runBlocking {
+            val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
+            val client = Client(account.address, privateKeyBundleV1, apiClient)
+            client.ensureUserContactPublished()
+            client
+        }
     }
 
     fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null): Client =
@@ -74,6 +77,7 @@ class Client() {
         return Client(address = address, privateKeyBundleV1 = v1Bundle, apiClient = apiClient)
     }
 
+    @WorkerThread
     private suspend fun loadOrCreateKeys(
         account: SigningKey,
         apiClient: ApiClient
@@ -102,6 +106,7 @@ class Client() {
         }
     }
 
+    @WorkerThread
     private suspend fun loadPrivateKeys(
         account: SigningKey,
         apiClient: ApiClient
@@ -157,10 +162,12 @@ class Client() {
         return contacts.find(peerAddress)
     }
 
+    @WorkerThread
     suspend fun query(topics: List<Topic>): QueryResponse {
         return apiClient.query(topics = topics)
     }
 
+    @WorkerThread
     suspend fun publish(envelopes: List<Envelope>): PublishResponse {
         privateKeyBundleV1?.let {
             address?.let { address ->
