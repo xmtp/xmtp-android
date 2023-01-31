@@ -60,16 +60,6 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
 
     @WorkerThread
     override suspend fun queryStrings(topics: List<String>): QueryResponse {
-        val request = QueryRequest.newBuilder()
-            .addAllContentTopics(topics).build()
-
-        val headers = Metadata()
-
-        authToken?.let { token ->
-            headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
-        }
-        return client.query(request, headers = headers)
-    }
 
     @WorkerThread
     override suspend fun query(topics: List<Topic>): QueryResponse {

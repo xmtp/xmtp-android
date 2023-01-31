@@ -78,6 +78,7 @@ fun PublicKey.recoverWalletSignerPublicKey(): PublicKey {
     if (!hasSignature()) {
         throw Resources.NotFoundException("No signature found")
     }
+
     val slimKey = PublicKey.newBuilder().also {
         it.timestamp = timestamp
         it.secp256K1UncompressedBuilder.bytes = secp256K1Uncompressed.bytes
