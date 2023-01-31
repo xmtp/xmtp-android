@@ -31,8 +31,11 @@ data class ClientOptions(val api: Api = Api()) {
 
 class Client() {
     var address: String? = null
+        private set
     var privateKeyBundleV1: PrivateKeyBundleV1? = null
+        private set
     var apiClient: ApiClient = GRPCApiClient(XMTPEnvironment.DEV, true)
+        private set
     val environment: XMTPEnvironment = apiClient.environment
     val contacts: Contacts = Contacts(client = this)
 
