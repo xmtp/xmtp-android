@@ -44,7 +44,7 @@ data class Conversations(
             val invitationPeers = listIntroductionPeers()
             val peerSeenAt = invitationPeers[peerAddress]
             if (peerSeenAt != null) {
-                val conversation: Conversation = Conversation.v1(
+                val conversation: Conversation = Conversation.V1(
                     ConversationV1(
                         client = client,
                         peerAddress = peerAddress,
@@ -57,7 +57,7 @@ data class Conversations(
         }
         // If the contact is v1, start a v1 conversation
         if (Contact.ContactBundle.VersionCase.V1 == contact.versionCase && (context?.conversationId == null || context.conversationId == "")) {
-            val conversation: Conversation = Conversation.v1(
+            val conversation: Conversation = Conversation.V1(
                 ConversationV1(
                     client = client,
                     peerAddress = peerAddress,
@@ -74,7 +74,7 @@ data class Conversations(
             }
             val invite = sealedInvitation.v1.getInvitation(viewer = client.keys)
             if (invite.context.conversationId == context?.conversationId && invite.context.conversationId != "") {
-                val conversation: Conversation = Conversation.v2(
+                val conversation: Conversation = Conversation.V2(
                     ConversationV2(
                         topic = invite.topic,
                         keyMaterial = invite.aes256GcmHkdfSha256.keyMaterial.toByteArray(),
@@ -98,7 +98,7 @@ data class Conversations(
             invitation = invitation,
             header = sealedInvitation.v1.header
         )
-        val conversation: Conversation = Conversation.v2(conversationV2)
+        val conversation: Conversation = Conversation.V2(conversationV2)
         conversations.add(conversation)
         return conversation
     }
@@ -108,7 +108,7 @@ data class Conversations(
         val seenPeers = listIntroductionPeers()
         for ((peerAddress, sentAt) in seenPeers) {
             conversations.add(
-                Conversation.v1(
+                Conversation.V1(
                     ConversationV1(
                         client = client,
                         peerAddress = peerAddress,
@@ -125,7 +125,7 @@ data class Conversations(
                 invitation = unsealed,
                 header = sealedInvitation.v1.header
             )
-            conversations.add(Conversation.v2(conversation))
+            conversations.add(Conversation.V2(conversation))
         }
         return conversations.filter { it.peerAddress != client.address }
     }

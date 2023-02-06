@@ -20,19 +20,19 @@ fun <T> EncodedContent.decoded(): T? {
 fun EncodedContent.compress(compression: EncodedContentCompression): EncodedContent {
     val copy = this.toBuilder()
     when (compression) {
-        EncodedContentCompression.deflate -> {
+        EncodedContentCompression.DEFLATE -> {
             copy.also {
                 it.compression = Content.Compression.COMPRESSION_DEFLATE
             }
         }
-        EncodedContentCompression.gzip -> {
+        EncodedContentCompression.GZIP -> {
             copy.also {
                 it.compression = Content.Compression.COMPRESSION_GZIP
             }
         }
     }
     copy.also {
-        it.content = compression.compress(content.toByteArray()).toByteString()
+        it.content = compression.compress(content.toByteArray())?.toByteString()
     }
     return copy.build()
 }
@@ -46,15 +46,15 @@ fun EncodedContent.decompressContent(): EncodedContent {
         Content.Compression.COMPRESSION_DEFLATE -> {
             copy = copy.toBuilder().also {
                 it.content =
-                    EncodedContentCompression.deflate.decompress(content = content.toByteArray())
-                        .toByteString()
+                    EncodedContentCompression.DEFLATE.decompress(content = content.toByteArray())
+                        ?.toByteString()
             }.build()
         }
         Content.Compression.COMPRESSION_GZIP -> {
             copy = copy.toBuilder().also {
                 it.content =
-                    EncodedContentCompression.gzip.decompress(content = content.toByteArray())
-                        .toByteString()
+                    EncodedContentCompression.GZIP.decompress(content = content.toByteArray())
+                        ?.toByteString()
             }.build()
         }
         else -> return copy

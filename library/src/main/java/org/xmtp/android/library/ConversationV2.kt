@@ -26,7 +26,7 @@ data class ConversationV2Container(
     var header: SealedInvitationHeaderV1
 ) : java.io.Serializable {
 
-    public fun decode(client: Client): ConversationV2 {
+    fun decode(client: Client): ConversationV2 {
         val context = InvitationV1ContextBuilder.buildFromConversation(
             conversationId ?: "",
             metadata = metadata
