@@ -70,10 +70,3 @@ interface ContentCodec<T> {
 
 val id: String
     get() = contentType.id
-
-//public fun ContentCodec.Companion.==(lhs: Self, rhs: Self) : Boolean =
-//    lhs.contentType.authorityID == rhs.contentType.authorityID && lhs.contentType.typeID == rhs.contentType.typeID
-//
-//public fun ContentCodec.hash(hasher: inout Hasher) {
-//    hasher.combine(id)
-//}

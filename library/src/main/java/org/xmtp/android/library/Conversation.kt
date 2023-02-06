@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import kotlinx.coroutines.runBlocking
 import java.util.Date
 
 sealed class ConversationContainer {
@@ -40,10 +41,10 @@ sealed class Conversation {
         }
 
 
-    suspend fun <T> send(content: T, options: SendOptions? = null) {
+    fun <T> send(content: T, options: SendOptions? = null) {
         when (this) {
             is V1 -> conversationV1.send(content = content as String, options = options)
-            is V2 -> conversationV2.send(content = content, options = options)
+            is V2 -> runBlocking { conversationV2.send(content = content, options = options) }
         }
     }
 
@@ -63,14 +64,14 @@ sealed class Conversation {
         }
 
 
-    suspend fun messages(
+   fun messages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null
     ): List<DecodedMessage> {
         return when (this) {
-            is V1 -> conversationV1.messages(limit = limit, before = before, after = after)
-            is V2 -> conversationV2.messages(limit = limit, before = before, after = after)
+            is V1 -> runBlocking { conversationV1.messages(limit = limit, before = before, after = after) }
+            is V2 -> runBlocking { conversationV2.messages(limit = limit, before = before, after = after) }
         }
     }
 

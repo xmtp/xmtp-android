@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1
 import org.xmtp.android.library.messages.MessageV1Builder
@@ -26,7 +27,7 @@ data class Conversations(
     var conversations: MutableList<Conversation> = mutableListOf()
 ) {
 
-    suspend fun newConversation(
+    fun newConversation(
         peerAddress: String,
         context: Invitation.InvitationV1.Context? = null
     ): Conversation {
@@ -130,15 +131,17 @@ data class Conversations(
         return conversations.filter { it.peerAddress != client.address }
     }
 
-    suspend fun listIntroductionPeers(): Map<String, Date> {
+    fun listIntroductionPeers(): Map<String, Date> {
         val envelopes =
-            client.apiClient.query(
-                topics = listOf(
-                    Topic.userIntro(
-                        client.address ?: ""
+            runBlocking {
+                client.apiClient.query(
+                    topics = listOf(
+                        Topic.userIntro(
+                            client.address ?: ""
+                        )
                     )
-                )
-            ).envelopesList
+                ).envelopesList
+            }
         val messages = envelopes.map { envelope ->
             val message = MessageV1Builder.buildFromBytes(envelope.message.toByteArray())
             // Attempt to decrypt, just to make sure we can
@@ -164,8 +167,8 @@ data class Conversations(
         return seenPeers
     }
 
-    suspend fun listInvitations(): List<SealedInvitation> {
-        val envelopes =
+    fun listInvitations(): List<SealedInvitation> {
+        val envelopes = runBlocking {
             client.apiClient.query(
                 topics = listOf(
                     Topic.userInvite(
@@ -173,12 +176,13 @@ data class Conversations(
                     )
                 )
             ).envelopesList
+        }
         return envelopes.map { envelope ->
             SealedInvitation.parseFrom(envelope.message)
         }
     }
 
-    suspend fun sendInvitation(
+    fun sendInvitation(
         recipient: SignedPublicKeyBundle,
         invitation: InvitationV1,
         created: Date
@@ -192,19 +196,21 @@ data class Conversations(
             )
             val peerAddress = recipient.walletAddress
 
-            client.publish(
-                envelopes = listOf(
-                    EnvelopeBuilder.buildFromTopic(
-                        topic = Topic.userInvite(
-                            client.address ?: ""
-                        ), timestamp = created, message = sealed.toByteArray()
-                    ), EnvelopeBuilder.buildFromTopic(
-                        topic = Topic.userInvite(
-                            peerAddress
-                        ), timestamp = created, message = sealed.toByteArray()
+            runBlocking {
+                client.publish(
+                    envelopes = listOf(
+                        EnvelopeBuilder.buildFromTopic(
+                            topic = Topic.userInvite(
+                                client.address ?: ""
+                            ), timestamp = created, message = sealed.toByteArray()
+                        ), EnvelopeBuilder.buildFromTopic(
+                            topic = Topic.userInvite(
+                                peerAddress
+                            ), timestamp = created, message = sealed.toByteArray()
+                        )
                     )
                 )
-            )
+            }
             return sealed
         }
         return SealedInvitation.newBuilder().build()

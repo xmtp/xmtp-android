@@ -77,7 +77,7 @@ class MessageTest {
             message1,
             keyMaterial = invitationv1.aes256GcmHkdfSha256.keyMaterial.toByteArray()
         )
-        val result: String = decoded.content()
+        val result: String? = decoded.content()
         assertEquals(result, "Yo!")
     }
 
