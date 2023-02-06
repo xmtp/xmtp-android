@@ -2,11 +2,16 @@ package org.xmtp.android.library.codecs
 
 import com.google.protobuf.kotlin.toByteStringUtf8
 
-val ContentTypeText = ContentTypeIdBuilder.builderFromAuthorityId("xmtp.org", "text", versionMajor = 1, versionMinor = 0)
-typealias T = String
+val ContentTypeText = ContentTypeIdBuilder.builderFromAuthorityId(
+    "xmtp.org",
+    "text",
+    versionMajor = 1,
+    versionMinor = 0
+)
 
-data class TextCodec(override var contentType: ContentTypeId = ContentTypeText): ContentCodec {
-    override fun encode(content: String) : EncodedContent {
+data class TextCodec(override var contentType: ContentTypeId = ContentTypeText) :
+    ContentCodec<String> {
+    override fun encode(content: String): EncodedContent {
         return EncodedContent.newBuilder().also {
             it.type = ContentTypeText
             it.putAllParameters(mapOf("encoding" to "UTF-8"))
@@ -14,7 +19,7 @@ data class TextCodec(override var contentType: ContentTypeId = ContentTypeText):
         }.build()
     }
 
-    override fun decode(content: EncodedContent) : String {
+    override fun decode(content: EncodedContent): String {
         val encoding = content.parameters["encoding"]
         if (encoding != null && encoding != "UTF-8") {
             throw IllegalArgumentException("Invalid encoding")

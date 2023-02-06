@@ -3,33 +3,39 @@ package org.xmtp.android.library.codecs
 import org.xmtp.proto.message.contents.CompositeKt.part
 import org.xmtp.proto.message.contents.CompositeOuterClass
 import org.xmtp.proto.message.contents.CompositeOuterClass.Composite.Part
+import org.xmtp.proto.message.contents.composite
+import org.xmtp.proto.message.contents.encodedContent
 
 typealias Composite = org.xmtp.proto.message.contents.CompositeOuterClass.Composite
-val ContentTypeComposite = ContentTypeId(authorityId = "xmtp.org", typeId = "composite", versionMajor = 1, versionMinor = 0)
+
+val ContentTypeComposite = ContentTypeIdBuilder.builderFromAuthorityId(
+    authorityId = "xmtp.org",
+    typeId = "composite",
+    versionMajor = 1,
+    versionMinor = 0
+)
 
 class CompositePartBuilder {
     companion object {
-        fun buildFromEncodedContent(encodedContent: EncodedContent) : CompositeOuterClass.Composite.Part {
+        fun buildFromEncodedContent(encodedContent: EncodedContent): CompositeOuterClass.Composite.Part {
             return CompositeOuterClass.Composite.Part.newBuilder().also {
-                it.element = part(encodedContent)
+                it.part = encodedContent
             }.build()
         }
 
-        fun buildFromComosite(composite: Composite) : CompositeOuterClass.Composite.Part {
+        fun buildFromComosite(composite: Composite): CompositeOuterClass.Composite.Part {
             return CompositeOuterClass.Composite.Part.newBuilder().also {
-                it.element = composite(composite)
+                it.composite = composite
             }.build()
         }
     }
 }
 
-typealias T = DecodedComposite
-
-data class CompositeCodec: ContentCodec {
-    val contentType: ContentTypeId
+class CompositeCodec : ContentCodec<DecodedComposite> {
+    override val contentType: ContentTypeId
         get() = ContentTypeComposite
 
-    fun encode(content: DecodedComposite) : EncodedContent {
+    override fun encode(content: DecodedComposite): EncodedContent {
         val composite = toComposite(content)
         return EncodedContent.newBuilder().also {
             it.type = ContentTypeComposite
@@ -37,48 +43,48 @@ data class CompositeCodec: ContentCodec {
         }.build()
     }
 
-    fun decode(encoded: EncodedContent) : DecodedComposite {
-        val composite = Composite.parseFrom(encoded.content)
-        val decodedComposite = fromComposite(composite = composite)
-        return decodedComposite
+    override fun decode(content: EncodedContent): DecodedComposite {
+        val composite = Composite.parseFrom(content.content)
+        return fromComposite(composite = composite)
     }
 
-    fun toComposite(decodedComposite: DecodedComposite) : Composite {
-        )
+    private fun toComposite(decodedComposite: DecodedComposite): Composite {
         return Composite.newBuilder().also {
             val content = decodedComposite.encodedContent
             if (content != null) {
-                it.addAllParts(listOf(CompositePartBuilder.buildFromEncodedContent(content)))
+                it.addParts(CompositePartBuilder.buildFromEncodedContent(content))
                 return it.build()
             }
             for (part in decodedComposite.parts) {
                 val encodedContent = part.encodedContent
                 if (encodedContent != null) {
-                    it.addAllParts((CompositePartBuilder.buildFromEncodedContent(encodedContent))
+                    it.addParts((CompositePartBuilder.buildFromEncodedContent(encodedContent)))
                 } else {
-                    it.addAllParts((CompositePartBuilder.buildFromComosite(composite = toComposite(content = part)))
+                    it.addParts((CompositePartBuilder.buildFromComosite(toComposite(part))))
                 }
             }
         }.build()
     }
 
-    fun fromComposite(composite: Composite) : DecodedComposite {
+    private fun fromComposite(composite: Composite): DecodedComposite {
         val decodedComposite = DecodedComposite()
-        if (composite.parts.size == 1 && part = composite.parts.firstOrNull()?.element) {
-            decodedComposite.encodedContent = content
+        if (composite.partsList.size == 1 && part { } == composite.partsList.first()) {
+            decodedComposite.encodedContent = encodedContent { content }
             return decodedComposite
         }
         decodedComposite.parts = composite.partsList.map { fromCompositePart(part = it) }
         return decodedComposite
     }
 
-    fun fromCompositePart(part: Part) : DecodedComposite {
-        val decodedComposite = DecodedComposite()
-        when (part.elementCase) {
-            Part.ElementCase.PART -> decodedComposite.encodedContent = encodedContent
-            Part.ElementCase.COMPOSITE -> decodedComposite.parts = composite.parts.map { fromCompositePart(part = it) }
-            Part.ElementCase.ELEMENT_NOT_SET -> return decodedComposite
+    private fun fromCompositePart(part: Part): DecodedComposite {
+        return when (part.elementCase) {
+            Part.ElementCase.PART -> {
+                DecodedComposite(emptyList(), encodedContent {})
+            }
+            Part.ElementCase.COMPOSITE -> {
+                DecodedComposite(composite {}.partsList.map { fromCompositePart(it) })
+            }
+            else -> DecodedComposite()
         }
-        return decodedComposite
     }
 }

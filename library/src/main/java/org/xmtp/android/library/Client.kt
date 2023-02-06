@@ -2,6 +2,8 @@ package org.xmtp.android.library
 
 import androidx.annotation.WorkerThread
 import kotlinx.coroutines.runBlocking
+import org.xmtp.android.library.codecs.ContentCodec
+import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.EncryptedPrivateKeyBundle
 import org.xmtp.android.library.messages.Envelope
@@ -40,6 +42,16 @@ class Client() {
     val environment: XMTPEnvironment = apiClient.environment
     val contacts: Contacts = Contacts(client = this)
     val conversations: Conversations = Conversations(client = this)
+
+    var codecRegistry = run {
+        val registry = CodecRegistry()
+        registry.register(codec = TextCodec())
+        registry
+    }
+
+    fun register(codec: ContentCodec) {
+        codecRegistry.register(codec = codec)
+    }
 
     constructor(
         address: String,

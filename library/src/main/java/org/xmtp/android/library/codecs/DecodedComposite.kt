@@ -2,9 +2,10 @@ package org.xmtp.android.library.codecs
 
 data class DecodedComposite(
     var parts: List<DecodedComposite> = listOf(),
-    var encodedContent: EncodedContent? = null) {
+    var encodedContent: EncodedContent? = null
+) {
 
-    fun <String> content() : String? =
+    fun <T> content(): T? =
         encodedContent?.decoded()
 }
 
