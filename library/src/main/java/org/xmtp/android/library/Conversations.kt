@@ -2,7 +2,6 @@ package org.xmtp.android.library
 
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1
-import org.xmtp.android.library.messages.MessageV1
 import org.xmtp.android.library.messages.MessageV1Builder
 import org.xmtp.android.library.messages.SealedInvitation
 import org.xmtp.android.library.messages.SealedInvitationBuilder

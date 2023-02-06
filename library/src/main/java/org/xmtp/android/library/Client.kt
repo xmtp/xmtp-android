@@ -49,7 +49,7 @@ class Client() {
         registry
     }
 
-    fun register(codec: ContentCodec) {
+    fun register(codec: ContentCodec<*>) {
         codecRegistry.register(codec = codec)
     }
 

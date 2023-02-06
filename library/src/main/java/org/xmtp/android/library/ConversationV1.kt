@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import android.content.res.Resources.NotFoundException
-import kotlinx.coroutines.flow.flow
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
@@ -17,20 +16,19 @@ import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import java.util.Date
-import java.util.concurrent.Flow
 
 
-public data class ConversationV1Container(
+data class ConversationV1Container(
     var peerAddress: String,
     var sentAt: Date
-) : Codable {
+) {
 
     fun decode(client: Client): ConversationV1 =
         ConversationV1(client = client, peerAddress = peerAddress, sentAt = sentAt)
 }
 
 /// Handles legacy message conversations.
-public data class ConversationV1(
+data class ConversationV1(
     var client: Client,
     var peerAddress: String,
     var sentAt: Date
@@ -39,19 +37,32 @@ public data class ConversationV1(
         get() = Topic.directMessageV1(client.address, peerAddress)
 
     fun send(content: String) {
-        send(content = content, sendOptions = null, sentAt = null)
+        send(content = content, sentAt = null)
     }
 
-    internal fun send(content: String, _: SendOptions? = null, sentAt: Date? = null) {
+    private fun send(content: String, sentAt: Date? = null) {
         val encoder = TextCodec()
         val encodedContent = encoder.encode(content = content)
-        send(content = encodedContent, sentAt = sentAt)
+        send(content = encodedContent)
     }
 
-    fun <Codec : ContentCodec> send(codec: Codec, content: Codec.T, fallback: String? = null) {
-        var encoded = codec.encode(content = content)
-        encoded.fallback = fallback ?: ""
-        send(content = encoded)
+    fun <T : Any> send(content: T, options: SendOptions? = null) {
+        val codec = Client().codecRegistry.find(options?.contentType)
+
+        fun <Codec : ContentCodec<T>> encode(codec: Codec, content: Any): EncodedContent {
+            val contentType = content as? T
+            if (contentType != null) {
+                return codec.encode(content = contentType)
+            } else {
+                throw java.lang.NullPointerException()
+            }
+        }
+
+        var encoded = encode(codec = codec as ContentCodec<T>, content = content)
+        encoded = encoded.toBuilder().also {
+            it.fallback = options?.contentFallback ?: ""
+        }.build()
+        send(content = encoded, options = options)
     }
 
     private suspend fun send(
@@ -115,7 +126,8 @@ public data class ConversationV1(
                     client.address,
                     peerAddress
                 )
-            )).envelopesList
+            )
+        ).envelopesList
         return envelopes.flatMap { envelope ->
             listOf(decode(envelope = envelope))
         }
@@ -124,7 +136,7 @@ public data class ConversationV1(
     private fun decode(envelope: Envelope): DecodedMessage {
         val message = Message.parseFrom(envelope.message)
         val decrypted = message.v1.decrypt(client.privateKeyBundleV1)
-        val encodedMessage = EncodedContent(decrypted)
+        val encodedMessage = EncodedContent.parseFrom(decrypted)
         val header = message.v1.header
         return DecodedMessage(
             encodedContent = encodedMessage,

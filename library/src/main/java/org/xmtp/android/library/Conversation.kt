@@ -4,15 +4,17 @@ import org.xmtp.android.library.codecs.ContentCodec
 import java.util.Date
 import java.util.concurrent.Flow
 
-sealed class ConversationContainer {
+sealed class ConversationContainer: java.io.Serializable {
     data class v1(val v1: ConversationV1Container) : ConversationContainer()
     data class v2(val v1: ConversationV2Container) : ConversationContainer()
 
 
     fun decode(client: Client) : Conversation {
         return when (this) {
-            is v1 -> v1(container.decode(client))
-            is v2 -> v2(container.decode(client))
+            is v1 -> {
+                v1(this.decode(client))
+            }
+            is v2 -> v2(this.decode(client))
         }
     }
 }

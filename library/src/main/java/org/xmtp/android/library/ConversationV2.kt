@@ -1,14 +1,10 @@
 package org.xmtp.android.library
 
 import android.content.res.Resources.NotFoundException
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
-import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
-import org.xmtp.android.library.messages.InvitationV1
 import org.xmtp.android.library.messages.InvitationV1ContextBuilder
 import org.xmtp.android.library.messages.Message
 import org.xmtp.android.library.messages.MessageBuilder
@@ -21,14 +17,14 @@ import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
 
 
-public data class ConversationV2Container(
+data class ConversationV2Container(
     var topic: String,
     var keyMaterial: ByteArray,
     var conversationId: String? = null,
     var metadata: Map<String, String> = mapOf(),
     var peerAddress: String,
     var header: SealedInvitationHeaderV1
-) : Codable {
+) : java.io.Serializable {
 
     public fun decode(client: Client): ConversationV2 {
         val context = InvitationV1ContextBuilder.buildFromConversation(
@@ -47,7 +43,7 @@ public data class ConversationV2Container(
 }
 
 /// Handles V2 Message conversations.
-public data class ConversationV2(
+data class ConversationV2(
     var topic: String,
     var keyMaterial: ByteArray,
     var context: Invitation.InvitationV1.Context,
@@ -62,9 +58,9 @@ public data class ConversationV2(
             invitation: Invitation.InvitationV1,
             header: SealedInvitationHeaderV1
         ): ConversationV2 {
-            val myKeys = client.keys.getPublicKeyBundle()
+            val myKeys = client.keys?.getPublicKeyBundle()
             val peer =
-                if (myKeys.walletAddress == (header.sender.walletAddress)) header.recipient else header.sender
+                if (myKeys?.walletAddress == (header.sender.walletAddress)) header.recipient else header.sender
             val peerAddress = peer.walletAddress
             val keyMaterial = invitation.aes256GcmHkdfSha256.keyMaterial.toByteArray()
             return ConversationV2(
@@ -93,11 +89,25 @@ public data class ConversationV2(
     private fun decode(message: MessageV2): DecodedMessage =
         MessageV2Builder.buildDecode(message, keyMaterial = keyMaterial)
 
-    suspend fun <Codec : ContentCodec> send(codec: Codec, content: Codec.T, fallback: String? = null) {
-        val encoded = codec.encode(content = content)
-        encoded.fallback = fallback ?: ""
+    suspend fun <T> send(content: T, options: SendOptions? = null) {
+        val codec = Client().codecRegistry.find(options?.contentType)
+
+        fun <Codec : ContentCodec<T>> encode(codec: Codec, content: Any?): EncodedContent {
+            val contentType = content as? T
+            if (contentType != null) {
+                return codec.encode(contentType)
+            } else {
+                throw java.lang.NullPointerException()
+            }
+        }
+
+        var encoded = encode(codec = codec as ContentCodec<T>, content = content)
+        encoded = encoded.toBuilder().also {
+            it.fallback = options?.contentFallback ?: ""
+        }.build()
         send(content = encoded, sentAt = Date())
     }
+
 
     suspend fun send(content: String, sentAt: Date) {
         val encoder = TextCodec()
