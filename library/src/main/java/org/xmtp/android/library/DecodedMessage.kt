@@ -10,7 +10,6 @@ data class DecodedMessage(
     var senderAddress: String,
     var sent: Date
 ) {
-
     companion object {
         fun preview(body: String, senderAddress: String, sent: Date): DecodedMessage {
             val encoded = TextCodec().encode(content = body)
@@ -33,5 +32,3 @@ data class DecodedMessage(
             return content() as String? ?: fallbackContent
         }
 }
-
-

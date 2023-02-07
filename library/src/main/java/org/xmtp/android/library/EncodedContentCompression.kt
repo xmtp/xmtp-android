@@ -81,7 +81,6 @@ enum class EncodedContentCompression {
                     inflater.end()
                     outputStream.close()
                     return outputStream.toByteArray()
-
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }

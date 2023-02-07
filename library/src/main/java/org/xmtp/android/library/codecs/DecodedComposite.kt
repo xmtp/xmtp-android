@@ -7,4 +7,3 @@ data class DecodedComposite(
     fun <T> content(): T? =
         encodedContent?.decoded()
 }
-
