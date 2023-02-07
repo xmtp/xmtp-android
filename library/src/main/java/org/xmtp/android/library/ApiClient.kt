@@ -37,15 +37,17 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
             Metadata.Key.of("X-App-Version", Metadata.ASCII_STRING_MARSHALLER)
     }
 
-    private val channel: ManagedChannel = Grpc.newChannelBuilderForAddress(
-        environment.rawValue,
-        5556,
-        if (secure) {
-            TlsChannelCredentials.create()
-        } else {
-            InsecureChannelCredentials.create()
-        },
-    ).build()
+    private val channel: ManagedChannel =
+        Grpc.newChannelBuilderForAddress(
+            environment.rawValue,
+            5556,
+            if (secure) {
+                TlsChannelCredentials.create()
+            } else {
+                InsecureChannelCredentials.create()
+            },
+        ).build()
+
 
     private val client: MessageApiGrpcKt.MessageApiCoroutineStub =
         MessageApiGrpcKt.MessageApiCoroutineStub(channel)
@@ -65,7 +67,11 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
         authToken?.let { token ->
             headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
         }
-        return client.query(request, headers = headers)
+        return try {
+            client.query(request, headers = headers)
+        } finally {
+            close()
+        }
     }
 
     @WorkerThread
@@ -85,7 +91,11 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
         headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
         headers.put(APP_VERSION_HEADER_KEY, Constants.VERSION)
 
-        return client.publish(request, headers)
+        return try {
+            client.publish(request, headers)
+        } finally {
+            close()
+        }
     }
 
     override fun close() {
