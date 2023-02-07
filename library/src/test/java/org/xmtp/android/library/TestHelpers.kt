@@ -3,59 +3,21 @@ package org.xmtp.android.library
 import org.junit.Assert.assertEquals
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.PrivateKey
+import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.Topic
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 
-data class FakeWallet(var key: PrivateKey): SigningKey {
-    companion object {
-
-        fun generate() : FakeWallet {
-            val key = PrivateKey.generate()
-            return FakeWallet(key)
-        }
-    }
-
-    val address: String
-        get() = key.walletAddress
-
-    fun sign(data: ByteArray) : XMTP.Signature {
-        val signature = key.sign(data)
-        return signature
-    }
-
-    fun sign(message: String) : XMTP.Signature {
-        val signature = key.sign(message = message)
-        return signature
-    }
-
-    constructor(key: PrivateKey) {
-        this.key = key
-    }
-}
-enum class FakeApiClientError (val rawValue: String) : Error {
-    noResponses("noResponses"), queryAssertionFailure("queryAssertionFailure");
-
-    companion object {
-        operator fun invoke(rawValue: String) = FakeApiClientError.values().firstOrNull { it.rawValue == rawValue }
-    }
-}
-
-class FakeApiClient: ApiClient {
-    var environment: XMTPEnvironment
-    var authToken: String = ""
+class FakeApiClient : ApiClient {
+    override val environment: XMTPEnvironment = XMTPEnvironment.LOCAL
+    private var authToken: String? = null
     private var responses: Map<String, List<Envelope>> = mapOf()
-    private var stream = FakeStreamHolder()
     var published: List<Envelope> = listOf()
-    var cancellable: AnyCancellable? = null
     var forbiddingQueries = false
-
-    deinit {
-        cancellable?.cancel()
-    }
 
     fun assertNoPublish(callback: () -> Unit) {
         val oldCount = published.size
         callback()
-        assertEquals(oldCount, published.size, "Published messages: ${String(describing = try { published[oldCount - 1 until published.size].map { it.jsonString() } } catch (e: Throwable) { null })}")
+        assertEquals(oldCount, published.size)
     }
 
     fun assertNoQuery(callback: () -> Unit) {
@@ -64,80 +26,64 @@ class FakeApiClient: ApiClient {
         forbiddingQueries = false
     }
 
-    constructor() {
-        environment = .local
-    }
-
-    fun send(envelope: Envelope) {
-        stream.send(envelope = envelope)
-    }
-
-    fun findPublishedEnvelope(topic: Topic) : Envelope? =
+    fun findPublishedEnvelope(topic: Topic): Envelope? =
         findPublishedEnvelope(topic.description)
 
-    fun findPublishedEnvelope(topic: String) : Envelope? {
+    fun findPublishedEnvelope(topic: String): Envelope? {
         for (envelope in published.reversed()) {
-            if (envelope.contentTopic == topic.description) {
+            if (envelope.contentTopic == topic) {
                 return envelope
             }
         }
         return null
     }
 
-    // MARK: ApiClient conformance
-    required constructor(environment: XMTP.XMTPEnvironment, _: Boolean) {
-        this.environment = environment
-    }
-
-    fun setAuthToken(token: String) {
+    override fun setAuthToken(token: String) {
         authToken = token
     }
 
-    fun query(topics: List<String>) : XMTP.QueryResponse {
-        if (forbiddingQueries) {
-            XCTFail("Attempted to query ${topics}")
-            throw FakeApiClientError.queryAssertionFailure
-        }
+    override suspend fun query(topics: List<Topic>): MessageApiOuterClass.QueryResponse {
+        return queryStrings(topics = topics.map { it.description })
+    }
+
+    override suspend fun queryStrings(topics: List<String>): MessageApiOuterClass.QueryResponse {
         var result: List<Envelope> = listOf()
         for (topic in topics) {
-            val response = responses.removeValue(forKey = topic)
+            val response = responses.toMutableMap().remove(topic)
             if (response != null) {
-                result.append(contentsOf = response)
+                result.toMutableList().addAll(response)
             }
-            result.append(contentsOf = published.filter { it.contentTopic == topic }.reversed())
+            result.toMutableList().addAll(published.filter { it.contentTopic == topic }.reversed())
         }
-        var queryResponse = QueryResponse()
-        queryResponse.envelopes = result
-        return queryResponse
+        return QueryResponse.newBuilder().also {
+            it.envelopesList.addAll(result)
+        }.build()
     }
 
-    suspend fun query(topics: List<XMTP.Topic>) : XMTP.QueryResponse =
-        query(topics = topics.map(\.description), pagination = pagination)
-
-    fun publish(envelopes: List<XMTP.Envelope>) : XMTP.PublishResponse {
+    override suspend fun publish(envelopes: List<MessageApiOuterClass.Envelope>): MessageApiOuterClass.PublishResponse {
         for (envelope in envelopes) {
-            send(envelope = envelope)
+//            send(envelope = envelope)
         }
-        published.append(contentsOf = envelopes)
-        return PublishResponse()
+        published.toMutableList().addAll(envelopes)
+        return PublishResponse.newBuilder().build()
     }
 }
 
-data class Fixtures(
-    lateinit var fakeApiClient: FakeApiClient,
-    lateinit var alice: PrivateKey,
-    lateinit var aliceClient: Client,
-    lateinit var bob: PrivateKey,
-    lateinit var bobClient: Client) {
+data class Fixtures(val aliceAccount: PrivateKeyBuilder, val bobAccount: PrivateKeyBuilder) {
+    lateinit var fakeApiClient: FakeApiClient
+    lateinit var alice: PrivateKey
+    lateinit var aliceClient: Client
+    lateinit var bob: PrivateKey
+    lateinit var bobClient: Client
 
-    constructor() {
-        alice = PrivateKey.generate()
-        bob = PrivateKey.generate()
+    constructor() : this(aliceAccount = PrivateKeyBuilder(), bobAccount = PrivateKeyBuilder()) {
+        alice = aliceAccount.getPrivateKey()
+        bob = bobAccount.getPrivateKey()
         fakeApiClient = FakeApiClient()
-        aliceClient = Client.create(account = alice, apiClient = fakeApiClient)
-        bobClient = Client.create(account = bob, apiClient = fakeApiClient)
+        aliceClient = Client().create(account = aliceAccount, apiClient = fakeApiClient)
+        bobClient = Client().create(account = bobAccount, apiClient = fakeApiClient)
     }
 }
 
-fun fixtures() : Fixtures =
+fun fixtures(): Fixtures =
     Fixtures()

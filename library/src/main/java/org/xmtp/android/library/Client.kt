@@ -70,7 +70,7 @@ class Client() {
         return create(account = account, apiClient = apiClient)
     }
 
-    private fun create(account: SigningKey, apiClient: ApiClient): Client {
+    fun create(account: SigningKey, apiClient: ApiClient): Client {
         return runBlocking {
             val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
             val client = Client(account.address, privateKeyBundleV1, apiClient)
@@ -197,7 +197,7 @@ class Client() {
         return apiClient.publish(envelopes = envelopes)
     }
 
-    suspend fun ensureUserContactPublished() {
+    fun ensureUserContactPublished() {
         address?.let {
             val contact = getUserContact(peerAddress = it)
             if (contact != null && keys?.getPublicKeyBundle() == contact.v2.keyBundle) {
@@ -205,7 +205,7 @@ class Client() {
             }
         }
 
-        publishUserContact(legacy = true)
+        runBlocking { publishUserContact(legacy = true) }
     }
 
     val privateKeyBundle: PrivateKeyBundle?

@@ -63,15 +63,26 @@ sealed class Conversation {
             }
         }
 
-
-   fun messages(
+    fun messages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null
     ): List<DecodedMessage> {
         return when (this) {
-            is V1 -> runBlocking { conversationV1.messages(limit = limit, before = before, after = after) }
-            is V2 -> runBlocking { conversationV2.messages(limit = limit, before = before, after = after) }
+            is V1 -> runBlocking {
+                conversationV1.messages(
+                    limit = limit,
+                    before = before,
+                    after = after
+                )
+            }
+            is V2 -> runBlocking {
+                conversationV2.messages(
+                    limit = limit,
+                    before = before,
+                    after = after
+                )
+            }
         }
     }
 
