@@ -4,8 +4,40 @@ import org.junit.Assert.assertEquals
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
+import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.Topic
+import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+
+class FakeWallet : SigningKey {
+    private var privateKey: PrivateKey
+    private var privateKeyBuilder: PrivateKeyBuilder
+
+    constructor(key: PrivateKey, builder: PrivateKeyBuilder) {
+        privateKey = key
+        privateKeyBuilder = builder
+    }
+
+    companion object {
+        fun generate(): FakeWallet {
+            val key = PrivateKeyBuilder()
+            return FakeWallet(key.getPrivateKey(), key)
+        }
+    }
+
+    override val address: String
+        get() = privateKey.walletAddress
+
+    override fun sign(data: ByteArray): Signature {
+        val signature = privateKeyBuilder.sign(data)
+        return signature
+    }
+
+    override fun sign(message: String): Signature {
+        val signature = privateKeyBuilder.sign(message)
+        return signature
+    }
+}
 
 class FakeApiClient : ApiClient {
     override val environment: XMTPEnvironment = XMTPEnvironment.LOCAL
@@ -70,19 +102,13 @@ class FakeApiClient : ApiClient {
 }
 
 data class Fixtures(val aliceAccount: PrivateKeyBuilder, val bobAccount: PrivateKeyBuilder) {
-    lateinit var fakeApiClient: FakeApiClient
-    lateinit var alice: PrivateKey
-    lateinit var aliceClient: Client
-    lateinit var bob: PrivateKey
-    lateinit var bobClient: Client
+    var fakeApiClient: FakeApiClient = FakeApiClient()
+    var alice: PrivateKey = aliceAccount.getPrivateKey()
+    var aliceClient: Client = Client().create(account = aliceAccount, apiClient = fakeApiClient)
+    var bob: PrivateKey = bobAccount.getPrivateKey()
+    var bobClient: Client = Client().create(account = bobAccount, apiClient = fakeApiClient)
 
-    constructor() : this(aliceAccount = PrivateKeyBuilder(), bobAccount = PrivateKeyBuilder()) {
-        alice = aliceAccount.getPrivateKey()
-        bob = bobAccount.getPrivateKey()
-        fakeApiClient = FakeApiClient()
-        aliceClient = Client().create(account = aliceAccount, apiClient = fakeApiClient)
-        bobClient = Client().create(account = bobAccount, apiClient = fakeApiClient)
-    }
+    constructor() : this(aliceAccount = PrivateKeyBuilder(), bobAccount = PrivateKeyBuilder())
 }
 
 fun fixtures(): Fixtures =
