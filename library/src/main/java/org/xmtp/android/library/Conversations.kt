@@ -202,11 +202,16 @@ data class Conversations(
                         EnvelopeBuilder.buildFromTopic(
                             topic = Topic.userInvite(
                                 client.address ?: ""
-                            ), timestamp = created, message = sealed.toByteArray()
-                        ), EnvelopeBuilder.buildFromTopic(
+                            ),
+                            timestamp = created,
+                            message = sealed.toByteArray()
+                        ),
+                        EnvelopeBuilder.buildFromTopic(
                             topic = Topic.userInvite(
                                 peerAddress
-                            ), timestamp = created, message = sealed.toByteArray()
+                            ),
+                            timestamp = created,
+                            message = sealed.toByteArray()
                         )
                     )
                 )

@@ -139,7 +139,7 @@ class Client() {
         return null
     }
 
-    suspend fun publishUserContact(legacy: Boolean = false) {
+    fun publishUserContact(legacy: Boolean = false) {
         val envelopes: MutableList<MessageApiOuterClass.Envelope> = mutableListOf()
         if (legacy) {
             val contactBundle = ContactBundle.newBuilder().also {
@@ -168,7 +168,7 @@ class Client() {
             message = contactBundle.toByteString()
         }.build()
         envelopes.add(envelope)
-        publish(envelopes = envelopes)
+        runBlocking { publish(envelopes = envelopes) }
     }
 
     fun getUserContact(peerAddress: String): ContactBundle? {
@@ -180,8 +180,7 @@ class Client() {
         return apiClient.query(topics = topics)
     }
 
-    @WorkerThread
-    suspend fun publish(envelopes: List<Envelope>): PublishResponse {
+    fun publish(envelopes: List<Envelope>): PublishResponse {
         privateKeyBundleV1?.let {
             address?.let { address ->
                 val authorized = AuthorizedIdentity(
@@ -194,7 +193,7 @@ class Client() {
             }
         }
 
-        return apiClient.publish(envelopes = envelopes)
+        return runBlocking { apiClient.publish(envelopes = envelopes) }
     }
 
     fun ensureUserContactPublished() {

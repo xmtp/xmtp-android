@@ -19,6 +19,14 @@ sealed class Conversation {
     data class V1(val conversationV1: ConversationV1) : Conversation()
     data class V2(val conversationV2: ConversationV2) : Conversation()
 
+    val createdAt: Date
+        get() {
+            return when (this) {
+                is V1 -> conversationV1.sentAt
+                is V2 -> conversationV2.createdAt
+            }
+        }
+
     val peerAddress: String
         get() {
             return when (this) {
@@ -35,6 +43,14 @@ sealed class Conversation {
             }
         }
 
+    val keyMaterial: ByteArray?
+        get() {
+            return when (this) {
+                is V1 -> null
+                is V2 -> conversationV2.keyMaterial
+            }
+        }
+
     fun <T> send(content: T, options: SendOptions? = null) {
         when (this) {
             is V1 -> conversationV1.send(content = content as String, options = options)
@@ -42,7 +58,7 @@ sealed class Conversation {
         }
     }
 
-    suspend fun send(text: String) {
+    fun send(text: String) {
         when (this) {
             is V1 -> conversationV1.send(content = text)
             is V2 -> conversationV2.send(content = text)

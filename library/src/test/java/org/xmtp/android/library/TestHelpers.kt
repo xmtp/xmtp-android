@@ -42,8 +42,8 @@ class FakeWallet : SigningKey {
 class FakeApiClient : ApiClient {
     override val environment: XMTPEnvironment = XMTPEnvironment.LOCAL
     private var authToken: String? = null
-    private var responses: Map<String, List<Envelope>> = mapOf()
-    var published: List<Envelope> = listOf()
+    private val responses: MutableMap<String, List<Envelope>> = mutableMapOf()
+    val published: MutableList<Envelope> = mutableListOf()
     var forbiddingQueries = false
 
     fun assertNoPublish(callback: () -> Unit) {
@@ -79,16 +79,16 @@ class FakeApiClient : ApiClient {
     }
 
     override suspend fun queryStrings(topics: List<String>): MessageApiOuterClass.QueryResponse {
-        var result: List<Envelope> = listOf()
+        val result: MutableList<Envelope> = mutableListOf()
         for (topic in topics) {
             val response = responses.toMutableMap().remove(topic)
             if (response != null) {
-                result.toMutableList().addAll(response)
+                result.addAll(response)
             }
-            result.toMutableList().addAll(published.filter { it.contentTopic == topic }.reversed())
+            result.addAll(published.filter { it.contentTopic == topic }.reversed())
         }
         return QueryResponse.newBuilder().also {
-            it.envelopesList.addAll(result)
+            it.addAllEnvelopes(result)
         }.build()
     }
 
@@ -96,7 +96,7 @@ class FakeApiClient : ApiClient {
         for (envelope in envelopes) {
 //            send(envelope = envelope)
         }
-        published.toMutableList().addAll(envelopes)
+        published.addAll(envelopes)
         return PublishResponse.newBuilder().build()
     }
 }

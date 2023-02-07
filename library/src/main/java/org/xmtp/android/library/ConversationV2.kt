@@ -23,7 +23,7 @@ data class ConversationV2Container(
     var metadata: Map<String, String> = mapOf(),
     var peerAddress: String,
     var header: SealedInvitationHeaderV1
-) : java.io.Serializable {
+) {
 
     fun decode(client: Client): ConversationV2 {
         val context = InvitationV1ContextBuilder.buildFromConversation(
@@ -72,6 +72,8 @@ data class ConversationV2(
         }
     }
 
+    val createdAt: Date = Date((header.createdNs / 1_000_000) / 1000)
+
     suspend fun messages(
         limit: Int? = null,
         before: Date? = null,
@@ -87,7 +89,7 @@ data class ConversationV2(
     private fun decode(message: MessageV2): DecodedMessage =
         MessageV2Builder.buildDecode(message, keyMaterial = keyMaterial)
 
-    suspend fun <T> send(content: T, options: SendOptions? = null) {
+    fun <T> send(content: T, options: SendOptions? = null) {
         val codec = Client().codecRegistry.find(options?.contentType)
 
         fun <Codec : ContentCodec<T>> encode(codec: Codec, content: Any?): EncodedContent {
@@ -106,13 +108,13 @@ data class ConversationV2(
         send(content = encoded, sentAt = Date())
     }
 
-    suspend fun send(content: String, sentAt: Date) {
+    fun send(content: String, sentAt: Date) {
         val encoder = TextCodec()
         val encodedContent = encoder.encode(content = content)
         send(content = encodedContent, sentAt = sentAt)
     }
 
-    private suspend fun send(content: EncodedContent, sentAt: Date) {
+    private fun send(content: EncodedContent, sentAt: Date) {
         if (client.getUserContact(peerAddress = peerAddress) == null) {
             throw NotFoundException()
         }
@@ -133,7 +135,7 @@ data class ConversationV2(
         )
     }
 
-    suspend fun send(content: String) {
+    fun send(content: String) {
         send(content = content, sentAt = Date())
     }
 }

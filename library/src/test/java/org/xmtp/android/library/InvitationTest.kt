@@ -1,7 +1,7 @@
 package org.xmtp.android.library
 
-import org.junit.*
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Test
 import org.xmtp.android.library.messages.InvitationV1
 import org.xmtp.android.library.messages.PrivateKeyBundleV1
 import org.xmtp.android.library.messages.SealedInvitation
