@@ -131,7 +131,7 @@ data class Conversations(
         return conversations.filter { it.peerAddress != client.address }
     }
 
-    fun listIntroductionPeers(): Map<String, Date> {
+    private fun listIntroductionPeers(): Map<String, Date> {
         val envelopes =
             runBlocking {
                 client.apiClient.query(

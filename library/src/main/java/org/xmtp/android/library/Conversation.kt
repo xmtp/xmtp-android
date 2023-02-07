@@ -79,20 +79,17 @@ sealed class Conversation {
         after: Date? = null
     ): List<DecodedMessage> {
         return when (this) {
-            is V1 -> runBlocking {
-                conversationV1.messages(
-                    limit = limit,
-                    before = before,
-                    after = after
-                )
-            }
-            is V2 -> runBlocking {
+            is V1 -> conversationV1.messages(
+                limit = limit,
+                before = before,
+                after = after
+            )
+            is V2 ->
                 conversationV2.messages(
                     limit = limit,
                     before = before,
                     after = after
                 )
-            }
         }
     }
 

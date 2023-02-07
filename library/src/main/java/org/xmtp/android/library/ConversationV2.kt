@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import android.content.res.Resources.NotFoundException
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
@@ -74,12 +75,13 @@ data class ConversationV2(
 
     val createdAt: Date = Date((header.createdNs / 1_000_000) / 1000)
 
-    suspend fun messages(
+    fun messages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null
     ): List<DecodedMessage> {
-        val envelopes = client.apiClient.queryStrings(topics = listOf(topic)).envelopesList
+        val envelopes =
+            runBlocking { client.apiClient.queryStrings(topics = listOf(topic)).envelopesList }
         return envelopes.flatMap { envelope ->
             val message = Message.parseFrom(envelope.message)
             listOf(decode(message.v2))
@@ -105,22 +107,22 @@ data class ConversationV2(
         encoded = encoded.toBuilder().also {
             it.fallback = options?.contentFallback ?: ""
         }.build()
-        send(content = encoded, sentAt = Date())
+        send(encodedContent = encoded, sentAt = Date())
     }
 
     fun send(content: String, sentAt: Date) {
         val encoder = TextCodec()
         val encodedContent = encoder.encode(content = content)
-        send(content = encodedContent, sentAt = sentAt)
+        send(encodedContent = encodedContent, sentAt = sentAt)
     }
 
-    private fun send(content: EncodedContent, sentAt: Date) {
+    private fun send(encodedContent: EncodedContent, sentAt: Date) {
         if (client.getUserContact(peerAddress = peerAddress) == null) {
             throw NotFoundException()
         }
         val message = MessageV2Builder.buildEncode(
             client = client,
-            encodedContent = content,
+            encodedContent = encodedContent,
             topic = topic,
             keyMaterial = keyMaterial
         )

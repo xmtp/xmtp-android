@@ -3,7 +3,6 @@ package org.xmtp.android.library.messages
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.CipherText
 import org.xmtp.android.library.Crypto
-import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import java.util.Date
 
 typealias SealedInvitation = org.xmtp.proto.message.contents.Invitation.SealedInvitation
@@ -19,7 +18,7 @@ class SealedInvitationBuilder {
             val header = SealedInvitationHeaderV1Builder.buildFromSignedPublicBundle(
                 sender.getPublicKeyBundle(),
                 recipient,
-                (created.millisecondsSinceEpoch * 1_000_000).toLong()
+                (created.time * 1_000_000)
             )
             val secret = sender.sharedSecret(
                 peer = recipient,

@@ -6,7 +6,6 @@ import org.junit.Before
 import org.junit.Test
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.TextCodec
-import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
@@ -41,7 +40,7 @@ class ConversationTest {
         }.build()
         val envelope = Envelope.newBuilder().apply {
             contentTopic = Topic.contact(client.address).description
-            timestampNs = (Date().millisecondsSinceEpoch * 1_000_000).toLong()
+            timestampNs = (Date().time * 1_000_000)
             message = contactBundle.toByteString()
         }.build()
 

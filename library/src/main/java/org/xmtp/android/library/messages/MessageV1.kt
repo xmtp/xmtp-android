@@ -3,7 +3,6 @@ package org.xmtp.android.library.messages
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.CipherText
 import org.xmtp.android.library.Crypto
-import org.xmtp.android.library.extensions.millisecondsSinceEpoch
 import org.xmtp.proto.message.contents.MessageOuterClass
 import java.util.Date
 
@@ -25,7 +24,7 @@ class MessageV1Builder {
             val header = MessageHeaderV1Builder.buildFromPublicBundles(
                 sender = sender.toPublicKeyBundle(),
                 recipient = recipient,
-                timestamp = timestamp.millisecondsSinceEpoch.toLong()
+                timestamp = timestamp.time
             )
             val headerBytes = header.toByteArray()
             val ciphertext = Crypto.encrypt(secret, message, additionalData = headerBytes)
@@ -65,7 +64,7 @@ val MessageV1.header: MessageHeaderV1
 val MessageV1.senderAddress: String
     get() = header.sender.identityKey.recoverWalletSignerPublicKey().walletAddress
 
-val MessageV1.sentAt: Date get() = Date((header.timestamp / 1000))
+val MessageV1.sentAt: Date get() = Date(header.timestamp)
 
 val MessageV1.recipientAddress: String
     get() = header.recipient.identityKey.recoverWalletSignerPublicKey().walletAddress
@@ -79,7 +78,9 @@ fun MessageV1.decrypt(viewer: PrivateKeyBundleV1?): ByteArray? {
         secret =
             viewer.sharedSecret(peer = recipient, myPreKey = sender.preKey, isRecipient = false)
     } else {
-        secret = viewer?.sharedSecret(peer = sender, myPreKey = recipient.preKey, isRecipient = true) ?: byteArrayOf()
+        secret =
+            viewer?.sharedSecret(peer = sender, myPreKey = recipient.preKey, isRecipient = true)
+                ?: byteArrayOf()
     }
     return Crypto.decrypt(secret, ciphertext, additionalData = headerBytes.toByteArray())
 }

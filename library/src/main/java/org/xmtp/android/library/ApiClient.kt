@@ -67,11 +67,7 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
         authToken?.let { token ->
             headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
         }
-        return try {
-            client.query(request, headers = headers)
-        } finally {
-            close()
-        }
+        return client.query(request, headers = headers)
     }
 
     @WorkerThread
@@ -91,11 +87,7 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
         headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
         headers.put(APP_VERSION_HEADER_KEY, Constants.VERSION)
 
-        return try {
-            client.publish(request, headers)
-        } finally {
-            close()
-        }
+        return client.publish(request, headers)
     }
 
     override fun close() {

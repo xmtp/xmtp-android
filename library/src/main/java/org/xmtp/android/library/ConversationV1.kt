@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import android.content.res.Resources.NotFoundException
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
@@ -34,11 +35,7 @@ data class ConversationV1(
     val topic: Topic
         get() = Topic.directMessageV1(client.address, peerAddress)
 
-    fun send(content: String) {
-        send(content = content, sentAt = null)
-    }
-
-    private fun send(content: String, sentAt: Date? = null) {
+    fun send(content: String, sentAt: Date? = null) {
         val encoder = TextCodec()
         val encodedContent = encoder.encode(content = content)
         send(content = encodedContent)
@@ -60,10 +57,10 @@ data class ConversationV1(
         encoded = encoded.toBuilder().also {
             it.fallback = options?.contentFallback ?: ""
         }.build()
-        send(content = encoded, options = options)
+        send(encodedContent = encoded, sendOptions = options)
     }
 
-    private suspend fun send(
+    private fun send(
         encodedContent: EncodedContent,
         sendOptions: SendOptions? = null,
         sentAt: Date? = null
@@ -113,20 +110,22 @@ data class ConversationV1(
         client.publish(envelopes = envelopes)
     }
 
-    suspend fun messages(
+    fun messages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null
     ): List<DecodedMessage> {
-        val envelopes = client.apiClient.query(
-            topics = listOf(
-                Topic.directMessageV1(
-                    client.address,
-                    peerAddress
+        val result = runBlocking {
+            client.apiClient.query(
+                topics = listOf(
+                    Topic.directMessageV1(
+                        client.address,
+                        peerAddress
+                    )
                 )
             )
-        ).envelopesList
-        return envelopes.flatMap { envelope ->
+        }
+        return result.envelopesList.flatMap { envelope ->
             listOf(decode(envelope = envelope))
         }
     }
