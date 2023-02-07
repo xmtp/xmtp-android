@@ -3,12 +3,15 @@ package org.xmtp.android.library
 import android.util.Log
 import com.google.crypto.tink.subtle.Hkdf
 import com.google.protobuf.kotlin.toByteString
+import org.bouncycastle.crypto.params.AEADParameters
+import org.bouncycastle.crypto.params.KeyParameter
 import org.xmtp.proto.message.contents.CiphertextOuterClass
 import java.security.GeneralSecurityException
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
+
 
 typealias CipherText = CiphertextOuterClass.Ciphertext
 

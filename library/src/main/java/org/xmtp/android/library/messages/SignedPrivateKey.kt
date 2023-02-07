@@ -18,7 +18,7 @@ class SignedPrivateKeyBuilder {
 }
 
 fun SignedPrivateKey.sign(data: ByteArray): Signature {
-    val key = PrivateKey.parseFrom(secp256K1.bytes)
+    val key = PrivateKeyBuilder.buildFromPrivateKeyData(secp256K1.bytes.toByteArray())
     return PrivateKeyBuilder(key).sign(data)
 }
 

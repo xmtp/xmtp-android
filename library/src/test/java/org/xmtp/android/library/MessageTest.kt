@@ -28,7 +28,7 @@ class MessageTest {
 
     @Test
     fun testFullyEncodesDecodesMessagesV1() {
-        for (i in 0..10) {
+        repeat(10) {
             val aliceWallet = PrivateKeyBuilder()
             val bobWallet = PrivateKeyBuilder()
             val alice = PrivateKeyBundleV1.newBuilder().build().generate(wallet = aliceWallet)
@@ -43,7 +43,8 @@ class MessageTest {
             assertEquals(aliceWallet.getPrivateKey().walletAddress, message1.senderAddress)
             assertEquals(bobWallet.getPrivateKey().walletAddress, message1.recipientAddress)
             val decrypted = message1.decrypt(alice)
-            assertEquals(decrypted, content)
+            val text = decrypted?.toByteString()?.toStringUtf8()
+            assertEquals(text, "Yo!")
         }
     }
 
@@ -103,6 +104,7 @@ class MessageTest {
         }.build()
 
         val decrypted = Crypto.decrypt(secret, ciphertext, additionalData = additionalData)
-        assertEquals(content, decrypted)
+
+        assertEquals(content.toByteString(), decrypted?.toByteString())
     }
 }
