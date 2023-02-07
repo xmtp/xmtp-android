@@ -7,7 +7,6 @@ sealed class ConversationContainer {
     data class V1(val conversationV1: ConversationV1Container) : ConversationContainer()
     data class V2(val conversationV2: ConversationV2Container) : ConversationContainer()
 
-
     fun decode(client: Client): Conversation {
         return when (this) {
             is V1 -> Conversation.V1(conversationV1.decode(client))
@@ -20,7 +19,6 @@ sealed class Conversation {
     data class V1(val conversationV1: ConversationV1) : Conversation()
     data class V2(val conversationV2: ConversationV2) : Conversation()
 
-    public/// The wallet address of the other person in this conversation.
     val peerAddress: String
         get() {
             return when (this) {
@@ -29,9 +27,6 @@ sealed class Conversation {
             }
         }
 
-    /// An optional string that can specify a different context for a conversation with another account address.
-    ///
-    /// > Note: ``conversationId`` is only available for ``ConversationV2`` conversations.
     val conversationId: String?
         get() {
             return when (this) {
@@ -39,7 +34,6 @@ sealed class Conversation {
                 is V2 -> conversationV2.context.conversationId
             }
         }
-
 
     fun <T> send(content: T, options: SendOptions? = null) {
         when (this) {

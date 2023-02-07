@@ -16,7 +16,6 @@ class ContentTypeIdBuilder {
                 it.versionMajor = versionMajor
                 it.versionMinor = versionMinor
             }.build()
-
         }
     }
 }

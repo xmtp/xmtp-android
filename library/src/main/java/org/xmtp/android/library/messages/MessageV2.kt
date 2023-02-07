@@ -55,7 +55,6 @@ class MessageV2Builder {
                 senderAddress = signed.sender.walletAddress,
                 sent = Date((header.createdNs / 1_000_000) / 1000)
             )
-
         }
 
         fun buildEncode(

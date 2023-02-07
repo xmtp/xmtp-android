@@ -16,7 +16,6 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
 
-
 data class ConversationV2Container(
     var topic: String,
     var keyMaterial: ByteArray,
@@ -42,7 +41,6 @@ data class ConversationV2Container(
     }
 }
 
-/// Handles V2 Message conversations.
 data class ConversationV2(
     var topic: String,
     var keyMaterial: ByteArray,
@@ -107,7 +105,6 @@ data class ConversationV2(
         }.build()
         send(content = encoded, sentAt = Date())
     }
-
 
     suspend fun send(content: String, sentAt: Date) {
         val encoder = TextCodec()

@@ -6,17 +6,14 @@ import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
 import io.grpc.Metadata
 import io.grpc.TlsChannelCredentials
-import kotlinx.coroutines.flow.flow
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 import java.io.Closeable
-import java.util.concurrent.Flow
 import java.util.concurrent.TimeUnit
 
 interface ApiClient {

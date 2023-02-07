@@ -3,7 +3,6 @@ package org.xmtp.android.library.messages
 typealias SealedInvitationHeaderV1 = org.xmtp.proto.message.contents.Invitation.SealedInvitationHeaderV1
 
 class SealedInvitationHeaderV1Builder {
-
     companion object {
         fun buildFromSignedPublicBundle(
             sender: SignedPublicKeyBundle,
@@ -18,5 +17,3 @@ class SealedInvitationHeaderV1Builder {
         }
     }
 }
-
-

@@ -10,7 +10,6 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import java.util.zip.Inflater
 
-
 enum class EncodedContentCompression {
     DEFLATE,
     GZIP;

@@ -1,6 +1,5 @@
 package org.xmtp.android.library.messages
 
-import com.google.crypto.tink.subtle.Base64
 import com.google.crypto.tink.subtle.Base64.encodeToString
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.proto.message.contents.Invitation

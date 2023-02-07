@@ -9,7 +9,7 @@ typealias SealedInvitationV1 = org.xmtp.proto.message.contents.Invitation.Sealed
 
 class SealedInvitationV1Builder {
     companion object {
-        fun buildFromHeader(headerBytes: ByteArray, ciphtertext: CipherText) : SealedInvitationV1 {
+        fun buildFromHeader(headerBytes: ByteArray, ciphtertext: CipherText): SealedInvitationV1 {
             return SealedInvitationV1.newBuilder().also {
                 it.headerBytes = headerBytes.toByteString()
                 it.ciphertext = ciphtertext

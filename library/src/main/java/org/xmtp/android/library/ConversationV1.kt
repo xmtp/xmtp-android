@@ -17,7 +17,6 @@ import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import java.util.Date
 
-
 data class ConversationV1Container(
     var peerAddress: String,
     var sentAt: Date
@@ -27,7 +26,6 @@ data class ConversationV1Container(
         ConversationV1(client = client, peerAddress = peerAddress, sentAt = sentAt)
 }
 
-/// Handles legacy message conversations.
 data class ConversationV1(
     var client: Client,
     var peerAddress: String,
