@@ -98,7 +98,6 @@ class FakeApiClient : ApiClient {
 
     override suspend fun publish(envelopes: List<MessageApiOuterClass.Envelope>): MessageApiOuterClass.PublishResponse {
         for (envelope in envelopes) {
-//            send(envelope = envelope)
         }
         published.addAll(envelopes)
         return PublishResponse.newBuilder().build()
