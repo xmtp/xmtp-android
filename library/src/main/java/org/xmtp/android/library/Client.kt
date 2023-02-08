@@ -205,7 +205,7 @@ class Client() {
             }
         }
 
-        runBlocking { publishUserContact(legacy = true) }
+        publishUserContact(legacy = true)
     }
 
     val privateKeyBundle: PrivateKeyBundle?
