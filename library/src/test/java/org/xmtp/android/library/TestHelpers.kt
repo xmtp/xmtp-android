@@ -85,9 +85,11 @@ class FakeApiClient : ApiClient {
             if (response != null) {
                 result.addAll(response)
             }
-            result.addAll(published.filter {
-                it.contentTopic == topic
-            }.reversed())
+            result.addAll(
+                published.filter {
+                    it.contentTopic == topic
+                }.reversed()
+            )
         }
         return QueryResponse.newBuilder().also {
             it.addAllEnvelopes(result)

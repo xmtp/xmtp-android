@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import com.google.protobuf.kotlin.toByteStringUtf8
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.xmtp.android.library.codecs.CompositeCodec
@@ -11,7 +10,6 @@ import org.xmtp.android.library.codecs.ContentTypeIdBuilder
 import org.xmtp.android.library.codecs.DecodedComposite
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
-import org.xmtp.android.library.codecs.id
 import org.xmtp.android.library.messages.walletAddress
 
 data class NumberCodec(
@@ -35,7 +33,7 @@ data class NumberCodec(
     }
 
     override fun decode(content: EncodedContent): Double =
-        content.content.toStringUtf8().filter { it.isDigit() || it == '.'}.toDouble()
+        content.content.toStringUtf8().filter { it.isDigit() || it == '.' }.toDouble()
 }
 
 class CodecTest {

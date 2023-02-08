@@ -48,7 +48,6 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
             },
         ).build()
 
-
     private val client: MessageApiGrpcKt.MessageApiCoroutineStub =
         MessageApiGrpcKt.MessageApiCoroutineStub(channel)
     private var authToken: String? = null
