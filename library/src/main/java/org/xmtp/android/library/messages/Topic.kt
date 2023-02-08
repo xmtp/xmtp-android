@@ -11,7 +11,7 @@ sealed class Topic {
     val description: String
         get() {
             return when (this) {
-                is userPrivateStoreKeyBundle -> wrap("privatestore-$address")
+                is userPrivateStoreKeyBundle -> wrap("privatestore-$address/key_bundle")
                 is contact -> wrap("contact-$address")
                 is userIntro -> wrap("intro-$address")
                 is userInvite -> wrap("invite-$address")

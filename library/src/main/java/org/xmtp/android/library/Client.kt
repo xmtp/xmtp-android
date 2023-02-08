@@ -151,7 +151,7 @@ class Client() {
                 address?.let {
                     contentTopic = Topic.contact(it).description
                 }
-                timestampNs = System.currentTimeMillis() * 1_000_000
+                timestampNs = Date().time * 1_000_000
                 message = contactBundle.toByteString()
             }.build()
 
@@ -165,7 +165,7 @@ class Client() {
             address?.let {
                 contentTopic = Topic.contact(it).description
             }
-            timestampNs = System.currentTimeMillis() * 1_000_000
+            timestampNs = Date().time * 1_000_000
             message = contactBundle.toByteString()
         }.build()
         envelopes.add(envelope)

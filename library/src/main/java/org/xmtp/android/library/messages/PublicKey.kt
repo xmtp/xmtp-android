@@ -9,6 +9,7 @@ import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
+import java.util.Date
 
 typealias PublicKey = org.xmtp.proto.message.contents.PublicKeyOuterClass.PublicKey
 
@@ -35,31 +36,13 @@ class PublicKeyBuilder {
 
         fun buildFromBytes(data: ByteArray): PublicKey {
             return PublicKey.newBuilder().apply {
-                timestamp = System.currentTimeMillis()
+                timestamp = Date().time
                 secp256K1UncompressedBuilder.apply {
                     bytes = data.toByteString()
                 }.build()
             }.build()
         }
     }
-}
-
-fun PublicKey.recoverKeySignedPublicKey(): PublicKey {
-    if (!hasSignature()) {
-        throw Resources.NotFoundException("No signature found")
-    }
-    val bytesToSign = PublicKey.newBuilder().apply {
-        secp256K1UncompressedBuilder.apply {
-            bytes = secp256K1Uncompressed.bytes
-        }.build()
-        this.timestamp = timestamp
-    }.build().toByteArray()
-
-    val pubKeyData = Sign.signedMessageToKey(
-        SHA256Digest(bytesToSign).encodedState,
-        KeyUtil.getSignatureData(signature.toByteArray()),
-    )
-    return PublicKeyBuilder.buildFromBytes(pubKeyData.toByteArray())
 }
 
 val PublicKey.walletAddress: String

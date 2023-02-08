@@ -22,5 +22,6 @@ fun SignedPrivateKey.sign(data: ByteArray): Signature {
     return PrivateKeyBuilder(key).sign(data)
 }
 
-fun SignedPrivateKey.matches(signedPublicKey: SignedPublicKey): Boolean =
-    publicKey == signedPublicKey
+fun SignedPrivateKey.matches(signedPublicKey: SignedPublicKey): Boolean {
+    return publicKey.recoverWalletSignerPublicKey().walletAddress == signedPublicKey.recoverWalletSignerPublicKey().walletAddress
+}
