@@ -78,7 +78,7 @@ class ConversationTest {
         assert(aliceInviteMessage != null)
         assert(bobInviteMessage != null)
         assertEquals(conversation.peerAddress, alice.walletAddress)
-        val newConversations = aliceClient.conversations.conversations
+        val newConversations = aliceClient.conversations.list()
         assertEquals("already had conversations somehow", 1, newConversations.size)
     }
 
@@ -235,38 +235,10 @@ class ConversationTest {
             aliceWallet.address,
             InvitationV1ContextBuilder.buildFromConversation("hi")
         )
-        val messages = bobConversation.messages()
-        assertEquals("did not filter out tampered message", 0, messages.size)
+        assertThrows("Invalid signature", IllegalArgumentException::class.java) {
+            val messages = bobConversation.messages()
+        }
     }
-
-//    @Test
-//    fun testDecodeSingleV1Message() {
-//        // Overwrite contact as legacy
-//        publishLegacyContact(client = bobClient)
-//        publishLegacyContact(client = aliceClient)
-//        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
-//
-//        conversation.send(content = "hi")
-//        val message =
-//            fakeApiClient.published.firstNotNullOfOrNull { it.contentTopic.startsWith("/xmtp/0/dm-") }
-//        val decodedMessage = conversation.decode(envelope = message)
-//        assertEquals("hi", decodedMessage.body)
-//        val decodedMessage2 = ConversationContainer.V1(conversation).decode(message)
-//        assertEquals("hi", decodedMessage2.body)
-//    }
-//
-//    @Test
-//    fun testDecodeSingleV2Message() {
-//        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
-//
-//        conversation.send(content = "hi")
-//        val message =
-//            fakeApiClient.published.firstNotNullOfOrNull { it.contentTopic.startsWith("/xmtp/0/m-") }
-//        val decodedMessage = conversation.decode(message)
-//        assertEquals("hi", decodedMessage.body)
-//        val decodedMessage2 = ConversationContainer.V2(ConversationV2Container(conversation)).decode(message)
-//        assertEquals("hi", decodedMessage2.body)
-//    }
 
     @Test
     fun testCanSendGzipCompressedV1Messages() {
@@ -275,12 +247,12 @@ class ConversationTest {
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
         val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
         bobConversation.send(
-            content = MutableList(1000) { "A" },
+            content = MutableList(1000) { "A" }.toString(),
             options = SendOptions(compression = EncodedContentCompression.GZIP)
         )
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
-        assertEquals(MutableList(1000) { "A" }, messages[0].content())
+        assertEquals(MutableList(1000) { "A" }.toString(), messages[0].content())
     }
 
     @Test
@@ -290,12 +262,12 @@ class ConversationTest {
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
         val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
         bobConversation.send(
-            content = MutableList(1000) { "A" },
+            content = MutableList(1000) { "A" }.toString(),
             options = SendOptions(compression = EncodedContentCompression.DEFLATE)
         )
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
-        assertEquals(MutableList(1000) { "A" }, messages[0].content())
+        assertEquals(MutableList(1000) { "A" }.toString(), messages[0].content())
     }
 
     @Test
@@ -309,12 +281,12 @@ class ConversationTest {
             InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi")
         )
         bobConversation.send(
-            content = MutableList(1000) { "A" },
+            content = MutableList(1000) { "A" }.toString(),
             options = SendOptions(compression = EncodedContentCompression.GZIP)
         )
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
-        assertEquals(MutableList(1000) { "A" }, messages[0].body)
+        assertEquals(MutableList(1000) { "A" }.toString(), messages[0].body)
         assertEquals(bobWallet.address, messages[0].senderAddress)
     }
 
@@ -329,12 +301,12 @@ class ConversationTest {
             InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi")
         )
         bobConversation.send(
-            content = MutableList(1000) { "A" },
+            content = MutableList(1000) { "A" }.toString(),
             options = SendOptions(compression = EncodedContentCompression.DEFLATE)
         )
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
-        assertEquals(MutableList(1000) { "A" }, messages[0].body)
+        assertEquals(MutableList(1000) { "A" }.toString(), messages[0].body)
         assertEquals(bobWallet.address, messages[0].senderAddress)
     }
 }

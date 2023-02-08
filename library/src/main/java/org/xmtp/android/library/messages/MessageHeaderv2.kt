@@ -9,7 +9,7 @@ class MessageHeaderV2Builder {
         fun buildFromTopic(topic: String, created: Date): MessageHeaderV2 {
             return MessageHeaderV2.newBuilder().also {
                 it.topic = topic
-                it.createdNs = (created.time * 1_000_000).toLong()
+                it.createdNs = (created.time * 1_000_000)
             }.build()
         }
     }

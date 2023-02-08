@@ -104,7 +104,7 @@ data class Conversations(
         return conversation
     }
 
-    suspend fun list(): List<Conversation> {
+    fun list(): List<Conversation> {
         val conversations: MutableList<Conversation> = mutableListOf()
         val seenPeers = listIntroductionPeers()
         for ((peerAddress, sentAt) in seenPeers) {
