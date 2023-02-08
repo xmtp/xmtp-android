@@ -42,7 +42,7 @@ data class ConversationV1(
     }
 
     fun <T : Any> send(content: T, options: SendOptions? = null) {
-        val codec = Client().codecRegistry.find(options?.contentType)
+        val codec = Client.codecRegistry.find(options?.contentType)
 
         fun <Codec : ContentCodec<T>> encode(codec: Codec, content: Any): EncodedContent {
             val contentType = content as? T

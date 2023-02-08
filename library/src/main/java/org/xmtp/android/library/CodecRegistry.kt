@@ -13,7 +13,7 @@ data class CodecRegistry(val codecs: MutableMap<String, ContentCodec<*>> = mutab
 
     fun find(contentType: ContentTypeId?): ContentCodec<*> {
         contentType?.let {
-            val codec = codecs[id]
+            val codec = codecs[it.id]
             if (codec != null) {
                 return codec
             }

@@ -43,14 +43,15 @@ class Client() {
     val contacts: Contacts = Contacts(client = this)
     val conversations: Conversations = Conversations(client = this)
 
-    var codecRegistry = run {
-        val registry = CodecRegistry()
-        registry.register(codec = TextCodec())
-        registry
-    }
-
-    fun register(codec: ContentCodec<*>) {
-        codecRegistry.register(codec = codec)
+    companion object {
+        var codecRegistry = run {
+            val registry = CodecRegistry()
+            registry.register(codec = TextCodec())
+            registry
+        }
+        fun register(codec: ContentCodec<*>) {
+            codecRegistry.register(codec = codec)
+        }
     }
 
     constructor(

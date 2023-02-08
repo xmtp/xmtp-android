@@ -68,8 +68,9 @@ class CompositeCodec : ContentCodec<DecodedComposite> {
 
     private fun fromComposite(composite: Composite): DecodedComposite {
         val decodedComposite = DecodedComposite()
-        if (composite.partsList.size == 1 && part { } == composite.partsList.first()) {
-            decodedComposite.encodedContent = encodedContent { content }
+
+        if (composite.partsList.size == 1 && composite.partsList.first().elementCase == Part.ElementCase.PART) {
+            decodedComposite.encodedContent = composite.partsList.first().part
             return decodedComposite
         }
         decodedComposite.parts = composite.partsList.map { fromCompositePart(part = it) }
@@ -79,10 +80,10 @@ class CompositeCodec : ContentCodec<DecodedComposite> {
     private fun fromCompositePart(part: Part): DecodedComposite {
         return when (part.elementCase) {
             Part.ElementCase.PART -> {
-                DecodedComposite(emptyList(), encodedContent {})
+                DecodedComposite(emptyList(), part.part)
             }
             Part.ElementCase.COMPOSITE -> {
-                DecodedComposite(composite {}.partsList.map { fromCompositePart(it) })
+                DecodedComposite(part.composite.partsList.map { fromCompositePart(it) })
             }
             else -> DecodedComposite()
         }

@@ -9,7 +9,7 @@ import org.xmtp.proto.message.contents.Content
 typealias EncodedContent = org.xmtp.proto.message.contents.Content.EncodedContent
 
 fun <T> EncodedContent.decoded(): T? {
-    val codec = Client().codecRegistry.find(type)
+    val codec = Client.codecRegistry.find(type)
     var encodedContent = this
     if (hasCompression()) {
         encodedContent = decompressContent()

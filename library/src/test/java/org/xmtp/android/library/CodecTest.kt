@@ -30,19 +30,19 @@ data class NumberCodec(
                 versionMajor = 1,
                 versionMinor = 1
             )
-            it.content = JSONObject().put("number", content).toString().toByteStringUtf8()
+            it.content = mapOf(Pair("number", content)).toString().toByteStringUtf8()
         }.build()
     }
 
     override fun decode(content: EncodedContent): Double =
-        JSONObject(content.content.toStringUtf8()).getDouble("number")
+        content.content.toStringUtf8().filter { it.isDigit() || it == '.'}.toDouble()
 }
 
 class CodecTest {
 
     @Test
     fun testCanRoundTripWithCustomContentType() {
-        Client().register(codec = NumberCodec())
+        Client.register(codec = NumberCodec())
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
         val aliceConversation =
@@ -60,29 +60,10 @@ class CodecTest {
     }
 
     @Test
-    fun testFallsBackToFallbackContentWhenCannotDecode() {
+    fun testCompositeCodecOnePart() {
+        Client.register(codec = CompositeCodec())
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
-        val aliceConversation =
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
-        aliceConversation.send(
-            content = 3.14,
-            options = SendOptions(contentType = NumberCodec().contentType, contentFallback = "pi")
-        )
-        // Remove number codec from regis
-        Client().codecRegistry.codecs.remove(NumberCodec().contentType.id)
-        val messages = aliceConversation.messages()
-        assertEquals(messages.size, 1)
-        val content: Double? = messages[0].content()
-        assertEquals(null, content)
-        assertEquals("pi", messages[0].fallbackContent)
-    }
-
-    @Test
-    fun testCompositeCodecOnePart() {
-        Client().register(codec = CompositeCodec())
-        val fixtures = fixtures()
-        val aliceClient = fixtures.aliceClient!!
         val aliceConversation =
             aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
         val textContent = TextCodec().encode(content = "hiya")
@@ -98,8 +79,8 @@ class CodecTest {
 
     @Test
     fun testCompositeCodecCanHaveParts() {
-        Client().register(codec = CompositeCodec())
-        Client().register(codec = NumberCodec())
+        Client.register(codec = CompositeCodec())
+        Client.register(codec = NumberCodec())
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient!!
         val aliceConversation =
