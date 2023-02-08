@@ -49,7 +49,7 @@ data class ConversationV1(
             if (contentType != null) {
                 return codec.encode(content = contentType)
             } else {
-                throw java.lang.NullPointerException()
+                throw IllegalArgumentException("Codec type is not registered")
             }
         }
 
