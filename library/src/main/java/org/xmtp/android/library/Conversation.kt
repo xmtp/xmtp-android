@@ -57,10 +57,10 @@ sealed class Conversation {
         }
     }
 
-    fun send(text: String) {
+    fun send(text: String, sendOptions: SendOptions? = null) {
         when (this) {
-            is V1 -> conversationV1.send(content = text)
-            is V2 -> conversationV2.send(content = text)
+            is V1 -> conversationV1.send(content = text, sendOptions)
+            is V2 -> conversationV2.send(content = text, sendOptions)
         }
     }
 
