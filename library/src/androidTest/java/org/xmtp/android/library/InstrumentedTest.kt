@@ -106,16 +106,15 @@ class InstrumentedTest {
             it.timestampNs = Date().time * 1_000_000
             it.message = encryptedBundle.toByteString()
         }.build()
-        runBlocking { api.publish(envelopes = listOf(envelope)) }
+        runBlocking {
+            api.publish(envelopes = listOf(envelope))
+        }
 
         // Done saving keys
         val clientOptions =
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val client = Client().create(account = aliceWallet, options = clientOptions)
         assertEquals(XMTPEnvironment.LOCAL, client.apiClient.environment)
-        val noContactYet = client.getUserContact(peerAddress = aliceWallet.address)
-        assertNull(noContactYet)
-        client.publishUserContact()
         val contact = client.getUserContact(peerAddress = aliceWallet.address)
         assertEquals(
             contact?.v1?.keyBundle?.identityKey?.secp256K1Uncompressed,

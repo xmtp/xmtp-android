@@ -23,11 +23,13 @@ data class Contacts(
             return knownBundle
         }
         val response = runBlocking { client.query(topics = listOf(Topic.contact(peerAddress))) }
+
+        var contactBundle: ContactBundle? = null
+
         for (envelope in response.envelopesList) {
-            val contactBundle = ContactBundleBuilder.buildFromEnvelope(envelope)
+            contactBundle = ContactBundleBuilder.buildFromEnvelope(envelope)
             knownBundles[peerAddress] = contactBundle
-            return contactBundle
         }
-        return null
+        return contactBundle
     }
 }

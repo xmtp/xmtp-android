@@ -155,7 +155,7 @@ class Client() {
                 message = contactBundle.toByteString()
             }.build()
 
-            envelopes.plus(envelope)
+            envelopes.add(envelope)
         }
         val contactBundle = ContactBundle.newBuilder().also {
             it.v2Builder.keyBundle = keys?.getPublicKeyBundle()
