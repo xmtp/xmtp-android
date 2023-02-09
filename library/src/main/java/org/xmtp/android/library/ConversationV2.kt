@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
+import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Message
 import org.xmtp.android.library.messages.MessageBuilder
@@ -84,19 +85,25 @@ data class ConversationV2(
         send(encodedContent = encoded, sentAt = Date())
     }
 
-    fun send(content: String, sentAt: Date) {
+    fun send(text: String, options: SendOptions? = null, sentAt: Date) {
         val encoder = TextCodec()
-        val encodedContent = encoder.encode(content = content)
-        send(encodedContent = encodedContent, sentAt = sentAt)
+        val encodedContent = encoder.encode(content = text)
+        send(encodedContent = encodedContent, options = options, sentAt = sentAt)
     }
 
-    private fun send(encodedContent: EncodedContent, sentAt: Date) {
+    private fun send(encodedContent: EncodedContent, options: SendOptions? = null, sentAt: Date) {
         if (client.getUserContact(peerAddress = peerAddress) == null) {
             throw NotFoundException()
         }
+        var content = encodedContent
+
+        if (options?.compression != null) {
+            content = content.compress(options.compression!!)
+        }
+
         val message = MessageV2Builder.buildEncode(
             client = client,
-            encodedContent = encodedContent,
+            encodedContent = content,
             topic = topic,
             keyMaterial = keyMaterial
         )
@@ -111,7 +118,7 @@ data class ConversationV2(
         )
     }
 
-    fun send(content: String) {
-        send(content = content, sentAt = Date())
+    fun send(text: String, options: SendOptions? = null) {
+        send(text = text, options = options, sentAt = Date())
     }
 }

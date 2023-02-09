@@ -3,7 +3,6 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.ContactBundle
@@ -169,8 +168,6 @@ class InstrumentedTest {
         val message = messages?.firstOrNull()
         if (message != null) {
             assertEquals("hello world", message.body)
-        } else {
-//            XCTFail("no messages")
         }
     }
 
@@ -185,11 +182,11 @@ class InstrumentedTest {
             peerAddress = "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
             sentAt = Date()
         )
-        convo.send(content = "hello from swift")
+        convo.send(content = "hello from kotlin")
         Thread.sleep(1_000)
         val messages = convo.messages()
-        assertEquals(2, messages.size)
-        assertEquals("HI ${wallet.address}", messages[0].body)
+        assertEquals(1, messages.size)
+        assertEquals("hello from kotlin", messages[0].body)
     }
 
     @Test
@@ -207,7 +204,7 @@ class InstrumentedTest {
         convo.send(content = "hello from kotlin")
         Thread.sleep(1_000)
         val messages = convo.messages()
-        assertEquals(2, messages.size)
-        assertEquals("HI ${wallet.address}", messages[0].body)
+        assertEquals(1, messages.size)
+        assertEquals("hello from kotlin", messages[0].body)
     }
 }

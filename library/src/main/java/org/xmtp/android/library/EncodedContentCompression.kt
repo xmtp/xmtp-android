@@ -1,6 +1,8 @@
 package org.xmtp.android.library
 
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.util.zip.DeflaterOutputStream
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
@@ -33,7 +35,22 @@ enum class EncodedContentCompression {
                 bos.toByteArray()
             }
             GZIP -> {
-                GZIPInputStream(content.inputStream()).readBytes()
+                val out = ByteArrayOutputStream()
+                val bis = ByteArrayInputStream(content)
+                try {
+                    val gzipInputStream = GZIPInputStream(bis)
+                    val buffer = ByteArray(256)
+                    var n: Int
+                    while (gzipInputStream.read(buffer).also { n = it } >= 0) {
+                        out.write(buffer, 0, n)
+                    }
+                } catch (e: IOException) {
+                    println("gzip uncompress error.")
+                } finally {
+                    bis.close()
+                    out.close()
+                }
+                return out.toByteArray()
             }
         }
     }

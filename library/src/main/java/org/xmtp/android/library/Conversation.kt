@@ -40,15 +40,15 @@ sealed class Conversation {
 
     fun <T> send(content: T, options: SendOptions? = null) {
         when (this) {
-            is V1 -> conversationV1.send(content = content as String, options = options)
+            is V1 -> conversationV1.send(content = content, options = options)
             is V2 -> conversationV2.send(content = content, options = options)
         }
     }
 
     fun send(text: String, sendOptions: SendOptions? = null) {
         when (this) {
-            is V1 -> conversationV1.send(content = text, sendOptions)
-            is V2 -> conversationV2.send(content = text, sendOptions)
+            is V1 -> conversationV1.send(text = text, sendOptions)
+            is V2 -> conversationV2.send(text = text, sendOptions)
         }
     }
 

@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
+import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Message
@@ -26,16 +27,20 @@ data class ConversationV1(
     val topic: Topic
         get() = Topic.directMessageV1(client.address, peerAddress)
 
-    fun send(content: String, sentAt: Date? = null) {
-        val encoder = TextCodec()
-        val encodedContent = encoder.encode(content = content)
-        send(content = encodedContent)
+    fun send(text: String, options: SendOptions? = null) {
+        send(text = text, sendOptions = options, sentAt = null)
     }
 
-    fun <T : Any> send(content: T, options: SendOptions? = null) {
+    fun send(text: String, sendOptions: SendOptions? = null, sentAt: Date? = null) {
+        val encoder = TextCodec()
+        val encodedContent = encoder.encode(content = text)
+        send(encodedContent = encodedContent)
+    }
+
+    fun <T> send(content: T, options: SendOptions? = null) {
         val codec = Client.codecRegistry.find(options?.contentType)
 
-        fun <Codec : ContentCodec<T>> encode(codec: Codec, content: Any): EncodedContent {
+        fun <Codec : ContentCodec<T>> encode(codec: Codec, content: Any?): EncodedContent {
             val contentType = content as? T
             if (contentType != null) {
                 return codec.encode(content = contentType)
@@ -57,6 +62,13 @@ data class ConversationV1(
         sentAt: Date? = null,
     ) {
         val contact = client.contacts.find(peerAddress) ?: throw NotFoundException()
+
+        var content = encodedContent
+
+        if (sendOptions?.compression != null) {
+            content = content.compress(sendOptions.compression!!)
+        }
+
         val recipient = contact.toPublicKeyBundle()
         if (!recipient.identityKey.hasSignature()) {
             throw Exception("no signature for id key")
@@ -68,7 +80,7 @@ data class ConversationV1(
         val message = MessageV1Builder.buildEncode(
             sender = client.privateKeyBundleV1!!,
             recipient = recipient,
-            message = encodedContent.toByteArray(),
+            message = content.toByteArray(),
             timestamp = date
         )
         val envelopes = mutableListOf(

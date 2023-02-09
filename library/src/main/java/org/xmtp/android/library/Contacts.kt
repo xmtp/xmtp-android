@@ -24,12 +24,11 @@ data class Contacts(
         }
         val response = runBlocking { client.query(topics = listOf(Topic.contact(peerAddress))) }
 
-        var contactBundle: ContactBundle? = null
+        if (response.envelopesList.isNullOrEmpty()) return null
 
         for (envelope in response.envelopesList) {
-            contactBundle = ContactBundleBuilder.buildFromEnvelope(envelope)
-            knownBundles[peerAddress] = contactBundle
+            knownBundles[peerAddress] = ContactBundleBuilder.buildFromEnvelope(envelope)
         }
-        return contactBundle
+        return ContactBundleBuilder.buildFromEnvelope(response.envelopesList.first())
     }
 }
