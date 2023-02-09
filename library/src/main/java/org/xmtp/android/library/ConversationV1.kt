@@ -18,19 +18,10 @@ import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import java.util.Date
 
-data class ConversationV1Container(
-    var peerAddress: String,
-    var sentAt: Date
-) {
-
-    fun decode(client: Client): ConversationV1 =
-        ConversationV1(client = client, peerAddress = peerAddress, sentAt = sentAt)
-}
-
 data class ConversationV1(
     var client: Client,
     var peerAddress: String,
-    var sentAt: Date
+    var sentAt: Date,
 ) {
     val topic: Topic
         get() = Topic.directMessageV1(client.address, peerAddress)
@@ -63,7 +54,7 @@ data class ConversationV1(
     private fun send(
         encodedContent: EncodedContent,
         sendOptions: SendOptions? = null,
-        sentAt: Date? = null
+        sentAt: Date? = null,
     ) {
         val contact = client.contacts.find(peerAddress) ?: throw NotFoundException()
         val recipient = contact.toPublicKeyBundle()
@@ -113,7 +104,7 @@ data class ConversationV1(
     fun messages(
         limit: Int? = null,
         before: Date? = null,
-        after: Date? = null
+        after: Date? = null,
     ): List<DecodedMessage> {
         val result = runBlocking {
             client.apiClient.query(

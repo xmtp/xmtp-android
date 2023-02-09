@@ -2,18 +2,6 @@ package org.xmtp.android.library
 
 import java.util.Date
 
-sealed class ConversationContainer {
-    data class V1(val conversationV1: ConversationV1Container) : ConversationContainer()
-    data class V2(val conversationV2: ConversationV2Container) : ConversationContainer()
-
-    fun decode(client: Client): Conversation {
-        return when (this) {
-            is V1 -> Conversation.V1(conversationV1.decode(client))
-            is V2 -> Conversation.V2(conversationV2.decode(client))
-        }
-    }
-}
-
 sealed class Conversation {
     data class V1(val conversationV1: ConversationV1) : Conversation()
     data class V2(val conversationV2: ConversationV2) : Conversation()
@@ -75,7 +63,7 @@ sealed class Conversation {
     fun messages(
         limit: Int? = null,
         before: Date? = null,
-        after: Date? = null
+        after: Date? = null,
     ): List<DecodedMessage> {
         return when (this) {
             is V1 -> conversationV1.messages(

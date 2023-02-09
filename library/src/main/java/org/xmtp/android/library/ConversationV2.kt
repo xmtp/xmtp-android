@@ -6,7 +6,6 @@ import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.messages.EnvelopeBuilder
-import org.xmtp.android.library.messages.InvitationV1ContextBuilder
 import org.xmtp.android.library.messages.Message
 import org.xmtp.android.library.messages.MessageBuilder
 import org.xmtp.android.library.messages.MessageV2
@@ -17,45 +16,20 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
 
-data class ConversationV2Container(
-    var topic: String,
-    var keyMaterial: ByteArray,
-    var conversationId: String? = null,
-    var metadata: Map<String, String> = mapOf(),
-    var peerAddress: String,
-    var header: SealedInvitationHeaderV1
-) {
-
-    fun decode(client: Client): ConversationV2 {
-        val context = InvitationV1ContextBuilder.buildFromConversation(
-            conversationId ?: "",
-            metadata = metadata
-        )
-        return ConversationV2(
-            topic = topic,
-            keyMaterial = keyMaterial,
-            context = context,
-            peerAddress = peerAddress,
-            client = client,
-            header = header
-        )
-    }
-}
-
 data class ConversationV2(
     var topic: String,
     var keyMaterial: ByteArray,
     var context: Invitation.InvitationV1.Context,
     var peerAddress: String,
     var client: Client,
-    private var header: SealedInvitationHeaderV1
+    private var header: SealedInvitationHeaderV1,
 ) {
     companion object {
 
         fun create(
             client: Client,
             invitation: Invitation.InvitationV1,
-            header: SealedInvitationHeaderV1
+            header: SealedInvitationHeaderV1,
         ): ConversationV2 {
             val myKeys = client.keys?.getPublicKeyBundle()
             val peer =
@@ -78,7 +52,7 @@ data class ConversationV2(
     fun messages(
         limit: Int? = null,
         before: Date? = null,
-        after: Date? = null
+        after: Date? = null,
     ): List<DecodedMessage> {
         val envelopes =
             runBlocking { client.apiClient.queryStrings(topics = listOf(topic)).envelopesList }
