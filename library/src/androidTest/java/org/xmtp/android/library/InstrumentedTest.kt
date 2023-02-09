@@ -1,8 +1,6 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.protobuf.kotlin.toByteString
-import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -14,7 +12,6 @@ import org.xmtp.android.library.messages.InvitationV1
 import org.xmtp.android.library.messages.InvitationV1ContextBuilder
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleBuilder
-import org.xmtp.android.library.messages.SealedInvitation
 import org.xmtp.android.library.messages.SealedInvitationBuilder
 import org.xmtp.android.library.messages.SealedInvitationHeaderV1
 import org.xmtp.android.library.messages.Topic
@@ -31,8 +28,6 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import java.util.Date
-import java.util.Locale
-import java.util.zip.Deflater
 
 @RunWith(AndroidJUnit4::class)
 class InstrumentedTest {
@@ -130,43 +125,6 @@ class InstrumentedTest {
     }
 
     @Test
-    fun testCanReceiveV1MessagesFromJS() {
-        val wallet = TestHelpers.FakeWallet.generate()
-        val options =
-            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
-        val client = Client().create(account = wallet, options = options)
-        val convo = ConversationV1(
-            client = client,
-            peerAddress = "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
-            sentAt = Date()
-        )
-        convo.send(content = "hello from swift")
-        Thread.sleep(1_000)
-        val messages = convo.messages()
-        assertEquals(2, messages.size)
-        assertEquals("HI ${wallet.address}", messages[0].body)
-    }
-
-    @Test
-    fun testCanReceiveV2MessagesFromJS() {
-        val wallet = PrivateKeyBuilder()
-        val options =
-            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
-        val client = Client().create(account = wallet, options = options)
-        client.publishUserContact()
-        val convo = client.conversations.newConversation(
-            "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
-            InvitationV1ContextBuilder.buildFromConversation("https://example.com/4")
-        )
-
-        convo.send(content = "hello from kotlin")
-        Thread.sleep(1_000)
-        val messages = convo.messages()
-        assertEquals(2, messages.size)
-        assertEquals("HI ${wallet.address}", messages[0].body)
-    }
-
-    @Test
     fun testEndToEndConversation() {
         val options =
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
@@ -214,5 +172,42 @@ class InstrumentedTest {
         } else {
 //            XCTFail("no messages")
         }
+    }
+
+    @Test
+    fun testCanReceiveV1MessagesFromJS() {
+        val wallet = TestHelpers.FakeWallet.generate()
+        val options =
+            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
+        val client = Client().create(account = wallet, options = options)
+        val convo = ConversationV1(
+            client = client,
+            peerAddress = "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
+            sentAt = Date()
+        )
+        convo.send(content = "hello from swift")
+        Thread.sleep(1_000)
+        val messages = convo.messages()
+        assertEquals(2, messages.size)
+        assertEquals("HI ${wallet.address}", messages[0].body)
+    }
+
+    @Test
+    fun testCanReceiveV2MessagesFromJS() {
+        val wallet = PrivateKeyBuilder()
+        val options =
+            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
+        val client = Client().create(account = wallet, options = options)
+        client.publishUserContact()
+        val convo = client.conversations.newConversation(
+            "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
+            InvitationV1ContextBuilder.buildFromConversation("https://example.com/4")
+        )
+
+        convo.send(content = "hello from kotlin")
+        Thread.sleep(1_000)
+        val messages = convo.messages()
+        assertEquals(2, messages.size)
+        assertEquals("HI ${wallet.address}", messages[0].body)
     }
 }

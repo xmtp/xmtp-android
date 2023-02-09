@@ -160,7 +160,8 @@ class MessageTest {
         assertEquals("hello deflate", message.content())
         convo.send(
             text = "hello deflate from kotlin again",
-            SendOptions(compression = EncodedContentCompression.DEFLATE))
+            SendOptions(compression = EncodedContentCompression.DEFLATE)
+        )
     }
 
     fun String.zlibCompress(): ByteArray {
@@ -197,5 +198,4 @@ class MessageTest {
         val conversations = client.conversations.list()
         assertEquals(200, conversations.size)
     }
-
 }

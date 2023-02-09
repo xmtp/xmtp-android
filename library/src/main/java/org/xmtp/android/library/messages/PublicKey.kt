@@ -2,7 +2,6 @@ package org.xmtp.android.library.messages
 
 import android.content.res.Resources
 import com.google.protobuf.kotlin.toByteString
-import org.bouncycastle.crypto.digests.SHA256Digest
 import org.bouncycastle.util.Arrays
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
