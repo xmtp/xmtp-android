@@ -10,6 +10,7 @@ import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.InvitationV1
 import org.xmtp.android.library.messages.InvitationV1ContextBuilder
+import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleBuilder
 import org.xmtp.android.library.messages.SealedInvitationBuilder
@@ -67,7 +68,7 @@ class InstrumentedTest {
     @Test
     fun testSaveKey() {
         val alice = PrivateKeyBuilder()
-        val identity = PrivateKeyBuilder().getPrivateKey()
+        val identity = PrivateKey.newBuilder().build().generate()
         val authorized = alice.createIdentity(identity)
         val authToken = authorized.createAuthToken()
         val api = GRPCApiClient(environment = XMTPEnvironment.LOCAL, secure = false)
@@ -81,7 +82,7 @@ class InstrumentedTest {
         runBlocking {
             api.publish(envelopes = listOf(envelope))
         }
-        Thread.sleep(2_000_000)
+        Thread.sleep(2_000)
         val result =
             runBlocking { api.query(topics = listOf(Topic.userPrivateStoreKeyBundle(authorized.address))) }
         assertEquals(result.envelopesList.size, 1)

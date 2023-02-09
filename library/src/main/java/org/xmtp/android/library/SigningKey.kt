@@ -46,7 +46,7 @@ fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): Author
         it.signature = signature
     }
     return AuthorizedIdentity(
-        address = Keys.getAddress(publicKey),
+        address = Keys.toChecksumAddress(Keys.getAddress(publicKey)),
         authorized = authorized.build(),
         identity = identity,
     )
