@@ -2,7 +2,6 @@ package org.xmtp.android.library
 
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.util.zip.DeflaterOutputStream
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
@@ -15,14 +14,22 @@ enum class EncodedContentCompression {
     fun compress(content: ByteArray): ByteArray? {
         return when (this) {
             DEFLATE -> {
-                val bos = ByteArrayOutputStream()
-                DeflaterOutputStream(bos).write(content)
-                bos.toByteArray()
+                ByteArrayOutputStream(content.size).use { bos ->
+                    DeflaterOutputStream(bos).use { deflater ->
+                        deflater.write(content)
+                        deflater.close()
+                        bos.toByteArray()
+                    }
+                }
             }
             GZIP -> {
-                val bos = ByteArrayOutputStream()
-                GZIPOutputStream(bos).write(content)
-                bos.toByteArray()
+                ByteArrayOutputStream(content.size).use { bos ->
+                    GZIPOutputStream(bos).use { gzipOS ->
+                        gzipOS.write(content)
+                        gzipOS.close()
+                        bos.toByteArray()
+                    }
+                }
             }
         }
     }
@@ -35,22 +42,18 @@ enum class EncodedContentCompression {
                 bos.toByteArray()
             }
             GZIP -> {
-                val out = ByteArrayOutputStream()
-                val bis = ByteArrayInputStream(content)
-                try {
-                    val gzipInputStream = GZIPInputStream(bis)
-                    val buffer = ByteArray(256)
-                    var n: Int
-                    while (gzipInputStream.read(buffer).also { n = it } >= 0) {
-                        out.write(buffer, 0, n)
+                ByteArrayInputStream(content).use { bis ->
+                    ByteArrayOutputStream().use { bos ->
+                        GZIPInputStream(bis).use { gzipIS ->
+                            val buffer = ByteArray(1024)
+                            var len: Int
+                            while (gzipIS.read(buffer).also { len = it } != -1) {
+                                bos.write(buffer, 0, len)
+                            }
+                            bos.toByteArray()
+                        }
                     }
-                } catch (e: IOException) {
-                    println("gzip uncompress error.")
-                } finally {
-                    bis.close()
-                    out.close()
                 }
-                return out.toByteArray()
             }
         }
     }

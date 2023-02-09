@@ -247,8 +247,8 @@ class ConversationTest {
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
         val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
         bobConversation.send(
-            content = MutableList(1000) { "A" }.toString(),
-            options = SendOptions(compression = EncodedContentCompression.GZIP)
+            text = MutableList(1000) { "A" }.toString(),
+            sendOptions = SendOptions(compression = EncodedContentCompression.GZIP)
         )
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
@@ -281,8 +281,8 @@ class ConversationTest {
             InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi")
         )
         bobConversation.send(
-            content = MutableList(1000) { "A" }.toString(),
-            options = SendOptions(compression = EncodedContentCompression.GZIP)
+            text = MutableList(1000) { "A" }.toString(),
+            sendOptions = SendOptions(compression = EncodedContentCompression.GZIP)
         )
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
