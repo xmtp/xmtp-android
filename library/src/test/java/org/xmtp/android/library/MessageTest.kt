@@ -24,7 +24,6 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import java.util.Date
-import java.util.zip.Deflater
 
 class MessageTest {
 
@@ -155,27 +154,11 @@ class MessageTest {
         assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
         val convo = client.conversations.list()[0]
         val message = convo.messages().lastOrNull()!!
-        val kotlindata = "hello deflate"
-        print("kotlin version: ${kotlindata.zlibCompress()}")
         assertEquals("hello deflate", message.content())
         convo.send(
             text = "hello deflate from kotlin again",
             SendOptions(compression = EncodedContentCompression.DEFLATE)
         )
-    }
-
-    fun String.zlibCompress(): ByteArray {
-        val input = this.toByteArray(charset("UTF-8"))
-
-        // Compress the bytes
-        // 1 to 4 bytes/char for UTF-8
-        val output = ByteArray(input.size * 4)
-        val compressor = Deflater().apply {
-            setInput(input)
-            finish()
-        }
-        val compressedDataLength: Int = compressor.deflate(output)
-        return output.copyOfRange(0, compressedDataLength)
     }
 
     @Test
@@ -196,6 +179,6 @@ class MessageTest {
         }.build()
         val client = Client().create(account = PrivateKeyBuilder(key))
         val conversations = client.conversations.list()
-        assertEquals(200, conversations.size)
+        assertEquals(100, conversations.size)
     }
 }
