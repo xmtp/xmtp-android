@@ -116,11 +116,11 @@ class InstrumentedTest {
         assertEquals(XMTPEnvironment.LOCAL, client.apiClient.environment)
         val contact = client.getUserContact(peerAddress = aliceWallet.address)
         assertEquals(
-            contact?.v1?.keyBundle?.identityKey?.secp256K1Uncompressed,
+            contact?.v2?.keyBundle?.identityKey?.secp256K1Uncompressed,
             client.privateKeyBundleV1?.identityKey?.publicKey?.secp256K1Uncompressed
         )
-        assert(contact!!.v1.keyBundle.identityKey.hasSignature())
-        assert(contact.v1.keyBundle.preKey.hasSignature())
+        assert(contact!!.v2.keyBundle.identityKey.hasSignature())
+        assert(contact.v2.keyBundle.preKey.hasSignature())
     }
 
     @Test
@@ -182,7 +182,7 @@ class InstrumentedTest {
             peerAddress = "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
             sentAt = Date()
         )
-        convo.send(content = "hello from kotlin")
+        convo.send(text = "hello from kotlin")
         Thread.sleep(1_000)
         val messages = convo.messages()
         assertEquals(1, messages.size)

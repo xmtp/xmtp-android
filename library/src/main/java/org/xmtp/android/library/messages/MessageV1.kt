@@ -73,14 +73,11 @@ fun MessageV1.decrypt(viewer: PrivateKeyBundleV1?): ByteArray? {
     val header = MessageHeaderV1.parseFrom(headerBytes)
     val recipient = header.recipient
     val sender = header.sender
-    val secret: ByteArray
-    if (viewer?.walletAddress == sender.walletAddress) {
-        secret =
-            viewer.sharedSecret(peer = recipient, myPreKey = sender.preKey, isRecipient = false)
+    val secret: ByteArray = if (viewer?.walletAddress == sender.walletAddress) {
+        viewer.sharedSecret(peer = recipient, myPreKey = sender.preKey, isRecipient = false)
     } else {
-        secret =
-            viewer?.sharedSecret(peer = sender, myPreKey = recipient.preKey, isRecipient = true)
-                ?: byteArrayOf()
+        viewer?.sharedSecret(peer = sender, myPreKey = recipient.preKey, isRecipient = true)
+            ?: byteArrayOf()
     }
     return Crypto.decrypt(secret, ciphertext, additionalData = headerBytes.toByteArray())
 }
