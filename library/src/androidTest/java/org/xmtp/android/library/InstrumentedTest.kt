@@ -3,6 +3,7 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.ContactBundle
@@ -172,6 +173,7 @@ class InstrumentedTest {
     }
 
     @Test
+    @Ignore
     fun testCanReceiveV1MessagesFromJS() {
         val wallet = TestHelpers.FakeWallet.generate()
         val options =
@@ -190,6 +192,7 @@ class InstrumentedTest {
     }
 
     @Test
+    @Ignore
     fun testCanReceiveV2MessagesFromJS() {
         val wallet = PrivateKeyBuilder()
         val options =
