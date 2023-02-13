@@ -61,7 +61,7 @@ class ConversationTest {
     @Test
     fun testDoesNotAllowConversationWithSelf() {
         val client = Client().create(account = aliceWallet)
-        assertThrows("Recipient is sender", IllegalArgumentException::class.java) {
+        assertThrows("Recipient is sender", XMTPException::class.java) {
             client.conversations.newConversation(alice.walletAddress)
         }
     }
@@ -235,7 +235,7 @@ class ConversationTest {
             aliceWallet.address,
             InvitationV1ContextBuilder.buildFromConversation("hi")
         )
-        assertThrows("Invalid signature", IllegalArgumentException::class.java) {
+        assertThrows("Invalid signature", XMTPException::class.java) {
             val messages = bobConversation.messages()
         }
     }

@@ -32,14 +32,14 @@ data class Conversations(
         context: Invitation.InvitationV1.Context? = null
     ): Conversation {
         if (peerAddress.lowercase() == client.address?.lowercase()) {
-            throw IllegalArgumentException("Recipient is sender")
+            throw XMTPException("Recipient is sender")
         }
         val existingConversation = conversations.firstOrNull { it.peerAddress == peerAddress }
         if (existingConversation != null) {
             return existingConversation
         }
         val contact = client.contacts.find(peerAddress)
-            ?: throw IllegalArgumentException("Recipient not on network")
+            ?: throw XMTPException("Recipient not on network")
         // See if we have an existing v1 convo
         if (context?.conversationId == null || context.conversationId == "") {
             val invitationPeers = listIntroductionPeers()

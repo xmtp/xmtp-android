@@ -6,6 +6,7 @@ import org.bouncycastle.util.Arrays
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
+import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import java.util.Date
@@ -58,7 +59,7 @@ val PublicKey.walletAddress: String
 
 fun PublicKey.recoverWalletSignerPublicKey(): PublicKey {
     if (!hasSignature()) {
-        throw Resources.NotFoundException("No signature found")
+        throw XMTPException("No signature found")
     }
 
     val slimKey = PublicKey.newBuilder().also {

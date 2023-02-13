@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.content.res.Resources.NotFoundException
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
@@ -45,7 +44,7 @@ data class ConversationV1(
             if (contentType != null) {
                 return codec.encode(content = contentType)
             } else {
-                throw IllegalArgumentException("Codec type is not registered")
+                throw XMTPException("Codec type is not registered")
             }
         }
 
@@ -61,7 +60,7 @@ data class ConversationV1(
         sendOptions: SendOptions? = null,
         sentAt: Date? = null,
     ) {
-        val contact = client.contacts.find(peerAddress) ?: throw NotFoundException()
+        val contact = client.contacts.find(peerAddress) ?: throw XMTPException("Contact not found.")
 
         var content = encodedContent
 
@@ -71,11 +70,11 @@ data class ConversationV1(
 
         val recipient = contact.toPublicKeyBundle()
         if (!recipient.identityKey.hasSignature()) {
-            throw Exception("no signature for id key")
+            throw XMTPException("no signature for id key")
         }
         val date = sentAt ?: Date()
         if (client.privateKeyBundleV1 == null) {
-            throw Exception("no private key bundle")
+            throw XMTPException("no private key bundle")
         }
         val message = MessageV1Builder.buildEncode(
             sender = client.privateKeyBundleV1!!,
