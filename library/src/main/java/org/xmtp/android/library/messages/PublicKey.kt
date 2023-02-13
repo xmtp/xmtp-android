@@ -1,6 +1,5 @@
 package org.xmtp.android.library.messages
 
-import android.content.res.Resources
 import com.google.protobuf.kotlin.toByteString
 import org.bouncycastle.util.Arrays
 import org.web3j.crypto.Keys

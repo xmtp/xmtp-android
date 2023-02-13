@@ -1,6 +1,5 @@
 package org.xmtp.android.library.messages
 
-import android.content.res.Resources.NotFoundException
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.CipherText
 import org.xmtp.android.library.Crypto
