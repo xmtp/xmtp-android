@@ -3,10 +3,8 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.InvitationV1
 import org.xmtp.android.library.messages.InvitationV1ContextBuilder
@@ -22,7 +20,6 @@ import org.xmtp.android.library.messages.generate
 import org.xmtp.android.library.messages.header
 import org.xmtp.android.library.messages.recoverWalletSignerPublicKey
 import org.xmtp.android.library.messages.secp256K1Uncompressed
-import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.toSignedPublicKeyBundle
 import org.xmtp.android.library.messages.toV2
 import org.xmtp.android.library.messages.walletAddress
@@ -32,19 +29,6 @@ import java.util.Date
 
 @RunWith(AndroidJUnit4::class)
 class InstrumentedTest {
-    fun publishLegacyContact(client: Client) {
-        val contactBundle = ContactBundle.newBuilder().also {
-            it.v1Builder.keyBundle = client.privateKeyBundleV1?.toPublicKeyBundle()
-        }.build()
-        val envelope = Envelope.newBuilder().also {
-            it.contentTopic = Topic.contact(client.address).description
-            it.timestampNs = Date().time * 1_000_000
-            it.message = contactBundle.toByteString()
-        }.build()
-
-        client.publish(envelopes = listOf(envelope))
-    }
-
     @Test
     fun testPublishingAndFetchingContactBundlesWithWhileGeneratingKeys() {
         val aliceWallet = PrivateKeyBuilder()
@@ -173,7 +157,6 @@ class InstrumentedTest {
     }
 
     @Test
-    @Ignore
     fun testCanReceiveV1MessagesFromJS() {
         val wallet = TestHelpers.FakeWallet.generate()
         val options =
@@ -192,13 +175,11 @@ class InstrumentedTest {
     }
 
     @Test
-    @Ignore
     fun testCanReceiveV2MessagesFromJS() {
         val wallet = PrivateKeyBuilder()
         val options =
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val client = Client().create(account = wallet, options = options)
-        client.publishUserContact()
         val convo = client.conversations.newConversation(
             "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
             InvitationV1ContextBuilder.buildFromConversation("https://example.com/4")

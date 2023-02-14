@@ -41,7 +41,7 @@ data class Conversations(
         val contact = client.contacts.find(peerAddress)
             ?: throw XMTPException("Recipient not on network")
         // See if we have an existing v1 convo
-        if (context?.conversationId == null || context.conversationId == "") {
+        if (context?.conversationId.isNullOrEmpty()) {
             val invitationPeers = listIntroductionPeers()
             val peerSeenAt = invitationPeers[peerAddress]
             if (peerSeenAt != null) {
@@ -56,8 +56,9 @@ data class Conversations(
                 return conversation
             }
         }
+
         // If the contact is v1, start a v1 conversation
-        if (Contact.ContactBundle.VersionCase.V1 == contact.versionCase && (context?.conversationId == null || context.conversationId == "")) {
+        if (Contact.ContactBundle.VersionCase.V1 == contact.versionCase && context?.conversationId.isNullOrEmpty()) {
             val conversation: Conversation = Conversation.V1(
                 ConversationV1(
                     client = client,

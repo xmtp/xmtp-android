@@ -34,7 +34,7 @@ class ConversationTest {
     lateinit var bob: PrivateKey
     lateinit var bobClient: Client
 
-    fun publishLegacyContact(client: Client) {
+    private fun publishLegacyContact(client: Client) {
         val contactBundle = ContactBundle.newBuilder().apply {
             v1Builder.keyBundle = client.privateKeyBundleV1?.toPublicKeyBundle()
         }.build()

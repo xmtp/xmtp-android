@@ -84,10 +84,7 @@ data class ConversationV1(
         )
         val envelopes = mutableListOf(
             EnvelopeBuilder.buildFromTopic(
-                topic = Topic.directMessageV1(
-                    client.address,
-                    peerAddress
-                ),
+                topic = topic,
                 timestamp = date,
                 message = MessageBuilder.buildFromMessageV1(v1 = message).toByteArray()
             )
@@ -119,12 +116,7 @@ data class ConversationV1(
     ): List<DecodedMessage> {
         val result = runBlocking {
             client.apiClient.query(
-                topics = listOf(
-                    Topic.directMessageV1(
-                        client.address,
-                        peerAddress
-                    )
-                )
+                topics = listOf(topic)
             )
         }
         return result.envelopesList.flatMap { envelope ->
