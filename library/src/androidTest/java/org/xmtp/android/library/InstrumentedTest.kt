@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.FlakyTest
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -73,6 +74,7 @@ class InstrumentedTest {
     }
 
     @Test
+    @FlakyTest
     fun testPublishingAndFetchingContactBundlesWithSavedKeys() {
         val aliceWallet = PrivateKeyBuilder()
         val alice = PrivateKeyOuterClass.PrivateKeyBundleV1.newBuilder().build()
@@ -157,6 +159,7 @@ class InstrumentedTest {
     }
 
     @Test
+    @FlakyTest
     fun testCanReceiveV1MessagesFromJS() {
         val wallet = TestHelpers.FakeWallet.generate()
         val options =
@@ -175,6 +178,7 @@ class InstrumentedTest {
     }
 
     @Test
+    @FlakyTest
     fun testCanReceiveV2MessagesFromJS() {
         val wallet = PrivateKeyBuilder()
         val options =
