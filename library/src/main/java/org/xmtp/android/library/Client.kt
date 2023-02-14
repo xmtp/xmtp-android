@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import androidx.annotation.WorkerThread
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Keys
 import org.xmtp.android.library.codecs.ContentCodec
@@ -92,7 +91,6 @@ class Client() {
         return Client(address = address, privateKeyBundleV1 = v1Bundle, apiClient = apiClient)
     }
 
-    @WorkerThread
     private suspend fun loadOrCreateKeys(
         account: SigningKey,
         apiClient: ApiClient
@@ -121,7 +119,6 @@ class Client() {
         }
     }
 
-    @WorkerThread
     private suspend fun loadPrivateKeys(
         account: SigningKey,
         apiClient: ApiClient
@@ -177,7 +174,6 @@ class Client() {
         return contacts.find(Keys.toChecksumAddress(peerAddress))
     }
 
-    @WorkerThread
     suspend fun query(topics: List<Topic>): QueryResponse {
         return apiClient.query(topics = topics)
     }
