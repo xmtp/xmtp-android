@@ -2,6 +2,8 @@ package org.xmtp.android.library
 
 import androidx.annotation.WorkerThread
 import kotlinx.coroutines.runBlocking
+import org.bouncycastle.util.Arrays
+import org.web3j.crypto.Keys
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.messages.ContactBundle
@@ -173,7 +175,7 @@ class Client() {
     }
 
     fun getUserContact(peerAddress: String): ContactBundle? {
-        return contacts.find(peerAddress)
+        return contacts.find(Keys.toChecksumAddress(peerAddress))
     }
 
     @WorkerThread
