@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import org.xmtp.android.library.messages.Envelope
 import java.util.Date
 
 sealed class Conversation {
@@ -37,6 +38,13 @@ sealed class Conversation {
                 is V2 -> conversationV2.keyMaterial
             }
         }
+
+    fun decode(envelope: Envelope) : DecodedMessage {
+        when (this) {
+            is V1 -> return conversationV1.decode(envelope)
+            is V2 -> return conversationV2.decodeEnvelope(envelope)
+        }
+    }
 
     fun <T> send(content: T, options: SendOptions? = null) {
         when (this) {

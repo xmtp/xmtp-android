@@ -124,7 +124,7 @@ data class ConversationV1(
         }
     }
 
-    private fun decode(envelope: Envelope): DecodedMessage {
+    fun decode(envelope: Envelope): DecodedMessage {
         val message = Message.parseFrom(envelope.message)
         val decrypted = message.v1.decrypt(client.privateKeyBundleV1)
         val encodedMessage = EncodedContent.parseFrom(decrypted)

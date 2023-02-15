@@ -4,6 +4,7 @@ import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.web3j.crypto.Hash
 import org.web3j.utils.Numeric
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.messages.InvitationV1
@@ -22,8 +23,11 @@ import org.xmtp.android.library.messages.senderAddress
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.toV2
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
+import org.xmtp.proto.message.contents.Invitation.InvitationV1.Context
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
+import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Date
 
 class MessageTest {
@@ -211,5 +215,108 @@ class MessageTest {
         val messages = convo.messages()
         assertEquals(1, messages.size)
         assertEquals("hello from kotlin", messages[0].body)
+    }
+
+    @Test
+    fun testGetsV1ID() {
+        val fixtures = fixtures()
+        val conversation =
+            fixtures.aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        conversation.send(text = "hi")
+        val envelope = fixtures.fakeApiClient.published.lastOrNull()!!
+        val decodedMessage = conversation.decode(envelope)
+        assertEquals(Hash.sha256(envelope.message.toByteArray()).toHex(), decodedMessage.id)
+    }
+
+    @Test
+    fun testGetsV2ID() {
+        val envelopeMessageData =
+            Numeric.hexStringToByteArray("12bf040a470880dedf9dafc0ff9e17123b2f786d74702f302f6d2d32536b644e355161305a6d694649357433524662667749532d4f4c76356a7573716e6465656e544c764e672f70726f746f12f3030af0030a20439174a205643a50af33c7670341338526dbb9c1cf0560687ff8a742e957282d120c090ba2b385b40639867493ce1abd037648c947f72e5c62e8691d7748e78f9a346ff401c97a628ebecf627d722829ff9cfb7d7c3e0b9e26b5801f2b5a39fd58757cc5771427bfefad6243f52cfc84b384fa042873ebeb90948aa80ca34f26ff883d64720c9228ed6bcd1a5c46953a12ae8732fd70260651455674e2e2c23bc8d64ed35562fef4cdfc55d38e72ad9cf2d597e68f48b6909967b0f5d0b4f33c0af3efce55c739fbc93888d20b833df15811823970a356b26622936564d830434d3ecde9a013f7433142e366f1df5589131e440251be54d5d6deef9aaaa9facac26eb54fb7b74eb48c5a2a9a2e2956633b123cc5b91dec03e4dba30683be03bd7510f16103d3f81712dccf2be003f2f77f9e1f162bc47f6c1c38a1068abd3403952bef31d75e8024e7a62d9a8cbd48f1872a0156abb559d01de689b4370a28454658957061c46f47fc5594808d15753876d4b5408b3a3410d0555c016e427dfceae9c05a4a21fd7ce4cfbb11b2a696170443cf310e0083b0a48e357fc2f00c688c0b56821c8a14c2bb44ddfa31d680dfc85efe4811e86c6aa3adfc373ad5731ddab83960774d98d60075b8fd70228da5d748bfb7a5334bd07e1cc4a9fbf3d5de50860d0684bb27786b5b4e00d415")
+        val envelope = MessageApiOuterClass.Envelope.newBuilder().also {
+            it.contentTopic = "/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto"
+            it.message = envelopeMessageData.toByteString()
+            it.timestampNs = Date().time * 1_000_000
+        }.build()
+        val ints = arrayOf(80, 84, 15, 126, 14, 105, 216, 8, 61, 147, 153, 232, 103, 69, 219, 13,
+            99, 118, 68, 56, 160, 94, 58, 22, 140, 247, 221, 172, 14, 188, 52, 88)
+        val bytes =
+            ints.foldIndexed(ByteArray(ints.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
+        val key = PrivateKeyOuterClass.PrivateKey.newBuilder().also {
+            it.secp256K1Builder.bytes = bytes.toByteString()
+            it.publicKeyBuilder.secp256K1UncompressedBuilder.bytes =
+                KeyUtil.addUncompressedByte(KeyUtil.getPublicKey(bytes)).toByteString()
+        }.build()
+        val keyBundleData =
+            Numeric.hexStringToByteArray("0a86030ac001089387b882df3012220a204a393d6ac64c10770a2585def70329f10ca480517311f0b321a5cfbbae0119951a9201089387b882df3012440a420a4092f66532cf0266d146a17060fb64148e4a6adc673c14511e45f40ac66551234a336a8feb6ef3fabdf32ea259c2a3bca32b9550c3d34e004ea59e86b42f8001ac1a430a41041c919edda3399ab7f20f5e1a9339b1c2e666e80a164fb1c6d8bc1b7dbf2be158f87c837a6364c7fb667a40c2d234d198a7c2168a928d39409ad7d35d653d319912c00108a087b882df3012220a202ade2eefefa5f8855e557d685278e8717e3f57682b66c3d73aa87896766acddc1a920108a087b882df3012440a420a404f4a90ef10e1536e4588f12c2320229008d870d2abaecd1acfefe9ca91eb6f6d56b1380b1bdebdcf9c46fb19ceb3247d5d986a4dd2bce40a4bdf694c24b08fbb1a430a4104a51efe7833c46d2f683e2eb1c07811bb96ab5e4c2000a6f06124968e8842ff8be737ad7ca92b2dabb13550cdc561df15771c8494eca7b7ca5519f6da02f76489")
+        val keyBundle = PrivateKeyOuterClass.PrivateKeyBundle.parseFrom(keyBundleData)
+        val client = Client().buildFrom(bundle = keyBundle)
+        val conversationJSON = ("""
+		{"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z","context":{"conversationId":"pat/messageid","metadata":{}}}
+		""").toByteArray(UTF_8)
+        val decodedConversation = client.importConversation(conversationJSON)
+        val conversation = ConversationV2(topic = decodedConversation.topic,
+            keyMaterial = decodedConversation.keyMaterial!!,
+            context = Context.newBuilder().build(),
+            peerAddress = decodedConversation.peerAddress,
+            client = client,
+            header = Invitation.SealedInvitationHeaderV1.newBuilder().build())
+        val decodedMessage = conversation.decodeEnvelope(envelope)
+        assertEquals(decodedMessage.id,
+            "e42a7dd44d0e1214824eab093cb89cfe6f666298d0af2d54fe0c914c8b72eff3")
+    }
+
+    @Test
+    fun testCanPaginateV1Messages() {
+        val bob = FakeWallet.generate()
+        val alice = FakeWallet.generate()
+        val options =
+            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
+        val bobClient = Client().create(account = bob, options = options)
+        // Publish alice's contact
+        Client().create(account = alice, options = options)
+        val convo = ConversationV1(client = bobClient, peerAddress = alice.address, sentAt = Date())
+        // Say this message is sent in the past
+        convo.send(text = "10 seconds ago", sentAt = Date(Date().time - 10))
+        convo.send(text = "now")
+        val messages = convo.messages(limit = 1)
+        assertEquals(1, messages.size)
+        val nowMessage = messages[0]
+        assertEquals("now", nowMessage.body)
+        val messages2 = convo.messages(limit = 1, before = nowMessage.sent)
+        assertEquals(1, messages2.size)
+        val tenSecondsAgoMessage = messages2[0]
+        assertEquals("10 seconds ago", tenSecondsAgoMessage.body)
+        val messages3 = convo.messages(limit = 1, after = tenSecondsAgoMessage.sent)
+        assertEquals(1, messages3.size)
+        val nowMessage2 = messages3[0]
+        assertEquals("now", nowMessage2.body)
+    }
+
+    @Test
+    fun testCanPaginateV2Messages() {
+        val bob = FakeWallet.generate()
+        val alice = FakeWallet.generate()
+        val options =
+            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
+        val bobClient = Client().create(account = bob, options = options)
+        // Publish alice's contact
+        Client().create(account = alice, options = options)
+        val convo = bobClient.conversations.newConversation(alice.address)
+        // Say this message is sent in the past
+        val tenSecondsAgo = Date(Date().time - 10)
+        (convo as ConversationV2).send(text = "10 seconds ago", sentAt = tenSecondsAgo)
+        convo.send(text = "now")
+        val messages = convo.messages(limit = 1)
+        assertEquals(1, messages.size)
+        val nowMessage = messages[0]
+        assertEquals("now", nowMessage.body)
+        val messages2 = convo.messages(limit = 1, before = nowMessage.sent)
+        assertEquals(1, messages2.size)
+        val tenSecondsAgoMessage = messages2[0]
+        assertEquals("10 seconds ago", tenSecondsAgoMessage.body)
+        val messages3 = convo.messages(limit = 1, after = tenSecondsAgoMessage.sent)
+        assertEquals(1, messages3.size)
+        val nowMessage2 = messages3[0]
+        assertEquals("now", nowMessage2.body)
     }
 }

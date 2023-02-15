@@ -1,10 +1,12 @@
 package org.xmtp.android.library
 
 import kotlinx.coroutines.runBlocking
+import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.codecs.compress
+import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Message
 import org.xmtp.android.library.messages.MessageBuilder
@@ -62,7 +64,14 @@ data class ConversationV2(
         }
     }
 
-    private fun decode(message: MessageV2): DecodedMessage =
+    fun decodeEnvelope(envelope: Envelope): DecodedMessage {
+        val message = Message.parseFrom(envelope.message)
+        val decoded = decode(message.v2)
+        decoded.id = generateID(envelope)
+        return decoded
+    }
+
+    fun decode(message: MessageV2): DecodedMessage =
         MessageV2Builder.buildDecode(message, keyMaterial = keyMaterial)
 
     fun <T> send(content: T, options: SendOptions? = null) {
@@ -120,4 +129,7 @@ data class ConversationV2(
     fun send(text: String, options: SendOptions? = null) {
         send(text = text, options = options, sentAt = Date())
     }
+
+    private fun generateID(envelope: Envelope): String =
+        Hash.sha256(envelope.message.toByteArray()).toHex()
 }
