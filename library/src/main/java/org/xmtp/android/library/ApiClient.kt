@@ -16,6 +16,7 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 import java.io.Closeable
+import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.TimeUnit
 
 interface ApiClient {
@@ -30,6 +31,7 @@ interface ApiClient {
     suspend fun query(topics: List<Topic>, pagination: Pagination? = null): QueryResponse
     suspend fun envelopes(topics: List<String>, pagination: Pagination? = null): List<Envelope>
     suspend fun publish(envelopes: List<Envelope>): PublishResponse
+    suspend fun subscribe(topics: List<String>): Flow<Envelope>
 }
 
 data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: Boolean = true) :
@@ -126,6 +128,12 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
         headers.put(APP_VERSION_HEADER_KEY, Constants.VERSION)
 
         return client.publish(request, headers)
+    }
+
+    override suspend fun subscribe(topics: List<String>): Flow<Envelope> {
+        val request =
+            MessageApiOuterClass.SubscribeRequest.newBuilder().addAllContentTopics(topics).build()
+        return client.subscribe(request)
     }
 
     override fun close() {
