@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.FlakyTest
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -64,6 +65,7 @@ class InstrumentedTest {
     }
 
     @Test
+    @FlakyTest
     fun testPublishingAndFetchingContactBundlesWithSavedKeys() {
         val aliceWallet = PrivateKeyBuilder()
         val alice = PrivateKeyOuterClass.PrivateKeyBundleV1.newBuilder().build()
