@@ -59,9 +59,11 @@ data class ConversationV2(
     ): List<DecodedMessage> {
         val pagination = Pagination(limit = limit, startTime = before, endTime = after)
         val result = runBlocking {
-            client.apiClient.queryStrings(topics = listOf(topic),
+            client.apiClient.queryStrings(
+                topics = listOf(topic),
                 pagination = pagination,
-                cursor = null)
+                cursor = null
+            )
         }
 
         return result.envelopesList.flatMap { envelope ->

@@ -59,8 +59,10 @@ class ClientTest {
     @Test
     fun testExistingWallet() {
         // Generated from JS script
-        val ints = arrayOf(31, 116, 198, 193, 189, 122, 19, 254, 191, 189, 211, 215, 255, 131,
-            171, 239, 243, 33, 4, 62, 143, 86, 18, 195, 251, 61, 128, 90, 34, 126, 219, 236)
+        val ints = arrayOf(
+            31, 116, 198, 193, 189, 122, 19, 254, 191, 189, 211, 215, 255, 131,
+            171, 239, 243, 33, 4, 62, 143, 86, 18, 195, 251, 61, 128, 90, 34, 126, 219, 236
+        )
         val bytes =
             ints.foldIndexed(ByteArray(ints.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
         val key = PrivateKey.newBuilder().also {

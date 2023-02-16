@@ -397,11 +397,15 @@ class ConversationTest {
 
     @Test
     fun testCanPaginateV2Messages() {
-        val bobConversation = bobClient.conversations.newConversation(alice.walletAddress,
-            context = InvitationV1ContextBuilder.buildFromConversation("hi"))
+        val bobConversation = bobClient.conversations.newConversation(
+            alice.walletAddress,
+            context = InvitationV1ContextBuilder.buildFromConversation("hi")
+        )
 
-        val aliceConversation = aliceClient.conversations.newConversation(bob.walletAddress,
-            context = InvitationV1ContextBuilder.buildFromConversation("hi"))
+        val aliceConversation = aliceClient.conversations.newConversation(
+            bob.walletAddress,
+            context = InvitationV1ContextBuilder.buildFromConversation("hi")
+        )
         val date = Date()
         date.time = date.time - 1000000
         bobConversation.send(text = "hey alice 1", sentAt = date)
@@ -417,31 +421,21 @@ class ConversationTest {
 
     @Test
     fun testImportV1ConversationFromJS() {
-        val jsExportJSONData = ("""
-		{
-				"version": "v1",
-				"peerAddress": "0x5DAc8E2B64b8523C11AF3e5A2E087c2EA9003f14",
-				"createdAt": "2022-09-20T09:32:50.329Z"
-		}
-		""").toByteArray(StandardCharsets.UTF_8)
+        val jsExportJSONData = (""" { "version": "v1", "peerAddress": "0x5DAc8E2B64b8523C11AF3e5A2E087c2EA9003f14", "createdAt": "2022-09-20T09:32:50.329Z" } """).toByteArray(StandardCharsets.UTF_8)
         val conversation = aliceClient.importConversation(jsExportJSONData)
         assertEquals(conversation.peerAddress, "0x5DAc8E2B64b8523C11AF3e5A2E087c2EA9003f14")
     }
 
     @Test
     fun testImportV2ConversationFromJS() {
-        val jsExportJSONData = ("""
-		{"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z","context":{"conversationId":"pat/messageid","metadata":{}}}
-		""").toByteArray(StandardCharsets.UTF_8)
+        val jsExportJSONData = (""" {"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z","context":{"conversationId":"pat/messageid","metadata":{}}} """).toByteArray(StandardCharsets.UTF_8)
         val conversation = aliceClient.importConversation(jsExportJSONData)
         assertEquals(conversation.peerAddress, "0x436D906d1339fC4E951769b1699051f020373D04")
     }
 
     @Test
     fun testImportV2ConversationWithNoContextFromJS() {
-        val jsExportJSONData = ("""
-		{"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z"}
-		""").toByteArray(StandardCharsets.UTF_8)
+        val jsExportJSONData = (""" {"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z"} """).toByteArray(StandardCharsets.UTF_8)
         val conversation = aliceClient.importConversation(jsExportJSONData)
         assertEquals(conversation.peerAddress, "0x436D906d1339fC4E951769b1699051f020373D04")
     }
