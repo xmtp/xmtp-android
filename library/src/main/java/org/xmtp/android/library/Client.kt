@@ -66,7 +66,7 @@ class Client() {
     constructor(
         address: String,
         privateKeyBundleV1: PrivateKeyBundleV1,
-        apiClient: ApiClient,
+        apiClient: ApiClient
     ) : this() {
         this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
@@ -114,7 +114,7 @@ class Client() {
 
     private suspend fun loadOrCreateKeys(
         account: SigningKey,
-        apiClient: ApiClient,
+        apiClient: ApiClient
     ): PrivateKeyBundleV1 {
         val keys = loadPrivateKeys(account, apiClient)
         if (keys != null) {
@@ -142,7 +142,7 @@ class Client() {
 
     private suspend fun loadPrivateKeys(
         account: SigningKey,
-        apiClient: ApiClient,
+        apiClient: ApiClient
     ): PrivateKeyBundleV1? {
         val topics: List<Topic> = listOf(Topic.userPrivateStoreKeyBundle(account.address))
         val res = apiClient.query(topics = topics)
