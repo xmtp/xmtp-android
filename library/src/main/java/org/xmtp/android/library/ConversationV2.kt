@@ -12,6 +12,7 @@ import org.xmtp.android.library.messages.Message
 import org.xmtp.android.library.messages.MessageBuilder
 import org.xmtp.android.library.messages.MessageV2
 import org.xmtp.android.library.messages.MessageV2Builder
+import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.SealedInvitationHeaderV1
 import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
@@ -56,11 +57,15 @@ data class ConversationV2(
         before: Date? = null,
         after: Date? = null,
     ): List<DecodedMessage> {
-        val envelopes =
-            runBlocking { client.apiClient.queryStrings(topics = listOf(topic)).envelopesList }
-        return envelopes.flatMap { envelope ->
-            val message = Message.parseFrom(envelope.message)
-            listOf(decode(message.v2))
+        val pagination = Pagination(limit = limit, startTime = before, endTime = after)
+        val result = runBlocking {
+            client.apiClient.queryStrings(topics = listOf(topic),
+                pagination = pagination,
+                cursor = null)
+        }
+
+        return result.envelopesList.flatMap { envelope ->
+            listOf(decodeEnvelope(envelope))
         }
     }
 

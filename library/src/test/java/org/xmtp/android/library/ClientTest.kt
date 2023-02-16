@@ -56,7 +56,6 @@ class ClientTest {
         )
     }
 
-    // Test used to verify https://github.com/xmtp/xmtp-ios/issues/39 fix.
     @Test
     fun testExistingWallet() {
         // Generated from JS script

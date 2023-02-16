@@ -28,6 +28,8 @@ import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.proto.message.contents.Invitation.InvitationV1.Context
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import java.nio.charset.StandardCharsets.UTF_8
+import java.time.LocalDate
+import java.time.temporal.TemporalUnit
 import java.util.Date
 
 class MessageTest {
@@ -269,14 +271,14 @@ class MessageTest {
     fun testCanPaginateV1Messages() {
         val bob = FakeWallet.generate()
         val alice = FakeWallet.generate()
-        val options =
-            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
-        val bobClient = Client().create(account = bob, options = options)
+        val bobClient = Client().create(account = bob)
         // Publish alice's contact
-        Client().create(account = alice, options = options)
+        Client().create(account = alice)
         val convo = ConversationV1(client = bobClient, peerAddress = alice.address, sentAt = Date())
         // Say this message is sent in the past
-        convo.send(text = "10 seconds ago", sentAt = Date(Date().time - 10))
+        val date = Date()
+        date.time = date.time - 10000
+        convo.send(text = "10 seconds ago", sentAt = date)
         convo.send(text = "now")
         val messages = convo.messages(limit = 1)
         assertEquals(1, messages.size)
@@ -304,7 +306,7 @@ class MessageTest {
         val convo = bobClient.conversations.newConversation(alice.address)
         // Say this message is sent in the past
         val tenSecondsAgo = Date(Date().time - 10)
-        (convo as ConversationV2).send(text = "10 seconds ago", sentAt = tenSecondsAgo)
+        convo.send(text = "10 seconds ago")
         convo.send(text = "now")
         val messages = convo.messages(limit = 1)
         assertEquals(1, messages.size)
