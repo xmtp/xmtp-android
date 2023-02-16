@@ -30,8 +30,11 @@ import org.xmtp.android.library.messages.toV2
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import java.nio.charset.StandardCharsets
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
@@ -268,7 +271,9 @@ class Client() {
         val sentAt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Date.from(Instant.parse(export.createdAt))
         } else {
-            Date()
+            val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            df.timeZone = TimeZone.getTimeZone("UTC")
+            df.parse(export.createdAt)
         }
         return Conversation.V1(
             ConversationV1(
