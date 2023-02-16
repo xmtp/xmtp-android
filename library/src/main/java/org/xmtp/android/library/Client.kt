@@ -1,5 +1,8 @@
 package org.xmtp.android.library
 
+import android.os.Build
+import com.google.crypto.tink.subtle.Base64
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Keys
 import org.xmtp.android.library.codecs.ContentCodec
@@ -8,10 +11,13 @@ import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.EncryptedPrivateKeyBundle
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
+import org.xmtp.android.library.messages.InvitationV1ContextBuilder
+import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.PrivateKeyBundle
 import org.xmtp.android.library.messages.PrivateKeyBundleBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1
 import org.xmtp.android.library.messages.PrivateKeyBundleV2
+import org.xmtp.android.library.messages.SealedInvitationHeaderV1
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.decrypted
 import org.xmtp.android.library.messages.encrypted
@@ -23,7 +29,12 @@ import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.toV2
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+import java.nio.charset.StandardCharsets
+import java.text.SimpleDateFormat
+import java.time.Instant
 import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
@@ -49,6 +60,7 @@ class Client() {
             registry.register(codec = TextCodec())
             registry
         }
+
         fun register(codec: ContentCodec<*>) {
             codecRegistry.register(codec = codec)
         }
@@ -64,6 +76,14 @@ class Client() {
         this.apiClient = apiClient
     }
 
+    fun buildFrom(bundle: PrivateKeyBundle, options: ClientOptions? = null): Client {
+        val address = bundle.v1.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
+        val clientOptions = options ?: ClientOptions()
+        val apiClient =
+            GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
+        return Client(address = address, privateKeyBundleV1 = bundle.v1, apiClient = apiClient)
+    }
+
     fun create(account: SigningKey, options: ClientOptions? = null): Client {
         val clientOptions = options ?: ClientOptions()
         val apiClient =
@@ -73,10 +93,14 @@ class Client() {
 
     fun create(account: SigningKey, apiClient: ApiClient): Client {
         return runBlocking {
-            val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
-            val client = Client(account.address, privateKeyBundleV1, apiClient)
-            client.ensureUserContactPublished()
-            client
+            try {
+                val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
+                val client = Client(account.address, privateKeyBundleV1, apiClient)
+                client.ensureUserContactPublished()
+                client
+            } catch (e: java.lang.Exception) {
+                throw XMTPException("Error creating client", e)
+            }
         }
     }
 
@@ -174,8 +198,8 @@ class Client() {
         return contacts.find(Keys.toChecksumAddress(peerAddress))
     }
 
-    suspend fun query(topics: List<Topic>): QueryResponse {
-        return apiClient.query(topics = topics)
+    suspend fun query(topics: List<Topic>, pagination: Pagination? = null): QueryResponse {
+        return apiClient.query(topics = topics, pagination = pagination)
     }
 
     fun publish(envelopes: List<Envelope>): PublishResponse {
@@ -203,6 +227,61 @@ class Client() {
         }
 
         publishUserContact(legacy = true)
+    }
+
+    fun importConversation(conversationData: ByteArray): Conversation {
+        val gson = GsonBuilder().create()
+        val v2Export = gson.fromJson(
+            conversationData.toString(StandardCharsets.UTF_8),
+            ConversationV2Export::class.java
+        )
+        try {
+            return importV2Conversation(export = v2Export)
+        } catch (e: java.lang.Exception) {
+            val v1Export = gson.fromJson(
+                conversationData.toString(StandardCharsets.UTF_8),
+                ConversationV1Export::class.java
+            )
+            try {
+                return importV1Conversation(export = v1Export)
+            } catch (e: java.lang.Exception) {
+                throw XMTPException("Invalid input data", e)
+            }
+        }
+    }
+
+    fun importV2Conversation(export: ConversationV2Export): Conversation {
+        val keyMaterial = Base64.decode(export.keyMaterial)
+        return Conversation.V2(
+            ConversationV2(
+                topic = export.topic,
+                keyMaterial = keyMaterial,
+                context = InvitationV1ContextBuilder.buildFromConversation(
+                    conversationId = export.context?.conversationId ?: "",
+                    metadata = export.context?.metadata ?: mapOf()
+                ),
+                peerAddress = export.peerAddress,
+                client = this,
+                header = SealedInvitationHeaderV1.newBuilder().build()
+            )
+        )
+    }
+
+    fun importV1Conversation(export: ConversationV1Export): Conversation {
+        val sentAt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Date.from(Instant.parse(export.createdAt))
+        } else {
+            val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            df.timeZone = TimeZone.getTimeZone("UTC")
+            df.parse(export.createdAt)
+        }
+        return Conversation.V1(
+            ConversationV1(
+                client = this,
+                peerAddress = export.peerAddress,
+                sentAt = sentAt
+            )
+        )
     }
 
     val privateKeyBundle: PrivateKeyBundle?
