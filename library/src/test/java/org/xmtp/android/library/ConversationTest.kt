@@ -382,13 +382,15 @@ class ConversationTest {
         val bobConversation = bobClient.conversations.newConversation(alice.walletAddress)
         val aliceConversation = aliceClient.conversations.newConversation(bob.walletAddress)
 
-        bobConversation.send(text = "hey alice 1")
+        val date = Date()
+        date.time = date.time - 1000000
+        bobConversation.send(text = "hey alice 1", sentAt = date)
         bobConversation.send(text = "hey alice 2")
         bobConversation.send(text = "hey alice 3")
         val messages = aliceConversation.messages(limit = 1)
         assertEquals(1, messages.size)
         assertEquals("hey alice 3", messages[0].body)
-        val messages2 = aliceConversation.messages(limit = 1, before = messages[0].sent)
+        val messages2 = aliceConversation.messages(limit = 1, after = date)
         assertEquals(1, messages2.size)
         assertEquals("hey alice 2", messages2[0].body)
     }
@@ -400,13 +402,15 @@ class ConversationTest {
 
         val aliceConversation = aliceClient.conversations.newConversation(bob.walletAddress,
             context = InvitationV1ContextBuilder.buildFromConversation("hi"))
-        bobConversation.send(text = "hey alice 1")
+        val date = Date()
+        date.time = date.time - 1000000
+        bobConversation.send(text = "hey alice 1", sentAt = date)
         bobConversation.send(text = "hey alice 2")
         bobConversation.send(text = "hey alice 3")
         val messages = aliceConversation.messages(limit = 1)
         assertEquals(1, messages.size)
         assertEquals("hey alice 3", messages[0].body)
-        val messages2 = aliceConversation.messages(limit = 1, before = messages[0].sent)
+        val messages2 = aliceConversation.messages(limit = 1, after = date)
         assertEquals(1, messages2.size)
         assertEquals("hey alice 2", messages2[0].body)
     }

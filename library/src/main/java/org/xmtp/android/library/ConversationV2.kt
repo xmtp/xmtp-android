@@ -50,7 +50,7 @@ data class ConversationV2(
         }
     }
 
-    val createdAt: Date = Date((header.createdNs / 1_000_000) / 1000)
+    val createdAt: Date = Date(header.createdNs / 1_000_000)
 
     fun messages(
         limit: Int? = null,
@@ -98,17 +98,18 @@ data class ConversationV2(
         send(encodedContent = encoded, sentAt = Date())
     }
 
-    fun send(text: String, options: SendOptions? = null, sentAt: Date) {
+    fun send(text: String, options: SendOptions? = null, sentAt: Date? = null) {
         val encoder = TextCodec()
         val encodedContent = encoder.encode(content = text)
         send(encodedContent = encodedContent, options = options, sentAt = sentAt)
     }
 
-    private fun send(encodedContent: EncodedContent, options: SendOptions? = null, sentAt: Date) {
+    private fun send(encodedContent: EncodedContent, options: SendOptions? = null, sentAt: Date? = null) {
         if (client.getUserContact(peerAddress = peerAddress) == null) {
             throw XMTPException("Contact not found.")
         }
         var content = encodedContent
+        val date = sentAt ?: Date()
 
         if (options?.compression != null) {
             content = content.compress(options.compression!!)
@@ -124,15 +125,11 @@ data class ConversationV2(
             envelopes = listOf(
                 EnvelopeBuilder.buildFromString(
                     topic = topic,
-                    timestamp = sentAt,
+                    timestamp = date,
                     message = MessageBuilder.buildFromMessageV2(message).toByteArray()
                 )
             )
         )
-    }
-
-    fun send(text: String, options: SendOptions? = null) {
-        send(text = text, options = options, sentAt = Date())
     }
 
     private fun generateID(envelope: Envelope): String =

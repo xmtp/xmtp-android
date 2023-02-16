@@ -34,7 +34,7 @@ data class ConversationV1(
     fun send(text: String, sendOptions: SendOptions? = null, sentAt: Date? = null) {
         val encoder = TextCodec()
         val encodedContent = encoder.encode(content = text)
-        send(encodedContent = encodedContent)
+        send(encodedContent = encodedContent, sendOptions = sendOptions, sentAt = sentAt)
     }
 
     fun <T> send(content: T, options: SendOptions? = null) {

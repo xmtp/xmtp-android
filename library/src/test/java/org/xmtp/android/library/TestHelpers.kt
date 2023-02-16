@@ -77,9 +77,9 @@ class FakeApiClient : ApiClient {
 
     override suspend fun query(
         topics: List<Topic>,
-        pagination: Pagination?
+        pagination: Pagination?,
     ): MessageApiOuterClass.QueryResponse {
-        return queryStrings(topics = topics.map { it.description })
+        return queryStrings(topics = topics.map { it.description }, pagination)
     }
 
     override suspend fun envelopes(
@@ -92,7 +92,7 @@ class FakeApiClient : ApiClient {
     override suspend fun queryStrings(
         topics: List<String>,
         pagination: Pagination?,
-        cursor: MessageApiOuterClass.Cursor?
+        cursor: MessageApiOuterClass.Cursor?,
     ): MessageApiOuterClass.QueryResponse {
         var result: MutableList<Envelope> = mutableListOf()
         for (topic in topics) {
@@ -109,11 +109,13 @@ class FakeApiClient : ApiClient {
 
         val startAt = pagination?.startTime
         if (startAt != null) {
-            result = result.filter { it.timestampNs < startAt.time * 1_000_000 }.sortedBy { it.timestampNs }.toMutableList()
+            result = result.filter { it.timestampNs < startAt.time * 1_000_000 }
+                .sortedBy { it.timestampNs }.toMutableList()
         }
         val endAt = pagination?.endTime
         if (endAt != null) {
-            result = result.filter { it.timestampNs > endAt.time * 1_000_000 }.sortedBy { it.timestampNs }.toMutableList()
+            result = result.filter { it.timestampNs > endAt.time * 1_000_000 }
+                .sortedBy { it.timestampNs }.toMutableList()
         }
         val limit = pagination?.limit
         if (limit != null) {

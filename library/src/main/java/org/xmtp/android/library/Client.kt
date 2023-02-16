@@ -12,6 +12,7 @@ import org.xmtp.android.library.messages.EncryptedPrivateKeyBundle
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1ContextBuilder
+import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.PrivateKeyBundle
 import org.xmtp.android.library.messages.PrivateKeyBundleBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1
@@ -31,7 +32,6 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util.Date
-
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
@@ -195,8 +195,8 @@ class Client() {
         return contacts.find(Keys.toChecksumAddress(peerAddress))
     }
 
-    suspend fun query(topics: List<Topic>): QueryResponse {
-        return apiClient.query(topics = topics)
+    suspend fun query(topics: List<Topic>, pagination: Pagination? = null): QueryResponse {
+        return apiClient.query(topics = topics, pagination = pagination)
     }
 
     fun publish(envelopes: List<Envelope>): PublishResponse {
@@ -228,13 +228,17 @@ class Client() {
 
     fun importConversation(conversationData: ByteArray): Conversation {
         val gson = GsonBuilder().create()
-        val v2Export = gson.fromJson(conversationData.toString(StandardCharsets.UTF_8),
-            ConversationV2Export::class.java)
+        val v2Export = gson.fromJson(
+            conversationData.toString(StandardCharsets.UTF_8),
+            ConversationV2Export::class.java
+        )
         try {
             return importV2Conversation(export = v2Export)
         } catch (e: java.lang.Exception) {
-            val v1Export = gson.fromJson(conversationData.toString(StandardCharsets.UTF_8),
-                ConversationV1Export::class.java)
+            val v1Export = gson.fromJson(
+                conversationData.toString(StandardCharsets.UTF_8),
+                ConversationV1Export::class.java
+            )
             try {
                 return importV1Conversation(export = v1Export)
             } catch (e: java.lang.Exception) {
@@ -245,13 +249,19 @@ class Client() {
 
     fun importV2Conversation(export: ConversationV2Export): Conversation {
         val keyMaterial = Base64.decode(export.keyMaterial)
-        return Conversation.V2(ConversationV2(topic = export.topic,
-            keyMaterial = keyMaterial,
-            context = InvitationV1ContextBuilder.buildFromConversation(conversationId = export.context?.conversationId
-                ?: "", metadata = export.context?.metadata ?: mapOf()),
-            peerAddress = export.peerAddress,
-            client = this,
-            header = SealedInvitationHeaderV1.newBuilder().build()))
+        return Conversation.V2(
+            ConversationV2(
+                topic = export.topic,
+                keyMaterial = keyMaterial,
+                context = InvitationV1ContextBuilder.buildFromConversation(
+                    conversationId = export.context?.conversationId ?: "",
+                    metadata = export.context?.metadata ?: mapOf()
+                ),
+                peerAddress = export.peerAddress,
+                client = this,
+                header = SealedInvitationHeaderV1.newBuilder().build()
+            )
+        )
     }
 
     fun importV1Conversation(export: ConversationV1Export): Conversation {
@@ -260,9 +270,13 @@ class Client() {
         } else {
             Date()
         }
-        return Conversation.V1(ConversationV1(client = this,
-            peerAddress = export.peerAddress,
-            sentAt = sentAt))
+        return Conversation.V1(
+            ConversationV1(
+                client = this,
+                peerAddress = export.peerAddress,
+                sentAt = sentAt
+            )
+        )
     }
 
     val privateKeyBundle: PrivateKeyBundle?

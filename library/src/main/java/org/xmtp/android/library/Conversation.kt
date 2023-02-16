@@ -39,7 +39,7 @@ sealed class Conversation {
             }
         }
 
-    fun decode(envelope: Envelope) : DecodedMessage {
+    fun decode(envelope: Envelope): DecodedMessage {
         when (this) {
             is V1 -> return conversationV1.decode(envelope)
             is V2 -> return conversationV2.decodeEnvelope(envelope)
@@ -53,10 +53,10 @@ sealed class Conversation {
         }
     }
 
-    fun send(text: String, sendOptions: SendOptions? = null) {
+    fun send(text: String, sendOptions: SendOptions? = null, sentAt: Date? = null) {
         when (this) {
-            is V1 -> conversationV1.send(text = text, sendOptions)
-            is V2 -> conversationV2.send(text = text, sendOptions)
+            is V1 -> conversationV1.send(text = text, sendOptions, sentAt)
+            is V2 -> conversationV2.send(text = text, sendOptions, sentAt)
         }
     }
 
