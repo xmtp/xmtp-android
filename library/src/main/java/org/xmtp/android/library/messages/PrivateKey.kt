@@ -2,8 +2,6 @@ package org.xmtp.android.library.messages
 
 import com.google.crypto.tink.subtle.Base64
 import com.google.protobuf.kotlin.toByteString
-import java.security.SecureRandom
-import java.util.Date
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Hash
 import org.web3j.crypto.Sign
@@ -11,6 +9,8 @@ import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.SigningKey
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
+import java.security.SecureRandom
+import java.util.Date
 
 typealias PrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
 

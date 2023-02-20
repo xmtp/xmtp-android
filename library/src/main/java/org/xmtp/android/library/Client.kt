@@ -3,12 +3,6 @@ package org.xmtp.android.library
 import android.os.Build
 import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
-import java.nio.charset.StandardCharsets
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Keys
 import org.xmtp.android.library.codecs.ContentCodec
@@ -35,6 +29,12 @@ import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.toV2
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+import java.nio.charset.StandardCharsets
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse

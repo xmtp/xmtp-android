@@ -1,9 +1,9 @@
 package org.xmtp.android.library.messages
 
-import java.math.BigInteger
 import org.bouncycastle.asn1.sec.SECNamedCurves
 import org.bouncycastle.crypto.params.ECDomainParameters
 import org.xmtp.android.library.XMTPException
+import java.math.BigInteger
 
 typealias PrivateKeyBundleV2 = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV2
 
