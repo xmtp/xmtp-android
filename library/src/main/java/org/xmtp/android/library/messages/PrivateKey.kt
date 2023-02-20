@@ -9,7 +9,7 @@ import org.xmtp.android.library.SigningKey
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.security.SecureRandom
-import java.util.Date
+import java.util.*
 
 typealias PrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
 
@@ -36,8 +36,8 @@ class PrivateKeyBuilder : SigningKey {
     }
 
     companion object {
-        fun buildFromPrivateKeyData(privateKeyData: ByteArray): PrivateKey {
-            return PrivateKey.newBuilder().apply {
+        fun buildFromPrivateKeyData(privateKeyData: ByteArray): PrivateKeyBuilder {
+            val privateKey = PrivateKey.newBuilder().apply {
                 val time = Date().time
                 timestamp = time
                 secp256K1Builder.bytes = privateKeyData.toByteString()
@@ -50,15 +50,21 @@ class PrivateKeyBuilder : SigningKey {
                     }.build()
                 }.build()
             }.build()
+            return PrivateKeyBuilder(privateKey)
         }
 
-        fun buildFromSignedPrivateKey(signedPrivateKey: SignedPrivateKey): PrivateKey {
-            return PrivateKey.newBuilder().apply {
+        fun buildFromSignedPrivateKey(signedPrivateKey: SignedPrivateKey): PrivateKeyBuilder {
+            val privateKey = PrivateKey.newBuilder().apply {
                 timestamp = signedPrivateKey.createdNs / 1_000_000
                 secp256K1Builder.bytes = signedPrivateKey.secp256K1.bytes
                 publicKey = PublicKeyBuilder.buildFromSignedPublicKey(signedPrivateKey.publicKey)
             }.build()
+            return PrivateKeyBuilder(privateKey)
         }
+    }
+
+    fun privateKeyData(): ByteArray {
+        return privateKey.toByteArray()
     }
 
     fun getPrivateKey(): PrivateKey {
@@ -91,7 +97,7 @@ class PrivateKeyBuilder : SigningKey {
 }
 
 fun PrivateKey.generate(): PrivateKey {
-    return PrivateKeyBuilder.buildFromPrivateKeyData(SecureRandom().generateSeed(32))
+    return PrivateKeyBuilder.buildFromPrivateKeyData(SecureRandom().generateSeed(32)).getPrivateKey()
 }
 
 val PrivateKey.walletAddress: String

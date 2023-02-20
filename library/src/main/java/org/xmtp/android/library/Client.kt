@@ -32,9 +32,7 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
+import java.util.*
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
@@ -93,14 +91,10 @@ class Client() {
 
     fun create(account: SigningKey, apiClient: ApiClient): Client {
         return runBlocking {
-            try {
-                val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
-                val client = Client(account.address, privateKeyBundleV1, apiClient)
-                client.ensureUserContactPublished()
-                client
-            } catch (e: java.lang.Exception) {
-                throw XMTPException("Error creating client", e)
-            }
+            val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
+            val client = Client(account.address, privateKeyBundleV1, apiClient)
+            client.ensureUserContactPublished()
+            client
         }
     }
 
