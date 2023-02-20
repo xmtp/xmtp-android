@@ -42,7 +42,7 @@ class ConnectWalletActivity : AppCompatActivity() {
         when (uiState) {
             is ConnectWalletViewModel.ConnectUiState.Error -> showError(uiState.message)
             ConnectWalletViewModel.ConnectUiState.Loading -> showLoading()
-            is ConnectWalletViewModel.ConnectUiState.Success -> signIn(uiState.address, uiState.encodedKey)
+            is ConnectWalletViewModel.ConnectUiState.Success -> signIn(uiState.address, uiState.encodedKeyData)
             ConnectWalletViewModel.ConnectUiState.Unknown -> Unit
         }
     }

@@ -1,10 +1,10 @@
 package org.xmtp.android.library.messages
 
 import com.google.protobuf.kotlin.toByteString
+import java.security.SecureRandom
 import org.xmtp.android.library.Crypto
 import org.xmtp.android.library.SigningKey
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
-import java.security.SecureRandom
 
 typealias PrivateKeyBundle = PrivateKeyOuterClass.PrivateKeyBundle
 

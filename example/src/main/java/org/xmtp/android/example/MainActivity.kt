@@ -3,7 +3,7 @@ package org.xmtp.android.example
 import android.accounts.AccountManager
 import android.content.Intent
 import android.os.Bundle
-import android.util.Base64
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
@@ -48,20 +48,24 @@ class MainActivity : AppCompatActivity() {
     private fun ensureClientUi(uiState: MainViewModel.ClientUiState) {
         when (uiState) {
             is MainViewModel.ClientUiState.Ready -> binding.address.text = uiState.address
-            else -> Unit
+            is MainViewModel.ClientUiState.Error -> showError(uiState.message)
+            is MainViewModel.ClientUiState.Unknown -> Unit
         }
     }
 
-    private fun loadKeys(): ByteArray? {
+    private fun loadKeys(): String? {
         val accounts = accountManager.getAccountsByType(resources.getString(R.string.account_type))
         val account = accounts.firstOrNull() ?: return null
-        val encodedKey = accountManager.getPassword(account)
-        return Base64.decode(encodedKey.toByteArray(), Base64.NO_WRAP)
+        return accountManager.getPassword(account)
     }
 
     private fun showSignIn() {
         startActivity(Intent(this, ConnectWalletActivity::class.java))
         finish()
+    }
+
+    private fun showError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun disconnectWallet() {

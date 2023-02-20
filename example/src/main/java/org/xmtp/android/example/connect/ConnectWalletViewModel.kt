@@ -1,6 +1,5 @@
 package org.xmtp.android.example.connect
 
-import android.util.Base64
 import androidx.annotation.UiThread
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -24,7 +23,7 @@ class ConnectWalletViewModel : ViewModel() {
                 val wallet = PrivateKeyBuilder()
                 _uiState.value = ConnectUiState.Success(
                     wallet.address,
-                    Base64.encode(wallet.privateKeyData(), Base64.NO_WRAP).toString()
+                    wallet.encodedPrivateKeyData()
                 )
             } catch (e: XMTPException) {
                 _uiState.value = ConnectUiState.Error(e.message.orEmpty())
@@ -35,7 +34,7 @@ class ConnectWalletViewModel : ViewModel() {
     sealed class ConnectUiState {
         object Unknown : ConnectUiState()
         object Loading : ConnectUiState()
-        data class Success(val address: String, val encodedKey: String): ConnectUiState()
+        data class Success(val address: String, val encodedKeyData: String): ConnectUiState()
         data class Error(val message: String): ConnectUiState()
     }
 }

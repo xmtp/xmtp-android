@@ -17,10 +17,10 @@ class MainViewModel : ViewModel() {
     private var client: Client? = null
 
     @UiThread
-    fun createClient(privateKeyData: ByteArray) {
+    fun createClient(encodedPrivateKeyData: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val wallet = PrivateKeyBuilder.buildFromPrivateKeyData(privateKeyData)
+                val wallet = PrivateKeyBuilder(encodedPrivateKeyData = encodedPrivateKeyData)
                 client = Client().create(wallet)
                 _uiState.value = ClientUiState.Ready(client?.address.orEmpty())
             } catch (e: Exception) {

@@ -1,9 +1,9 @@
 package org.xmtp.android.library.messages
 
+import java.math.BigInteger
 import org.bouncycastle.asn1.sec.SECNamedCurves
 import org.bouncycastle.crypto.params.ECDomainParameters
 import org.xmtp.android.library.XMTPException
-import java.math.BigInteger
 
 typealias PrivateKeyBundleV2 = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV2
 
@@ -62,8 +62,8 @@ fun PrivateKeyBundleV2.findPreKey(myPreKey: SignedPublicKey): SignedPrivateKey {
 
 fun PrivateKeyBundleV2.toV1(): PrivateKeyBundleV1 {
     return PrivateKeyBundleV1.newBuilder().also {
-        it.identityKey = PrivateKeyBuilder.buildFromSignedPrivateKey(identityKey).getPrivateKey()
-        it.addAllPreKeys(preKeysList.map { key -> PrivateKeyBuilder.buildFromSignedPrivateKey(key).getPrivateKey() })
+        it.identityKey = PrivateKeyBuilder.buildFromSignedPrivateKey(identityKey)
+        it.addAllPreKeys(preKeysList.map { key -> PrivateKeyBuilder.buildFromSignedPrivateKey(key) })
     }.build()
 }
 
