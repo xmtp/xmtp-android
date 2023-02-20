@@ -9,7 +9,7 @@ import org.xmtp.android.library.SigningKey
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.security.SecureRandom
-import java.util.*
+import java.util.Date
 
 typealias PrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
 
