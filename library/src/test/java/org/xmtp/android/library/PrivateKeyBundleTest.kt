@@ -31,6 +31,17 @@ class PrivateKeyBundleTest {
     }
 
     @Test
+    fun testSerialization() {
+        val wallet = PrivateKeyBuilder()
+        val keyData = wallet.privateKeyData()
+        val wallet2 = PrivateKeyBuilder.buildFromPrivateKeyData(keyData)
+        assertEquals(
+            wallet.address,
+            wallet2.address
+        )
+    }
+
+    @Test
     fun testKeyBundlesAreSigned() {
         val wallet = PrivateKeyBuilder()
         val v1 =
