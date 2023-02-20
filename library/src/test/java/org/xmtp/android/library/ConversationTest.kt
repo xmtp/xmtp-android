@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import kotlinx.coroutines.flow.collect
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -421,22 +422,103 @@ class ConversationTest {
 
     @Test
     fun testImportV1ConversationFromJS() {
-        val jsExportJSONData = (""" { "version": "v1", "peerAddress": "0x5DAc8E2B64b8523C11AF3e5A2E087c2EA9003f14", "createdAt": "2022-09-20T09:32:50.329Z" } """).toByteArray(StandardCharsets.UTF_8)
+        val jsExportJSONData =
+            (""" { "version": "v1", "peerAddress": "0x5DAc8E2B64b8523C11AF3e5A2E087c2EA9003f14", "createdAt": "2022-09-20T09:32:50.329Z" } """).toByteArray(
+                StandardCharsets.UTF_8)
         val conversation = aliceClient.importConversation(jsExportJSONData)
         assertEquals(conversation.peerAddress, "0x5DAc8E2B64b8523C11AF3e5A2E087c2EA9003f14")
     }
 
     @Test
     fun testImportV2ConversationFromJS() {
-        val jsExportJSONData = (""" {"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z","context":{"conversationId":"pat/messageid","metadata":{}}} """).toByteArray(StandardCharsets.UTF_8)
+        val jsExportJSONData =
+            (""" {"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z","context":{"conversationId":"pat/messageid","metadata":{}}} """).toByteArray(
+                StandardCharsets.UTF_8)
         val conversation = aliceClient.importConversation(jsExportJSONData)
         assertEquals(conversation.peerAddress, "0x436D906d1339fC4E951769b1699051f020373D04")
     }
 
     @Test
     fun testImportV2ConversationWithNoContextFromJS() {
-        val jsExportJSONData = (""" {"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z"} """).toByteArray(StandardCharsets.UTF_8)
+        val jsExportJSONData =
+            (""" {"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z"} """).toByteArray(
+                StandardCharsets.UTF_8)
         val conversation = aliceClient.importConversation(jsExportJSONData)
         assertEquals(conversation.peerAddress, "0x436D906d1339fC4E951769b1699051f020373D04")
+    }
+
+    @Test
+    fun testCanStreamConversationsV1() {
+        // Overwrite contact as legacy
+        publishLegacyContact(client = bobClient)
+        publishLegacyContact(client = aliceClient)
+//        val expectation = expectation(description = "got a conversation")
+        var conversation: Conversation? = null
+        aliceClient.conversations.stream().collect {
+            conversation = it
+        }
+        if (conversation?.peerAddress == bob.walletAddress) {
+//            expectation.fulfill()
+        }
+        conversation = bobClient.conversations.newConversation(alice.walletAddress)
+        conversation?.send(content = "hi")
+        // Remove known introduction from contacts to test de-duping
+//        bobClient.contacts.hasIntroduced.removeAll()
+        conversation?.send(content = "hi again")
+//        waitForExpectations(timeout = 5)
+    }
+
+    @Test
+    fun testCanStreamConversationsV2() {
+//        val expectation1 = expectation(description = "got a conversation")
+        expectation1.expectedFulfillmentCount = 2
+        bobClient.conversations.stream()
+        var conversation = bobClient.conversations.newConversation(alice.walletAddress)
+        conversation.send(content = "hi")
+        conversation = bobClient.conversations.newConversation(alice.walletAddress)
+        conversation.send(content = "hi again")
+        val newWallet = PrivateKeyBuilder()
+        val newClient = Client().create(account = newWallet, apiClient = fakeApiClient)
+        val conversation2 = bobClient.conversations.newConversation(newWallet.address)
+        conversation2.send(content = "hi from new wallet")
+//        waitForExpectations(timeout = 3)
+    }
+
+    @Test
+    fun testStreamingMessagesFromV1Conversation() {
+        // Overwrite contact as legacy
+        publishLegacyContact(client = bobClient)
+        publishLegacyContact(client = aliceClient)
+        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+//        val expectation = expectation(description = "got a message")
+        conversation.streamMessages()
+        val encoder = TextCodec()
+        val encodedContent = encoder.encode(content = "hi alice")
+//        val date = Date().advanced(by = -1_000_000)
+        // Stream a message
+        fakeApiClient.send(envelope = EnvelopeBuilder.buildFromString(topic = conversation.topic,
+            timestamp = Date(),
+            message = MessageBuilder.buildFromMessageV1(v1 = MessageV1Builder.buildEncode(sender = bobClient.privateKeyBundleV1!!,
+                recipient = aliceClient.privateKeyBundleV1!!.toPublicKeyBundle(),
+                message = encodedContent.toByteArray(),
+                timestamp = Date())).toByteArray()))
+//        waitForExpectations(timeout = 3)
+    }
+
+    @Test
+    fun testStreamingMessagesFromV2Conversations() {
+        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+//        val expectation = expectation(description = "got a message")
+        conversation.streamMessages()
+        val encoder = TextCodec()
+        val encodedContent = encoder.encode(content = "hi alice")
+        // Stream a message
+        fakeApiClient.send(envelope = EnvelopeBuilder.buildFromString(topic = conversation.topic,
+            timestamp = Date(),
+            message = MessageBuilder.buildFromMessageV2(v2 = MessageV2Builder.buildEncode(client = bobClient,
+                encodedContent,
+                topic = conversation.topic,
+                keyMaterial = conversation.keyMaterial!!)).toByteArray()))
+//        waitForExpectations(timeout = 3)
     }
 }

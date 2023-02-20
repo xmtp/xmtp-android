@@ -16,8 +16,8 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 import java.io.Closeable
-import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.flow.Flow
 
 interface ApiClient {
     val environment: XMTPEnvironment

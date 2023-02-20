@@ -85,6 +85,10 @@ class FakeApiClient : ApiClient {
         return query(topics = topics.map { it.description }, pagination)
     }
 
+    fun send(envelope: Envelope) {
+//        stream.send(envelope: envelope)
+    }
+
     override suspend fun envelopes(
         topics: List<String>,
         pagination: Pagination?,
