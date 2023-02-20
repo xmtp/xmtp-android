@@ -1,5 +1,8 @@
 package org.xmtp.android.library
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1
@@ -18,6 +21,7 @@ import org.xmtp.android.library.messages.senderAddress
 import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.toSignedPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.message.api.v1.envelope
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
@@ -135,7 +139,7 @@ data class Conversations(
     private fun listIntroductionPeers(): Map<String, Date> {
         val envelopes =
             runBlocking {
-                client.apiClient.query(
+                client.apiClient.queryTopic(
                     topics = listOf(
                         Topic.userIntro(
                             client.address ?: ""
@@ -170,7 +174,7 @@ data class Conversations(
 
     fun listInvitations(): List<SealedInvitation> {
         val envelopes = runBlocking {
-            client.apiClient.query(
+            client.apiClient.queryTopic(
                 topics = listOf(
                     Topic.userInvite(
                         client.address ?: ""
@@ -220,5 +224,42 @@ data class Conversations(
             return sealed
         }
         return SealedInvitation.newBuilder().build()
+    }
+
+    fun stream(): Flow<Conversation> {
+        val streamedConversationTopics: MutableSet<String> = mutableSetOf()
+        var result: Flow<Conversation> = flowOf()
+        runBlocking {
+            client.subscribeTopic(listOf(Topic.userIntro(client.address),
+                Topic.userInvite(client.address))).collect { envelope ->
+                if (envelope.contentTopic == Topic.userIntro(client.address).description) {
+                    val messageV1 = MessageV1Builder.buildFromBytes(envelope.message.toByteArray())
+                    val senderAddress = messageV1.header.sender.walletAddress
+                    val recipientAddress = messageV1.header.recipient.walletAddress
+                    val peerAddress =
+                        if (client.address == senderAddress) recipientAddress else senderAddress
+                    val conversationV1 = ConversationV1(client = client,
+                        peerAddress = peerAddress,
+                        sentAt = messageV1.sentAt)
+                    if (!streamedConversationTopics.contains(conversationV1.topic.description)) {
+                        streamedConversationTopics.add(conversationV1.topic.description)
+                        result = flowOf(Conversation.V1(conversationV1))
+                    }
+                }
+
+                if (envelope.contentTopic == Topic.userInvite(client.address).description) {
+                    val sealedInvitation = SealedInvitation.parseFrom(envelope.message)
+                    val unsealed = sealedInvitation.v1.getInvitation(viewer = client.keys)
+                    val conversationV2 = ConversationV2.create(client = client,
+                        invitation = unsealed,
+                        header = sealedInvitation.v1.header)
+                    if (!streamedConversationTopics.contains(conversationV2.topic)) {
+                        streamedConversationTopics.add(conversationV2.topic)
+                        result = flowOf(Conversation.V2(conversationV2))
+                    }
+                }
+            }
+        }
+        return result
     }
 }

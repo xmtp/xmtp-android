@@ -1,5 +1,7 @@
 package org.xmtp.android.library
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
@@ -117,7 +119,7 @@ data class ConversationV1(
     ): List<DecodedMessage> {
         val pagination = Pagination(limit = limit, startTime = before, endTime = after)
         val result = runBlocking {
-            client.apiClient.query(topics = listOf(topic), pagination = pagination)
+            client.apiClient.queryTopic(topics = listOf(topic), pagination = pagination)
         }
 
         return result.envelopesList.flatMap { envelope ->
@@ -135,5 +137,15 @@ data class ConversationV1(
             senderAddress = header.sender.walletAddress,
             sent = message.v1.sentAt
         )
+    }
+
+    fun streamMessages(): Flow<DecodedMessage> {
+        var decoded: Flow<DecodedMessage> = flowOf()
+        runBlocking {
+            client.subscribe(listOf(topic.description)).collect {
+                decoded = flowOf(decode(envelope = it))
+            }
+        }
+        return decoded
     }
 }

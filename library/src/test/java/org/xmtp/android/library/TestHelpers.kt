@@ -1,5 +1,7 @@
 package org.xmtp.android.library
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.Pagination
@@ -9,6 +11,7 @@ import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+import org.xmtp.proto.message.api.v1.envelope
 
 class FakeWallet : SigningKey {
     private var privateKey: PrivateKey
@@ -75,21 +78,21 @@ class FakeApiClient : ApiClient {
         authToken = token
     }
 
-    override suspend fun query(
+    override suspend fun queryTopic(
         topics: List<Topic>,
         pagination: Pagination?,
     ): MessageApiOuterClass.QueryResponse {
-        return queryStrings(topics = topics.map { it.description }, pagination)
+        return query(topics = topics.map { it.description }, pagination)
     }
 
     override suspend fun envelopes(
         topics: List<String>,
         pagination: Pagination?,
     ): List<MessageApiOuterClass.Envelope> {
-        return queryStrings(topics = topics, pagination = pagination).envelopesList
+        return query(topics = topics, pagination = pagination).envelopesList
     }
 
-    override suspend fun queryStrings(
+    override suspend fun query(
         topics: List<String>,
         pagination: Pagination?,
         cursor: MessageApiOuterClass.Cursor?,
@@ -141,6 +144,10 @@ class FakeApiClient : ApiClient {
         }
         published.addAll(envelopes)
         return PublishResponse.newBuilder().build()
+    }
+
+    override suspend fun subscribe(topics: List<String>) : Flow<Envelope> {
+        return flowOf()
     }
 }
 

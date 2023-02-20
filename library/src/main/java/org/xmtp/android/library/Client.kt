@@ -3,6 +3,7 @@ package org.xmtp.android.library
 import android.os.Build
 import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Keys
 import org.xmtp.android.library.codecs.ContentCodec
@@ -148,7 +149,7 @@ class Client() {
         apiClient: ApiClient
     ): PrivateKeyBundleV1? {
         val topics: List<Topic> = listOf(Topic.userPrivateStoreKeyBundle(account.address))
-        val res = apiClient.query(topics = topics)
+        val res = apiClient.queryTopic(topics = topics)
         for (envelope in res.envelopesList) {
             try {
                 val encryptedBundle = EncryptedPrivateKeyBundle.parseFrom(envelope.message)
@@ -199,7 +200,16 @@ class Client() {
     }
 
     suspend fun query(topics: List<Topic>, pagination: Pagination? = null): QueryResponse {
-        return apiClient.query(topics = topics, pagination = pagination)
+        return apiClient.queryTopic(topics = topics, pagination = pagination)
+    }
+
+
+    suspend fun subscribe(topics: List<String>) : Flow<Envelope> {
+        return apiClient.subscribe(topics = topics)
+    }
+
+    suspend fun subscribeTopic(topics: List<Topic>) : Flow<Envelope> {
+        return subscribe(topics.map { it.description })
     }
 
     fun publish(envelopes: List<Envelope>): PublishResponse {
