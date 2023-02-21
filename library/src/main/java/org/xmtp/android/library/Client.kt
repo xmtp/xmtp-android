@@ -203,7 +203,6 @@ class Client() {
         return apiClient.queryTopic(topics = topics, pagination = pagination)
     }
 
-
     suspend fun subscribe(topics: List<String>): Flow<Envelope> {
         return apiClient.subscribe(topics = topics)
     }
