@@ -28,7 +28,7 @@ interface ApiClient {
         cursor: Cursor? = null,
     ): QueryResponse
 
-    suspend fun queryTopic(topics: List<Topic>, pagination: Pagination? = null): QueryResponse
+    suspend fun queryTopics(topics: List<Topic>, pagination: Pagination? = null): QueryResponse
     suspend fun envelopes(topics: List<String>, pagination: Pagination? = null): List<Envelope>
     suspend fun publish(envelopes: List<Envelope>): PublishResponse
     suspend fun subscribe(topics: List<String>): Flow<Envelope>
@@ -112,7 +112,7 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
         return envelopes
     }
 
-    override suspend fun queryTopic(topics: List<Topic>, pagination: Pagination?): QueryResponse {
+    override suspend fun queryTopics(topics: List<Topic>, pagination: Pagination?): QueryResponse {
         return query(topics.map { it.description }, pagination)
     }
 

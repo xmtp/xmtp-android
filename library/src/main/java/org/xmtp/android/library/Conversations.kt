@@ -20,7 +20,6 @@ import org.xmtp.android.library.messages.senderAddress
 import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.toSignedPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
-import org.xmtp.proto.message.api.v1.envelope
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
@@ -138,7 +137,7 @@ data class Conversations(
     private fun listIntroductionPeers(): Map<String, Date> {
         val envelopes =
             runBlocking {
-                client.apiClient.queryTopic(
+                client.apiClient.queryTopics(
                     topics = listOf(
                         Topic.userIntro(
                             client.address ?: ""
@@ -173,7 +172,7 @@ data class Conversations(
 
     fun listInvitations(): List<SealedInvitation> {
         val envelopes = runBlocking {
-            client.apiClient.queryTopic(
+            client.apiClient.queryTopics(
                 topics = listOf(
                     Topic.userInvite(
                         client.address ?: ""

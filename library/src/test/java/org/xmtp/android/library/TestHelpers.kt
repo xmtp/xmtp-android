@@ -86,7 +86,7 @@ class FakeApiClient : ApiClient {
         authToken = token
     }
 
-    override suspend fun queryTopic(
+    override suspend fun queryTopics(
         topics: List<Topic>,
         pagination: Pagination?,
     ): MessageApiOuterClass.QueryResponse {

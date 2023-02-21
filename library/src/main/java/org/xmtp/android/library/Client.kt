@@ -70,7 +70,7 @@ class Client() {
     constructor(
         address: String,
         privateKeyBundleV1: PrivateKeyBundleV1,
-        apiClient: ApiClient,
+        apiClient: ApiClient
     ) : this() {
         this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
@@ -149,7 +149,7 @@ class Client() {
         apiClient: ApiClient,
     ): PrivateKeyBundleV1? {
         val topics: List<Topic> = listOf(Topic.userPrivateStoreKeyBundle(account.address))
-        val res = apiClient.queryTopic(topics = topics)
+        val res = apiClient.queryTopics(topics = topics)
         for (envelope in res.envelopesList) {
             try {
                 val encryptedBundle = EncryptedPrivateKeyBundle.parseFrom(envelope.message)
@@ -200,7 +200,7 @@ class Client() {
     }
 
     suspend fun query(topics: List<Topic>, pagination: Pagination? = null): QueryResponse {
-        return apiClient.queryTopic(topics = topics, pagination = pagination)
+        return apiClient.queryTopics(topics = topics, pagination = pagination)
     }
 
     suspend fun subscribe(topics: List<String>): Flow<Envelope> {
