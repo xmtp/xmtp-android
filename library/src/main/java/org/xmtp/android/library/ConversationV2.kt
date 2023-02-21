@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Hash
@@ -141,14 +142,10 @@ data class ConversationV2(
         )
     }
 
-    fun streamMessages(): Flow<DecodedMessage> {
-        var decoded: Flow<DecodedMessage> = flowOf()
-        runBlocking {
-            client.subscribe(listOf(topic)).collect {
-                decoded = flowOf(decodeEnvelope(envelope = it))
-            }
+    fun streamMessages(): Flow<DecodedMessage> = flow {
+        client.subscribe(listOf(topic)).collect {
+            emit(decodeEnvelope(envelope = it))
         }
-        return decoded
     }
 
     private fun generateID(envelope: Envelope): String =

@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
@@ -139,13 +140,9 @@ data class ConversationV1(
         )
     }
 
-    fun streamMessages(): Flow<DecodedMessage> {
-        var decoded: Flow<DecodedMessage> = flowOf()
-        runBlocking {
-            client.subscribe(listOf(topic.description)).collect {
-                decoded = flowOf(decode(envelope = it))
-            }
+    fun streamMessages(): Flow<DecodedMessage> = flow {
+        client.subscribe(listOf(topic.description)).collect {
+            emit(decode(envelope = it))
         }
-        return decoded
     }
 }

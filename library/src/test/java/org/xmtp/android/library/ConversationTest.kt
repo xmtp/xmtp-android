@@ -1,6 +1,9 @@
 package org.xmtp.android.library
 
-import kotlinx.coroutines.flow.collect
+import app.cash.turbine.test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -448,39 +451,44 @@ class ConversationTest {
     }
 
     @Test
-    fun testCanStreamConversationsV1() {
+    fun testCanStreamConversationsV1() = runTest {
         // Overwrite contact as legacy
         publishLegacyContact(client = bobClient)
         publishLegacyContact(client = aliceClient)
-//        val expectation = expectation(description = "got a conversation")
-        var conversation: Conversation? = null
-        aliceClient.conversations.stream().collect {
-            conversation = it
+        val conversation = bobClient.conversations.newConversation(alice.walletAddress)
+
+        aliceClient.conversations.stream().test {
+            conversation.send(content = "hi")
+            assertEquals(conversation, awaitItem())
+
+            bobClient.contacts.hasIntroduced.clear()
+            conversation.send(content = "hi again")
+            assertEquals(conversation, awaitItem())
         }
-        if (conversation?.peerAddress == bob.walletAddress) {
-//            expectation.fulfill()
-        }
-        conversation = bobClient.conversations.newConversation(alice.walletAddress)
-        conversation?.send(content = "hi")
-        // Remove known introduction from contacts to test de-duping
-//        bobClient.contacts.hasIntroduced.removeAll()
-        conversation?.send(content = "hi again")
-//        waitForExpectations(timeout = 5)
+//        if (conversationStream.peerAddress == bob.walletAddress) {
+//            assert(true)
+//        }
+//
+//        // Remove known introduction from contacts to test de-duping
+//        conversationStream = aliceClient.conversations.stream().first()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testCanStreamConversationsV2() {
-//        val expectation1 = expectation(description = "got a conversation")
-        expectation1.expectedFulfillmentCount = 2
-        bobClient.conversations.stream()
-        var conversation = bobClient.conversations.newConversation(alice.walletAddress)
-        conversation.send(content = "hi")
-        conversation = bobClient.conversations.newConversation(alice.walletAddress)
-        conversation.send(content = "hi again")
-        val newWallet = PrivateKeyBuilder()
-        val newClient = Client().create(account = newWallet, apiClient = fakeApiClient)
-        val conversation2 = bobClient.conversations.newConversation(newWallet.address)
-        conversation2.send(content = "hi from new wallet")
+    fun testCanStreamConversationsV2() = runTest {
+        bobClient.conversations.stream().test {
+            var conversation = bobClient.conversations.newConversation(alice.walletAddress)
+            conversation.send(content = "hi")
+            assertEquals(conversation, expectMostRecentItem())
+            conversation = bobClient.conversations.newConversation(alice.walletAddress)
+            conversation.send(content = "hi again")
+            assertEquals(conversation, expectMostRecentItem())
+            val newWallet = PrivateKeyBuilder()
+            val newClient = Client().create(account = newWallet, apiClient = fakeApiClient)
+            val conversation2 = bobClient.conversations.newConversation(newWallet.address)
+            conversation2.send(content = "hi from new wallet")
+            assertEquals(conversation, expectMostRecentItem())
+        }
 //        waitForExpectations(timeout = 3)
     }
 

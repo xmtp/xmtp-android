@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.FlakyTest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -193,13 +194,12 @@ class InstrumentedTest {
         val bobClient = Client().create(account = bob, options = clientOptions)
         val aliceConversation = aliceClient.conversations.newConversation(bob.address,
             context = InvitationV1ContextBuilder.buildFromConversation(conversationId = "https://example.com/3"))
-//        val expectation = expectation(description = "bob gets a streamed message")
         val bobConversation = bobClient.conversations.newConversation(alice.address,
             context = InvitationV1ContextBuilder.buildFromConversation(conversationId = "https://example.com/3"))
         assertEquals(bobConversation.topic, aliceConversation.topic)
-        bobConversation.streamMessages()
+        val conversation = runBlocking {  bobConversation.streamMessages().first() }
         aliceConversation.send(text = "hi bob")
-//        waitForExpectations(timeout = 3)
+        assertEquals(bobConversation, conversation)
     }
 
     @Test

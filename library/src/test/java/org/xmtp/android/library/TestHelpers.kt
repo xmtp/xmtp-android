@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.xmtp.android.library.messages.Envelope
