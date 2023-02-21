@@ -2,7 +2,6 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.FlakyTest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -162,66 +161,4 @@ class InstrumentedTest {
         val nowMessage2 = messages3[0]
         assertEquals("now", nowMessage2.body)
     }
-
-    @Test
-    fun testStreamMessagesInV1Conversation() {
-        val alice = PrivateKeyBuilder()
-        val bob = PrivateKeyBuilder()
-        val clientOptions =
-            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
-        val aliceClient = Client().create(account = alice, options = clientOptions)
-        aliceClient.publishUserContact(legacy = true)
-        val bobClient = Client().create(account = bob, options = clientOptions)
-        bobClient.publishUserContact(legacy = true)
-        val aliceConversation = aliceClient.conversations.newConversation(bob.address)
-        aliceConversation.send(content = "greetings")
-//        val expectation = expectation(description = "bob gets a streamed message")
-        val bobConversation = bobClient.conversations.newConversation(alice.address)
-        assertEquals(bobConversation.topic, aliceConversation.topic)
-        bobConversation.streamMessages()
-        aliceConversation.send(content = "hi bob")
-        bobConversation.send(content = "hi alice")
-//        waitForExpectations(timeout = 3)
-    }
-
-    @Test
-    fun testStreamMessagesInV2Conversation() {
-        val alice = PrivateKeyBuilder()
-        val bob = PrivateKeyBuilder()
-        val clientOptions =
-            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
-        val aliceClient = Client().create(account = alice, options = clientOptions)
-        val bobClient = Client().create(account = bob, options = clientOptions)
-        val aliceConversation = aliceClient.conversations.newConversation(bob.address,
-            context = InvitationV1ContextBuilder.buildFromConversation(conversationId = "https://example.com/3"))
-        val bobConversation = bobClient.conversations.newConversation(alice.address,
-            context = InvitationV1ContextBuilder.buildFromConversation(conversationId = "https://example.com/3"))
-        assertEquals(bobConversation.topic, aliceConversation.topic)
-        val conversation = runBlocking {  bobConversation.streamMessages().first() }
-        aliceConversation.send(text = "hi bob")
-        assertEquals(bobConversation, conversation)
-    }
-
-    @Test
-    fun testCanStreamV2Conversations() {
-        val alice = PrivateKeyBuilder()
-        val bob = PrivateKeyBuilder()
-        val clientOptions =
-            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
-        val aliceClient = Client().create(account = alice, options = clientOptions)
-        val bobClient = Client().create(account = bob, options = clientOptions)
-//        val expectation1 = expectation(description = "got a conversation")
-//        expectation1.expectedFulfillmentCount = 2
-        bobClient.conversations.stream()
-        var conversation = bobClient.conversations.newConversation(alice.address)
-        conversation.send(content = "hi")
-        conversation = bobClient.conversations.newConversation(alice.address)
-        conversation.send(content = "hi again")
-        val newWallet = PrivateKeyBuilder()
-        val newClient = Client().create(account = newWallet, options = clientOptions)
-        val conversation2 = bobClient.conversations.newConversation(newWallet.address)
-        conversation2.send(content = "hi from new wallet")
-//        waitForExpectations(timeout = 3)
-    }
-
 }

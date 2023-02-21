@@ -1,9 +1,7 @@
 package org.xmtp.android.library
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.ContentCodec

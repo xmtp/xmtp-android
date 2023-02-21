@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.xmtp.android.library.messages.Envelope
@@ -12,7 +13,6 @@ import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
-import org.xmtp.proto.message.api.v1.envelope
 
 class FakeWallet : SigningKey {
     private var privateKey: PrivateKey
@@ -44,12 +44,19 @@ class FakeWallet : SigningKey {
     }
 }
 
+class FakeStreamHolder {
+    private val flow = MutableSharedFlow<Envelope>()
+    suspend fun emit(value: Envelope) = flow.emit(value)
+    fun counts(): Flow<Envelope> = flow
+}
+
 class FakeApiClient : ApiClient {
     override val environment: XMTPEnvironment = XMTPEnvironment.LOCAL
     private var authToken: String? = null
     private val responses: MutableMap<String, List<Envelope>> = mutableMapOf()
     val published: MutableList<Envelope> = mutableListOf()
     var forbiddingQueries = false
+    private var stream = FakeStreamHolder()
 
     fun assertNoPublish(callback: () -> Unit) {
         val oldCount = published.size
@@ -86,8 +93,8 @@ class FakeApiClient : ApiClient {
         return query(topics = topics.map { it.description }, pagination)
     }
 
-    fun send(envelope: Envelope) {
-//        stream.send(envelope: envelope)
+    suspend fun send(envelope: Envelope) {
+        stream.emit(envelope)
     }
 
     override suspend fun envelopes(
@@ -146,12 +153,18 @@ class FakeApiClient : ApiClient {
 
     override suspend fun publish(envelopes: List<MessageApiOuterClass.Envelope>): MessageApiOuterClass.PublishResponse {
         for (envelope in envelopes) {
+            send(envelope)
         }
         published.addAll(envelopes)
         return PublishResponse.newBuilder().build()
     }
 
-    override suspend fun subscribe(topics: List<String>) : Flow<Envelope> {
+    override suspend fun subscribe(topics: List<String>): Flow<Envelope> {
+        val env = stream.counts().first()
+
+        if (topics.contains(env.contentTopic)) {
+            return flowOf(env)
+        }
         return flowOf()
     }
 }

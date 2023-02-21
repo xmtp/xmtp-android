@@ -2,7 +2,6 @@ package org.xmtp.android.library
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
