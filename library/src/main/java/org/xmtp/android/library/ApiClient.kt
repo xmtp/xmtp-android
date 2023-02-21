@@ -5,9 +5,6 @@ import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
 import io.grpc.Metadata
 import io.grpc.TlsChannelCredentials
-import java.io.Closeable
-import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
@@ -18,6 +15,9 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
+import java.io.Closeable
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.flow.Flow
 
 interface ApiClient {
     val environment: XMTPEnvironment
