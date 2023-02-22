@@ -5,4 +5,8 @@
         android:id="@+id/disconnect"
         android:title="@string/disconnect_wallet"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/copy_address"
+        android:title="@string/copy_address"
+        app:showAsAction="never" />
 </menu>

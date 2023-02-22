@@ -14,7 +14,7 @@ class MainViewModel : ViewModel() {
 
     private val _clientState = MutableStateFlow<ClientState>(ClientState.Unknown)
     val clientState: StateFlow<ClientState> = _clientState
-    private var client: Client? = null
+    var client: Client? = null
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading(null))
     val uiState: StateFlow<UiState> = _uiState

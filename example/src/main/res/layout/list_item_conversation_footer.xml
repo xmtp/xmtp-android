@@ -9,6 +9,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="@dimen/padding"
+        android:textSize="11sp"
+        android:gravity="center"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

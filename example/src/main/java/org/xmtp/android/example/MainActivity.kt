@@ -1,6 +1,9 @@
 package org.xmtp.android.example
 
 import android.accounts.AccountManager
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -15,10 +18,12 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.connect.ConnectWalletActivity
+import org.xmtp.android.example.conversation.ConversationFooterViewHolder
 import org.xmtp.android.example.conversation.ConversationsAdapter
 import org.xmtp.android.example.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(),
+    ConversationFooterViewHolder.OnConversationFooterClickListener {
 
     private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
@@ -42,14 +47,19 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
-        adapter = ConversationsAdapter()
+        adapter = ConversationsAdapter(footerClickListener = this)
         binding.list.layoutManager = LinearLayoutManager(this)
         binding.list.adapter = adapter
+        binding.refresh.setOnRefreshListener {
+            viewModel.fetchConversations()
+        }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.clientState.collect(::ensureClientState)
             }
+        }
+        lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect(::ensureUiState)
             }
@@ -67,8 +77,16 @@ class MainActivity : AppCompatActivity() {
                 disconnectWallet()
                 true
             }
+            R.id.copy_address -> {
+                copyWalletAddress()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onFooterClick(address: String) {
+        copyWalletAddress()
     }
 
     private fun ensureClientState(clientState: MainViewModel.ClientState) {
@@ -90,9 +108,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             is MainViewModel.UiState.Success -> {
+                binding.refresh.isRefreshing = false
                 adapter.setData(uiState.listItems)
             }
             is MainViewModel.UiState.Error -> {
+                binding.refresh.isRefreshing = false
                 showError(uiState.message)
             }
         }
@@ -110,7 +130,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showError(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        val error = message.ifBlank { resources.getString(R.string.error) }
+        Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
     }
 
     private fun disconnectWallet() {
@@ -120,5 +141,11 @@ class MainActivity : AppCompatActivity() {
             accountManager.removeAccount(account, null, null, null)
         }
         showSignIn()
+    }
+
+    private fun copyWalletAddress() {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("address", viewModel.client?.address.orEmpty())
+        clipboard.setPrimaryClip(clip)
     }
 }
