@@ -1,4 +1,12 @@
+buildscript {
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.2'
+    }
+}
+
+
 plugins {
+    id 'maven-publish'
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.protobuf' version '0.9.1'
@@ -73,4 +81,84 @@ dependencies {
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/main/java"]
+        }
+    }
+}
+
+task javadoc(type: Javadoc) {
+    failOnError false
+    source = sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task sourcesJar(type: Jar) {
+    classifier = "sources"
+    from sourceSets.main.java.srcDirs
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = "javadoc"
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId = "org.xmtp"
+                artifactId = "android"
+                version = System.getenv("RELEASE_VERSION")
+                from components.release
+                artifact sourcesJar
+                artifact javadocJar
+
+                pom {
+                    name = "XMTP"
+                    description = "XMTP Android Library"
+                    url = "https://github.com/xmtp/xmtp-android"
+                    packaging = "jar"
+
+                    licenses {
+                        license {
+                            name = "MIT License"
+                            url = "https://github.com/xmtp/xmtp-android/blob/main/LICENSE"
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = "xmtp"
+                            name = "xmtp"
+                            email = "naomi@xmtp.com"
+                        }
+                    }
+                    scm {
+                        connection = "https://github.com/xmtp/xmtp-android.git"
+                        developerConnection = "https://github.com/xmtp/xmtp-android.git"
+                        url = "https://github.com/xmtp/xmtp-android/tree/main"
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = "OSSHRPackage"
+                url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                credentials {
+                    username = System.getenv("MAVEN_USERNAME")
+                    password = System.getenv("MAVEN_PASSWORD")
+                }
+            }
+        }
+    }
 }

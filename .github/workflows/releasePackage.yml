@@ -1,0 +1,23 @@
+name: Release XMTP Android Package
+on:
+  push:
+    branches:
+      - release
+env:
+  GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: macOS-10.15
+    steps:
+      - uses: actions/checkout@v3
+      - run: git fetch --tags
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: 11
+
