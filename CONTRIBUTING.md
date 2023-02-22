@@ -8,19 +8,17 @@ Have a question? You are welcome to ask it in [Q&A discussions](https://github.c
 
 ## 🐞 Bugs
 
-Report bugs as GitHub Issues. Please confirm that there isn't an existing open issue about the bug and include detailed steps to reproduce the bug.
+Report bugs as [GitHub Issues](https://github.com/xmtp/xmtp-android/issues/new?assignees=&labels=bug&template=bug_report.yml&title=Bug%3A+). Please confirm that there isn't an existing open issue about the bug and include detailed steps to reproduce the bug.
 
 ## ✨ Feature requests
 
-Submit feature requests as GitHub Issues. Please confirm that there isn't an existing open issue requesting the feature. Describe the use cases this feature unlocks so the issue can be investigated and prioritized.
+Submit feature requests as [GitHub Issues](https://github.com/xmtp/xmtp-android/issues/new?assignees=&labels=enhancement&template=feature_request.yml&title=Feature+request%3A+). Please confirm that there isn't an existing open issue requesting the feature. Describe the use cases this feature unlocks so the issue can be investigated and prioritized.
 
 ## 🔀 Pull requests
 
 PRs are encouraged, but consider starting with a feature request to temperature-check first. If the PR involves a major change to the protocol, the work should be fleshed out as an [XMTP Improvement Proposal](https://github.com/xmtp/XIPs/blob/main/XIPs/xip-0-purpose-process.md) before work begins.
 
 ## 🔧 Developing
-
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
 
 ### Prerequisites
 
