@@ -1,21 +1,16 @@
 # xmtp-android
 
-![Test](https://github.com/xmtp/xmtp-android/actions/workflows/test.yml/badge.svg) ![Lint](https://github.com/xmtp/xmtp-android/actions/workflows/lint.yml/badge.svg) ![Status](https://img.shields.io/badge/Project_Status-Developer_Preview-yellow)
+![Test](https://github.com/xmtp/xmtp-android/actions/workflows/test.yml/badge.svg) ![Lint](https://github.com/xmtp/xmtp-android/actions/workflows/lint.yml/badge.svg) ![Status](https://img.shields.io/badge/Project_Status-Pre_Preview-red)
 
 `xmtp-android` provides a Kotlin implementation of an XMTP message API client for use with Android apps.
 
 Use `xmtp-android` to build with XMTP to send messages between blockchain accounts, including DMs, notifications, announcements, and more.
 
-This SDK is in **Developer Preview** status and ready for you to start building.
+This SDK is in **Pre Preview** status and ready for you to experimenting with.
 
-However, we do **not** recommend using Developer Preview software in production apps. Software in this status may change based on feedback.
+However, we do **not** recommend using Pre Preview software in production apps. Software in this status is likely to change based on feedback.
 
-Specifically, this SDK is missing this functionality:
-
-<!--provide kotlin-specific info-->
-
-- missing thing 1
-- missing thing 2
+Specifically, this SDK is currently building out an example app.
 
 Follow along in the [tracking issue](https://github.com/xmtp/xmtp-android/issues/1) for updates.
 
@@ -25,60 +20,42 @@ To learn more about XMTP and get answers to frequently asked questions, see [FAQ
 
 ## Example app
 
-For a basic demonstration of the core concepts and capabilities of the `xmtp-android` client SDK, see the [Example app project](https://github.com/xmtp/xmtp-android/tree/main/example).
+For a basic demonstration of the core concepts and capabilities of the `xmtp-android` client SDK, see the [Example app project](https://github.com/xmtp/xmtp-android/tree/main/example). This is currently a work in progress.
 
-## Install
+## Install from the Google Maven repository
 
-<!--provide kotlin-specific install command-->
-
-```bash
-install command
+```gradle
+    implementation 'org.xmtp:android:X.X.X'
 ```
-
-### Setup
-
-<!--for kotlin, is this different from an install command? =)-->
-
-```bash
-cp github.properties.example github.properties
-```
-
-Fill in with your GitHub credentials. Token must have package read access.
 
 ## Usage overview
 
 The XMTP message API revolves around a message API client (client) that allows retrieving and sending messages to other XMTP network participants. A client must connect to a wallet app on startup. If this is the very first time the client is created, the client will generate a key bundle that is used to encrypt and authenticate messages. The key bundle persists encrypted in the network using an account signature. The public side of the key bundle is also regularly advertised on the network to allow parties to establish shared encryption keys. All of this happens transparently, without requiring any additional code.
 
-<!--provide kotlin code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
-```swift
-import XMTP
-
+```kotlin
 // You'll want to replace this with a wallet from your application.
-let account = try PrivateKey.generate()
+val account = PrivateKeyBuilder()
 
 // Create the client with your wallet. This will connect to the XMTP `dev` network by default.
 // The account is anything that conforms to the `XMTP.SigningKey` protocol.
-let client = try await Client.create(account: account)
+val client = Client().create(account = account)
 
 // Start a conversation with XMTP
-let conversation = try await client.conversations.newConversation(with: "0x3F11b27F323b62B159D2642964fa27C46C841897")
+val conversation = client.conversations.newConversation("0x3F11b27F323b62B159D2642964fa27C46C841897")
 
 // Load all messages in the conversation
-let messages = try await conversation.messages()
+val messages = conversation.messages()
 // Send a message
-try await conversation.send(content: "gm")
+conversation.send(text = "gm")
 // Listen for new messages in the conversation
-for try await message in conversation.streamMessages() {
-  print("\(message.senderAddress): \(message.body)")
+conversation.streamMessages().collect { 
+    print("${message.senderAddress}: ${message.body}")
 }
 ```
 
 ## Create a client
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
-A client is created with `Client.create(account: SigningKey) async throws -> Client` that requires passing in an object capable of creating signatures on your behalf. The client will request a signature in two cases:
+A client is created with `Client().create(account: SigningKey): Client` that requires passing in an object capable of creating signatures on your behalf. The client will request a signature in two cases:
 
 1. To sign the newly generated key bundle. This happens only the very first time when a key bundle is not found in storage.
 2. To sign a random salt used to encrypt the key bundle in storage. This happens every time the client is started, including the very first time).
@@ -86,51 +63,47 @@ A client is created with `Client.create(account: SigningKey) async throws -> Cli
 > **Note**  
 > The client connects to the XMTP `dev` environment by default. [Use `ClientOptions`](#configuring-the-client) to change this and other parameters of the network connection.
 
-```swift
-import XMTP
-
+```kotlin
 // Create the client with a `SigningKey` from your app
-let client = try await Client.create(account: account, options: .init(api: .init(env: .production)))
+val options = ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.PRODUCTION, isSecure = true))
+val client = Client().create(account = account, options = options)
 ```
 
 ### Creating a client from saved keys
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 You can save your keys from the client via the `privateKeyBundle` property:
 
-```swift
+```kotlin
 // Create the client with a `SigningKey` from your app
-let client = try await Client.create(account: account, options: .init(api: .init(env: .production)))
+val options = ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.PRODUCTION, isSecure = true))
+val client = Client().create(account = account, options = options)
 
 // Get the key bundle
-let keys = client.privateKeyBundle
+val keys = client.privateKeyBundle
 
 // Serialize the key bundle and store it somewhere safe
-let keysData = try keys.serializedData()
+val keysData = keys.toByteArray()
 ```
 
 Once you have those keys, you can create a new client with `Client.from`:
 
-```swift
-let keys = try PrivateKeyBundle(serializedData: keysData)
-let client = try Client.from(bundle: keys, options: .init(api: .init(env: .production)))
+```kotlin
+val keys = PrivateKeyBundle.parseFrom(keysData)
+val client = Client().buildFrom(bundle = keys, options = options)
 ```
 
 ### Configure the client
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 You can configure the client's network connection and key storage method with these optional parameters of `Client.create`:
 
-| Parameter | Default | Description                                                                                                                                                                                                                                                                     |
-| --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| env       | `dev`   | Connect to the specified XMTP network environment. Valid values include `.dev`, `.production`, or `.local`. For important details about working with these environments, see [XMTP `production` and `dev` network environments](#xmtp-production-and-dev-network-environments). |
+| Parameter | Default | Description                                                                                                                                                                                                                                                                           |
+| --------- | ------- |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| env       | `DEV`   | Connect to the specified XMTP network environment. Valid values include `DEV`, `.PRODUCTION`, or `LOCAL`. For important details about working with these environments, see [XMTP `production` and `dev` network environments](#xmtp-production-and-dev-network-environments). |
 
-```swift
+```kotlin
 // Configure the client to use the `production` network
-let clientOptions = ClientOptions(api: .init(env: .production))
-let client = try await Client.create(account: account, options: clientOptions)
+val options = ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.PRODUCTION, isSecure = true))
+val client = Client().create(account = account, options = options)
 ```
 
 > **Note**  
@@ -138,122 +111,97 @@ let client = try await Client.create(account: account, options: clientOptions)
 
 ## Handle conversations
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 Most of the time, when interacting with the network, you'll want to do it through `conversations`. Conversations are between two accounts.
 
-```swift
-import XMTP
+```kotlin
 // Create the client with a wallet from your app
-let client = try await Client.create(account: account)
-let conversations = try await client.conversations.list()
+val client = Client().create(account = account)
+val conversations = client.conversations.list()
 ```
 
 ### List existing conversations
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 You can get a list of all conversations that have had one or more messages exchanged in the last 30 days.
 
-```swift
-let allConversations = try await client.conversations.list()
+```kotlin
+val allConversations = client.conversations.list()
 
-for conversation in allConversations {
-  print("Saying GM to \(conversation.peerAddress)")
-  try await conversation.send(content: "gm")
+for (conversation in allConversations) {
+    print("Saying GM to ${conversation.peerAddress}")
+    conversation.send(text = "gm")
 }
 ```
 
 ### Listen for new conversations
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 You can also listen for new conversations being started in real-time. This will allow apps to display incoming messages from new contacts.
 
-> **Warning**  
-> This stream will continue infinitely. To end the stream, break from the loop.
-
-```swift
-for try await conversation in client.conversations.stream() {
-  print("New conversation started with \(conversation.peerAddress)")
-
-  // Say hello to your new friend
-  try await conversation.send(content: "Hi there!")
-
-  // Break from the loop to stop listening
-  break
+```kotlin
+client.conversations.stream().collect {
+    print("New conversation started with ${it.peerAddress}")
+    // Say hello to your new friend
+    it.send(text = "Hi there!")
 }
 ```
 
 ### Start a new conversation
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 You can create a new conversation with any Ethereum address on the XMTP network.
 
-```swift
-let newConversation = try await client.conversations.newConversation(with: "0x3F11b27F323b62B159D2642964fa27C46C841897")
+```kotlin
+val newConversation = client.conversations.newConversation("0x3F11b27F323b62B159D2642964fa27C46C841897")
 ```
 
 ### Send messages
-
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
 
 To be able to send a message, the recipient must have already created a client at least once and consequently advertised their key bundle on the network. Messages are addressed using account addresses. The message payload must be a plain string.
 
 > **Note**  
 > Other types of content are currently not supported.
 
-```swift
-let conversation = try await client.conversations.newConversation(with: "0x3F11b27F323b62B159D2642964fa27C46C841897")
-try await conversation.send(content: "Hello world")
+```kotlin
+val conversation = client.conversations.newConversation("0x3F11b27F323b62B159D2642964fa27C46C841897")
+conversation.send(text = "Hello world")
 ```
 
 ### List messages in a conversation
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 You can receive the complete message history in a conversation by calling `conversation.messages()`
 
-```swift
-for conversation in client.conversations.list() {
-  let messagesInConversation = try await conversation.messages()
+```kotlin
+for (conversation in client.conversations.list()) {
+    val messagesInConversation = conversation.messages()
 }
 ```
 
 ### List messages in a conversation with pagination
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 It may be helpful to retrieve and process the messages in a conversation page by page. You can do this by calling `conversation.messages(limit: Int, before: Date)` which will return the specified number of messages sent before that time.
 
-```swift
-let conversation = try await client.conversations.newConversation(with: "0x3F11b27F323b62B159D2642964fa27C46C841897")
+```kotlin
+val conversation = client.conversations.newConversation("0x3F11b27F323b62B159D2642964fa27C46C841897")
 
-let messages = try await conversation.messages(limit: 25)
-let nextPage = try await conversation.messages(limit: 25, before: messages[0].sent)
+val messages = conversation.messages(limit = 25)
+val nextPage = conversation.messages(limit = 25, before = messages[0].sent)
 ```
 
 ### Listen for new messages in a conversation
-
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
 
 You can listen for any new messages (incoming or outgoing) in a conversation by calling `conversation.streamMessages()`.
 
 A successfully received message (that makes it through the decoding and decryption without throwing) can be trusted to be authentic. Authentic means that it was sent by the owner of the `message.senderAddress` account and that it wasn't modified in transit. The `message.sent` timestamp can be trusted to have been set by the sender.
 
-The stream returned by the `stream` methods is an asynchronous iterator and as such is usable by a for-await-of loop. Note however that it is by its nature infinite, so any looping construct used with it will not terminate, unless the termination is explicitly initiated (by breaking the loop).
+The flow returned by the `stream` methods is an asynchronous data stream that sequentially emits values and completes normally or with an exception.
 
-```swift
-let conversation = try await client.conversations.newConversation(with: "0x3F11b27F323b62B159D2642964fa27C46C841897")
+```kotlin
+val conversation = client.conversations.newConversation("0x3F11b27F323b62B159D2642964fa27C46C841897")
 
-for try await message in conversation.streamMessages() {
-  if message.senderAddress == client.address {
-    // This message was sent from me
-    continue
-  }
-
-  print("New message from \(message.senderAddress): \(message.body)")
+conversation.streamMessages().collect {
+    if (it.senderAddress == client.address) {
+        // This message was sent from me
+    }
+    
+    print("New message from ${it.senderAddress}: ${it.body}")
 }
 ```
 
@@ -261,8 +209,6 @@ for try await message in conversation.streamMessages() {
 > This package does not currently include the `streamAllMessages()` functionality from the XMTP client SDK for JavaScript (xmtp-js).
 
 ### Listen for new messages in all conversations
-
-<!--provide kotlin details and code sample. showing javascript for context of the kind of info you might want to provide. =)-->
 
 To listen for any new messages from _all_ conversations, use `conversations.streamAllMessages()`.
 
@@ -281,8 +227,6 @@ for await (const message of await xmtp.conversations.streamAllMessages()) {
 
 ### Check if an address is on the network
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 If you would like to check and see if a blockchain address is registered on the network before instantiating a client instance, you can use `Client.canMessage`.
 
 ```javascript
@@ -299,93 +243,79 @@ const isOnProdNetwork = await Client.canMessage(
 
 ### Handle multiple conversations with the same blockchain address
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 With XMTP, you can have multiple ongoing conversations with the same blockchain address. For example, you might want to have a conversation scoped to your particular app, or even a conversation scoped to a particular item in your app.
 
 To accomplish this, you can pass a context with a `conversationId` when you are creating a conversation. We recommend conversation IDs start with a domain, to help avoid unwanted collisions between your app and other apps on the XMTP network.
 
-```swift
+```kotlin
 // Start a scoped conversation with ID mydomain.xyz/foo
-let conversation1 = try await client.conversations.newConversation(
-  with: "0x3F11b27F323b62B159D2642964fa27C46C841897",
-  context: .init(conversationID: "mydomain.xyz/foo")
+val conversation1 = client.conversations.newConversation(
+    "0x3F11b27F323b62B159D2642964fa27C46C841897",
+  context = InvitationV1ContextBuilder.buildFromConversation("mydomain.xyz/foo")
 )
 
 // Start a scoped conversation with ID mydomain.xyz/bar. And add some metadata
-let conversation2 = try await client.conversations.newConversation(
-  with: "0x3F11b27F323b62B159D2642964fa27C46C841897",
-  context: .init(conversationID: "mydomain.xyz/bar", metadata: ["title": "Bar conversation"])
+val conversation2 = client.conversations.newConversation(
+  "0x3F11b27F323b62B159D2642964fa27C46C841897",
+  context = InvitationV1ContextBuilder.buildFromConversation("mydomain.xyz/bar", metadata = mapOf("title", "Bar conversation"))
 )
 
 // Get all the conversations
-let conversations = try await client.conversations.list()
+val conversations = client.conversations.list()
 
 // Filter for the ones from your app
-let myAppConversations = conversations.filter {
-  guard let conversationID = $0.context?.conversationID else {
-    return false
-  }
-
-  return conversationID.hasPrefix("mydomain.xyz/")
+val myAppConversations = conversations.filter {
+    val conversationId = it.context?.conversationId ?: return@filter false
+    conversationId.startsWith("mydomain.xyz/")
 }
 ```
 
 ### Decoding a single message
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 You can decode a single `Envelope` from XMTP using the `decode` method:
 
-```swift
-let conversation = try await client.conversations.newConversation(with: "0x3F11b27F323b62B159D2642964fa27C46C841897")
+```kotlin
+val conversation = client.conversations.newConversation("0x3F11b27F323b62B159D2642964fa27C46C841897")
 
 // Assume this function returns an Envelope that contains a message for the above conversation
-let envelope = getEnvelopeFromXMTP()
+val envelope = getEnvelopeFromXMTP()
 
-let decodedMessage = try conversation.decode(envelope)
+val decodedMessage = conversation.decode(envelope)
 ```
 
 ### Serialize/Deserialize conversations
 
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
-
 You can save a conversation object locally using its `encodedContainer` property. This returns a `ConversationContainer` object which conforms to `Codable`.
 
-```swift
+```kotlin
 // Get a conversation
-let conversation = try await client.conversations.newConversation(with: "0x3F11b27F323b62B159D2642964fa27C46C841897")
-
-// Get a container.
-let container = conversation.encodedContainer
+val conversation = client.conversations.newConversation("0x3F11b27F323b62B159D2642964fa27C46C841897")
 
 // Dump it to JSON
-let encoder = JSONEncoder()
-let data = try encoder.encode(container)
+val gson = GsonBuilder().create()
+val data = gson.toJson(conversation)
 
 // Get it back from JSON
-let decoder = JSONDecoder()
-let containerAgain = try decoder.decode(ConversationContainer.self, from: data)
+val containerAgain = gson.fromJson(data.toString(StandardCharsets.UTF_8), ConversationV2Export::class.java)
 
 // Get an actual Conversation object like we had above
-let decodedConversation = containerAgain.decode(with: client)
-try await decodedConversation.send(text: "hi")
+val decodedConversation = containerAgain.decode(client)
+decodedConversation.send(text = "hi")
 ```
 
 ### Handle different types of content
-
-<!--provide kotlin details and code sample. showing swift for context of the kind of info you might want to provide. =)-->
 
 All the send functions support SendOptions as an optional parameter. The contentType option allows specifying different types of content than the default simple string, which is identified with content type identifier ContentTypeText. Support for other types of content can be added by registering additional ContentCodecs with the Client. Every codec is associated with a content type identifier, ContentTypeId, which is used to signal to the Client which codec should be used to process the content that is being sent or received. See XIP-5 for more details on codecs and content types.
 
 Codecs and content types may be proposed as interoperable standards through XRCs. If there is a concern that the recipient may not be able to handle a non-standard content type, the sender can use the contentFallback option to provide a string that describes the content being sent. If the recipient fails to decode the original content, the fallback will replace it and can be used to inform the recipient what the original content was.
 
-```swift
+```kotlin
 // Assuming we've loaded a fictional NumberCodec that can be used to encode numbers,
 // and is identified with ContentTypeNumber, we can use it as follows.
-Client.register(codec: NumberCodec())
+Client.register(codec = NumberCodec())
 
-try await aliceConversation.send(content: 3.14, options: .init(contentType: ContentTypeNumber, contentFallback: "sending you a pie"))
+val options = ClientOptions(api = ClientOptions.Api(contentType = ContentTypeNumber, contentFallback = "sending you a pie"))
+aliceConversation.send(content = 3.14, options = options)
 ```
 
 ### Compression
@@ -396,13 +326,11 @@ Message content can be optionally compressed using the compression option. The v
 
 Content will be decompressed transparently on the receiving end. Note that Client enforces maximum content size. The default limit can be overridden through the ClientOptions. Consequently a message that would expand beyond that limit on the receiving end will fail to decode.
 
-```swift
-try await conversation.send(text: '#'.repeat(1000), options: .init(compression: .gzip))
+```kotlin
+conversation.send(text = '#'.repeat(1000), options = ClientOptions.Api(compression = EncodedContentCompression.GZIP))
 ```
 
 ### Manually handle private key storage
-
-<!--provide kotlin details and code sample. showing javascript for context of the kind of info you might want to provide. =)-->
 
 The SDK will handle key storage for the user by encrypting the private key bundle using a signature generated from the wallet, and storing the encrypted payload on the XMTP network. This can be awkward for some server-side applications, where you may only want to give the application access to the XMTP keys but not your wallet keys. Mobile applications may also want to store keys in a secure enclave rather than rely on decrypting the remote keys on the network each time the application starts up.
 
@@ -420,23 +348,21 @@ The keys returned by `getKeys` should be treated with the utmost care as comprom
 
 ### Cache conversations
 
-<!--provide kotlin details and code sample. showing javascript for context of the kind of info you might want to provide. =)-->
-
 As a performance optimization, you may want to persist the list of conversations in your application outside of the SDK to speed up the first call to `client.conversations.list()`.
 
 The exported conversation list contains encryption keys for any V2 conversations included in the list. As such, you should treat it with the same care that you treat [private keys](#manually-handle-private-key-storage).
 
 You can get a JSON serializable list of conversations by calling:
 
-```javascript
-const client = await Client.create(wallet)
-const conversations = await client.conversations.export()
+```kotlin
+val client = Client().create(wallet)
+val conversations = client.conversations.export()
 saveConversationsSomewhere(JSON.stringify(conversations))
-To load the conversations in a new SDK instance you can run:
+// To load the conversations in a new SDK instance you can run:
 
-const client = await Client.create(wallet)
-const conversations = JSON.parse(loadConversationsFromSomewhere())
-await client.conversations.import(conversations)
+val client = Client.create(wallet)
+val conversations = JSON.parse(loadConversationsFromSomewhere())
+val client.importConversation(conversations)
 ```
 
 ## 🏗 **Breaking revisions**
