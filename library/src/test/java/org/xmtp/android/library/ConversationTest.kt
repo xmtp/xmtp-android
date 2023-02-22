@@ -1,5 +1,8 @@
 package org.xmtp.android.library
 
+import app.cash.turbine.test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -9,6 +12,7 @@ import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
+import org.xmtp.android.library.messages.InvitationV1
 import org.xmtp.android.library.messages.InvitationV1ContextBuilder
 import org.xmtp.android.library.messages.MessageBuilder
 import org.xmtp.android.library.messages.MessageHeaderV2Builder
@@ -16,15 +20,24 @@ import org.xmtp.android.library.messages.MessageV1Builder
 import org.xmtp.android.library.messages.MessageV2Builder
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
+import org.xmtp.android.library.messages.SealedInvitationBuilder
+import org.xmtp.android.library.messages.SealedInvitationHeaderV1
 import org.xmtp.android.library.messages.SignedContentBuilder
 import org.xmtp.android.library.messages.Topic
+import org.xmtp.android.library.messages.createRandom
 import org.xmtp.android.library.messages.getPublicKeyBundle
+import org.xmtp.android.library.messages.header
+import org.xmtp.android.library.messages.recoverWalletSignerPublicKey
 import org.xmtp.android.library.messages.sign
 import org.xmtp.android.library.messages.toPublicKeyBundle
+import org.xmtp.android.library.messages.toSignedPublicKeyBundle
 import org.xmtp.android.library.messages.toV2
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.message.contents.Invitation
+import java.nio.charset.StandardCharsets
 import java.util.Date
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ConversationTest {
     lateinit var fakeApiClient: FakeApiClient
     lateinit var aliceWallet: PrivateKeyBuilder
@@ -34,7 +47,7 @@ class ConversationTest {
     lateinit var bob: PrivateKey
     lateinit var bobClient: Client
 
-    fun publishLegacyContact(client: Client) {
+    private fun publishLegacyContact(client: Client) {
         val contactBundle = ContactBundle.newBuilder().apply {
             v1Builder.keyBundle = client.privateKeyBundleV1?.toPublicKeyBundle()
         }.build()
@@ -61,7 +74,7 @@ class ConversationTest {
     @Test
     fun testDoesNotAllowConversationWithSelf() {
         val client = Client().create(account = aliceWallet)
-        assertThrows("Recipient is sender", IllegalArgumentException::class.java) {
+        assertThrows("Recipient is sender", XMTPException::class.java) {
             client.conversations.newConversation(alice.walletAddress)
         }
     }
@@ -235,7 +248,7 @@ class ConversationTest {
             aliceWallet.address,
             InvitationV1ContextBuilder.buildFromConversation("hi")
         )
-        assertThrows("Invalid signature", IllegalArgumentException::class.java) {
+        assertThrows("Invalid signature", XMTPException::class.java) {
             val messages = bobConversation.messages()
         }
     }
@@ -308,5 +321,200 @@ class ConversationTest {
         assertEquals(1, messages.size)
         assertEquals(MutableList(1000) { "A" }.toString(), messages[0].body)
         assertEquals(bobWallet.address, messages[0].senderAddress)
+    }
+
+    @Test
+    fun testEndToEndConversation() {
+        val fakeContactWallet = PrivateKeyBuilder()
+        val fakeContactClient = Client().create(account = fakeContactWallet)
+        fakeContactClient.publishUserContact()
+        val fakeWallet = PrivateKeyBuilder()
+        val client = Client().create(account = fakeWallet)
+        val contact = client.getUserContact(peerAddress = fakeContactWallet.address)!!
+        assertEquals(contact.walletAddress, fakeContactWallet.address)
+        val created = Date()
+        val invitationContext = Invitation.InvitationV1.Context.newBuilder().also {
+            it.conversationId = "https://example.com/1"
+        }.build()
+        val invitationv1 =
+            InvitationV1.newBuilder().build().createRandom(context = invitationContext)
+        val senderBundle = client.privateKeyBundleV1?.toV2()
+        assertEquals(
+            senderBundle?.identityKey?.publicKey?.recoverWalletSignerPublicKey()?.walletAddress,
+            fakeWallet.address
+        )
+        val invitation = SealedInvitationBuilder.buildFromV1(
+            sender = client.privateKeyBundleV1!!.toV2(),
+            recipient = contact.toSignedPublicKeyBundle(),
+            created = created,
+            invitation = invitationv1
+        )
+        val inviteHeader = invitation.v1.header
+        assertEquals(inviteHeader.sender.walletAddress, fakeWallet.address)
+        assertEquals(inviteHeader.recipient.walletAddress, fakeContactWallet.address)
+        val header = SealedInvitationHeaderV1.parseFrom(invitation.v1.headerBytes)
+        val conversation =
+            ConversationV2.create(client = client, invitation = invitationv1, header = header)
+        assertEquals(fakeContactWallet.address, conversation.peerAddress)
+
+        conversation.send(content = "hello world")
+
+        val conversationList = client.conversations.list()
+        val recipientConversation = conversationList.lastOrNull()
+
+        val messages = recipientConversation?.messages()
+        val message = messages?.firstOrNull()
+        if (message != null) {
+            assertEquals("hello world", message.body)
+        }
+    }
+
+    @Test
+    fun testCanUseCachedConversation() {
+        bobClient.conversations.newConversation(alice.walletAddress)
+
+        fakeApiClient.assertNoQuery {
+            bobClient.conversations.newConversation(alice.walletAddress)
+        }
+    }
+
+    @Test
+    fun testCanPaginateV1Messages() {
+        // Overwrite contact as legacy so we can get v1
+        publishLegacyContact(client = bobClient)
+        publishLegacyContact(client = aliceClient)
+        val bobConversation = bobClient.conversations.newConversation(alice.walletAddress)
+        val aliceConversation = aliceClient.conversations.newConversation(bob.walletAddress)
+
+        val date = Date()
+        date.time = date.time - 1000000
+        bobConversation.send(text = "hey alice 1", sentAt = date)
+        bobConversation.send(text = "hey alice 2")
+        bobConversation.send(text = "hey alice 3")
+        val messages = aliceConversation.messages(limit = 1)
+        assertEquals(1, messages.size)
+        assertEquals("hey alice 3", messages[0].body)
+        val messages2 = aliceConversation.messages(limit = 1, after = date)
+        assertEquals(1, messages2.size)
+        assertEquals("hey alice 2", messages2[0].body)
+    }
+
+    @Test
+    fun testCanPaginateV2Messages() {
+        val bobConversation = bobClient.conversations.newConversation(
+            alice.walletAddress,
+            context = InvitationV1ContextBuilder.buildFromConversation("hi")
+        )
+
+        val aliceConversation = aliceClient.conversations.newConversation(
+            bob.walletAddress,
+            context = InvitationV1ContextBuilder.buildFromConversation("hi")
+        )
+        val date = Date()
+        date.time = date.time - 1000000
+        bobConversation.send(text = "hey alice 1", sentAt = date)
+        bobConversation.send(text = "hey alice 2")
+        bobConversation.send(text = "hey alice 3")
+        val messages = aliceConversation.messages(limit = 1)
+        assertEquals(1, messages.size)
+        assertEquals("hey alice 3", messages[0].body)
+        val messages2 = aliceConversation.messages(limit = 1, after = date)
+        assertEquals(1, messages2.size)
+        assertEquals("hey alice 2", messages2[0].body)
+    }
+
+    @Test
+    fun testImportV1ConversationFromJS() {
+        val jsExportJSONData =
+            (""" { "version": "v1", "peerAddress": "0x5DAc8E2B64b8523C11AF3e5A2E087c2EA9003f14", "createdAt": "2022-09-20T09:32:50.329Z" } """).toByteArray(
+                StandardCharsets.UTF_8
+            )
+        val conversation = aliceClient.importConversation(jsExportJSONData)
+        assertEquals(conversation.peerAddress, "0x5DAc8E2B64b8523C11AF3e5A2E087c2EA9003f14")
+    }
+
+    @Test
+    fun testImportV2ConversationFromJS() {
+        val jsExportJSONData =
+            (""" {"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z","context":{"conversationId":"pat/messageid","metadata":{}}} """).toByteArray(
+                StandardCharsets.UTF_8
+            )
+        val conversation = aliceClient.importConversation(jsExportJSONData)
+        assertEquals(conversation.peerAddress, "0x436D906d1339fC4E951769b1699051f020373D04")
+    }
+
+    @Test
+    fun testImportV2ConversationWithNoContextFromJS() {
+        val jsExportJSONData =
+            (""" {"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z"} """).toByteArray(
+                StandardCharsets.UTF_8
+            )
+        val conversation = aliceClient.importConversation(jsExportJSONData)
+        assertEquals(conversation.peerAddress, "0x436D906d1339fC4E951769b1699051f020373D04")
+    }
+
+    @Test
+    fun testCanStreamConversationsV2() = runTest {
+        bobClient.conversations.stream().test {
+            val conversation = bobClient.conversations.newConversation(alice.walletAddress)
+            conversation.send(content = "hi")
+            assertEquals("hi", awaitItem().messages(limit = 1).first().body)
+            awaitComplete()
+        }
+    }
+
+    @Test
+    fun testStreamingMessagesFromV1Conversation() = runTest {
+        // Overwrite contact as legacy
+        publishLegacyContact(client = bobClient)
+        publishLegacyContact(client = aliceClient)
+        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+        conversation.streamMessages().test {
+            val encoder = TextCodec()
+            val encodedContent = encoder.encode(content = "hi alice")
+            // Stream a message
+            fakeApiClient.send(
+                envelope = EnvelopeBuilder.buildFromString(
+                    topic = conversation.topic,
+                    timestamp = Date(),
+                    message = MessageBuilder.buildFromMessageV1(
+                        v1 = MessageV1Builder.buildEncode(
+                            sender = bobClient.privateKeyBundleV1!!,
+                            recipient = aliceClient.privateKeyBundleV1!!.toPublicKeyBundle(),
+                            message = encodedContent.toByteArray(),
+                            timestamp = Date()
+                        )
+                    ).toByteArray()
+                )
+            )
+            assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
+            awaitComplete()
+        }
+    }
+
+    @Test
+    fun testStreamingMessagesFromV2Conversations() = runTest {
+        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+        conversation.streamMessages().test {
+            val encoder = TextCodec()
+            val encodedContent = encoder.encode(content = "hi alice")
+            // Stream a message
+            fakeApiClient.send(
+                envelope = EnvelopeBuilder.buildFromString(
+                    topic = conversation.topic,
+                    timestamp = Date(),
+                    message = MessageBuilder.buildFromMessageV2(
+                        v2 = MessageV2Builder.buildEncode(
+                            client = bobClient,
+                            encodedContent,
+                            topic = conversation.topic,
+                            keyMaterial = conversation.keyMaterial!!
+                        )
+                    ).toByteArray()
+                )
+            )
+            assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
+            awaitComplete()
+        }
     }
 }

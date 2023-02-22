@@ -1,5 +1,7 @@
 package org.xmtp.android.library
 
+import kotlinx.coroutines.flow.Flow
+import org.xmtp.android.library.messages.Envelope
 import java.util.Date
 
 sealed class Conversation {
@@ -38,6 +40,13 @@ sealed class Conversation {
             }
         }
 
+    fun decode(envelope: Envelope): DecodedMessage {
+        when (this) {
+            is V1 -> return conversationV1.decode(envelope)
+            is V2 -> return conversationV2.decodeEnvelope(envelope)
+        }
+    }
+
     fun <T> send(content: T, options: SendOptions? = null) {
         when (this) {
             is V1 -> conversationV1.send(content = content, options = options)
@@ -45,10 +54,10 @@ sealed class Conversation {
         }
     }
 
-    fun send(text: String, sendOptions: SendOptions? = null) {
+    fun send(text: String, sendOptions: SendOptions? = null, sentAt: Date? = null) {
         when (this) {
-            is V1 -> conversationV1.send(text = text, sendOptions)
-            is V2 -> conversationV2.send(text = text, sendOptions)
+            is V1 -> conversationV1.send(text = text, sendOptions, sentAt)
+            is V2 -> conversationV2.send(text = text, sendOptions, sentAt)
         }
     }
 
@@ -87,4 +96,11 @@ sealed class Conversation {
                 is V2 -> conversationV2.client
             }
         }
+
+    fun streamMessages(): Flow<DecodedMessage> {
+        return when (this) {
+            is V1 -> return conversationV1.streamMessages()
+            is V2 -> return conversationV2.streamMessages()
+        }
+    }
 }

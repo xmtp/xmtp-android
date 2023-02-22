@@ -1,5 +1,7 @@
 package org.xmtp.android.library
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1
@@ -24,24 +26,24 @@ import java.util.Date
 
 data class Conversations(
     var client: Client,
-    var conversations: MutableList<Conversation> = mutableListOf()
+    var conversations: MutableList<Conversation> = mutableListOf(),
 ) {
 
     fun newConversation(
         peerAddress: String,
-        context: Invitation.InvitationV1.Context? = null
+        context: Invitation.InvitationV1.Context? = null,
     ): Conversation {
         if (peerAddress.lowercase() == client.address?.lowercase()) {
-            throw IllegalArgumentException("Recipient is sender")
+            throw XMTPException("Recipient is sender")
         }
         val existingConversation = conversations.firstOrNull { it.peerAddress == peerAddress }
         if (existingConversation != null) {
             return existingConversation
         }
         val contact = client.contacts.find(peerAddress)
-            ?: throw IllegalArgumentException("Recipient not on network")
+            ?: throw XMTPException("Recipient not on network")
         // See if we have an existing v1 convo
-        if (context?.conversationId == null || context.conversationId == "") {
+        if (context?.conversationId.isNullOrEmpty()) {
             val invitationPeers = listIntroductionPeers()
             val peerSeenAt = invitationPeers[peerAddress]
             if (peerSeenAt != null) {
@@ -56,8 +58,9 @@ data class Conversations(
                 return conversation
             }
         }
+
         // If the contact is v1, start a v1 conversation
-        if (Contact.ContactBundle.VersionCase.V1 == contact.versionCase && (context?.conversationId == null || context.conversationId == "")) {
+        if (Contact.ContactBundle.VersionCase.V1 == contact.versionCase && context?.conversationId.isNullOrEmpty()) {
             val conversation: Conversation = Conversation.V1(
                 ConversationV1(
                     client = client,
@@ -134,7 +137,7 @@ data class Conversations(
     private fun listIntroductionPeers(): Map<String, Date> {
         val envelopes =
             runBlocking {
-                client.apiClient.query(
+                client.apiClient.queryTopics(
                     topics = listOf(
                         Topic.userIntro(
                             client.address ?: ""
@@ -169,7 +172,7 @@ data class Conversations(
 
     fun listInvitations(): List<SealedInvitation> {
         val envelopes = runBlocking {
-            client.apiClient.query(
+            client.apiClient.queryTopics(
                 topics = listOf(
                     Topic.userInvite(
                         client.address ?: ""
@@ -185,7 +188,7 @@ data class Conversations(
     fun sendInvitation(
         recipient: SignedPublicKeyBundle,
         invitation: InvitationV1,
-        created: Date
+        created: Date,
     ): SealedInvitation {
         client.keys?.let {
             val sealed = SealedInvitationBuilder.buildFromV1(
@@ -219,5 +222,43 @@ data class Conversations(
             return sealed
         }
         return SealedInvitation.newBuilder().build()
+    }
+
+    fun stream(): Flow<Conversation> = flow {
+        val streamedConversationTopics: MutableSet<String> = mutableSetOf()
+        client.subscribeTopic(
+            listOf(Topic.userIntro(client.address), Topic.userInvite(client.address))
+        ).collect { envelope ->
+            if (envelope.contentTopic == Topic.userIntro(client.address).description) {
+                val messageV1 = MessageV1Builder.buildFromBytes(envelope.message.toByteArray())
+                val senderAddress = messageV1.header.sender.walletAddress
+                val recipientAddress = messageV1.header.recipient.walletAddress
+                val peerAddress =
+                    if (client.address == senderAddress) recipientAddress else senderAddress
+                val conversationV1 = ConversationV1(
+                    client = client,
+                    peerAddress = peerAddress,
+                    sentAt = messageV1.sentAt
+                )
+                if (!streamedConversationTopics.contains(conversationV1.topic.description)) {
+                    streamedConversationTopics.add(conversationV1.topic.description)
+                    emit(Conversation.V1(conversationV1))
+                }
+            }
+
+            if (envelope.contentTopic == Topic.userInvite(client.address).description) {
+                val sealedInvitation = SealedInvitation.parseFrom(envelope.message)
+                val unsealed = sealedInvitation.v1.getInvitation(viewer = client.keys)
+                val conversationV2 = ConversationV2.create(
+                    client = client,
+                    invitation = unsealed,
+                    header = sealedInvitation.v1.header
+                )
+                if (!streamedConversationTopics.contains(conversationV2.topic)) {
+                    streamedConversationTopics.add(conversationV2.topic)
+                    emit(Conversation.V2(conversationV2))
+                }
+            }
+        }
     }
 }

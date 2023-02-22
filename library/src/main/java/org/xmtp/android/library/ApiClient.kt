@@ -1,13 +1,16 @@
 package org.xmtp.android.library
 
-import androidx.annotation.WorkerThread
 import io.grpc.Grpc
 import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
 import io.grpc.Metadata
 import io.grpc.TlsChannelCredentials
+import kotlinx.coroutines.flow.Flow
+import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Cursor
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
@@ -19,9 +22,16 @@ import java.util.concurrent.TimeUnit
 interface ApiClient {
     val environment: XMTPEnvironment
     fun setAuthToken(token: String)
-    suspend fun query(topics: List<Topic>): QueryResponse
-    suspend fun queryStrings(topics: List<String>): QueryResponse
+    suspend fun query(
+        topics: List<String>,
+        pagination: Pagination? = null,
+        cursor: Cursor? = null,
+    ): QueryResponse
+
+    suspend fun queryTopics(topics: List<Topic>, pagination: Pagination? = null): QueryResponse
+    suspend fun envelopes(topics: List<String>, pagination: Pagination? = null): List<Envelope>
     suspend fun publish(envelopes: List<Envelope>): PublishResponse
+    suspend fun subscribe(topics: List<String>): Flow<Envelope>
 }
 
 data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: Boolean = true) :
@@ -56,10 +66,30 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
         authToken = token
     }
 
-    @WorkerThread
-    override suspend fun queryStrings(topics: List<String>): QueryResponse {
+    override suspend fun query(
+        topics: List<String>,
+        pagination: Pagination?,
+        cursor: Cursor?,
+    ): QueryResponse {
         val request = QueryRequest.newBuilder()
-            .addAllContentTopics(topics).build()
+            .addAllContentTopics(topics).also {
+                if (pagination != null) {
+                    it.pagingInfo = pagination.pagingInfo
+                }
+                if (pagination?.startTime != null) {
+                    it.endTimeNs = pagination.startTime.time * 1_000_000
+                    it.pagingInfoBuilder.direction =
+                        MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING
+                }
+                if (pagination?.endTime != null) {
+                    it.startTimeNs = pagination.endTime.time * 1_000_000
+                    it.pagingInfoBuilder.direction =
+                        MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING
+                }
+                if (cursor != null) {
+                    it.pagingInfoBuilder.cursor = cursor
+                }
+            }.build()
 
         val headers = Metadata()
 
@@ -69,12 +99,23 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
         return client.query(request, headers = headers)
     }
 
-    @WorkerThread
-    override suspend fun query(topics: List<Topic>): QueryResponse {
-        return queryStrings(topics.map { it.description })
+    override suspend fun envelopes(topics: List<String>, pagination: Pagination?): List<Envelope> {
+        val envelopes: MutableList<Envelope> = mutableListOf()
+        var hasNextPage = true
+        var cursor: Cursor? = null
+        while (hasNextPage) {
+            val response = query(topics = topics, pagination = pagination, cursor = cursor)
+            envelopes.addAll(response.envelopesList)
+            cursor = response.pagingInfo.cursor
+            hasNextPage = response.envelopesList.isNotEmpty() && response.pagingInfo.hasCursor()
+        }
+        return envelopes
     }
 
-    @WorkerThread
+    override suspend fun queryTopics(topics: List<Topic>, pagination: Pagination?): QueryResponse {
+        return query(topics.map { it.description }, pagination)
+    }
+
     override suspend fun publish(envelopes: List<Envelope>): PublishResponse {
         val request = PublishRequest.newBuilder().addAllEnvelopes(envelopes).build()
         val headers = Metadata()
@@ -87,6 +128,12 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
         headers.put(APP_VERSION_HEADER_KEY, Constants.VERSION)
 
         return client.publish(request, headers)
+    }
+
+    override suspend fun subscribe(topics: List<String>): Flow<Envelope> {
+        val request =
+            MessageApiOuterClass.SubscribeRequest.newBuilder().addAllContentTopics(topics).build()
+        return client.subscribe(request)
     }
 
     override fun close() {

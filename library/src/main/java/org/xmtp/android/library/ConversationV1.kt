@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
-import android.content.res.Resources.NotFoundException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
@@ -11,6 +12,7 @@ import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Message
 import org.xmtp.android.library.messages.MessageBuilder
 import org.xmtp.android.library.messages.MessageV1Builder
+import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.decrypt
 import org.xmtp.android.library.messages.header
@@ -34,7 +36,7 @@ data class ConversationV1(
     fun send(text: String, sendOptions: SendOptions? = null, sentAt: Date? = null) {
         val encoder = TextCodec()
         val encodedContent = encoder.encode(content = text)
-        send(encodedContent = encodedContent)
+        send(encodedContent = encodedContent, sendOptions = sendOptions, sentAt = sentAt)
     }
 
     fun <T> send(content: T, options: SendOptions? = null) {
@@ -45,7 +47,7 @@ data class ConversationV1(
             if (contentType != null) {
                 return codec.encode(content = contentType)
             } else {
-                throw IllegalArgumentException("Codec type is not registered")
+                throw XMTPException("Codec type is not registered")
             }
         }
 
@@ -61,7 +63,7 @@ data class ConversationV1(
         sendOptions: SendOptions? = null,
         sentAt: Date? = null,
     ) {
-        val contact = client.contacts.find(peerAddress) ?: throw NotFoundException()
+        val contact = client.contacts.find(peerAddress) ?: throw XMTPException("Contact not found.")
 
         var content = encodedContent
 
@@ -71,11 +73,11 @@ data class ConversationV1(
 
         val recipient = contact.toPublicKeyBundle()
         if (!recipient.identityKey.hasSignature()) {
-            throw Exception("no signature for id key")
+            throw XMTPException("no signature for id key")
         }
         val date = sentAt ?: Date()
         if (client.privateKeyBundleV1 == null) {
-            throw Exception("no private key bundle")
+            throw XMTPException("no private key bundle")
         }
         val message = MessageV1Builder.buildEncode(
             sender = client.privateKeyBundleV1!!,
@@ -85,10 +87,7 @@ data class ConversationV1(
         )
         val envelopes = mutableListOf(
             EnvelopeBuilder.buildFromTopic(
-                topic = Topic.directMessageV1(
-                    client.address,
-                    peerAddress
-                ),
+                topic = topic,
                 timestamp = date,
                 message = MessageBuilder.buildFromMessageV1(v1 = message).toByteArray()
             )
@@ -118,22 +117,17 @@ data class ConversationV1(
         before: Date? = null,
         after: Date? = null,
     ): List<DecodedMessage> {
+        val pagination = Pagination(limit = limit, startTime = before, endTime = after)
         val result = runBlocking {
-            client.apiClient.query(
-                topics = listOf(
-                    Topic.directMessageV1(
-                        client.address,
-                        peerAddress
-                    )
-                )
-            )
+            client.apiClient.queryTopics(topics = listOf(topic), pagination = pagination)
         }
+
         return result.envelopesList.flatMap { envelope ->
             listOf(decode(envelope = envelope))
         }
     }
 
-    private fun decode(envelope: Envelope): DecodedMessage {
+    fun decode(envelope: Envelope): DecodedMessage {
         val message = Message.parseFrom(envelope.message)
         val decrypted = message.v1.decrypt(client.privateKeyBundleV1)
         val encodedMessage = EncodedContent.parseFrom(decrypted)
@@ -143,5 +137,11 @@ data class ConversationV1(
             senderAddress = header.sender.walletAddress,
             sent = message.v1.sentAt
         )
+    }
+
+    fun streamMessages(): Flow<DecodedMessage> = flow {
+        client.subscribe(listOf(topic.description)).collect {
+            emit(decode(envelope = it))
+        }
     }
 }
