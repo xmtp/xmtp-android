@@ -24,7 +24,7 @@ For a basic demonstration of the core concepts and capabilities of the `xmtp-and
 
 ## Install from the GitHub Packages
 
-While in pre preview we plan to [release in GitHub Packages](https://github.com/xmtp/proto/packages/1797058). When this moves to Dev Preview we will have this released in Maven Central. For help consuming GitHub Packages read [this doc](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#using-a-published-package).
+While in pre preview we plan to [release in GitHub Packages](https://github.com/xmtp/xmtp-android/packages/1797061). When this moves to Dev Preview we will have this released in Maven Central. For help consuming GitHub Packages read [this doc](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#using-a-published-package).
 
 ```gradle
     implementation 'org.xmtp:android:X.X.X'
