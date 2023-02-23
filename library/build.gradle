@@ -1,4 +1,5 @@
 plugins {
+    id 'signing'
     id 'maven-publish'
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
@@ -33,6 +34,13 @@ android {
     }
     kotlinOptions {
         jvmTarget = '11'
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 }
 
@@ -76,34 +84,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs = ["src/main/java"]
-        }
-    }
-}
-
-task javadoc(type: Javadoc) {
-    failOnError false
-    source = sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
-
-task sourcesJar(type: Jar) {
-    classifier = "sources"
-    from sourceSets.main.java.srcDirs
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = "javadoc"
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives javadocJar, sourcesJar
-}
-
 afterEvaluate {
     publishing {
         publications {
@@ -112,8 +92,6 @@ afterEvaluate {
                 artifactId = "android"
                 version = System.getenv("RELEASE_VERSION")
                 from components.release
-                artifact sourcesJar
-                artifact javadocJar
 
                 pom {
                     name = "XMTP"
@@ -142,16 +120,13 @@ afterEvaluate {
                 }
             }
         }
-
-        repositories {
-            maven {
-                name = "OSSHRPackage"
-                url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                credentials {
-                    username = System.getenv("MAVEN_USERNAME")
-                    password = System.getenv("MAVEN_PASSWORD")
-                }
-            }
-        }
     }
+}
+
+
+signing {
+    def signingKey = System.getenv("SIGN_KEY")
+    def signingPassword = System.getenv("SIGN_PASSWORD")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications
 }
