@@ -1,4 +1,5 @@
 plugins {
+    id 'maven-publish'
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.protobuf' version '0.9.1'
@@ -73,4 +74,28 @@ dependencies {
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId = "org.xmtp"
+                artifactId = "android"
+                version = "0.0.1"
+                from components.release
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackage"
+                url = "https://maven.pkg.github.com/xmtp/proto"
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = "System.getenv("GITHUB_TOKEN")"
+                }
+            }
+        }
+    }
 }
