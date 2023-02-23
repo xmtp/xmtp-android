@@ -121,12 +121,10 @@ afterEvaluate {
             }
         }
     }
-}
-
-
-signing {
-    def signingKey = System.getenv("SIGN_KEY")
-    def signingPassword = System.getenv("SIGN_PASSWORD")
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign publishing.publications
+    signing {
+        def signingKey = System.getenv("SIGN_KEY")
+        def signingPassword = System.getenv("SIGN_PASSWORD")
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications.release
+    }
 }
