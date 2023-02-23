@@ -90,10 +90,10 @@ afterEvaluate {
         repositories {
             maven {
                 name = "GitHubPackage"
-                url = "https://maven.pkg.github.com/xmtp/proto"
+                url = "https://maven.pkg.github.com/xmtp/xmtp-android"
                 credentials {
                     username = System.getenv("GITHUB_ACTOR")
-                    password = "System.getenv("GITHUB_TOKEN")"
+                    password = System.getenv("GITHUB_TOKEN")
                 }
             }
         }
