@@ -1,10 +1,10 @@
 # Contributing
 
-If you're seeing this document, you are an early contributor to the development and success of XMTP. Your questions, feedback, suggestions, and code contributions are welcome!
+Thank you for considering contributing to this repo. Community contributions like yours are key to the development and adoption of XMTP. Your questions, feedback, suggestions, and code contributions are welcome.
 
 ## ❔ Questions
 
-Have a question? You are welcome to ask it in [Q&A discussions](https://github.com/orgs/xmtp/discussions/categories/q-a).
+Have a question about how to build with XMTP? Ask your question and learn with the community in the [Q&A discussion forum](https://github.com/orgs/xmtp/discussions/categories/q-a).
 
 ## 🐞 Bugs
 

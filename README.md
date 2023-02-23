@@ -1,14 +1,14 @@
 # xmtp-android
 
-![Test](https://github.com/xmtp/xmtp-android/actions/workflows/test.yml/badge.svg) ![Lint](https://github.com/xmtp/xmtp-android/actions/workflows/lint.yml/badge.svg) ![Status](https://img.shields.io/badge/Project_Status-Pre_Preview-red)
+![Test](https://github.com/xmtp/xmtp-android/actions/workflows/test.yml/badge.svg) ![Lint](https://github.com/xmtp/xmtp-android/actions/workflows/lint.yml/badge.svg) ![Status](https://img.shields.io/badge/Project_Status-Pre--Preview-red)
 
 `xmtp-android` provides a Kotlin implementation of an XMTP message API client for use with Android apps.
 
 Use `xmtp-android` to build with XMTP to send messages between blockchain accounts, including DMs, notifications, announcements, and more.
 
-This SDK is in **Pre Preview** status and ready for you to experimenting with.
+This SDK is in **Pre-Preview** status and ready for you to experiment with.
 
-However, we do **not** recommend using Pre Preview software in production apps. Software in this status is likely to change based on feedback.
+However, we do **not** recommend using Pre-Preview software in production apps. Software in this status is likely to change based on feedback.
 
 Specifically, this SDK is currently building out an example app.
 
@@ -24,7 +24,7 @@ For a basic demonstration of the core concepts and capabilities of the `xmtp-and
 
 ## Install from the GitHub Packages
 
-While in pre preview we plan to [release in GitHub Packages](https://github.com/xmtp/proto/packages/1797058). When this moves to Dev Preview we will have this released in Maven Central. For help consuming GitHub Packages read [this doc](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#using-a-published-package).
+While in Pre-Preview status, we plan to [release in GitHub Packages](https://github.com/xmtp/xmtp-android/packages/1797061). When this moves to Dev Preview status, we will have this released in Maven Central. For help consuming GitHub Packages, read [this doc](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry#using-a-published-package).
 
 ```gradle
     implementation 'org.xmtp:android:X.X.X'
@@ -109,7 +109,7 @@ val client = Client().create(account = account, options = options)
 ```
 
 > **Note**  
-> The `apiUrl`, `keyStoreType`, `codecs`, `maxContentSize` and `appVersion` parameters from the XMTP client SDK for JavaScript (xmtp-js) are not yet supported.
+> The `apiUrl`, `keyStoreType`, `codecs`, `maxContentSize`, and `appVersion` parameters from the XMTP client SDK for JavaScript (xmtp-js) are not yet supported.
 
 ## Handle conversations
 
@@ -210,39 +210,6 @@ conversation.streamMessages().collect {
 > **Note**  
 > This package does not currently include the `streamAllMessages()` functionality from the XMTP client SDK for JavaScript (xmtp-js).
 
-### Listen for new messages in all conversations
-
-To listen for any new messages from _all_ conversations, use `conversations.streamAllMessages()`.
-
-> **Note**  
-> There is a chance this stream can miss messages if multiple new conversations are received in the time it takes to update the stream to include a new conversation.
-
-```javascript
-for await (const message of await xmtp.conversations.streamAllMessages()) {
-  if (message.senderAddress === xmtp.address) {
-    // This message was sent from me
-    continue
-  }
-  console.log(`New message from ${message.senderAddress}: ${message.content}`)
-}
-```
-
-### Check if an address is on the network
-
-If you would like to check and see if a blockchain address is registered on the network before instantiating a client instance, you can use `Client.canMessage`.
-
-```javascript
-import { Client } from '@xmtp/xmtp-js'
-
-const isOnDevNetwork = await Client.canMessage(
-  '0x3F11b27F323b62B159D2642964fa27C46C841897'
-)
-const isOnProdNetwork = await Client.canMessage(
-  '0x3F11b27F323b62B159D2642964fa27C46C841897',
-  { env: 'production' }
-)
-```
-
 ### Handle multiple conversations with the same blockchain address
 
 With XMTP, you can have multiple ongoing conversations with the same blockchain address. For example, you might want to have a conversation scoped to your particular app, or even a conversation scoped to a particular item in your app.
@@ -331,22 +298,6 @@ Content will be decompressed transparently on the receiving end. Note that Clien
 ```kotlin
 conversation.send(text = '#'.repeat(1000), options = ClientOptions.Api(compression = EncodedContentCompression.GZIP))
 ```
-
-### Manually handle private key storage
-
-The SDK will handle key storage for the user by encrypting the private key bundle using a signature generated from the wallet, and storing the encrypted payload on the XMTP network. This can be awkward for some server-side applications, where you may only want to give the application access to the XMTP keys but not your wallet keys. Mobile applications may also want to store keys in a secure enclave rather than rely on decrypting the remote keys on the network each time the application starts up.
-
-You can export the unencrypted key bundle using the static method `Client.getKeys`, save it somewhere secure, and then provide those keys at a later time to initialize a new client using the exported XMTP identity.
-
-```javascript
-import { Client } from '@xmtp/xmtp-js'
-// Get the keys using a valid Signer. Save them somewhere secure.
-const keys = await Client.getKeys(wallet)
-// Create a client using keys returned from getKeys
-const client = await Client.create(null, { privateKeyOverride: keys })
-```
-
-The keys returned by `getKeys` should be treated with the utmost care as compromise of these keys will allow an attacker to impersonate the user on the XMTP network. Ensure these keys are stored somewhere secure and encrypted.
 
 ### Cache conversations
 
