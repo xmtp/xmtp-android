@@ -1,9 +1,11 @@
 package org.xmtp.android.library
 
+import java.util.Date
 import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.messages.Envelope
-import java.util.Date
 
+// TODO: If we want to parcelize Conversation, v1 & v2 have to be parcelized which means they
+// can't hold clients as variables.
 sealed class Conversation {
     data class V1(val conversationV1: ConversationV1) : Conversation()
     data class V2(val conversationV2: ConversationV2) : Conversation()

@@ -18,12 +18,14 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.connect.ConnectWalletActivity
-import org.xmtp.android.example.conversation.ConversationFooterViewHolder
+import org.xmtp.android.example.conversation.ConversationDetailActivity
 import org.xmtp.android.example.conversation.ConversationsAdapter
+import org.xmtp.android.example.conversation.ConversationsClickListener
 import org.xmtp.android.example.databinding.ActivityMainBinding
+import org.xmtp.android.library.Conversation
 
 class MainActivity : AppCompatActivity(),
-    ConversationFooterViewHolder.OnConversationFooterClickListener {
+    ConversationsClickListener {
 
     private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
@@ -47,11 +49,15 @@ class MainActivity : AppCompatActivity(),
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
 
-        adapter = ConversationsAdapter(footerClickListener = this)
+        adapter = ConversationsAdapter(clickListener = this)
         binding.list.layoutManager = LinearLayoutManager(this)
         binding.list.adapter = adapter
         binding.refresh.setOnRefreshListener {
             viewModel.fetchConversations()
+        }
+
+        binding.fab.setOnClickListener {
+            openConversationDetail()
         }
 
         lifecycleScope.launch {
@@ -85,13 +91,27 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    override fun onConversationClick(conversation: Conversation) {
+        val intent = Intent(this, ConversationDetailActivity::class.java).apply {
+            // TODO: We have to figure out how to pass a conversation around!
+            // We can either have conversation implement parcelable, but if we do that -- it can't
+            // hold a `Client` instance. Or we can create a way to fetch a conversation by peer address
+            // from a client so we don't have to serialize it here.
+            // putExtra(ConversationDetailActivity.EXTRA_CONVERSATION, conversation)
+        }
+        startActivity(intent)
+    }
+
     override fun onFooterClick(address: String) {
         copyWalletAddress()
     }
 
     private fun ensureClientState(clientState: MainViewModel.ClientState) {
         when (clientState) {
-            is MainViewModel.ClientState.Ready -> viewModel.fetchConversations()
+            is MainViewModel.ClientState.Ready -> {
+                viewModel.fetchConversations()
+                binding.fab.visibility = View.VISIBLE
+            }
             is MainViewModel.ClientState.Error -> showError(clientState.message)
             is MainViewModel.ClientState.Unknown -> Unit
         }
@@ -147,5 +167,9 @@ class MainActivity : AppCompatActivity(),
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("address", viewModel.client?.address.orEmpty())
         clipboard.setPrimaryClip(clip)
+    }
+
+    private fun openConversationDetail() {
+        startActivity(Intent(this, ConversationDetailActivity::class.java))
     }
 }

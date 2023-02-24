@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.xmtp.android.library.Client
+import org.xmtp.android.library.Conversation
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 
 class MainViewModel : ViewModel() {
@@ -45,16 +46,16 @@ class MainViewModel : ViewModel() {
                 client?.let {
                     listItems.addAll(
                         it.conversations.list().map { conversation ->
-                            MainListItem.Conversation(
+                            MainListItem.ConversationItem(
                                 id = conversation.topic,
-                                conversation.peerAddress
+                                conversation
                             )
                         }
                     )
                     listItems.add(
                         MainListItem.Footer(
                             id = "footer",
-                            it.address.orEmpty(),
+                            it.address,
                             it.apiClient.environment.name
                         )
                     )
@@ -89,7 +90,7 @@ class MainViewModel : ViewModel() {
             const val ITEM_TYPE_CONVERSATION = 1
             const val ITEM_TYPE_FOOTER = 2
         }
-        data class Conversation(override val id: String, val peerAddress: String) :
+        data class ConversationItem(override val id: String, val conversation: Conversation) :
             MainListItem(id, ITEM_TYPE_CONVERSATION)
 
         data class Footer(override val id: String, val address: String, val environment: String) :
