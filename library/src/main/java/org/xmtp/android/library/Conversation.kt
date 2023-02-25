@@ -1,8 +1,8 @@
 package org.xmtp.android.library
 
-import java.util.Date
 import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.messages.Envelope
+import java.util.Date
 
 // TODO: If we want to parcelize Conversation, v1 & v2 have to be parcelized which means they
 // can't hold clients as variables.
