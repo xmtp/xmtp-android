@@ -7,32 +7,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import org.xmtp.android.library.Client
 import org.xmtp.android.library.Conversation
-import org.xmtp.android.library.messages.PrivateKeyBuilder
 
 class MainViewModel : ViewModel() {
 
-    private val _clientState = MutableStateFlow<ClientState>(ClientState.Unknown)
-    val clientState: StateFlow<ClientState> = _clientState
-    var client: Client? = null
-
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading(null))
     val uiState: StateFlow<UiState> = _uiState
-
-    @UiThread
-    fun createClient(encodedPrivateKeyData: String) {
-        if (clientState.value is ClientState.Ready) return
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val wallet = PrivateKeyBuilder(encodedPrivateKeyData = encodedPrivateKeyData)
-                client = Client().create(wallet)
-                _clientState.value = ClientState.Ready
-            } catch (e: Exception) {
-                _clientState.value = ClientState.Error(e.localizedMessage.orEmpty())
-            }
-        }
-    }
 
     @UiThread
     fun fetchConversations() {
@@ -43,40 +23,26 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val listItems = mutableListOf<MainListItem>()
             try {
-                client?.let {
-                    listItems.addAll(
-                        it.conversations.list().map { conversation ->
-                            MainListItem.ConversationItem(
-                                id = conversation.topic,
-                                conversation
-                            )
-                        }
-                    )
-                    listItems.add(
-                        MainListItem.Footer(
-                            id = "footer",
-                            it.address,
-                            it.apiClient.environment.name
+                listItems.addAll(
+                    ClientService.client.conversations.list().map { conversation ->
+                        MainListItem.ConversationItem(
+                            id = conversation.topic,
+                            conversation
                         )
+                    }
+                )
+                listItems.add(
+                    MainListItem.Footer(
+                        id = "footer",
+                        ClientService.client.address,
+                        ClientService.client.apiClient.environment.name
                     )
-                    _uiState.value = UiState.Success(listItems)
-                }
+                )
+                _uiState.value = UiState.Success(listItems)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.localizedMessage.orEmpty())
             }
         }
-    }
-
-    @UiThread
-    fun clearClient() {
-        _clientState.value = ClientState.Unknown
-        client = null
-    }
-
-    sealed class ClientState {
-        object Unknown : ClientState()
-        object Ready : ClientState()
-        data class Error(val message: String) : ClientState()
     }
 
     sealed class UiState {
