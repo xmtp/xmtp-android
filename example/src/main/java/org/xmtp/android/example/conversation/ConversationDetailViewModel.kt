@@ -18,7 +18,7 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
         null
     )
 
-    private val conversation = conversationFlow.value?.apply { init(ClientManager.client) }
+    val conversation = conversationFlow.value?.apply { init(ClientManager.client) }
 
     fun setConversation(conversation: Conversation?) {
         savedStateHandle[ConversationDetailActivity.EXTRA_CONVERSATION] = conversation

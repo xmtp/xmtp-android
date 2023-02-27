@@ -18,7 +18,6 @@ class ConversationDetailActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_CONVERSATION = "EXTRA_CONVERSATION"
-        const val PEER_ADDRESS = "[Your ETH address]"
 
         fun intent(context: Context, conversation: Conversation): Intent {
             return Intent(context, ConversationDetailActivity::class.java).apply {
@@ -35,7 +34,7 @@ class ConversationDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.subtitle = PEER_ADDRESS
+        supportActionBar?.subtitle = viewModel.conversation?.peerAddress
 
         viewModel.fetchMessages()
     }

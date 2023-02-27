@@ -21,6 +21,7 @@ import org.xmtp.android.example.connect.ConnectWalletActivity
 import org.xmtp.android.example.conversation.ConversationDetailActivity
 import org.xmtp.android.example.conversation.ConversationsAdapter
 import org.xmtp.android.example.conversation.ConversationsClickListener
+import org.xmtp.android.example.conversation.NewConversationBottomSheet
 import org.xmtp.android.example.databinding.ActivityMainBinding
 import org.xmtp.android.library.Conversation
 
@@ -31,10 +32,10 @@ class MainActivity : AppCompatActivity(),
     private lateinit var binding: ActivityMainBinding
     private lateinit var accountManager: AccountManager
     private lateinit var adapter: ConversationsAdapter
+    private var bottomSheet: NewConversationBottomSheet? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         accountManager = AccountManager.get(this)
 
         val keys = loadKeys()
@@ -72,6 +73,11 @@ class MainActivity : AppCompatActivity(),
                 viewModel.uiState.collect(::ensureUiState)
             }
         }
+    }
+
+    override fun onDestroy() {
+        bottomSheet?.dismiss()
+        super.onDestroy()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -165,9 +171,12 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun openConversationDetail() {
-        // TODO: Open bottom sheet to enter an ETH address and create conversation in a view model
-        val conversation =
-            ClientManager.client.conversations.newConversation(ConversationDetailActivity.PEER_ADDRESS)
-        startActivity(ConversationDetailActivity.intent(this, conversation))
+        if (bottomSheet == null) {
+            bottomSheet = NewConversationBottomSheet.newInstance()
+        }
+        bottomSheet?.show(
+            supportFragmentManager,
+            NewConversationBottomSheet.TAG
+        )
     }
 }
