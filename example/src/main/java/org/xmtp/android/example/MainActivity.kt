@@ -94,14 +94,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onConversationClick(conversation: Conversation) {
-        val intent = Intent(this, ConversationDetailActivity::class.java).apply {
-            // TODO: We have to figure out how to pass a conversation around!
-            // We can either have conversation implement parcelable, but if we do that -- it can't
-            // hold a `Client` instance. Or we can create a way to fetch a conversation by peer address
-            // from a client so we don't have to serialize it here.
-            // putExtra(ConversationDetailActivity.EXTRA_CONVERSATION, conversation)
-        }
-        startActivity(intent)
+        startActivity(ConversationDetailActivity.intent(this, conversation))
     }
 
     override fun onFooterClick(address: String) {
@@ -172,6 +165,9 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun openConversationDetail() {
-        startActivity(Intent(this, ConversationDetailActivity::class.java))
+        // TODO: Open bottom sheet to enter an ETH address and create conversation in a view model
+        val conversation =
+            ClientManager.client.conversations.newConversation(ConversationDetailActivity.PEER_ADDRESS)
+        startActivity(ConversationDetailActivity.intent(this, conversation))
     }
 }

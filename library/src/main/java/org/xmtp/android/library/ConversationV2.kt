@@ -1,8 +1,11 @@
 package org.xmtp.android.library
 
+import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
+import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
@@ -21,35 +24,43 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
 
+@Parcelize
 data class ConversationV2(
-    var topic: String,
-    var keyMaterial: ByteArray,
-    var context: Invitation.InvitationV1.Context,
-    var peerAddress: String,
-    var client: Client,
-    private var header: SealedInvitationHeaderV1,
-) {
-    companion object {
+    val topic: String,
+    val keyMaterial: ByteArray,
+    val context: Invitation.InvitationV1.Context,
+    val peerAddress: String,
+    private val header: SealedInvitationHeaderV1,
+) : Parcelable {
 
+    @IgnoredOnParcel
+    lateinit var client: Client
+
+    companion object {
         fun create(
             client: Client,
             invitation: Invitation.InvitationV1,
             header: SealedInvitationHeaderV1,
         ): ConversationV2 {
-            val myKeys = client.keys?.getPublicKeyBundle()
+            val myKeys = client.keys.getPublicKeyBundle()
             val peer =
-                if (myKeys?.walletAddress == (header.sender.walletAddress)) header.recipient else header.sender
+                if (myKeys.walletAddress == (header.sender.walletAddress)) header.recipient else header.sender
             val peerAddress = peer.walletAddress
             val keyMaterial = invitation.aes256GcmHkdfSha256.keyMaterial.toByteArray()
-            return ConversationV2(
+            val conversation = ConversationV2(
                 topic = invitation.topic,
                 keyMaterial = keyMaterial,
                 context = invitation.context,
                 peerAddress = peerAddress,
-                client = client,
                 header = header
             )
+            conversation.init(client)
+            return conversation
         }
+    }
+
+    fun init(client: Client) {
+        this.client = client
     }
 
     val createdAt: Date = Date(header.createdNs / 1_000_000)

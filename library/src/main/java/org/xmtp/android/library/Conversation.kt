@@ -1,13 +1,15 @@
 package org.xmtp.android.library
 
+import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.parcelize.Parcelize
 import org.xmtp.android.library.messages.Envelope
 import java.util.Date
 
-// TODO: If we want to parcelize Conversation, v1 & v2 have to be parcelized which means they
-// can't hold clients as variables.
-sealed class Conversation {
+sealed class Conversation : Parcelable {
+    @Parcelize
     data class V1(val conversationV1: ConversationV1) : Conversation()
+    @Parcelize
     data class V2(val conversationV2: ConversationV2) : Conversation()
 
     val createdAt: Date
@@ -101,8 +103,8 @@ sealed class Conversation {
 
     fun streamMessages(): Flow<DecodedMessage> {
         return when (this) {
-            is V1 -> return conversationV1.streamMessages()
-            is V2 -> return conversationV2.streamMessages()
+            is V1 -> conversationV1.streamMessages()
+            is V2 -> conversationV2.streamMessages()
         }
     }
 }

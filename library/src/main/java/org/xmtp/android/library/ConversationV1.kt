@@ -1,8 +1,11 @@
 package org.xmtp.android.library
 
+import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
+import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
@@ -21,11 +24,19 @@ import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import java.util.Date
 
+@Parcelize
 data class ConversationV1(
-    var client: Client,
     var peerAddress: String,
-    var sentAt: Date,
-) {
+    var sentAt: Date
+) : Parcelable {
+
+    @IgnoredOnParcel
+    lateinit var client: Client
+
+    fun init(client: Client) {
+        this.client = client
+    }
+
     val topic: Topic
         get() = Topic.directMessageV1(client.address, peerAddress)
 
