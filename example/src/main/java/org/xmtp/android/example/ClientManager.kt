@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 
-object ClientService {
+object ClientManager {
 
     private val _clientState = MutableStateFlow<ClientState>(ClientState.Unknown)
     val clientState: StateFlow<ClientState> = _clientState

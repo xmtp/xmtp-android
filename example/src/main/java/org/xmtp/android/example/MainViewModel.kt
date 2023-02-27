@@ -24,7 +24,7 @@ class MainViewModel : ViewModel() {
             val listItems = mutableListOf<MainListItem>()
             try {
                 listItems.addAll(
-                    ClientService.client.conversations.list().map { conversation ->
+                    ClientManager.client.conversations.list().map { conversation ->
                         MainListItem.ConversationItem(
                             id = conversation.topic,
                             conversation
@@ -34,8 +34,8 @@ class MainViewModel : ViewModel() {
                 listItems.add(
                     MainListItem.Footer(
                         id = "footer",
-                        ClientService.client.address,
-                        ClientService.client.apiClient.environment.name
+                        ClientManager.client.address,
+                        ClientManager.client.apiClient.environment.name
                     )
                 )
                 _uiState.value = UiState.Success(listItems)

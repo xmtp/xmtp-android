@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity(),
             return
         }
 
-        ClientService.createClient(keys)
+        ClientManager.createClient(keys)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity(),
         binding.list.layoutManager = LinearLayoutManager(this)
         binding.list.adapter = adapter
         binding.refresh.setOnRefreshListener {
-            if (ClientService.clientState.value is ClientService.ClientState.Ready) {
+            if (ClientManager.clientState.value is ClientManager.ClientState.Ready) {
                 viewModel.fetchConversations()
             }
         }
@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity(),
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                ClientService.clientState.collect(::ensureClientState)
+                ClientManager.clientState.collect(::ensureClientState)
             }
         }
         lifecycleScope.launch {
@@ -108,14 +108,14 @@ class MainActivity : AppCompatActivity(),
         copyWalletAddress()
     }
 
-    private fun ensureClientState(clientState: ClientService.ClientState) {
+    private fun ensureClientState(clientState: ClientManager.ClientState) {
         when (clientState) {
-            is ClientService.ClientState.Ready -> {
+            is ClientManager.ClientState.Ready -> {
                 viewModel.fetchConversations()
                 binding.fab.visibility = View.VISIBLE
             }
-            is ClientService.ClientState.Error -> showError(clientState.message)
-            is ClientService.ClientState.Unknown -> Unit
+            is ClientManager.ClientState.Error -> showError(clientState.message)
+            is ClientManager.ClientState.Unknown -> Unit
         }
     }
 
@@ -157,7 +157,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun disconnectWallet() {
-        ClientService.clearClient()
+        ClientManager.clearClient()
         val accounts = accountManager.getAccountsByType(resources.getString(R.string.account_type))
         accounts.forEach { account ->
             accountManager.removeAccount(account, null, null, null)
@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun copyWalletAddress() {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("address", ClientService.client.address)
+        val clip = ClipData.newPlainText("address", ClientManager.client.address)
         clipboard.setPrimaryClip(clip)
     }
 
