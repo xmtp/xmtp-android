@@ -12,6 +12,13 @@ sealed class Conversation : Parcelable {
     @Parcelize
     data class V2(val conversationV2: ConversationV2) : Conversation()
 
+    fun init(client: Client) {
+        when (this) {
+            is V1 -> conversationV1.init(client)
+            is V2 -> conversationV2.init(client)
+        }
+    }
+
     val createdAt: Date
         get() {
             return when (this) {

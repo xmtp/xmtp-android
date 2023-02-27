@@ -8,14 +8,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.xmtp.android.example.ClientManager
 import org.xmtp.android.library.Conversation
 
 class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
-    private val conversation = savedStateHandle.getStateFlow<Conversation?>(
+    private val conversationFlow = savedStateHandle.getStateFlow<Conversation?>(
         ConversationDetailActivity.EXTRA_CONVERSATION,
         null
     )
+
+    private val conversation = conversationFlow.value?.apply { init(ClientManager.client) }
 
     fun setConversation(conversation: Conversation?) {
         savedStateHandle[ConversationDetailActivity.EXTRA_CONVERSATION] = conversation
@@ -33,7 +36,7 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
         viewModelScope.launch(Dispatchers.IO) {
             val listItems = mutableListOf<MessageListItem>()
             try {
-                conversation.value?.let {
+                conversation?.let {
                     it.messages().map { message ->
                         MessageListItem.Message(message.id, message.body)
                     }

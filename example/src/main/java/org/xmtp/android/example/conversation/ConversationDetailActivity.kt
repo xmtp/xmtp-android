@@ -29,8 +29,7 @@ class ConversationDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val conversation = intent.extras?.getParcelable<Conversation>(EXTRA_CONVERSATION)
-        viewModel.setConversation(conversation)
+        viewModel.setConversation(intent.extras?.getParcelable(EXTRA_CONVERSATION))
 
         binding = ActivityConversationDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
