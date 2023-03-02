@@ -21,6 +21,7 @@ import org.xmtp.android.example.connect.ConnectWalletActivity
 import org.xmtp.android.example.conversation.ConversationDetailActivity
 import org.xmtp.android.example.conversation.ConversationsAdapter
 import org.xmtp.android.example.conversation.ConversationsClickListener
+import org.xmtp.android.example.conversation.NewConversationBottomSheet
 import org.xmtp.android.example.databinding.ActivityMainBinding
 import org.xmtp.android.library.Conversation
 
@@ -31,10 +32,10 @@ class MainActivity : AppCompatActivity(),
     private lateinit var binding: ActivityMainBinding
     private lateinit var accountManager: AccountManager
     private lateinit var adapter: ConversationsAdapter
+    private var bottomSheet: NewConversationBottomSheet? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         accountManager = AccountManager.get(this)
 
         val keys = loadKeys()
@@ -74,6 +75,11 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    override fun onDestroy() {
+        bottomSheet?.dismiss()
+        super.onDestroy()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
@@ -94,14 +100,13 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onConversationClick(conversation: Conversation) {
-        val intent = Intent(this, ConversationDetailActivity::class.java).apply {
-            // TODO: We have to figure out how to pass a conversation around!
-            // We can either have conversation implement parcelable, but if we do that -- it can't
-            // hold a `Client` instance. Or we can create a way to fetch a conversation by peer address
-            // from a client so we don't have to serialize it here.
-            // putExtra(ConversationDetailActivity.EXTRA_CONVERSATION, conversation)
-        }
-        startActivity(intent)
+        startActivity(
+            ConversationDetailActivity.intent(
+                this,
+                topic = conversation.topic,
+                peerAddress = conversation.peerAddress
+            )
+        )
     }
 
     override fun onFooterClick(address: String) {
@@ -172,6 +177,12 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun openConversationDetail() {
-        startActivity(Intent(this, ConversationDetailActivity::class.java))
+        if (bottomSheet == null) {
+            bottomSheet = NewConversationBottomSheet.newInstance()
+        }
+        bottomSheet?.show(
+            supportFragmentManager,
+            NewConversationBottomSheet.TAG
+        )
     }
 }
