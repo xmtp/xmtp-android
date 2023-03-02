@@ -1,11 +1,8 @@
 package org.xmtp.android.library
 
-import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
-import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
@@ -24,17 +21,14 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
 
-@Parcelize
 data class ConversationV2(
     val topic: String,
     val keyMaterial: ByteArray,
     val context: Invitation.InvitationV1.Context,
     val peerAddress: String,
+    val client: Client,
     private val header: SealedInvitationHeaderV1,
-) : Parcelable {
-
-    @IgnoredOnParcel
-    lateinit var client: Client
+) {
 
     companion object {
         fun create(
@@ -47,20 +41,15 @@ data class ConversationV2(
                 if (myKeys.walletAddress == (header.sender.walletAddress)) header.recipient else header.sender
             val peerAddress = peer.walletAddress
             val keyMaterial = invitation.aes256GcmHkdfSha256.keyMaterial.toByteArray()
-            val conversation = ConversationV2(
+            return ConversationV2(
                 topic = invitation.topic,
                 keyMaterial = keyMaterial,
                 context = invitation.context,
                 peerAddress = peerAddress,
+                client = client,
                 header = header
             )
-            conversation.init(client)
-            return conversation
         }
-    }
-
-    fun init(client: Client) {
-        this.client = client
     }
 
     val createdAt: Date = Date(header.createdNs / 1_000_000)

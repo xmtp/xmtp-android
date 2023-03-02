@@ -8,7 +8,6 @@ import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import org.xmtp.android.example.databinding.ActivityConversationDetailBinding
-import org.xmtp.android.library.Conversation
 
 class ConversationDetailActivity : AppCompatActivity() {
 
@@ -17,24 +16,26 @@ class ConversationDetailActivity : AppCompatActivity() {
     private val viewModel: ConversationDetailViewModel by viewModels()
 
     companion object {
-        const val EXTRA_CONVERSATION = "EXTRA_CONVERSATION"
+        const val EXTRA_CONVERSATION_TOPIC = "EXTRA_CONVERSATION_TOPIC"
+        private const val EXTRA_PEER_ADDRESS = "EXTRA_PEER_ADDRESS"
 
-        fun intent(context: Context, conversation: Conversation): Intent {
+        fun intent(context: Context, topic: String, peerAddress: String): Intent {
             return Intent(context, ConversationDetailActivity::class.java).apply {
-                putExtra(EXTRA_CONVERSATION, conversation)
+                putExtra(EXTRA_CONVERSATION_TOPIC, topic)
+                putExtra(EXTRA_PEER_ADDRESS, peerAddress)
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.setConversation(intent.extras?.getParcelable(EXTRA_CONVERSATION))
+        viewModel.setConversationTopic(intent.extras?.getString(EXTRA_CONVERSATION_TOPIC))
 
         binding = ActivityConversationDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.subtitle = viewModel.conversation?.peerAddress
+        supportActionBar?.subtitle = intent.extras?.getString(EXTRA_PEER_ADDRESS)
 
         viewModel.fetchMessages()
     }

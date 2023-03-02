@@ -80,7 +80,8 @@ class NewConversationBottomSheet : BottomSheetDialogFragment() {
                 startActivity(
                     ConversationDetailActivity.intent(
                         requireContext(),
-                        uiState.conversation
+                        topic = uiState.conversation.topic,
+                        peerAddress = uiState.conversation.peerAddress
                     )
                 )
                 dismiss()

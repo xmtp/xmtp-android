@@ -249,18 +249,19 @@ class Client() {
 
     fun importV2Conversation(export: ConversationV2Export): Conversation {
         val keyMaterial = Base64.decode(export.keyMaterial)
-        val conversation = ConversationV2(
-            topic = export.topic,
-            keyMaterial = keyMaterial,
-            context = InvitationV1ContextBuilder.buildFromConversation(
-                conversationId = export.context?.conversationId ?: "",
-                metadata = export.context?.metadata ?: mapOf()
-            ),
-            peerAddress = export.peerAddress,
-            header = SealedInvitationHeaderV1.newBuilder().build()
+        return Conversation.V2(
+            ConversationV2(
+                topic = export.topic,
+                keyMaterial = keyMaterial,
+                context = InvitationV1ContextBuilder.buildFromConversation(
+                    conversationId = export.context?.conversationId ?: "",
+                    metadata = export.context?.metadata ?: mapOf()
+                ),
+                peerAddress = export.peerAddress,
+                client = this,
+                header = SealedInvitationHeaderV1.newBuilder().build()
+            )
         )
-        conversation.init(this)
-        return Conversation.V2(conversation)
     }
 
     fun importV1Conversation(export: ConversationV1Export): Conversation {
@@ -271,12 +272,13 @@ class Client() {
             df.timeZone = TimeZone.getTimeZone("UTC")
             df.parse(export.createdAt)
         }
-        val conversation = ConversationV1(
-            peerAddress = export.peerAddress,
-            sentAt = sentAt
+        return Conversation.V1(
+            ConversationV1(
+                client = this,
+                peerAddress = export.peerAddress,
+                sentAt = sentAt
+            )
         )
-        conversation.init(this)
-        return Conversation.V1(conversation)
     }
 
     val privateKeyBundle: PrivateKeyBundle

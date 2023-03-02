@@ -47,13 +47,13 @@ data class Conversations(
             val invitationPeers = listIntroductionPeers()
             val peerSeenAt = invitationPeers[peerAddress]
             if (peerSeenAt != null) {
-                val conversationV1 = ConversationV1(
-                    peerAddress = peerAddress,
-                    sentAt = peerSeenAt
-                ).apply {
-                    init(client)
-                }
-                val conversation = Conversation.V1(conversationV1)
+                val conversation = Conversation.V1(
+                    ConversationV1(
+                        client = client,
+                        peerAddress = peerAddress,
+                        sentAt = peerSeenAt
+                    )
+                )
                 conversations.add(conversation)
                 return conversation
             }
@@ -61,11 +61,13 @@ data class Conversations(
 
         // If the contact is v1, start a v1 conversation
         if (Contact.ContactBundle.VersionCase.V1 == contact.versionCase && context?.conversationId.isNullOrEmpty()) {
-            val conversationV1 = ConversationV1(
-                peerAddress = peerAddress,
-                sentAt = Date()
-            ).apply { init(client) }
-            val conversation: Conversation = Conversation.V1(conversationV1)
+            val conversation = Conversation.V1(
+                ConversationV1(
+                    client = client,
+                    peerAddress = peerAddress,
+                    sentAt = Date()
+                )
+            )
             conversations.add(conversation)
             return conversation
         }
@@ -76,17 +78,16 @@ data class Conversations(
             }
             val invite = sealedInvitation.v1.getInvitation(viewer = client.keys)
             if (invite.context.conversationId == context?.conversationId && invite.context.conversationId != "") {
-                val conversationV2 =
+                val conversation = Conversation.V2(
                     ConversationV2(
                         topic = invite.topic,
                         keyMaterial = invite.aes256GcmHkdfSha256.keyMaterial.toByteArray(),
                         context = invite.context,
                         peerAddress = peerAddress,
+                        client = client,
                         header = sealedInvitation.v1.header
-                    ).apply {
-                        init(client)
-                    }
-                val conversation: Conversation = Conversation.V2(conversationV2)
+                    )
+                )
                 conversations.add(conversation)
                 return conversation
             }
@@ -101,7 +102,7 @@ data class Conversations(
             invitation = invitation,
             header = sealedInvitation.v1.header
         )
-        val conversation: Conversation = Conversation.V2(conversationV2)
+        val conversation = Conversation.V2(conversationV2)
         conversations.add(conversation)
         return conversation
     }
@@ -110,11 +111,15 @@ data class Conversations(
         val conversations: MutableList<Conversation> = mutableListOf()
         val seenPeers = listIntroductionPeers()
         for ((peerAddress, sentAt) in seenPeers) {
-            val conversationV1 = ConversationV1(
-                peerAddress = peerAddress,
-                sentAt = sentAt
-            ).apply { init(client) }
-            conversations.add(Conversation.V1(conversationV1))
+            conversations.add(
+                Conversation.V1(
+                    ConversationV1(
+                        client = client,
+                        peerAddress = peerAddress,
+                        sentAt = sentAt
+                    )
+                )
+            )
         }
         val invitations = listInvitations()
         for (sealedInvitation in invitations) {
@@ -230,9 +235,10 @@ data class Conversations(
                 val peerAddress =
                     if (client.address == senderAddress) recipientAddress else senderAddress
                 val conversationV1 = ConversationV1(
+                    client = client,
                     peerAddress = peerAddress,
                     sentAt = messageV1.sentAt
-                ).apply { init(client) }
+                )
                 if (!streamedConversationTopics.contains(conversationV1.topic.description)) {
                     streamedConversationTopics.add(conversationV1.topic.description)
                     emit(Conversation.V1(conversationV1))

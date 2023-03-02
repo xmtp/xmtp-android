@@ -8,20 +8,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import org.xmtp.android.example.ClientManager
-import org.xmtp.android.library.Conversation
 
 class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
-    private val conversationFlow = savedStateHandle.getStateFlow<Conversation?>(
-        ConversationDetailActivity.EXTRA_CONVERSATION,
+    private val conversationTopicFlow = savedStateHandle.getStateFlow<String?>(
+        ConversationDetailActivity.EXTRA_CONVERSATION_TOPIC,
         null
     )
 
-    val conversation = conversationFlow.value?.apply { init(ClientManager.client) }
+    val conversationTopic = conversationTopicFlow.value
 
-    fun setConversation(conversation: Conversation?) {
-        savedStateHandle[ConversationDetailActivity.EXTRA_CONVERSATION] = conversation
+    fun setConversationTopic(conversationTopic: String?) {
+        savedStateHandle[ConversationDetailActivity.EXTRA_CONVERSATION_TOPIC] = conversationTopic
     }
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading(null))
@@ -36,11 +34,13 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
         viewModelScope.launch(Dispatchers.IO) {
             val listItems = mutableListOf<MessageListItem>()
             try {
-                conversation?.let {
-                    it.messages().map { message ->
-                        MessageListItem.Message(message.id, message.body)
-                    }
-                }
+                // TODO: Add a fetchConversation by topic method to client
+//                val conversation = ClientManager.client.fetchConversation(conversationTopic)
+//                conversation?.let {
+//                    it.messages().map { message ->
+//                        MessageListItem.Message(message.id, message.body)
+//                    }
+//                }
                 _uiState.value = UiState.Success(listItems)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.localizedMessage.orEmpty())

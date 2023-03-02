@@ -1,23 +1,12 @@
 package org.xmtp.android.library
 
-import android.os.Parcelable
 import kotlinx.coroutines.flow.Flow
-import kotlinx.parcelize.Parcelize
 import org.xmtp.android.library.messages.Envelope
 import java.util.Date
 
-sealed class Conversation : Parcelable {
-    @Parcelize
+sealed class Conversation {
     data class V1(val conversationV1: ConversationV1) : Conversation()
-    @Parcelize
     data class V2(val conversationV2: ConversationV2) : Conversation()
-
-    fun init(client: Client) {
-        when (this) {
-            is V1 -> conversationV1.init(client)
-            is V2 -> conversationV2.init(client)
-        }
-    }
 
     val createdAt: Date
         get() {

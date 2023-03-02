@@ -100,7 +100,13 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onConversationClick(conversation: Conversation) {
-        startActivity(ConversationDetailActivity.intent(this, conversation))
+        startActivity(
+            ConversationDetailActivity.intent(
+                this,
+                topic = conversation.topic,
+                peerAddress = conversation.peerAddress
+            )
+        )
     }
 
     override fun onFooterClick(address: String) {
