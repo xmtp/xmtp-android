@@ -177,9 +177,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun openConversationDetail() {
-        if (bottomSheet == null) {
-            bottomSheet = NewConversationBottomSheet.newInstance()
-        }
+        bottomSheet = NewConversationBottomSheet.newInstance()
         bottomSheet?.show(
             supportFragmentManager,
             NewConversationBottomSheet.TAG
