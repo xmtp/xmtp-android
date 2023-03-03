@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -59,6 +60,20 @@ class ConversationDetailActivity : AppCompatActivity() {
             }
         }
 
+        binding.messageEditText.addTextChangedListener {
+            val sendEnabled = !binding.messageEditText.text.isNullOrBlank()
+            binding.sendButton.isEnabled = sendEnabled
+        }
+
+        binding.sendButton.setOnClickListener {
+            val flow = viewModel.sendMessage(binding.messageEditText.text.toString())
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    flow.collect(::ensureSendState)
+                }
+            }
+        }
+
         binding.refresh.setOnRefreshListener {
             viewModel.fetchMessages()
         }
@@ -93,6 +108,24 @@ class ConversationDetailActivity : AppCompatActivity() {
             is ConversationDetailViewModel.UiState.Error -> {
                 binding.refresh.isRefreshing = false
                 showError(uiState.message)
+            }
+        }
+    }
+
+    private fun ensureSendState(sendState: ConversationDetailViewModel.SendMessageState) {
+        when (sendState) {
+            is ConversationDetailViewModel.SendMessageState.Error -> {
+                showError(sendState.message)
+            }
+            ConversationDetailViewModel.SendMessageState.Loading -> {
+                binding.sendButton.isEnabled = false
+                binding.messageEditText.isEnabled = false
+            }
+            ConversationDetailViewModel.SendMessageState.Success -> {
+                binding.messageEditText.text.clear()
+                binding.messageEditText.isEnabled = true
+                binding.sendButton.isEnabled = true
+                viewModel.fetchMessages()
             }
         }
     }
