@@ -99,6 +99,7 @@ class ClientTest {
         val topic = conversations[0].topic
         val conversation = client.fetchConversation(topic)
         assertEquals(conversations[0].topic, conversation?.topic)
+        assertEquals(conversations[0].peerAddress, conversation?.peerAddress)
 
         val noConversation = client.fetchConversation("invalid_topic")
         assertEquals(null, noConversation)
