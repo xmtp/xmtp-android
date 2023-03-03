@@ -1,9 +1,12 @@
 package org.xmtp.android.example.conversation
 
 import android.R.id.home
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
@@ -14,6 +17,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.R
 import org.xmtp.android.example.databinding.ActivityConversationDetailBinding
@@ -26,6 +30,9 @@ class ConversationDetailActivity : AppCompatActivity() {
     private lateinit var adapter: MessageAdapter
 
     private val viewModel: ConversationDetailViewModel by viewModels()
+
+    private val peerAddress
+        get() = intent.extras?.getString(EXTRA_PEER_ADDRESS)
 
     companion object {
         const val EXTRA_CONVERSATION_TOPIC = "EXTRA_CONVERSATION_TOPIC"
@@ -47,11 +54,11 @@ class ConversationDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.subtitle =
-            intent.extras?.getString(EXTRA_PEER_ADDRESS)?.truncatedAddress()
+        supportActionBar?.subtitle = peerAddress?.truncatedAddress()
 
         adapter = MessageAdapter()
-        binding.list.layoutManager = LinearLayoutManager(this)
+        binding.list.layoutManager =
+            LinearLayoutManager(this, RecyclerView.VERTICAL, true)
         binding.list.adapter = adapter
 
         lifecycleScope.launch {
@@ -60,6 +67,7 @@ class ConversationDetailActivity : AppCompatActivity() {
             }
         }
 
+        binding.messageEditText.requestFocus()
         binding.messageEditText.addTextChangedListener {
             val sendEnabled = !binding.messageEditText.text.isNullOrBlank()
             binding.sendButton.isEnabled = sendEnabled
@@ -81,14 +89,29 @@ class ConversationDetailActivity : AppCompatActivity() {
         viewModel.fetchMessages()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             home -> {
                 finish()
-                return true
+                true
             }
+            R.id.copy_address -> {
+                copyWalletAddress()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
+    }
+
+    private fun copyWalletAddress() {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("peer_address", peerAddress)
+        clipboard.setPrimaryClip(clip)
     }
 
     private fun ensureUiState(uiState: ConversationDetailViewModel.UiState) {

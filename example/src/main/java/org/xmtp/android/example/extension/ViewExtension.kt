@@ -1,9 +1,9 @@
 package org.xmtp.android.example.extension
 
+import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
-import android.widget.TextView
 
-fun TextView.margins(
+fun View.margins(
     left: Int = 0,
     top: Int = 0,
     right: Int = 0,
