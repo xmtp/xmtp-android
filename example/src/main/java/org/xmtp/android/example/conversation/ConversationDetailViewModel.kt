@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.xmtp.android.example.ClientManager
 
 class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
@@ -16,7 +17,7 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
         null
     )
 
-    val conversationTopic = conversationTopicFlow.value
+    private val conversationTopic = conversationTopicFlow.value
 
     fun setConversationTopic(conversationTopic: String?) {
         savedStateHandle[ConversationDetailActivity.EXTRA_CONVERSATION_TOPIC] = conversationTopic
@@ -34,13 +35,12 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
         viewModelScope.launch(Dispatchers.IO) {
             val listItems = mutableListOf<MessageListItem>()
             try {
-                // TODO: Add a fetchConversation by topic method to client
-//                val conversation = ClientManager.client.fetchConversation(conversationTopic)
-//                conversation?.let {
-//                    it.messages().map { message ->
-//                        MessageListItem.Message(message.id, message.body)
-//                    }
-//                }
+                val conversation = ClientManager.client.fetchConversation(conversationTopic)
+                conversation?.let {
+                    it.messages().map { message ->
+                        MessageListItem.Message(message.id, message.body)
+                    }
+                }
                 _uiState.value = UiState.Success(listItems)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.localizedMessage.orEmpty())
