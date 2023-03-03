@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.ClientManager
+import org.xmtp.android.library.DecodedMessage
 
 class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
@@ -38,7 +39,7 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
                 val conversation = ClientManager.client.fetchConversation(conversationTopic)
                 conversation?.let {
                     it.messages().map { message ->
-                        MessageListItem.Message(message.id, message.body)
+                        MessageListItem.Message(message.id, message)
                     }
                 }
                 _uiState.value = UiState.Success(listItems)
@@ -59,7 +60,7 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
             const val ITEM_TYPE_MESSAGE = 1
         }
 
-        data class Message(override val id: String, val body: String) :
+        data class Message(override val id: String, val message: DecodedMessage) :
             MessageListItem(id, ITEM_TYPE_MESSAGE)
     }
 }
