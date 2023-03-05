@@ -92,4 +92,57 @@ class RemoteAttachmentTest {
             )
         }
     }
+
+    @Test
+    fun testEnsuresContentDigestMatches() {
+        val attachment = Attachment(
+            filename = "test.txt",
+            mimeType = "text/plain",
+            data = "hello world".toByteStringUtf8(),
+        )
+
+        Client.register(codec = AttachmentCodec())
+        Client.register(codec = RemoteAttachmentCodec())
+
+        val encodedEncryptedContent = RemoteAttachment.encodeEncrypted(
+            content = attachment,
+            codec = AttachmentCodec(),
+        )
+
+        File("abcdefg").writeBytes(encodedEncryptedContent.payload.toByteArray())
+
+        var remoteAttachment = RemoteAttachment.from(
+            url = URL("https://abcdefg"),
+            encryptedEncodedContent = encodedEncryptedContent
+        )
+
+        remoteAttachment.contentLength = attachment.data.size()
+        remoteAttachment.filename = attachment.filename
+
+        val fixtures = fixtures()
+        val aliceClient = fixtures.aliceClient
+        val aliceConversation =
+            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+
+        aliceConversation.send(
+            content = remoteAttachment,
+            options = SendOptions(contentType = ContentTypeRemoteAttachment),
+        )
+
+        val messages = aliceConversation.messages()
+        Assert.assertEquals(messages.size, 1)
+
+        // Tamper with the payload
+        File("abcdefg").writeBytes("sup".toByteArray())
+
+        if (messages.size == 1) {
+            var loadedRemoteAttachment: RemoteAttachment = messages[0].content()!!
+            loadedRemoteAttachment.fetcher = TestFetcher()
+            Assert.assertThrows(XMTPException::class.java) {
+                runBlocking {
+                    val attachment: Attachment? = loadedRemoteAttachment.load()
+                }
+            }
+        }
+    }
 }

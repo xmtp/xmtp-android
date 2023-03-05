@@ -47,6 +47,10 @@ data class RemoteAttachment(
             throw XMTPException("no remote attachment payload")
         }
 
+        if (Hash.sha256(payload).toHex() != contentDigest) {
+            throw XMTPException("contentDigest does not match")
+        }
+
         val aes = Ciphertext.Aes256gcmHkdfsha256.newBuilder().also {
             it.hkdfSalt = salt
             it.gcmNonce = nonce
