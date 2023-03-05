@@ -4,10 +4,15 @@ import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Test
+import org.xmtp.android.library.codecs.Attachment
+import org.xmtp.android.library.codecs.AttachmentCodec
+import org.xmtp.android.library.codecs.ContentTypeRemoteAttachment
+import org.xmtp.android.library.codecs.RemoteAttachment
+import org.xmtp.android.library.codecs.RemoteAttachmentCodec
+import org.xmtp.android.library.codecs.TestFetcher
 import org.xmtp.android.library.messages.walletAddress
 import java.io.File
 import java.net.URL
-import javax.net.ssl.*
 
 class RemoteAttachmentTest {
     @Test
