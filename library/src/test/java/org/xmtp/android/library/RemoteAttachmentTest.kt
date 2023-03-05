@@ -1,0 +1,95 @@
+package org.xmtp.android.library
+
+import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.core.Method
+import com.github.kittinunf.fuel.httpPost
+import com.google.protobuf.kotlin.toByteStringUtf8
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.xmtp.android.library.codecs.*
+import org.xmtp.android.library.messages.walletAddress
+import java.security.SecureRandom
+import java.io.DataOutputStream
+import java.io.File
+import java.net.URL
+import java.security.cert.X509Certificate
+import javax.net.ssl.*
+
+class RemoteAttachmentTest {
+    @Test
+    fun testCanUseRemoteAttachmentCodec() {
+        val attachment = Attachment(
+            filename = "test.txt",
+            mimeType = "text/plain",
+            data = "hello world".toByteStringUtf8(),
+        )
+
+        Client.register(codec = AttachmentCodec())
+        Client.register(codec = RemoteAttachmentCodec())
+
+        val encodedEncryptedContent = RemoteAttachment.encodeEncrypted(
+            content = attachment,
+            codec = AttachmentCodec(),
+        )
+
+        File("abcdefg").writeBytes(encodedEncryptedContent.payload.toByteArray())
+
+        var remoteAttachment = RemoteAttachment.from(
+            url = URL("https://abcdefg"),
+            encryptedEncodedContent = encodedEncryptedContent
+        )
+
+        remoteAttachment.contentLength = attachment.data.size()
+        remoteAttachment.filename = attachment.filename
+
+        val fixtures = fixtures()
+        val aliceClient = fixtures.aliceClient
+        val aliceConversation =
+            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+
+        aliceConversation.send(
+            content = remoteAttachment,
+            options = SendOptions(contentType = ContentTypeRemoteAttachment),
+        )
+
+        val messages = aliceConversation.messages()
+        Assert.assertEquals(messages.size, 1)
+
+        if (messages.size == 1) {
+            var loadedRemoteAttachment: RemoteAttachment = messages[0].content()!!
+            loadedRemoteAttachment.fetcher = TestFetcher()
+            val attachment: Attachment = loadedRemoteAttachment.load() ?: throw XMTPException("did not get attachment")
+            Assert.assertEquals("test.txt", attachment?.filename)
+            Assert.assertEquals("text/plain", attachment?.mimeType)
+            Assert.assertEquals("hello world".toByteStringUtf8(), attachment?.data)
+        }
+    }
+
+    @Test
+    fun testCannotUseNonHTTPSURL() {
+        val attachment = Attachment(
+            filename = "test.txt",
+            mimeType = "text/plain",
+            data = "hello world".toByteStringUtf8(),
+        )
+
+        Client.register(codec = AttachmentCodec())
+        Client.register(codec = RemoteAttachmentCodec())
+
+        val encodedEncryptedContent = RemoteAttachment.encodeEncrypted(
+            content = attachment,
+            codec = AttachmentCodec(),
+        )
+
+        File("abcdefg").writeBytes(encodedEncryptedContent.payload.toByteArray())
+
+        Assert.assertThrows(XMTPException::class.java) {
+            RemoteAttachment.from(
+                url = URL("http://abcdefg"),
+                encryptedEncodedContent = encodedEncryptedContent
+            )
+        }
+    }
+}
