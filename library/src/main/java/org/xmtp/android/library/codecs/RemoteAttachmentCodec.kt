@@ -6,18 +6,14 @@ import com.google.protobuf.kotlin.toByteStringUtf8
 import org.web3j.crypto.Hash
 import org.web3j.utils.Numeric
 import org.xmtp.android.library.Crypto
-import org.xmtp.android.library.EncodedContentCompression
 import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.contents.CiphertextOuterClass.Ciphertext
 import org.xmtp.proto.message.contents.Content.EncodedContent.parseFrom
-import java.io.DataOutputStream
 import java.io.File
 import java.net.URI
 import java.net.URL
 import java.security.SecureRandom
-import javax.crypto.Cipher
-import javax.net.ssl.HttpsURLConnection
 
 data class EncryptedEncodedContent(
     val contentDigest: String,
@@ -84,7 +80,7 @@ data class RemoteAttachment(
         }
 
         fun from(url: URL, encryptedEncodedContent: EncryptedEncodedContent): RemoteAttachment {
-            if( URI(url.toString()).scheme != "https") {
+            if (URI(url.toString()).scheme != "https") {
                 throw XMTPException("scheme must be https://")
             }
 
@@ -111,31 +107,33 @@ interface Fetcher {
     fun fetch(url: URL): ByteArray
 }
 
-class HTTPFetcher: Fetcher {
+class HTTPFetcher : Fetcher {
     override fun fetch(url: URL): ByteArray {
         return url.readBytes()
     }
 }
 
-internal class TestFetcher: Fetcher {
+internal class TestFetcher : Fetcher {
     override fun fetch(url: URL): ByteArray {
         return File(url.toString().replace("https://", "")).readBytes()
     }
 }
 
-data class RemoteAttachmentCodec(override var contentType: ContentTypeId = ContentTypeRemoteAttachment): ContentCodec<RemoteAttachment> {
+data class RemoteAttachmentCodec(override var contentType: ContentTypeId = ContentTypeRemoteAttachment) : ContentCodec<RemoteAttachment> {
     override fun encode(content: RemoteAttachment): EncodedContent {
         return EncodedContent.newBuilder().also {
             it.type = ContentTypeRemoteAttachment
-            it.putAllParameters(mapOf(
-                "contentDigest" to content.contentDigest,
-                "secret" to content.secret.toByteArray().toHex(),
-                "salt" to content.salt.toByteArray().toHex(),
-                "nonce" to content.nonce.toByteArray().toHex(),
-                "scheme" to content.scheme,
-                "contentLength" to content.contentLength.toString(),
-                "filename" to content.filename,
-            ))
+            it.putAllParameters(
+                mapOf(
+                    "contentDigest" to content.contentDigest,
+                    "secret" to content.secret.toByteArray().toHex(),
+                    "salt" to content.salt.toByteArray().toHex(),
+                    "nonce" to content.nonce.toByteArray().toHex(),
+                    "scheme" to content.scheme,
+                    "contentLength" to content.contentLength.toString(),
+                    "filename" to content.filename,
+                )
+            )
             it.content = content.url.toString().toByteStringUtf8()
         }.build()
     }

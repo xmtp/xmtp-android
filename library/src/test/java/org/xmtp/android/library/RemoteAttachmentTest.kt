@@ -4,14 +4,9 @@ import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.xmtp.android.library.codecs.*
 import org.xmtp.android.library.messages.walletAddress
-import java.security.SecureRandom
-import java.io.DataOutputStream
 import java.io.File
 import java.net.URL
-import java.security.cert.X509Certificate
 import javax.net.ssl.*
 
 class RemoteAttachmentTest {

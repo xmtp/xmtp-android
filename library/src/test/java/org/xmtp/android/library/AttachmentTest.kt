@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import com.google.protobuf.kotlin.toByteStringUtf8
-import org.bouncycastle.util.encoders.UTF8
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.xmtp.android.library.codecs.Attachment

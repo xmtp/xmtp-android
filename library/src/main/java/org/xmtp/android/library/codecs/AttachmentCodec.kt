@@ -1,8 +1,6 @@
 package org.xmtp.android.library.codecs
 
 import com.google.protobuf.ByteString
-import com.google.protobuf.kotlin.toByteString
-import com.google.protobuf.kotlin.toByteStringUtf8
 import org.xmtp.android.library.XMTPException
 
 val ContentTypeAttachment = ContentTypeIdBuilder.builderFromAuthorityId(
@@ -12,11 +10,9 @@ val ContentTypeAttachment = ContentTypeIdBuilder.builderFromAuthorityId(
     versionMinor = 0
 )
 
-data class Attachment(val filename: String, val mimeType: String, val data: ByteString) {
+data class Attachment(val filename: String, val mimeType: String, val data: ByteString)
 
-}
-
-data class AttachmentCodec(override var contentType: ContentTypeId = ContentTypeAttachment): ContentCodec<Attachment> {
+data class AttachmentCodec(override var contentType: ContentTypeId = ContentTypeAttachment) : ContentCodec<Attachment> {
     override fun encode(content: Attachment): EncodedContent {
         return EncodedContent.newBuilder().also {
             it.type = ContentTypeAttachment
