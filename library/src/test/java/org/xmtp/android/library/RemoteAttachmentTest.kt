@@ -1,8 +1,5 @@
 package org.xmtp.android.library
 
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.core.Method
-import com.github.kittinunf.fuel.httpPost
 import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
@@ -60,10 +57,13 @@ class RemoteAttachmentTest {
         if (messages.size == 1) {
             var loadedRemoteAttachment: RemoteAttachment = messages[0].content()!!
             loadedRemoteAttachment.fetcher = TestFetcher()
-            val attachment: Attachment = loadedRemoteAttachment.load() ?: throw XMTPException("did not get attachment")
-            Assert.assertEquals("test.txt", attachment?.filename)
-            Assert.assertEquals("text/plain", attachment?.mimeType)
-            Assert.assertEquals("hello world".toByteStringUtf8(), attachment?.data)
+            runBlocking {
+                val attachment: Attachment =
+                    loadedRemoteAttachment.load() ?: throw XMTPException("did not get attachment")
+                Assert.assertEquals("test.txt", attachment?.filename)
+                Assert.assertEquals("text/plain", attachment?.mimeType)
+                Assert.assertEquals("hello world".toByteStringUtf8(), attachment?.data)
+            }
         }
     }
 

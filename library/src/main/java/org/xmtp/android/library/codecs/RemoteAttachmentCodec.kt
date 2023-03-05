@@ -40,7 +40,7 @@ data class RemoteAttachment(
     var filename: String? = null,
     var fetcher: Fetcher = HTTPFetcher(),
 ) {
-    fun <T> load(): T? {
+    suspend fun <T> load(): T? {
         val payload = fetcher.fetch(url)
 
         if (payload.isEmpty()) {
@@ -94,10 +94,6 @@ data class RemoteAttachment(
             )
         }
     }
-
-//    suspend fun load(): EncodedContent {
-//
-//    }
 }
 
 val ContentTypeRemoteAttachment = ContentTypeIdBuilder.builderFromAuthorityId(
