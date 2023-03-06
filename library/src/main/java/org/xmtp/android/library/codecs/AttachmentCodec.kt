@@ -24,12 +24,12 @@ data class AttachmentCodec(override var contentType: ContentTypeId = ContentType
     override fun decode(content: EncodedContent): Attachment {
         val filename = content.parametersMap["filename"] ?: throw XMTPException("missing filename")
         val mimeType = content.parametersMap["mimeType"] ?: throw XMTPException("missing mimeType")
-        var content = content.content ?: throw XMTPException("missing content")
+        val encodedContent = content.content ?: throw XMTPException("missing content")
 
         return Attachment(
             filename = filename,
             mimeType = mimeType,
-            data = content,
+            data = encodedContent,
         )
     }
 }

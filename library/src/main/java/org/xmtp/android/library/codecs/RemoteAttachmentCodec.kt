@@ -36,7 +36,7 @@ data class RemoteAttachment(
     var filename: String? = null,
     var fetcher: Fetcher = HTTPFetcher(),
 ) {
-    suspend fun <T> load(): T? {
+    fun <T> load(): T? {
         val payload = fetcher.fetch(url)
 
         if (payload.isEmpty()) {
@@ -113,12 +113,6 @@ class HTTPFetcher : Fetcher {
     }
 }
 
-internal class TestFetcher : Fetcher {
-    override fun fetch(url: URL): ByteArray {
-        return File(url.toString().replace("https://", "")).readBytes()
-    }
-}
-
 data class RemoteAttachmentCodec(override var contentType: ContentTypeId = ContentTypeRemoteAttachment) : ContentCodec<RemoteAttachment> {
     override fun encode(content: RemoteAttachment): EncodedContent {
         return EncodedContent.newBuilder().also {
@@ -146,10 +140,10 @@ data class RemoteAttachmentCodec(override var contentType: ContentTypeId = Conte
         val scheme = content.parametersMap["scheme"] ?: throw XMTPException("missing scheme")
         val contentLength = content.parametersMap["contentLength"] ?: throw XMTPException("missing contentLength")
         val filename = content.parametersMap["filename"] ?: throw XMTPException("missing filename")
-        var content = content.content ?: throw XMTPException("missing content")
+        val encodedContent = content.content ?: throw XMTPException("missing content")
 
         return RemoteAttachment(
-            url = URL(content.toStringUtf8()),
+            url = URL(encodedContent.toStringUtf8()),
             contentDigest = contentDigest,
             secret = Numeric.hexStringToByteArray(secret).toByteString(),
             salt = Numeric.hexStringToByteArray(salt).toByteString(),
