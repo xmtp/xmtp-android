@@ -9,8 +9,6 @@ import org.xmtp.android.library.Crypto
 import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.contents.CiphertextOuterClass.Ciphertext
-import org.xmtp.proto.message.contents.Content.EncodedContent.parseFrom
-import java.io.File
 import java.net.URI
 import java.net.URL
 import java.security.SecureRandom
