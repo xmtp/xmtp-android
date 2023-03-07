@@ -67,36 +67,6 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
         }
     }
 
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun <T> Flow<T>.flowWhileShared(
-        subscriptionCount: StateFlow<Int>,
-        started: SharingStarted,
-    ): Flow<T> {
-        return started.command(subscriptionCount)
-            .distinctUntilChanged()
-            .flatMapLatest {
-                when (it) {
-                    SharingCommand.START -> this
-                    SharingCommand.STOP,
-                    SharingCommand.STOP_AND_RESET_REPLAY_CACHE,
-                    -> emptyFlow()
-                }
-            }
-    }
-
-    fun <T> stateFlow(
-        scope: CoroutineScope,
-        initialValue: T,
-        producer: (subscriptionCount: StateFlow<Int>) -> Flow<T>,
-    ): StateFlow<T> {
-        val state = MutableStateFlow(initialValue)
-        scope.launch {
-            producer(state.subscriptionCount).collect(state)
-        }
-        return state.asStateFlow()
-    }
-
     @OptIn(ExperimentalCoroutinesApi::class)
     val streamMessages: StateFlow<List<MessageListItem>> =
         stateFlow(viewModelScope, emptyList()) { subscriptionCount ->
@@ -148,5 +118,34 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
 
         data class Message(override val id: String, val message: DecodedMessage) :
             MessageListItem(id, ITEM_TYPE_MESSAGE)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun <T> Flow<T>.flowWhileShared(
+        subscriptionCount: StateFlow<Int>,
+        started: SharingStarted,
+    ): Flow<T> {
+        return started.command(subscriptionCount)
+            .distinctUntilChanged()
+            .flatMapLatest {
+                when (it) {
+                    SharingCommand.START -> this
+                    SharingCommand.STOP,
+                    SharingCommand.STOP_AND_RESET_REPLAY_CACHE,
+                    -> emptyFlow()
+                }
+            }
+    }
+
+    private fun <T> stateFlow(
+        scope: CoroutineScope,
+        initialValue: T,
+        producer: (subscriptionCount: StateFlow<Int>) -> Flow<T>,
+    ): StateFlow<T> {
+        val state = MutableStateFlow(initialValue)
+        scope.launch {
+            producer(state.subscriptionCount).collect(state)
+        }
+        return state.asStateFlow()
     }
 }
