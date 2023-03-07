@@ -33,9 +33,13 @@ data class Conversations(
     fun fromInvite(envelope: Envelope): Conversation {
         val sealedInvitation = Invitation.SealedInvitation.parseFrom(envelope.message)
         val unsealed = sealedInvitation.v1.getInvitation(viewer = client.keys)
-        return Conversation.V2(ConversationV2.create(client = client,
-            invitation = unsealed,
-            header = sealedInvitation.v1.header))
+        return Conversation.V2(
+            ConversationV2.create(
+                client = client,
+                invitation = unsealed,
+                header = sealedInvitation.v1.header
+            )
+        )
     }
 
     fun fromIntro(envelope: Envelope): Conversation {
@@ -43,9 +47,13 @@ data class Conversations(
         val senderAddress = messageV1.header.sender.walletAddress
         val recipientAddress = messageV1.header.recipient.walletAddress
         val peerAddress = if (client.address == senderAddress) recipientAddress else senderAddress
-        val conversationV1 =
-            ConversationV1(client = client, peerAddress = peerAddress, sentAt = messageV1.sentAt)
-        return Conversation.V1(conversationV1)
+        return Conversation.V1(
+            ConversationV1(
+                client = client,
+                peerAddress = peerAddress,
+                sentAt = messageV1.sentAt
+            )
+        )
     }
 
     fun newConversation(
@@ -282,8 +290,10 @@ data class Conversations(
 
     fun streamAllMessages(): Flow<DecodedMessage> = flow {
         val topics: MutableList<String> =
-            mutableListOf(Topic.userInvite(client.address).description,
-                Topic.userIntro(client.address).description)
+            mutableListOf(
+                Topic.userInvite(client.address).description,
+                Topic.userIntro(client.address).description
+            )
         for (conversation in list()) {
             topics.add(conversation.topic)
         }

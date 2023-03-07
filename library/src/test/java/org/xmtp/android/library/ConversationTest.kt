@@ -49,7 +49,7 @@ class ConversationTest {
 
     private fun publishLegacyContact(client: Client) {
         val contactBundle = ContactBundle.newBuilder().apply {
-            v1Builder.keyBundle = client.privateKeyBundleV1?.toPublicKeyBundle()
+            v1Builder.keyBundle = client.privateKeyBundleV1.toPublicKeyBundle()
         }.build()
         val envelope = Envelope.newBuilder().apply {
             contentTopic = Topic.contact(client.address).description
@@ -557,5 +557,4 @@ class ConversationTest {
             awaitComplete()
         }
     }
-
 }
