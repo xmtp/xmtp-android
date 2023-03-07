@@ -304,13 +304,11 @@ data class Conversations(
                 emit(decoded)
             } else if (envelope.contentTopic.startsWith("/xmtp/0/invite-")) {
                 conversations.add(fromInvite(envelope = envelope))
-            } else { // Break so we can resubscribe with the new conversation
-                if (envelope.contentTopic.startsWith("/xmtp/0/intro-")) {
-                    val conversation2 = fromIntro(envelope = envelope)
-                    conversations.add(conversation2)
-                    val decoded = conversation2.decode(envelope)
-                    emit(decoded)
-                }
+            } else if (envelope.contentTopic.startsWith("/xmtp/0/intro-")) {
+                val conversation2 = fromIntro(envelope = envelope)
+                conversations.add(conversation2)
+                val decoded = conversation2.decode(envelope)
+                emit(decoded)
             }
         }
     }

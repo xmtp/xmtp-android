@@ -16,6 +16,11 @@ class MessageAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         notifyItemRangeChanged(0, newItems.size)
     }
 
+    fun addItem(item: ConversationDetailViewModel.MessageListItem) {
+        listItems.add(0, item)
+        notifyItemRangeChanged(0, listItems.size)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
