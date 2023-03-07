@@ -517,4 +517,45 @@ class ConversationTest {
             awaitComplete()
         }
     }
+
+    @Test
+    fun testStreamAllMessagesGetsMessageFromKnownConversation() = runTest {
+        val fixtures = fixtures()
+        val client = fixtures.aliceClient
+        val bobConversation = fixtures.bobClient.conversations.newConversation(client.address)
+        client.conversations.streamAllMessages().test {
+            bobConversation.send(text = "hi")
+            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
+            awaitComplete()
+        }
+    }
+
+    @Test
+    fun testStreamAllMessagesWorksWithInvites() = runTest {
+        val fixtures = fixtures()
+        val client = fixtures.aliceClient
+        client.conversations.streamAllMessages().test {
+            val bobConversation = fixtures.bobClient.conversations.newConversation(client.address)
+            bobConversation.send(text = "hi")
+            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
+            awaitComplete()
+        }
+    }
+
+    @Test
+    fun testStreamAllMessagesWorksWithIntros() = runTest {
+        val fixtures = fixtures()
+        val client = fixtures.aliceClient
+        // Overwrite contact as legacy
+        fixtures.publishLegacyContact(client = fixtures.bobClient)
+        fixtures.publishLegacyContact(client = fixtures.aliceClient)
+        client.conversations.streamAllMessages().test {
+            val bobConversation = fixtures.bobClient.conversations.newConversation(client.address)
+            assertEquals(bobConversation.version, Conversation.Version.V1)
+            bobConversation.send(text = "hi")
+            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
+            awaitComplete()
+        }
+    }
+
 }

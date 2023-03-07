@@ -12,10 +12,13 @@ import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.Topic
+import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+import org.xmtp.proto.message.contents.Contact
 import java.io.File
 import java.net.URL
+import java.util.Date
 
 class TestFetcher : Fetcher {
     override fun fetch(url: URL): ByteArray {
@@ -186,6 +189,19 @@ data class Fixtures(val aliceAccount: PrivateKeyBuilder, val bobAccount: Private
     var bobClient: Client = Client().create(account = bobAccount, apiClient = fakeApiClient)
 
     constructor() : this(aliceAccount = PrivateKeyBuilder(), bobAccount = PrivateKeyBuilder())
+
+    fun publishLegacyContact(client: Client) {
+        val contactBundle = Contact.ContactBundle.newBuilder().also {
+            it.v1Builder.keyBundle = client.privateKeyBundleV1.toPublicKeyBundle()
+        }.build()
+        val envelope = Envelope.newBuilder().also {
+            it.contentTopic = Topic.contact(client.address).description
+            it.timestampNs = Date().time * 1_000_000
+            it.message = contactBundle.toByteString()
+        }.build()
+
+        client.publish(envelopes = listOf(envelope))
+    }
 }
 
 fun fixtures(): Fixtures =
