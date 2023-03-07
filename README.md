@@ -211,9 +211,6 @@ conversation.streamMessages().collect {
 }
 ```
 
-> **Note**  
-> This package does not currently include the `streamAllMessages()` functionality from the XMTP client SDK for JavaScript (xmtp-js).
-
 ### Handle multiple conversations with the same blockchain address
 
 With XMTP, you can have multiple ongoing conversations with the same blockchain address. For example, you might want to have a conversation scoped to your particular app, or even a conversation scoped to a particular item in your app.
