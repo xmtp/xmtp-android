@@ -24,7 +24,7 @@ For a basic demonstration of the core concepts and capabilities of the `xmtp-and
 
 ## Install from Maven Central
 
-You can find the latest package version from [maven central](https://central.sonatype.com/artifact/org.xmtp/android/0.0.4)
+You can find the latest package version on [Maven Central](https://central.sonatype.com/artifact/org.xmtp/android/0.0.4)
 
 ```gradle
     implementation 'org.xmtp:android:X.X.X'
