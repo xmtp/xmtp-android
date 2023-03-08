@@ -79,16 +79,16 @@ class MessageV2Builder {
             client: Client,
             encodedContent: EncodedContent,
             topic: String,
-            keyMaterial: ByteArray,
+            keyMaterial: ByteArray
         ): MessageV2 {
             val payload = encodedContent.toByteArray()
             val date = Date()
             val header = MessageHeaderV2Builder.buildFromTopic(topic, date)
             val headerBytes = header.toByteArray()
             val digest = Hash.sha256(headerBytes + payload)
-            val preKey = client.keys?.preKeysList?.get(0)
+            val preKey = client.keys.preKeysList?.get(0)
             val signature = preKey?.sign(digest)
-            val bundle = client.privateKeyBundleV1?.toV2()?.getPublicKeyBundle()
+            val bundle = client.privateKeyBundleV1.toV2().getPublicKeyBundle()
             val signedContent = SignedContentBuilder.builderFromPayload(payload, bundle, signature)
             val signedBytes = signedContent.toByteArray()
             val ciphertext = Crypto.encrypt(keyMaterial, signedBytes, additionalData = headerBytes)

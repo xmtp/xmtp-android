@@ -14,7 +14,6 @@ import java.security.KeyFactory
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECPublicKeySpec
 
-
 typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
 
 private const val MESSAGE_PREFIX = "\u0019Ethereum Signed Message:\n"
