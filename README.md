@@ -22,7 +22,7 @@ To learn more about XMTP and get answers to frequently asked questions, see [FAQ
 
 For a basic demonstration of the core concepts and capabilities of the `xmtp-android` client SDK, see the [Example app project](https://github.com/xmtp/xmtp-android/tree/main/example). This is currently a work in progress.
 
-## Install from the GitHub Packages
+## Install from Maven Central
 
 You can find the latest package version from [maven central](https://central.sonatype.com/artifact/org.xmtp/android/0.0.4)
 
