@@ -27,7 +27,7 @@ For a basic demonstration of the core concepts and capabilities of the `xmtp-and
 You can find the latest package version from [maven central](https://central.sonatype.com/artifact/org.xmtp/android/0.0.4)
 
 ```gradle
-    implementation 'org.xmtp:android:0.0.4'
+    implementation 'org.xmtp:android:X.X.X'
 ```
 
 ## Usage overview
