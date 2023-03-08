@@ -30,18 +30,19 @@ class MessageV2Builder {
                 Crypto.decrypt(keyMaterial, message.ciphertext, message.headerBytes.toByteArray())
             val signed = SignedContent.parseFrom(decrypted)
 
-
-
             if (!signed.sender.hasPreKey() && !signed.sender.hasIdentityKey()) {
                 throw XMTPException("missing sender pre-key or identity key")
             }
 
             val senderPreKey = PublicKeyBuilder.buildFromSignedPublicKey(signed.sender.preKey)
-            val senderIdentityKey = PublicKeyBuilder.buildFromSignedPublicKey(signed.sender.identityKey)
+            val senderIdentityKey =
+                PublicKeyBuilder.buildFromSignedPublicKey(signed.sender.identityKey)
 
-            // This is a bit confusing since we're passing keyBytes as the digest instead of a SHA256 hash.
-            // That's because our underlying crypto library always SHA256's whatever data is sent to it for this.
-            if (!(senderPreKey.signature.verify(senderIdentityKey, signed.sender.preKey.keyBytes.toByteArray()))) {
+            if (!senderPreKey.signature.verify(
+                    senderIdentityKey,
+                    signed.sender.preKey.keyBytes.toByteArray()
+                )
+            ) {
                 throw XMTPException("pre-key not signed by identity key")
             }
 
@@ -78,7 +79,7 @@ class MessageV2Builder {
             client: Client,
             encodedContent: EncodedContent,
             topic: String,
-            keyMaterial: ByteArray
+            keyMaterial: ByteArray,
         ): MessageV2 {
             val payload = encodedContent.toByteArray()
             val date = Date()

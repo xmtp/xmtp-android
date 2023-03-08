@@ -544,5 +544,4 @@ class ConversationTest {
             conversation.decodeEnvelope(envelope)
         }
     }
-
 }
