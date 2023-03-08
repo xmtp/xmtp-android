@@ -30,7 +30,7 @@ class MessageV2Builder {
                 Crypto.decrypt(keyMaterial, message.ciphertext, message.headerBytes.toByteArray())
             val signed = SignedContent.parseFrom(decrypted)
 
-            if (!signed.sender.hasPreKey() && !signed.sender.hasIdentityKey()) {
+            if (!signed.sender.hasPreKey() || !signed.sender.hasIdentityKey()) {
                 throw XMTPException("missing sender pre-key or identity key")
             }
 
