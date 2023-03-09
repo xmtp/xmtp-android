@@ -14,7 +14,7 @@ import org.xmtp.android.library.Client
 import org.xmtp.android.library.SigningKey
 import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.buildSignature
+import org.xmtp.android.library.messages.SignatureBuilder
 import org.xmtp.proto.message.contents.SignatureOuterClass
 
 class ConnectWalletViewModel(application: Application) : AndroidViewModel(application) {
@@ -44,8 +44,8 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
         override suspend fun sign(message: String): SignatureOuterClass.Signature? {
             runCatching { wcKit.personalSign(message) }
                 .onSuccess {
-                    val result = it.result
-                    return (result as String).buildSignature()
+                    val signatureData = it.result as String
+                    return SignatureBuilder.buildFromSignatureData(signatureData)
                 }
                 .onFailure {}
             return null
@@ -86,7 +86,6 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
         object Unknown : ConnectUiState()
         object Loading : ConnectUiState()
         data class Success(val address: String, val encodedKeyData: String) : ConnectUiState()
-        data class Connect(val uri: String) : ConnectUiState()
         data class Error(val message: String) : ConnectUiState()
     }
 }

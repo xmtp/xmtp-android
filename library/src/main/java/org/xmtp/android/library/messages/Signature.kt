@@ -18,11 +18,15 @@ typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signat
 
 private const val MESSAGE_PREFIX = "\u0019Ethereum Signed Message:\n"
 
-fun String.buildSignature(): Signature {
-    return Signature.newBuilder().apply {
-        ecdsaCompact =
-            SignatureOuterClass.Signature.ECDSACompact.parseFrom(toByteArray())
-    }.build()
+class SignatureBuilder {
+    companion object {
+        fun buildFromSignatureData(data: String): Signature {
+            return Signature.newBuilder().apply {
+                ecdsaCompact =
+                    SignatureOuterClass.Signature.ECDSACompact.parseFrom(data.toByteArray())
+            }.build()
+        }
+    }
 }
 
 fun Signature.ethHash(message: String): ByteArray {

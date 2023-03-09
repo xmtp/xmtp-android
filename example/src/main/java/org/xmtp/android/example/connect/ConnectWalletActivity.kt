@@ -76,7 +76,6 @@ class ConnectWalletActivity : AppCompatActivity() {
                 uiState.encodedKeyData
             )
             ConnectWalletViewModel.ConnectUiState.Unknown -> Unit
-            is ConnectWalletViewModel.ConnectUiState.Connect -> connect(uiState.uri)
         }
     }
 
@@ -100,11 +99,5 @@ class ConnectWalletActivity : AppCompatActivity() {
         binding.progress.visibility = View.VISIBLE
         binding.generateButton.visibility = View.GONE
         binding.connectButton.visibility = View.GONE
-    }
-
-    private fun connect(uri: String) {
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = Uri.parse("$WC_URI_SCHEME$uri")
-        startActivity(intent)
     }
 }
