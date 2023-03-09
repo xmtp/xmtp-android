@@ -5,6 +5,7 @@ import android.accounts.AccountManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -47,8 +48,16 @@ class ConnectWalletActivity : AppCompatActivity() {
         binding.connectButton.isEnabled = showConnectButton
         binding.connectError.isVisible = !showConnectButton
         binding.connectButton.setOnClickListener {
-            viewModel.connectWallet()
+            binding.connectButton.start(viewModel.walletConnectKit, ::onConnected, ::onDisconnected)
         }
+    }
+
+    private fun onConnected(address: String) {
+        viewModel.connectWallet()
+    }
+
+    private fun onDisconnected() {
+        Log.e("###", "DISCONNECTED")
     }
 
     private fun isConnectAvailable(): Boolean {

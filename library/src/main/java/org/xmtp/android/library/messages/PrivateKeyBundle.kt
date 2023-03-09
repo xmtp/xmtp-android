@@ -1,10 +1,12 @@
 package org.xmtp.android.library.messages
 
 import com.google.protobuf.kotlin.toByteString
+import java.security.SecureRandom
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.Crypto
 import org.xmtp.android.library.SigningKey
+import org.xmtp.android.library.XMTPException
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
-import java.security.SecureRandom
 
 typealias PrivateKeyBundle = PrivateKeyOuterClass.PrivateKeyBundle
 
@@ -22,7 +24,11 @@ fun PrivateKeyBundle.encrypted(key: SigningKey): EncryptedPrivateKeyBundle {
     val bundleBytes = toByteArray()
     val walletPreKey = SecureRandom().generateSeed(32)
     val signature =
-        key.sign(message = Signature.newBuilder().build().enableIdentityText(key = walletPreKey))
+        runBlocking {
+            key.sign(
+                message = Signature.newBuilder().build().enableIdentityText(key = walletPreKey)
+            )
+        } ?: throw XMTPException("Illegal signature")
     val cipherText = Crypto.encrypt(signature.rawDataWithNormalizedRecovery, bundleBytes)
     return EncryptedPrivateKeyBundle.newBuilder().apply {
         v1Builder.walletPreKey = walletPreKey.toByteString()

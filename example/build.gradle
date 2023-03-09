@@ -42,6 +42,9 @@ android {
     buildFeatures {
         viewBinding true
     }
+    configurations {
+        all*.exclude module: "bcprov-jdk15to18" // Needed for dev.pinkroom.walletconnectkit
+    }
 }
 
 dependencies {
@@ -56,10 +59,7 @@ dependencies {
     implementation 'androidx.activity:activity-ktx:1.6.1'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'com.github.TrustWallet:wallet-connect-kotlin:1.5.6'
-    implementation 'com.github.komputing.khex:extensions:1.1.2'
-    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
-    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'dev.pinkroom:walletconnectkit:0.3.2'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

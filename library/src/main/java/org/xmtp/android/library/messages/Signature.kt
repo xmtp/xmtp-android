@@ -1,5 +1,9 @@
 package org.xmtp.android.library.messages
 
+import java.math.BigInteger
+import java.security.KeyFactory
+import java.security.interfaces.ECPublicKey
+import java.security.spec.ECPublicKeySpec
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.ECPointUtil
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -9,14 +13,17 @@ import org.bouncycastle.util.Arrays
 import org.xmtp.android.library.Util
 import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.contents.SignatureOuterClass
-import java.math.BigInteger
-import java.security.KeyFactory
-import java.security.interfaces.ECPublicKey
-import java.security.spec.ECPublicKeySpec
 
 typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
 
 private const val MESSAGE_PREFIX = "\u0019Ethereum Signed Message:\n"
+
+fun String.buildSignature(): Signature {
+    return Signature.newBuilder().apply {
+        ecdsaCompact =
+            SignatureOuterClass.Signature.ECDSACompact.parseFrom(toByteArray())
+    }.build()
+}
 
 fun Signature.ethHash(message: String): ByteArray {
     val input = MESSAGE_PREFIX + message.length + message
