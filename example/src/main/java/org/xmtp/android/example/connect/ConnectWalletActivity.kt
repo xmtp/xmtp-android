@@ -13,6 +13,9 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import dev.pinkroom.walletconnectkit.WalletConnectButton
+import dev.pinkroom.walletconnectkit.WalletConnectKit
+import dev.pinkroom.walletconnectkit.WalletConnectKitConfig
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.MainActivity
 import org.xmtp.android.example.R
@@ -24,6 +27,14 @@ class ConnectWalletActivity : AppCompatActivity() {
         private const val WC_URI_SCHEME = "wc://wc?uri="
     }
 
+    val config = WalletConnectKitConfig(
+        context = this,
+        bridgeUrl = "wss://bridge.aktionariat.com:8887",
+        appUrl = "xmtp.org",
+        appName = "XMTP Example app",
+        appDescription = "XMTP Example app",
+    )
+
     private val viewModel: ConnectWalletViewModel by viewModels()
     private lateinit var binding: ActivityConnectWalletBinding
 
@@ -32,6 +43,15 @@ class ConnectWalletActivity : AppCompatActivity() {
 
         binding = ActivityConnectWalletBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val walletConnectKit = WalletConnectKit.Builder(config).build()
+
+        val walletConnectButton = findViewById<WalletConnectButton>(R.id.walletConnectButton)
+
+        walletConnectButton.start(walletConnectKit) {address ->
+            println("address: $address")
+            Toast.makeText(this, "Connnected! address: $address", Toast.LENGTH_SHORT).show()
+        }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
