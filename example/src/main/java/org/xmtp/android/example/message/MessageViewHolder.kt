@@ -1,9 +1,7 @@
 package org.xmtp.android.example.message
 
 import android.graphics.Color
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import org.xmtp.android.example.ClientManager
 import org.xmtp.android.example.R
@@ -23,21 +21,17 @@ class MessageViewHolder(
 
     fun bind(item: ConversationDetailViewModel.MessageListItem.Message) {
         val isFromMe = ClientManager.client.address == item.message.senderAddress
-        val params = binding.messageContainer.layoutParams as ConstraintLayout.LayoutParams
+        binding.spacerStart.isVisible = isFromMe
+        binding.spacerEnd.isVisible = !isFromMe
         if (isFromMe) {
-            params.rightToRight = PARENT_ID
-            params.leftToLeft = UNSET
             binding.messageRow.margins(left = marginLarge, right = marginSmall)
             binding.messageContainer.setCardBackgroundColor(backgroundMe)
             binding.messageBody.setTextColor(Color.BLACK)
         } else {
-            params.leftToLeft = PARENT_ID
-            params.rightToRight = UNSET
             binding.messageRow.margins(right = marginLarge, left = marginSmall)
             binding.messageContainer.setCardBackgroundColor(backgroundPeer)
             binding.messageBody.setTextColor(Color.WHITE)
         }
-        binding.messageContainer.layoutParams = params
         binding.messageBody.text = item.message.body
     }
 }
