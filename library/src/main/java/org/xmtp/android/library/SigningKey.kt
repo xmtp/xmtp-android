@@ -1,8 +1,6 @@
 package org.xmtp.android.library
 
 import com.google.protobuf.kotlin.toByteString
-import java.math.BigInteger
-import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.ECDSASignature
 import org.web3j.crypto.Keys
@@ -15,6 +13,8 @@ import org.xmtp.android.library.messages.rawData
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
+import java.math.BigInteger
+import java.util.Date
 
 interface SigningKey {
     val address: String

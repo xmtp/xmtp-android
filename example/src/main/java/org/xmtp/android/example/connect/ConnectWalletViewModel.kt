@@ -11,10 +11,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.web3j.utils.Numeric
+import org.xmtp.android.example.ClientManager
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.SigningKey
 import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.messages.PrivateKeyBuilder
+import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
 import org.xmtp.android.library.messages.SignatureBuilder
 import org.xmtp.proto.message.contents.SignatureOuterClass
 
@@ -67,9 +69,10 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
             _uiState.value = ConnectUiState.Loading
             try {
                 val wallet = PrivateKeyBuilder()
+                val client = Client().create(wallet, ClientManager.CLIENT_OPTIONS)
                 _uiState.value = ConnectUiState.Success(
                     wallet.address,
-                    wallet.encodedPrivateKeyData()
+                    PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)
                 )
             } catch (e: XMTPException) {
                 _uiState.value = ConnectUiState.Error(e.message.orEmpty())
@@ -83,8 +86,11 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
             _uiState.value = ConnectUiState.Loading
             try {
                 val wallet = WCAccount(walletConnectKit)
-                val client = Client().create(wallet)
-                val bundle = client.privateKeyBundle
+                val client = Client().create(wallet, ClientManager.CLIENT_OPTIONS)
+                _uiState.value = ConnectUiState.Success(
+                    wallet.address,
+                    PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)
+                )
             } catch (e: Exception) {
                 _uiState.value = ConnectUiState.Error(e.message.orEmpty())
             }
