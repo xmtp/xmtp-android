@@ -286,7 +286,7 @@ class Client() {
         )
     }
 
-    fun canMessage(peerAddress: String) : Boolean {
+    fun canMessage(peerAddress: String): Boolean {
         return runBlocking { query(listOf(Topic.contact(peerAddress))).envelopesList.size > 0 }
     }
 
