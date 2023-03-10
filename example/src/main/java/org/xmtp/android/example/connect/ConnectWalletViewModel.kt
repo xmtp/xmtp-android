@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.web3j.crypto.Keys
 import org.web3j.utils.Numeric
 import org.xmtp.android.example.ClientManager
 import org.xmtp.android.library.Client
@@ -36,7 +37,7 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
 
     data class WCAccount(private val wcKit: WalletConnectKit) : SigningKey {
         override val address: String
-            get() = wcKit.address.orEmpty()
+            get() = Keys.toChecksumAddress(wcKit.address.orEmpty())
 
         override suspend fun sign(data: ByteArray): SignatureOuterClass.Signature? {
             return sign(String(data))
