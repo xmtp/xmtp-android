@@ -3,6 +3,12 @@ package org.xmtp.android.library
 import android.os.Build
 import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
+import java.nio.charset.StandardCharsets
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Keys
@@ -30,12 +36,6 @@ import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.toV2
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
-import java.nio.charset.StandardCharsets
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
@@ -92,14 +92,14 @@ class Client() {
 
     fun create(account: SigningKey, apiClient: ApiClient): Client {
         return runBlocking {
-            try {
+//            try {
                 val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient)
                 val client = Client(account.address, privateKeyBundleV1, apiClient)
                 client.ensureUserContactPublished()
                 client
-            } catch (e: java.lang.Exception) {
-                throw XMTPException("Error creating client", e)
-            }
+//            } catch (e: java.lang.Exception) {
+//                throw XMTPException("Error creating client", e)
+//            }
         }
     }
 
@@ -237,15 +237,15 @@ class Client() {
             conversationData.toString(StandardCharsets.UTF_8),
             ConversationV2Export::class.java
         )
-        try {
-            return importV2Conversation(export = v2Export)
+        return try {
+            importV2Conversation(export = v2Export)
         } catch (e: java.lang.Exception) {
             val v1Export = gson.fromJson(
                 conversationData.toString(StandardCharsets.UTF_8),
                 ConversationV1Export::class.java
             )
             try {
-                return importV1Conversation(export = v1Export)
+                importV1Conversation(export = v1Export)
             } catch (e: java.lang.Exception) {
                 throw XMTPException("Invalid input data", e)
             }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.web3j.utils.Numeric
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.SigningKey
 import org.xmtp.android.library.XMTPException
@@ -36,16 +37,24 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
             get() = wcKit.address.orEmpty()
 
         override suspend fun sign(data: ByteArray): SignatureOuterClass.Signature? {
-            val message = data.decodeToString()
-            // TODO(elise): Need to undo eth hash not just decode to string!
-            return sign(message)
+            return sign(String(data))
         }
 
         override suspend fun sign(message: String): SignatureOuterClass.Signature? {
             runCatching { wcKit.personalSign(message) }
                 .onSuccess {
-                    val signatureData = it.result as String
-                    return SignatureBuilder.buildFromSignatureData(signatureData)
+                    var result = it.result as String
+                    if (result.startsWith("0x") && result.length == 132) {
+                        result = result.drop(2)
+                    }
+
+                    val resultData = Numeric.hexStringToByteArray(result)
+
+                    // Ensure we have a valid recovery byte
+                    resultData[resultData.size - 1] =
+                        (1 - resultData[resultData.size - 1] % 2).toByte()
+
+                    return SignatureBuilder.buildFromSignatureData(resultData)
                 }
                 .onFailure {}
             return null

@@ -32,7 +32,6 @@ fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): Author
     val signatureClass = Signature.newBuilder().build()
     val signatureText = signatureClass.createIdentityText(key = slimKey.toByteArray())
     val digest = signatureClass.ethHash(message = signatureText)
-    //TODO(elise): Updated to use signatureText so it would be human readable until we can reverse eth hash
     val signature = runBlocking { sign(signatureText) } ?: throw XMTPException("Illegal signature")
 
     val signatureData = KeyUtil.getSignatureData(signature.rawData.toByteString().toByteArray())

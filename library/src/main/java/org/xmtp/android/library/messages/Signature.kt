@@ -1,5 +1,6 @@
 package org.xmtp.android.library.messages
 
+import com.google.protobuf.kotlin.toByteString
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.interfaces.ECPublicKey
@@ -20,10 +21,10 @@ private const val MESSAGE_PREFIX = "\u0019Ethereum Signed Message:\n"
 
 class SignatureBuilder {
     companion object {
-        fun buildFromSignatureData(data: String): Signature {
-            return Signature.newBuilder().apply {
-                ecdsaCompact =
-                    SignatureOuterClass.Signature.ECDSACompact.parseFrom(data.toByteArray())
+        fun buildFromSignatureData(data: ByteArray): Signature {
+            return Signature.newBuilder().also {
+                it.ecdsaCompactBuilder.bytes = data.take(64).toByteArray().toByteString()
+                it.ecdsaCompactBuilder.recovery = data[64].toInt()
             }.build()
         }
     }
