@@ -65,24 +65,25 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val streamMessages: StateFlow<List<MessageListItem>> =
-        stateFlow(viewModelScope, emptyList()) { subscriptionCount ->
+    val streamMessages: StateFlow<MessageListItem?> =
+        stateFlow(viewModelScope, null) { subscriptionCount ->
             if (conversation == null) {
                 conversation = ClientManager.client.fetchConversation(conversationTopic)
             }
-            conversation?.let {
-                it.streamMessages()
+            if (conversation != null) {
+                conversation!!.streamMessages()
                     .flowWhileShared(
                         subscriptionCount,
                         SharingStarted.WhileSubscribed(1000L)
                     )
                     .distinctUntilChanged()
                     .mapLatest { message ->
-                        listOf(MessageListItem.Message(message.id, message))
+                        MessageListItem.Message(message.id, message)
                     }
-                    .catch { emit(emptyList()) }
+                    .catch { emptyFlow<MessageListItem>() }
+            } else {
+                emptyFlow()
             }
-            emptyFlow()
         }
 
     @UiThread

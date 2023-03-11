@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.extension.flowWhileShared
@@ -53,8 +54,8 @@ class MainViewModel : ViewModel() {
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val stream: StateFlow<List<MainListItem>> =
-        stateFlow(viewModelScope, emptyList()) { subscriptionCount ->
+    val stream: StateFlow<MainListItem?> =
+        stateFlow(viewModelScope, null) { subscriptionCount ->
             ClientManager.client.conversations.stream()
                 .flowWhileShared(
                     subscriptionCount,
@@ -62,9 +63,9 @@ class MainViewModel : ViewModel() {
                 )
                 .distinctUntilChanged()
                 .mapLatest { conversation ->
-                    listOf(MainListItem.ConversationItem(conversation.topic, conversation))
+                    MainListItem.ConversationItem(conversation.topic, conversation)
                 }
-                .catch { emit(emptyList()) }
+                .catch { emptyFlow<MainListItem>() }
         }
 
     sealed class UiState {

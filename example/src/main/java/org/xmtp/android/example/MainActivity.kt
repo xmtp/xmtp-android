@@ -77,8 +77,8 @@ class MainActivity : AppCompatActivity(),
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 if (ClientManager.clientState.value is ClientManager.ClientState.Ready) {
                     viewModel.stream.collect {
-                        if (it.isNotEmpty()) {
-                            adapter.addItem(it.first())
+                        if (it != null) {
+                            adapter.addItem(it)
                         }
                     }
                 }
