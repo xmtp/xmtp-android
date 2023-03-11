@@ -4,9 +4,16 @@ import androidx.annotation.UiThread
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import org.xmtp.android.example.extension.flowWhileShared
+import org.xmtp.android.example.extension.stateFlow
 import org.xmtp.android.library.Conversation
 
 class MainViewModel : ViewModel() {
@@ -45,6 +52,21 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val stream: StateFlow<List<MainListItem>> =
+        stateFlow(viewModelScope, emptyList()) { subscriptionCount ->
+            ClientManager.client.conversations.stream()
+                .flowWhileShared(
+                    subscriptionCount,
+                    SharingStarted.WhileSubscribed(1000L)
+                )
+                .distinctUntilChanged()
+                .mapLatest { conversation ->
+                    listOf(MainListItem.ConversationItem(conversation.topic, conversation))
+                }
+                .catch { emit(emptyList()) }
+        }
+
     sealed class UiState {
         data class Loading(val listItems: List<MainListItem>?) : UiState()
         data class Success(val listItems: List<MainListItem>) : UiState()
@@ -56,6 +78,7 @@ class MainViewModel : ViewModel() {
             const val ITEM_TYPE_CONVERSATION = 1
             const val ITEM_TYPE_FOOTER = 2
         }
+
         data class ConversationItem(override val id: String, val conversation: Conversation) :
             MainListItem(id, ITEM_TYPE_CONVERSATION)
 

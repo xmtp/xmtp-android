@@ -65,6 +65,16 @@ class MainActivity : AppCompatActivity(),
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.stream.collect {
+                    if (it.isNotEmpty()) {
+                        adapter.addItem(it.first())
+                    }
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 ClientManager.clientState.collect(::ensureClientState)
             }
         }

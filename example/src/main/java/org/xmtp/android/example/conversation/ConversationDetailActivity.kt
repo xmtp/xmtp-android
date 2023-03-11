@@ -83,7 +83,7 @@ class ConversationDetailActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            this@ConversationDetailActivity.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.streamMessages.collect {
                     if (it.isNotEmpty()) {
                         adapter.addItem(it.first())
