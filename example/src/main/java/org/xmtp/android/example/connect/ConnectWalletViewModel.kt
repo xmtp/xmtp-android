@@ -10,12 +10,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.xmtp.android.example.ClientManager
+import org.xmtp.android.example.account.WalletConnectAccount
 import org.xmtp.android.library.Client
-import org.xmtp.android.library.SigningKey
 import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.SignatureBuilder
-import org.xmtp.proto.message.contents.SignatureOuterClass
+import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
 
 class ConnectWalletViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -31,36 +31,16 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
     )
     val walletConnectKit = WalletConnectKit.Builder(walletConnectKitConfig).build()
 
-    data class WCAccount(private val wcKit: WalletConnectKit) : SigningKey {
-        override val address: String
-            get() = wcKit.address.orEmpty()
-
-        override suspend fun sign(data: ByteArray): SignatureOuterClass.Signature? {
-            val message = data.decodeToString()
-            // TODO(elise): Need to undo eth hash not just decode to string!
-            return sign(message)
-        }
-
-        override suspend fun sign(message: String): SignatureOuterClass.Signature? {
-            runCatching { wcKit.personalSign(message) }
-                .onSuccess {
-                    val signatureData = it.result as String
-                    return SignatureBuilder.buildFromSignatureData(signatureData)
-                }
-                .onFailure {}
-            return null
-        }
-    }
-
     @UiThread
     fun generateWallet() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = ConnectUiState.Loading
             try {
                 val wallet = PrivateKeyBuilder()
+                val client = Client().create(wallet, ClientManager.CLIENT_OPTIONS)
                 _uiState.value = ConnectUiState.Success(
                     wallet.address,
-                    wallet.encodedPrivateKeyData()
+                    PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)
                 )
             } catch (e: XMTPException) {
                 _uiState.value = ConnectUiState.Error(e.message.orEmpty())
@@ -73,9 +53,12 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = ConnectUiState.Loading
             try {
-                val wallet = WCAccount(walletConnectKit)
-                val client = Client().create(wallet)
-                val bundle = client.privateKeyBundle
+                val wallet = WalletConnectAccount(walletConnectKit)
+                val client = Client().create(wallet, ClientManager.CLIENT_OPTIONS)
+                _uiState.value = ConnectUiState.Success(
+                    wallet.address,
+                    PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)
+                )
             } catch (e: Exception) {
                 _uiState.value = ConnectUiState.Error(e.message.orEmpty())
             }

@@ -1,9 +1,6 @@
 package org.xmtp.android.library.messages
 
-import com.google.crypto.tink.subtle.Base64
 import com.google.protobuf.kotlin.toByteString
-import java.security.SecureRandom
-import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Hash
@@ -12,6 +9,8 @@ import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.SigningKey
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
+import java.security.SecureRandom
+import java.util.Date
 
 typealias PrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
 
@@ -35,10 +34,6 @@ class PrivateKeyBuilder : SigningKey {
 
     constructor(key: PrivateKey) {
         privateKey = key
-    }
-
-    constructor(encodedPrivateKeyData: String) {
-        privateKey = PrivateKey.parseFrom(Base64.decode(encodedPrivateKeyData, Base64.NO_WRAP))
     }
 
     companion object {
@@ -65,10 +60,6 @@ class PrivateKeyBuilder : SigningKey {
                 publicKey = PublicKeyBuilder.buildFromSignedPublicKey(signedPrivateKey.publicKey)
             }.build()
         }
-    }
-
-    fun encodedPrivateKeyData(): String {
-        return Base64.encodeToString(privateKey.toByteArray(), Base64.NO_WRAP)
     }
 
     fun getPrivateKey(): PrivateKey {

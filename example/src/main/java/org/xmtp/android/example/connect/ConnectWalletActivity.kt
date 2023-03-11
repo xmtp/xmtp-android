@@ -5,7 +5,6 @@ import android.accounts.AccountManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -44,9 +43,9 @@ class ConnectWalletActivity : AppCompatActivity() {
             viewModel.generateWallet()
         }
 
-        val showConnectButton = isConnectAvailable()
-        binding.connectButton.isEnabled = showConnectButton
-        binding.connectError.isVisible = !showConnectButton
+        val isConnectWalletAvailable = isConnectAvailable()
+        binding.connectButton.isEnabled = isConnectWalletAvailable
+        binding.connectError.isVisible = !isConnectWalletAvailable
         binding.connectButton.setOnClickListener {
             binding.connectButton.start(viewModel.walletConnectKit, ::onConnected, ::onDisconnected)
         }
@@ -57,7 +56,7 @@ class ConnectWalletActivity : AppCompatActivity() {
     }
 
     private fun onDisconnected() {
-        Log.e("###", "DISCONNECTED")
+        // No-op currently.
     }
 
     private fun isConnectAvailable(): Boolean {
@@ -92,6 +91,7 @@ class ConnectWalletActivity : AppCompatActivity() {
         binding.progress.visibility = View.GONE
         binding.generateButton.visibility = View.VISIBLE
         binding.connectButton.visibility = View.VISIBLE
+        binding.connectError.isVisible = !isConnectAvailable()
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
@@ -99,5 +99,6 @@ class ConnectWalletActivity : AppCompatActivity() {
         binding.progress.visibility = View.VISIBLE
         binding.generateButton.visibility = View.GONE
         binding.connectButton.visibility = View.GONE
+        binding.connectError.visibility = View.GONE
     }
 }

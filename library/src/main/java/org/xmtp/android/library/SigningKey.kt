@@ -1,8 +1,6 @@
 package org.xmtp.android.library
 
 import com.google.protobuf.kotlin.toByteString
-import java.math.BigInteger
-import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.ECDSASignature
 import org.web3j.crypto.Keys
@@ -15,6 +13,8 @@ import org.xmtp.android.library.messages.rawData
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
+import java.math.BigInteger
+import java.util.Date
 
 interface SigningKey {
     val address: String
@@ -32,7 +32,6 @@ fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): Author
     val signatureClass = Signature.newBuilder().build()
     val signatureText = signatureClass.createIdentityText(key = slimKey.toByteArray())
     val digest = signatureClass.ethHash(message = signatureText)
-    //TODO(elise): Updated to use signatureText so it would be human readable until we can reverse eth hash
     val signature = runBlocking { sign(signatureText) } ?: throw XMTPException("Illegal signature")
 
     val signatureData = KeyUtil.getSignatureData(signature.rawData.toByteString().toByteArray())
