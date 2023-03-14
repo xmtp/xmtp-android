@@ -23,6 +23,7 @@ import org.xmtp.android.example.conversation.ConversationsAdapter
 import org.xmtp.android.example.conversation.ConversationsClickListener
 import org.xmtp.android.example.conversation.NewConversationBottomSheet
 import org.xmtp.android.example.databinding.ActivityMainBinding
+import org.xmtp.android.library.Client
 import org.xmtp.android.library.Conversation
 
 class MainActivity : AppCompatActivity(),
@@ -73,17 +74,6 @@ class MainActivity : AppCompatActivity(),
                 viewModel.uiState.collect(::ensureUiState)
             }
         }
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                if (ClientManager.clientState.value is ClientManager.ClientState.Ready) {
-                    viewModel.stream.collect {
-                        if (it != null) {
-                            adapter.addItem(it)
-                        }
-                    }
-                }
-            }
-        }
     }
 
     override fun onDestroy() {
@@ -124,11 +114,16 @@ class MainActivity : AppCompatActivity(),
         copyWalletAddress()
     }
 
-    private fun ensureClientState(clientState: ClientManager.ClientState) {
+    private suspend fun ensureClientState(clientState: ClientManager.ClientState) {
         when (clientState) {
             is ClientManager.ClientState.Ready -> {
                 viewModel.fetchConversations()
                 binding.fab.visibility = View.VISIBLE
+                viewModel.stream.collect {
+                    if (it != null) {
+                        adapter.addItem(it)
+                    }
+                }
             }
             is ClientManager.ClientState.Error -> showError(clientState.message)
             is ClientManager.ClientState.Unknown -> Unit

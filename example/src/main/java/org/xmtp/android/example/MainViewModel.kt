@@ -57,17 +57,21 @@ class MainViewModel : ViewModel() {
     @OptIn(ExperimentalCoroutinesApi::class)
     val stream: StateFlow<MainListItem?> =
         stateFlow(viewModelScope, null) { subscriptionCount ->
-            ClientManager.client.conversations.stream()
-                .flowWhileShared(
-                    subscriptionCount,
-                    SharingStarted.WhileSubscribed(1000L)
-                )
-                .flowOn(Dispatchers.IO)
-                .distinctUntilChanged()
-                .mapLatest { conversation ->
-                    MainListItem.ConversationItem(conversation.topic, conversation)
-                }
-                .catch { emptyFlow<MainListItem>() }
+            if (ClientManager.clientState.value is ClientManager.ClientState.Ready) {
+                ClientManager.client.conversations.stream()
+                    .flowWhileShared(
+                        subscriptionCount,
+                        SharingStarted.WhileSubscribed(1000L)
+                    )
+                    .flowOn(Dispatchers.IO)
+                    .distinctUntilChanged()
+                    .mapLatest { conversation ->
+                        MainListItem.ConversationItem(conversation.topic, conversation)
+                    }
+                    .catch { emptyFlow<MainListItem>() }
+            } else {
+                emptyFlow()
+            }
         }
 
     sealed class UiState {
