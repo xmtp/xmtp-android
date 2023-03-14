@@ -6,7 +6,7 @@
 
 Use `xmtp-android` to build with XMTP to send messages between blockchain accounts, including DMs, notifications, announcements, and more.
 
-This SDK is in **Developer Preview** status and ready for you to experiment with.
+This SDK is in **Developer Preview** status and ready for you to start building with.
 
 However, we do **not** recommend using Developer Preview software in production apps. Software in this status is likely to change based on feedback.
 
