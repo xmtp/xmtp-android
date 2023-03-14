@@ -28,15 +28,14 @@ data class Contacts(
         if (response.envelopesList.isNullOrEmpty()) return null
 
         for (envelope in response.envelopesList) {
-            knownBundles[peerAddress] = ContactBundleBuilder.buildFromEnvelope(envelope)
+            val contactBundle = ContactBundleBuilder.buildFromEnvelope(envelope)
+            knownBundles[peerAddress] = contactBundle
+            val address = contactBundle.walletAddress
+            if (address == peerAddress) {
+                return contactBundle
+            }
         }
 
-        val contactBundle = ContactBundleBuilder.buildFromEnvelope(response.envelopesList.first())
-
-        val address = contactBundle.walletAddress
-        if (address == peerAddress) {
-            return contactBundle
-        }
         return null
     }
 }
