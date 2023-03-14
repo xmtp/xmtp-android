@@ -73,6 +73,11 @@ class MainActivity : AppCompatActivity(),
                 viewModel.uiState.collect(::ensureUiState)
             }
         }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.stream.collect(::addStreamedItem)
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -113,19 +118,20 @@ class MainActivity : AppCompatActivity(),
         copyWalletAddress()
     }
 
-    private suspend fun ensureClientState(clientState: ClientManager.ClientState) {
+    private fun ensureClientState(clientState: ClientManager.ClientState) {
         when (clientState) {
             is ClientManager.ClientState.Ready -> {
                 viewModel.fetchConversations()
                 binding.fab.visibility = View.VISIBLE
-                viewModel.stream.collect {
-                    if (it != null) {
-                        adapter.addItem(it)
-                    }
-                }
             }
             is ClientManager.ClientState.Error -> showError(clientState.message)
             is ClientManager.ClientState.Unknown -> Unit
+        }
+    }
+
+    private fun addStreamedItem(item: MainViewModel.MainListItem?) {
+        item?.let {
+            adapter.addItem(item)
         }
     }
 

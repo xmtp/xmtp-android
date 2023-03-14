@@ -84,11 +84,7 @@ class ConversationDetailActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.streamMessages.collect {
-                    if (it != null) {
-                        adapter.addItem(it)
-                    }
-                }
+                viewModel.streamMessages.collect(::addStreamedItem)
             }
         }
 
@@ -160,6 +156,12 @@ class ConversationDetailActivity : AppCompatActivity() {
                 binding.sendButton.isEnabled = true
                 viewModel.fetchMessages()
             }
+        }
+    }
+
+    private fun addStreamedItem(item: ConversationDetailViewModel.MessageListItem?) {
+        item?.let {
+            adapter.addItem(it)
         }
     }
 
