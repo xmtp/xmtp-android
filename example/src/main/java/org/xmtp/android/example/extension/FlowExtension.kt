@@ -1,6 +1,7 @@
 package org.xmtp.android.example.extension
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -20,6 +22,7 @@ fun <T> Flow<T>.flowWhileShared(
 ): Flow<T> {
     return started.command(subscriptionCount)
         .distinctUntilChanged()
+        .flowOn(Dispatchers.IO)
         .flatMapLatest {
             when (it) {
                 SharingCommand.START -> this
@@ -34,7 +37,7 @@ fun <T> stateFlow(
     producer: (subscriptionCount: StateFlow<Int>) -> Flow<T>,
 ): StateFlow<T> {
     val state = MutableStateFlow(initialValue)
-    scope.launch {
+    scope.launch(Dispatchers.IO) {
         producer(state.subscriptionCount).collect(state)
     }
     return state.asStateFlow()

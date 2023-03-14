@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.extension.flowWhileShared
@@ -61,6 +62,7 @@ class MainViewModel : ViewModel() {
                     subscriptionCount,
                     SharingStarted.WhileSubscribed(1000L)
                 )
+                .flowOn(Dispatchers.IO)
                 .distinctUntilChanged()
                 .mapLatest { conversation ->
                     MainListItem.ConversationItem(conversation.topic, conversation)

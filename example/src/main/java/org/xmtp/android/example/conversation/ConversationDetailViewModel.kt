@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.ClientManager
@@ -76,6 +77,7 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
                         subscriptionCount,
                         SharingStarted.WhileSubscribed(1000L)
                     )
+                    .flowOn(Dispatchers.IO)
                     .distinctUntilChanged()
                     .mapLatest { message ->
                         MessageListItem.Message(message.id, message)
