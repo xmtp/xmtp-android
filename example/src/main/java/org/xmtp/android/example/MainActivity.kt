@@ -73,6 +73,17 @@ class MainActivity : AppCompatActivity(),
                 viewModel.uiState.collect(::ensureUiState)
             }
         }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                if (ClientManager.clientState.value is ClientManager.ClientState.Ready) {
+                    viewModel.stream.collect {
+                        if (it != null) {
+                            adapter.addItem(it)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onDestroy() {
