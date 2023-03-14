@@ -6,7 +6,7 @@ import java.math.BigInteger
 
 object KeyUtil {
     fun getPublicKey(privateKey: ByteArray): ByteArray {
-        return Sign.publicKeyFromPrivate(BigInteger(1,privateKey)).toByteArray()
+        return Sign.publicKeyFromPrivate(BigInteger(1, privateKey)).toByteArray()
     }
 
     fun addUncompressedByte(publicKey: ByteArray): ByteArray {
