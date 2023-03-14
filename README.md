@@ -10,7 +10,7 @@ This SDK is in **Developer Preview** status and ready for you to start building 
 
 However, we do **not** recommend using Developer Preview software in production apps. Software in this status may change based on feedback.
 
-Specifically, this SDK is working to improve performance and test push notifications.
+Specifically, while push notifications should work with the current SDK, we are working on providing push notifications in the example app. We are also working on providing performance optimizations in the example app. These updates to the example app may inform changes to the SDK.
 
 Follow along in the [tracking issue](https://github.com/xmtp/xmtp-android/issues/1) for updates.
 
