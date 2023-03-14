@@ -23,7 +23,6 @@ import org.xmtp.android.example.conversation.ConversationsAdapter
 import org.xmtp.android.example.conversation.ConversationsClickListener
 import org.xmtp.android.example.conversation.NewConversationBottomSheet
 import org.xmtp.android.example.databinding.ActivityMainBinding
-import org.xmtp.android.library.Client
 import org.xmtp.android.library.Conversation
 
 class MainActivity : AppCompatActivity(),
