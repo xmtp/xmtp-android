@@ -24,7 +24,8 @@ class MainViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading(null))
     val uiState: StateFlow<UiState> = _uiState
 
-    init {
+    @UiThread
+    fun setupPush() {
         viewModelScope.launch(Dispatchers.IO) {
             PushNotificationTokenManager.ensurePushTokenIsConfigured()
         }
