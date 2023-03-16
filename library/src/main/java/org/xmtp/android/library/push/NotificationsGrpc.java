@@ -1,4 +1,4 @@
-package notifications.v1;
+package org.xmtp.android.library.push;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 
@@ -12,32 +12,32 @@ public final class NotificationsGrpc {
 
   private NotificationsGrpc() {}
 
-  public static final String SERVICE_NAME = "notifications.v1.Notifications";
+  public static final String SERVICE_NAME = "org.xmtp.android.library.push.Notifications";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<notifications.v1.Service.RegisterInstallationRequest,
-      notifications.v1.Service.RegisterInstallationResponse> getRegisterInstallationMethod;
+  private static volatile io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.RegisterInstallationRequest,
+      org.xmtp.android.library.push.Service.RegisterInstallationResponse> getRegisterInstallationMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "RegisterInstallation",
-      requestType = notifications.v1.Service.RegisterInstallationRequest.class,
-      responseType = notifications.v1.Service.RegisterInstallationResponse.class,
+      requestType = org.xmtp.android.library.push.Service.RegisterInstallationRequest.class,
+      responseType = org.xmtp.android.library.push.Service.RegisterInstallationResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<notifications.v1.Service.RegisterInstallationRequest,
-      notifications.v1.Service.RegisterInstallationResponse> getRegisterInstallationMethod() {
-    io.grpc.MethodDescriptor<notifications.v1.Service.RegisterInstallationRequest, notifications.v1.Service.RegisterInstallationResponse> getRegisterInstallationMethod;
+  public static io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.RegisterInstallationRequest,
+      org.xmtp.android.library.push.Service.RegisterInstallationResponse> getRegisterInstallationMethod() {
+    io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.RegisterInstallationRequest, org.xmtp.android.library.push.Service.RegisterInstallationResponse> getRegisterInstallationMethod;
     if ((getRegisterInstallationMethod = NotificationsGrpc.getRegisterInstallationMethod) == null) {
       synchronized (NotificationsGrpc.class) {
         if ((getRegisterInstallationMethod = NotificationsGrpc.getRegisterInstallationMethod) == null) {
           NotificationsGrpc.getRegisterInstallationMethod = getRegisterInstallationMethod =
-              io.grpc.MethodDescriptor.<notifications.v1.Service.RegisterInstallationRequest, notifications.v1.Service.RegisterInstallationResponse>newBuilder()
+              io.grpc.MethodDescriptor.<org.xmtp.android.library.push.Service.RegisterInstallationRequest, org.xmtp.android.library.push.Service.RegisterInstallationResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "RegisterInstallation"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  notifications.v1.Service.RegisterInstallationRequest.getDefaultInstance()))
+                  org.xmtp.android.library.push.Service.RegisterInstallationRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  notifications.v1.Service.RegisterInstallationResponse.getDefaultInstance()))
+                  org.xmtp.android.library.push.Service.RegisterInstallationResponse.getDefaultInstance()))
               .setSchemaDescriptor(new NotificationsMethodDescriptorSupplier("RegisterInstallation"))
               .build();
         }
@@ -46,27 +46,27 @@ public final class NotificationsGrpc {
     return getRegisterInstallationMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<notifications.v1.Service.DeleteInstallationRequest,
+  private static volatile io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.DeleteInstallationRequest,
       com.google.protobuf.Empty> getDeleteInstallationMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "DeleteInstallation",
-      requestType = notifications.v1.Service.DeleteInstallationRequest.class,
+      requestType = org.xmtp.android.library.push.Service.DeleteInstallationRequest.class,
       responseType = com.google.protobuf.Empty.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<notifications.v1.Service.DeleteInstallationRequest,
+  public static io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.DeleteInstallationRequest,
       com.google.protobuf.Empty> getDeleteInstallationMethod() {
-    io.grpc.MethodDescriptor<notifications.v1.Service.DeleteInstallationRequest, com.google.protobuf.Empty> getDeleteInstallationMethod;
+    io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.DeleteInstallationRequest, com.google.protobuf.Empty> getDeleteInstallationMethod;
     if ((getDeleteInstallationMethod = NotificationsGrpc.getDeleteInstallationMethod) == null) {
       synchronized (NotificationsGrpc.class) {
         if ((getDeleteInstallationMethod = NotificationsGrpc.getDeleteInstallationMethod) == null) {
           NotificationsGrpc.getDeleteInstallationMethod = getDeleteInstallationMethod =
-              io.grpc.MethodDescriptor.<notifications.v1.Service.DeleteInstallationRequest, com.google.protobuf.Empty>newBuilder()
+              io.grpc.MethodDescriptor.<org.xmtp.android.library.push.Service.DeleteInstallationRequest, com.google.protobuf.Empty>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "DeleteInstallation"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  notifications.v1.Service.DeleteInstallationRequest.getDefaultInstance()))
+                  org.xmtp.android.library.push.Service.DeleteInstallationRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   com.google.protobuf.Empty.getDefaultInstance()))
               .setSchemaDescriptor(new NotificationsMethodDescriptorSupplier("DeleteInstallation"))
@@ -77,27 +77,27 @@ public final class NotificationsGrpc {
     return getDeleteInstallationMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<notifications.v1.Service.SubscribeRequest,
+  private static volatile io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.SubscribeRequest,
       com.google.protobuf.Empty> getSubscribeMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "Subscribe",
-      requestType = notifications.v1.Service.SubscribeRequest.class,
+      requestType = org.xmtp.android.library.push.Service.SubscribeRequest.class,
       responseType = com.google.protobuf.Empty.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<notifications.v1.Service.SubscribeRequest,
+  public static io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.SubscribeRequest,
       com.google.protobuf.Empty> getSubscribeMethod() {
-    io.grpc.MethodDescriptor<notifications.v1.Service.SubscribeRequest, com.google.protobuf.Empty> getSubscribeMethod;
+    io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.SubscribeRequest, com.google.protobuf.Empty> getSubscribeMethod;
     if ((getSubscribeMethod = NotificationsGrpc.getSubscribeMethod) == null) {
       synchronized (NotificationsGrpc.class) {
         if ((getSubscribeMethod = NotificationsGrpc.getSubscribeMethod) == null) {
           NotificationsGrpc.getSubscribeMethod = getSubscribeMethod =
-              io.grpc.MethodDescriptor.<notifications.v1.Service.SubscribeRequest, com.google.protobuf.Empty>newBuilder()
+              io.grpc.MethodDescriptor.<org.xmtp.android.library.push.Service.SubscribeRequest, com.google.protobuf.Empty>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Subscribe"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  notifications.v1.Service.SubscribeRequest.getDefaultInstance()))
+                  org.xmtp.android.library.push.Service.SubscribeRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   com.google.protobuf.Empty.getDefaultInstance()))
               .setSchemaDescriptor(new NotificationsMethodDescriptorSupplier("Subscribe"))
@@ -108,27 +108,27 @@ public final class NotificationsGrpc {
     return getSubscribeMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<notifications.v1.Service.UnsubscribeRequest,
+  private static volatile io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.UnsubscribeRequest,
       com.google.protobuf.Empty> getUnsubscribeMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "Unsubscribe",
-      requestType = notifications.v1.Service.UnsubscribeRequest.class,
+      requestType = org.xmtp.android.library.push.Service.UnsubscribeRequest.class,
       responseType = com.google.protobuf.Empty.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<notifications.v1.Service.UnsubscribeRequest,
+  public static io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.UnsubscribeRequest,
       com.google.protobuf.Empty> getUnsubscribeMethod() {
-    io.grpc.MethodDescriptor<notifications.v1.Service.UnsubscribeRequest, com.google.protobuf.Empty> getUnsubscribeMethod;
+    io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.UnsubscribeRequest, com.google.protobuf.Empty> getUnsubscribeMethod;
     if ((getUnsubscribeMethod = NotificationsGrpc.getUnsubscribeMethod) == null) {
       synchronized (NotificationsGrpc.class) {
         if ((getUnsubscribeMethod = NotificationsGrpc.getUnsubscribeMethod) == null) {
           NotificationsGrpc.getUnsubscribeMethod = getUnsubscribeMethod =
-              io.grpc.MethodDescriptor.<notifications.v1.Service.UnsubscribeRequest, com.google.protobuf.Empty>newBuilder()
+              io.grpc.MethodDescriptor.<org.xmtp.android.library.push.Service.UnsubscribeRequest, com.google.protobuf.Empty>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Unsubscribe"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  notifications.v1.Service.UnsubscribeRequest.getDefaultInstance()))
+                  org.xmtp.android.library.push.Service.UnsubscribeRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   com.google.protobuf.Empty.getDefaultInstance()))
               .setSchemaDescriptor(new NotificationsMethodDescriptorSupplier("Unsubscribe"))
@@ -189,28 +189,28 @@ public final class NotificationsGrpc {
 
     /**
      */
-    public void registerInstallation(notifications.v1.Service.RegisterInstallationRequest request,
-        io.grpc.stub.StreamObserver<notifications.v1.Service.RegisterInstallationResponse> responseObserver) {
+    public void registerInstallation(org.xmtp.android.library.push.Service.RegisterInstallationRequest request,
+        io.grpc.stub.StreamObserver<org.xmtp.android.library.push.Service.RegisterInstallationResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getRegisterInstallationMethod(), responseObserver);
     }
 
     /**
      */
-    public void deleteInstallation(notifications.v1.Service.DeleteInstallationRequest request,
+    public void deleteInstallation(org.xmtp.android.library.push.Service.DeleteInstallationRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getDeleteInstallationMethod(), responseObserver);
     }
 
     /**
      */
-    public void subscribe(notifications.v1.Service.SubscribeRequest request,
+    public void subscribe(org.xmtp.android.library.push.Service.SubscribeRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSubscribeMethod(), responseObserver);
     }
 
     /**
      */
-    public void unsubscribe(notifications.v1.Service.UnsubscribeRequest request,
+    public void unsubscribe(org.xmtp.android.library.push.Service.UnsubscribeRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getUnsubscribeMethod(), responseObserver);
     }
@@ -221,28 +221,28 @@ public final class NotificationsGrpc {
             getRegisterInstallationMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                notifications.v1.Service.RegisterInstallationRequest,
-                notifications.v1.Service.RegisterInstallationResponse>(
+                org.xmtp.android.library.push.Service.RegisterInstallationRequest,
+                org.xmtp.android.library.push.Service.RegisterInstallationResponse>(
                   this, METHODID_REGISTER_INSTALLATION)))
           .addMethod(
             getDeleteInstallationMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                notifications.v1.Service.DeleteInstallationRequest,
+                org.xmtp.android.library.push.Service.DeleteInstallationRequest,
                 com.google.protobuf.Empty>(
                   this, METHODID_DELETE_INSTALLATION)))
           .addMethod(
             getSubscribeMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                notifications.v1.Service.SubscribeRequest,
+                org.xmtp.android.library.push.Service.SubscribeRequest,
                 com.google.protobuf.Empty>(
                   this, METHODID_SUBSCRIBE)))
           .addMethod(
             getUnsubscribeMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                notifications.v1.Service.UnsubscribeRequest,
+                org.xmtp.android.library.push.Service.UnsubscribeRequest,
                 com.google.protobuf.Empty>(
                   this, METHODID_UNSUBSCRIBE)))
           .build();
@@ -265,15 +265,15 @@ public final class NotificationsGrpc {
 
     /**
      */
-    public void registerInstallation(notifications.v1.Service.RegisterInstallationRequest request,
-        io.grpc.stub.StreamObserver<notifications.v1.Service.RegisterInstallationResponse> responseObserver) {
+    public void registerInstallation(org.xmtp.android.library.push.Service.RegisterInstallationRequest request,
+        io.grpc.stub.StreamObserver<org.xmtp.android.library.push.Service.RegisterInstallationResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getRegisterInstallationMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void deleteInstallation(notifications.v1.Service.DeleteInstallationRequest request,
+    public void deleteInstallation(org.xmtp.android.library.push.Service.DeleteInstallationRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getDeleteInstallationMethod(), getCallOptions()), request, responseObserver);
@@ -281,7 +281,7 @@ public final class NotificationsGrpc {
 
     /**
      */
-    public void subscribe(notifications.v1.Service.SubscribeRequest request,
+    public void subscribe(org.xmtp.android.library.push.Service.SubscribeRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getSubscribeMethod(), getCallOptions()), request, responseObserver);
@@ -289,7 +289,7 @@ public final class NotificationsGrpc {
 
     /**
      */
-    public void unsubscribe(notifications.v1.Service.UnsubscribeRequest request,
+    public void unsubscribe(org.xmtp.android.library.push.Service.UnsubscribeRequest request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getUnsubscribeMethod(), getCallOptions()), request, responseObserver);
@@ -312,28 +312,28 @@ public final class NotificationsGrpc {
 
     /**
      */
-    public notifications.v1.Service.RegisterInstallationResponse registerInstallation(notifications.v1.Service.RegisterInstallationRequest request) {
+    public org.xmtp.android.library.push.Service.RegisterInstallationResponse registerInstallation(org.xmtp.android.library.push.Service.RegisterInstallationRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getRegisterInstallationMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public com.google.protobuf.Empty deleteInstallation(notifications.v1.Service.DeleteInstallationRequest request) {
+    public com.google.protobuf.Empty deleteInstallation(org.xmtp.android.library.push.Service.DeleteInstallationRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getDeleteInstallationMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public com.google.protobuf.Empty subscribe(notifications.v1.Service.SubscribeRequest request) {
+    public com.google.protobuf.Empty subscribe(org.xmtp.android.library.push.Service.SubscribeRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getSubscribeMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public com.google.protobuf.Empty unsubscribe(notifications.v1.Service.UnsubscribeRequest request) {
+    public com.google.protobuf.Empty unsubscribe(org.xmtp.android.library.push.Service.UnsubscribeRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getUnsubscribeMethod(), getCallOptions(), request);
     }
@@ -355,8 +355,8 @@ public final class NotificationsGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<notifications.v1.Service.RegisterInstallationResponse> registerInstallation(
-        notifications.v1.Service.RegisterInstallationRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<org.xmtp.android.library.push.Service.RegisterInstallationResponse> registerInstallation(
+        org.xmtp.android.library.push.Service.RegisterInstallationRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getRegisterInstallationMethod(), getCallOptions()), request);
     }
@@ -364,7 +364,7 @@ public final class NotificationsGrpc {
     /**
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty> deleteInstallation(
-        notifications.v1.Service.DeleteInstallationRequest request) {
+        org.xmtp.android.library.push.Service.DeleteInstallationRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getDeleteInstallationMethod(), getCallOptions()), request);
     }
@@ -372,7 +372,7 @@ public final class NotificationsGrpc {
     /**
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty> subscribe(
-        notifications.v1.Service.SubscribeRequest request) {
+        org.xmtp.android.library.push.Service.SubscribeRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getSubscribeMethod(), getCallOptions()), request);
     }
@@ -380,7 +380,7 @@ public final class NotificationsGrpc {
     /**
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty> unsubscribe(
-        notifications.v1.Service.UnsubscribeRequest request) {
+        org.xmtp.android.library.push.Service.UnsubscribeRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getUnsubscribeMethod(), getCallOptions()), request);
     }
@@ -409,19 +409,19 @@ public final class NotificationsGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_REGISTER_INSTALLATION:
-          serviceImpl.registerInstallation((notifications.v1.Service.RegisterInstallationRequest) request,
-              (io.grpc.stub.StreamObserver<notifications.v1.Service.RegisterInstallationResponse>) responseObserver);
+          serviceImpl.registerInstallation((org.xmtp.android.library.push.Service.RegisterInstallationRequest) request,
+              (io.grpc.stub.StreamObserver<org.xmtp.android.library.push.Service.RegisterInstallationResponse>) responseObserver);
           break;
         case METHODID_DELETE_INSTALLATION:
-          serviceImpl.deleteInstallation((notifications.v1.Service.DeleteInstallationRequest) request,
+          serviceImpl.deleteInstallation((org.xmtp.android.library.push.Service.DeleteInstallationRequest) request,
               (io.grpc.stub.StreamObserver<com.google.protobuf.Empty>) responseObserver);
           break;
         case METHODID_SUBSCRIBE:
-          serviceImpl.subscribe((notifications.v1.Service.SubscribeRequest) request,
+          serviceImpl.subscribe((org.xmtp.android.library.push.Service.SubscribeRequest) request,
               (io.grpc.stub.StreamObserver<com.google.protobuf.Empty>) responseObserver);
           break;
         case METHODID_UNSUBSCRIBE:
-          serviceImpl.unsubscribe((notifications.v1.Service.UnsubscribeRequest) request,
+          serviceImpl.unsubscribe((org.xmtp.android.library.push.Service.UnsubscribeRequest) request,
               (io.grpc.stub.StreamObserver<com.google.protobuf.Empty>) responseObserver);
           break;
         default:
@@ -446,7 +446,7 @@ public final class NotificationsGrpc {
 
     @java.lang.Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return notifications.v1.Service.getDescriptor();
+      return org.xmtp.android.library.push.Service.getDescriptor();
     }
 
     @java.lang.Override

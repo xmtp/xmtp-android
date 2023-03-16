@@ -1,4 +1,4 @@
-package notifications.v1
+package org.xmtp.android.library.push
 
 import com.google.protobuf.Empty
 import io.grpc.CallOptions
@@ -24,10 +24,10 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
-import notifications.v1.NotificationsGrpc.getServiceDescriptor
+import org.xmtp.android.library.push.NotificationsGrpc.getServiceDescriptor
 
 /**
- * Holder for Kotlin coroutine-based client and server APIs for notifications.v1.Notifications.
+ * Holder for Kotlin coroutine-based client and server APIs for org.xmtp.android.library.push.Notifications.
  */
 public object NotificationsGrpcKt {
   public const val SERVICE_NAME: String = NotificationsGrpc.SERVICE_NAME
@@ -54,7 +54,7 @@ public object NotificationsGrpcKt {
     get() = NotificationsGrpc.getUnsubscribeMethod()
 
   /**
-   * A stub for issuing RPCs to a(n) notifications.v1.Notifications service as suspending
+   * A stub for issuing RPCs to a(n) org.xmtp.android.library.push.Notifications service as suspending
    * coroutines.
    */
   @StubFor(NotificationsGrpc::class)
@@ -151,14 +151,14 @@ public object NotificationsGrpcKt {
   }
 
   /**
-   * Skeletal implementation of the notifications.v1.Notifications service based on Kotlin
+   * Skeletal implementation of the org.xmtp.android.library.push.Notifications service based on Kotlin
    * coroutines.
    */
   public abstract class NotificationsCoroutineImplBase(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
   ) : AbstractCoroutineServerImpl(coroutineContext) {
     /**
-     * Returns the response to an RPC for notifications.v1.Notifications.RegisterInstallation.
+     * Returns the response to an RPC for org.xmtp.android.library.push.Notifications.RegisterInstallation.
      *
      * If this method fails with a [StatusException], the RPC will fail with the corresponding
      * [Status].  If this method fails with a [java.util.concurrent.CancellationException], the RPC
@@ -170,10 +170,10 @@ public object NotificationsGrpcKt {
      */
     public open suspend fun registerInstallation(request: Service.RegisterInstallationRequest):
         Service.RegisterInstallationResponse = throw
-        StatusException(UNIMPLEMENTED.withDescription("Method notifications.v1.Notifications.RegisterInstallation is unimplemented"))
+        StatusException(UNIMPLEMENTED.withDescription("Method org.xmtp.android.library.push.Notifications.RegisterInstallation is unimplemented"))
 
     /**
-     * Returns the response to an RPC for notifications.v1.Notifications.DeleteInstallation.
+     * Returns the response to an RPC for org.xmtp.android.library.push.Notifications.DeleteInstallation.
      *
      * If this method fails with a [StatusException], the RPC will fail with the corresponding
      * [Status].  If this method fails with a [java.util.concurrent.CancellationException], the RPC
@@ -185,10 +185,10 @@ public object NotificationsGrpcKt {
      */
     public open suspend fun deleteInstallation(request: Service.DeleteInstallationRequest): Empty =
         throw
-        StatusException(UNIMPLEMENTED.withDescription("Method notifications.v1.Notifications.DeleteInstallation is unimplemented"))
+        StatusException(UNIMPLEMENTED.withDescription("Method org.xmtp.android.library.push.Notifications.DeleteInstallation is unimplemented"))
 
     /**
-     * Returns the response to an RPC for notifications.v1.Notifications.Subscribe.
+     * Returns the response to an RPC for org.xmtp.android.library.push.Notifications.Subscribe.
      *
      * If this method fails with a [StatusException], the RPC will fail with the corresponding
      * [Status].  If this method fails with a [java.util.concurrent.CancellationException], the RPC
@@ -199,10 +199,10 @@ public object NotificationsGrpcKt {
      * @param request The request from the client.
      */
     public open suspend fun subscribe(request: Service.SubscribeRequest): Empty = throw
-        StatusException(UNIMPLEMENTED.withDescription("Method notifications.v1.Notifications.Subscribe is unimplemented"))
+        StatusException(UNIMPLEMENTED.withDescription("Method org.xmtp.android.library.push.Notifications.Subscribe is unimplemented"))
 
     /**
-     * Returns the response to an RPC for notifications.v1.Notifications.Unsubscribe.
+     * Returns the response to an RPC for org.xmtp.android.library.push.Notifications.Unsubscribe.
      *
      * If this method fails with a [StatusException], the RPC will fail with the corresponding
      * [Status].  If this method fails with a [java.util.concurrent.CancellationException], the RPC
@@ -213,7 +213,7 @@ public object NotificationsGrpcKt {
      * @param request The request from the client.
      */
     public open suspend fun unsubscribe(request: Service.UnsubscribeRequest): Empty = throw
-        StatusException(UNIMPLEMENTED.withDescription("Method notifications.v1.Notifications.Unsubscribe is unimplemented"))
+        StatusException(UNIMPLEMENTED.withDescription("Method org.xmtp.android.library.push.Notifications.Unsubscribe is unimplemented"))
 
     public final override fun bindService(): ServerServiceDefinition =
         builder(getServiceDescriptor())
