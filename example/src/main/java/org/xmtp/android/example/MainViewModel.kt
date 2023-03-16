@@ -16,12 +16,19 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.extension.flowWhileShared
 import org.xmtp.android.example.extension.stateFlow
+import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
 import org.xmtp.android.library.Conversation
 
 class MainViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading(null))
     val uiState: StateFlow<UiState> = _uiState
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            PushNotificationTokenManager.ensurePushTokenIsConfigured()
+        }
+    }
 
     @UiThread
     fun fetchConversations() {
