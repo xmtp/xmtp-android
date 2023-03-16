@@ -2,7 +2,6 @@ package org.xmtp.android.example.pushnotifications
 
 import android.accounts.AccountManager
 import android.app.PendingIntent
-import android.content.Intent
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -28,13 +27,6 @@ class PushNotificationsService : FirebaseMessagingService() {
         internal const val CHANNEL_ID = "xmtp_message"
     }
 
-    /**
-     * Note: This is only being called when the app is foregrounded because we are using FCM's
-     * `notification` payload. Backgrounded notifications are sent directly to the system tray.
-     * We receive the url to open on clicks in MainActivity's intent.
-     *
-     * https://firebase.google.com/docs/cloud-messaging/android/receive#handling_messages
-     */
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         Log.d(TAG, "On message received.")
@@ -53,13 +45,6 @@ class PushNotificationsService : FirebaseMessagingService() {
             return
         }
 
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            Intent(this, ConversationDetailActivity::class.java).apply { putExtra("topic", topic) },
-            (PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        )
-
         GlobalScope.launch(Dispatchers.Main) {
             ClientManager.createClient(keysData)
         }
@@ -69,10 +54,22 @@ class PushNotificationsService : FirebaseMessagingService() {
             return
         }
         val envelope = EnvelopeBuilder.buildFromString(topic, Date(), encryptedMessageData)
-
+        val peerAddress = conversation.peerAddress
         val decodedMessage = conversation.decode(envelope)
+
         val body = decodedMessage.body
-        val title = conversation.peerAddress.truncatedAddress()
+        val title = peerAddress.truncatedAddress()
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            ConversationDetailActivity.intent(
+                this,
+                topic = topic,
+                peerAddress = peerAddress
+            ),
+            (PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        )
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_xmtp_white)
