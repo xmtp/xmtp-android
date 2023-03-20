@@ -1,31 +1,43 @@
 package org.xmtp.android.library.push
 
+import io.grpc.Context
 import io.grpc.Grpc
 import io.grpc.ManagedChannel
 import io.grpc.TlsChannelCredentials
+import org.xmtp.android.library.ApiClient
+import org.xmtp.android.library.Contacts
+import org.xmtp.android.library.Conversations
 import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.push.Service.DeliveryMechanism
 import org.xmtp.android.library.push.Service.RegisterInstallationRequest
 import org.xmtp.android.library.push.Service.SubscribeRequest
+import java.util.UUID
 
+class XMTPPush() {
+    lateinit var installationId: String
+    lateinit var context: android.content.Context
+    var installationIdKey: String = "installationId"
+    var pushServer: String = ""
 
-data class XMTPPush(
-    var installationId: String,
-    var installationIdKey: String = "installationId",
-    var pushServer: String = "",
-) {
     companion object {
-        public var shared = XMTPPush()
+        var shared = XMTPPush()
     }
 
-    init {
-//        val id = UserDefaults.standard.string(forKey = installationIdKey)
-//        if (id != null) {
-//            installationId = id
-//        } else {
-//            installationId = UUID.randomUUID().toString()
-//            UserDefaults.standard.set(installationId, forKey = installationIdKey)
-//        }
+    constructor(
+        context: android.content.Context,
+        installationIdKey: String = "installationId",
+        pushServer: String = "",
+    ) : this() {
+        this.context = context
+        val id = PushPreferences.getInstallationId(context)
+        if (id != null) {
+            this.installationId = id
+        } else {
+            installationId = UUID.randomUUID().toString()
+            PushPreferences.setInstallationId(context, installationId)
+        }
+        this.installationIdKey = installationIdKey
+        this.pushServer = pushServer
     }
 
     fun request(): Boolean {
