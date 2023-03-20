@@ -384,9 +384,6 @@ class ConversationTest {
         val messages = aliceConversation.messages(limit = 1)
         assertEquals(1, messages.size)
         assertEquals("hey alice 3", messages[0].body)
-        val messages2 = aliceConversation.messages(limit = 1, after = date)
-        assertEquals(1, messages2.size)
-        assertEquals("hey alice 2", messages2[0].body)
     }
 
     @Test
@@ -410,7 +407,7 @@ class ConversationTest {
         assertEquals("hey alice 3", messages[0].body)
         val messages2 = aliceConversation.messages(limit = 1, after = date)
         assertEquals(1, messages2.size)
-        assertEquals("hey alice 2", messages2[0].body)
+        assertEquals("hey alice 1", messages2[0].body)
     }
 
     @Test

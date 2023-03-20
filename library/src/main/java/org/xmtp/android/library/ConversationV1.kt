@@ -3,9 +3,9 @@ package org.xmtp.android.library
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
+import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
-import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
@@ -56,18 +56,26 @@ data class ConversationV1(
         val decrypted = message.v1.decrypt(client.privateKeyBundleV1)
         val encodedMessage = EncodedContent.parseFrom(decrypted)
         val header = message.v1.header
-        return DecodedMessage(
+        val decoded = DecodedMessage(
             encodedContent = encodedMessage,
             senderAddress = header.sender.walletAddress,
             sent = message.v1.sentAt
         )
+
+        decoded.id = generateId(envelope)
+
+        return decoded
     }
 
     fun send(text: String, options: SendOptions? = null): String {
         return send(text = text, sendOptions = options, sentAt = null)
     }
 
-    internal fun send(text: String, sendOptions: SendOptions? = null, sentAt: Date? = null): String {
+    internal fun send(
+        text: String,
+        sendOptions: SendOptions? = null,
+        sentAt: Date? = null,
+    ): String {
         val preparedMessage = prepareMessage(content = text, options = sendOptions)
         preparedMessage.send()
         return preparedMessage.messageID
@@ -131,4 +139,6 @@ data class ConversationV1(
         }
     }
 
+    private fun generateId(envelope: Envelope): String =
+        Hash.sha256(envelope.message.toByteArray()).toHex()
 }

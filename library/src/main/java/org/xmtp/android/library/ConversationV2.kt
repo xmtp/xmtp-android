@@ -83,7 +83,7 @@ data class ConversationV2(
     fun decodeEnvelope(envelope: Envelope): DecodedMessage {
         val message = Message.parseFrom(envelope.message)
         val decoded = decode(message.v2)
-        decoded.id = generateID(envelope)
+        decoded.id = generateId(envelope)
         return decoded
     }
 
@@ -146,6 +146,6 @@ data class ConversationV2(
         }
     }
 
-    private fun generateID(envelope: Envelope): String =
+    private fun generateId(envelope: Envelope): String =
         Hash.sha256(envelope.message.toByteArray()).toHex()
 }
