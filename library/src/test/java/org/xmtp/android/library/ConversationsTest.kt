@@ -47,5 +47,4 @@ class ConversationsTest {
         assertEquals(conversation.peerAddress, newWallet.address)
         assertEquals(conversation.createdAt.time, created.time)
     }
-
 }
