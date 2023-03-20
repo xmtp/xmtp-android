@@ -47,29 +47,18 @@ class ConversationTest {
     lateinit var aliceClient: Client
     lateinit var bob: PrivateKey
     lateinit var bobClient: Client
-
-    private fun publishLegacyContact(client: Client) {
-        val contactBundle = ContactBundle.newBuilder().apply {
-            v1Builder.keyBundle = client.privateKeyBundleV1.toPublicKeyBundle()
-        }.build()
-        val envelope = Envelope.newBuilder().apply {
-            contentTopic = Topic.contact(client.address).description
-            timestampNs = (Date().time * 1_000_000)
-            message = contactBundle.toByteString()
-        }.build()
-
-        client.publish(envelopes = listOf(envelope))
-    }
+    lateinit var fixtures: Fixtures
 
     @Before
     fun setUp() {
-        aliceWallet = PrivateKeyBuilder()
-        alice = aliceWallet.getPrivateKey()
-        bobWallet = PrivateKeyBuilder()
-        bob = bobWallet.getPrivateKey()
-        fakeApiClient = FakeApiClient()
-        aliceClient = Client().create(account = aliceWallet, apiClient = fakeApiClient)
-        bobClient = Client().create(account = bobWallet, apiClient = fakeApiClient)
+        fixtures = fixtures()
+        aliceWallet = fixtures.aliceAccount
+        alice = fixtures.alice
+        bobWallet = fixtures.bobAccount
+        bob = fixtures.bob
+        fakeApiClient = fixtures.fakeApiClient
+        aliceClient = fixtures.aliceClient
+        bobClient = fixtures.bobClient
     }
 
     @Test
@@ -171,8 +160,8 @@ class ConversationTest {
     @Test
     fun testCanLoadV1Messages() {
         // Overwrite contact as legacy so we can get v1
-        publishLegacyContact(client = bobClient)
-        publishLegacyContact(client = aliceClient)
+        fixtures.publishLegacyContact(client = bobClient)
+        fixtures.publishLegacyContact(client = aliceClient)
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
         val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
 
@@ -256,8 +245,8 @@ class ConversationTest {
 
     @Test
     fun testCanSendGzipCompressedV1Messages() {
-        publishLegacyContact(client = bobClient)
-        publishLegacyContact(client = aliceClient)
+        fixtures.publishLegacyContact(client = bobClient)
+        fixtures.publishLegacyContact(client = aliceClient)
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
         val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
         bobConversation.send(
@@ -271,8 +260,8 @@ class ConversationTest {
 
     @Test
     fun testCanSendDeflateCompressedV1Messages() {
-        publishLegacyContact(client = bobClient)
-        publishLegacyContact(client = aliceClient)
+        fixtures.publishLegacyContact(client = bobClient)
+        fixtures.publishLegacyContact(client = aliceClient)
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
         val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
         bobConversation.send(
@@ -382,8 +371,8 @@ class ConversationTest {
     @Test
     fun testCanPaginateV1Messages() {
         // Overwrite contact as legacy so we can get v1
-        publishLegacyContact(client = bobClient)
-        publishLegacyContact(client = aliceClient)
+        fixtures.publishLegacyContact(client = bobClient)
+        fixtures.publishLegacyContact(client = aliceClient)
         val bobConversation = bobClient.conversations.newConversation(alice.walletAddress)
         val aliceConversation = aliceClient.conversations.newConversation(bob.walletAddress)
 
@@ -467,8 +456,8 @@ class ConversationTest {
     @Test
     fun testStreamingMessagesFromV1Conversation() = runTest {
         // Overwrite contact as legacy
-        publishLegacyContact(client = bobClient)
-        publishLegacyContact(client = aliceClient)
+        fixtures.publishLegacyContact(client = bobClient)
+        fixtures.publishLegacyContact(client = aliceClient)
         val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
         conversation.streamMessages().test {
             val encoder = TextCodec()
@@ -556,4 +545,33 @@ class ConversationTest {
             conversation.decodeEnvelope(envelope)
         }
     }
+
+    @Test
+    fun testCanPrepareV1Message() {
+        // Publish legacy contacts so we can get v1 conversations
+        fixtures.publishLegacyContact(client = bobClient)
+        fixtures.publishLegacyContact(client = aliceClient)
+        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+        assertEquals(conversation.version, Conversation.Version.V1)
+        val preparedMessage = conversation.prepareMessage(content = "hi")
+        val messageID = preparedMessage.messageID
+        preparedMessage.send()
+        val messages = conversation.messages()
+        val message = messages[0]
+        assertEquals("hi", message.body)
+        assertEquals(message.id, messageID)
+    }
+
+    @Test
+    fun testCanPrepareV2Message() {
+        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+        val preparedMessage = conversation.prepareMessage(content = "hi")
+        val messageID = preparedMessage.messageID
+        preparedMessage.send()
+        val messages = conversation.messages()
+        val message = messages[0]
+        assertEquals("hi", message.body)
+        assertEquals(message.id, messageID)
+    }
+
 }
