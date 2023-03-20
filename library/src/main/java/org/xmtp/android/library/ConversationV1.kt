@@ -64,11 +64,11 @@ data class ConversationV1(
     }
 
     fun send(text: String, options: SendOptions? = null): String {
-        return send(text = text, options = options, sentAt = null)
+        return send(text = text, sendOptions = options, sentAt = null)
     }
 
-    internal fun send(text: String, options: SendOptions? = null, sentAt: Date? = null): String {
-        val preparedMessage = prepareMessage(content = text, options = options)
+    internal fun send(text: String, sendOptions: SendOptions? = null, sentAt: Date? = null): String {
+        val preparedMessage = prepareMessage(content = text, options = sendOptions)
         preparedMessage.send()
         return preparedMessage.messageID
     }
