@@ -9,8 +9,6 @@ import org.junit.Before
 import org.junit.Test
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.TextCodec
-import org.xmtp.android.library.messages.ContactBundle
-import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1
 import org.xmtp.android.library.messages.InvitationV1ContextBuilder
@@ -551,7 +549,7 @@ class ConversationTest {
         val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
         assertEquals(conversation.version, Conversation.Version.V1)
         val preparedMessage = conversation.prepareMessage(content = "hi")
-        val messageID = preparedMessage.messageID
+        val messageID = preparedMessage.messageId
         preparedMessage.send()
         val messages = conversation.messages()
         val message = messages[0]
@@ -563,12 +561,11 @@ class ConversationTest {
     fun testCanPrepareV2Message() {
         val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
         val preparedMessage = conversation.prepareMessage(content = "hi")
-        val messageID = preparedMessage.messageID
+        val messageID = preparedMessage.messageId
         preparedMessage.send()
         val messages = conversation.messages()
         val message = messages[0]
         assertEquals("hi", message.body)
         assertEquals(message.id, messageID)
     }
-
 }

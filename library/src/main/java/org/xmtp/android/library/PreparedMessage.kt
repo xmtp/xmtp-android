@@ -6,14 +6,16 @@ import org.xmtp.android.library.messages.Envelope
 data class PreparedMessage(
     var messageEnvelope: Envelope,
     var conversation: Conversation,
-    var onSend: () -> Unit) {
+    var onSend: () -> Unit,
+) {
 
-    public fun decodedMessage() : DecodedMessage =
+    fun decodedMessage(): DecodedMessage =
         conversation.decode(messageEnvelope)
 
-    public fun send() {
+    fun send() {
         onSend()
     }
-    val messageID: String
+
+    val messageId: String
         get() = Hash.sha256(messageEnvelope.message.toByteArray()).toHex()
 }

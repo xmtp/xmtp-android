@@ -6,7 +6,6 @@ import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
-import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
@@ -19,7 +18,6 @@ import org.xmtp.android.library.messages.SealedInvitationHeaderV1
 import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.Invitation
-import org.xmtp.proto.message.contents.encodedContent
 import java.util.Date
 
 data class ConversationV2(
@@ -93,24 +91,28 @@ data class ConversationV2(
     fun <T> send(content: T, options: SendOptions? = null): String {
         val preparedMessage = prepareMessage(content = content, options = options)
         preparedMessage.send()
-        return preparedMessage.messageID
+        return preparedMessage.messageId
     }
 
     fun send(text: String, options: SendOptions? = null, sentAt: Date? = null): String {
         val preparedMessage = prepareMessage(content = text, options = options)
         preparedMessage.send()
-        return preparedMessage.messageID
+        return preparedMessage.messageId
     }
 
     fun <Codec : ContentCodec<T>, T> encode(codec: Codec, content: T): ByteArray {
         val encodedContent = codec.encode(content = content)
-        val message = MessageV2Builder.buildEncode(client = client,
+        val message = MessageV2Builder.buildEncode(
+            client = client,
             encodedContent = encodedContent,
             topic = topic,
-            keyMaterial = keyMaterial)
-        val envelope = EnvelopeBuilder.buildFromString(topic = topic,
+            keyMaterial = keyMaterial
+        )
+        val envelope = EnvelopeBuilder.buildFromString(
+            topic = topic,
             timestamp = Date(),
-            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray())
+            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray()
+        )
         return envelope.toByteArray()
     }
 
@@ -134,13 +136,17 @@ data class ConversationV2(
         if (compression != null) {
             encoded = encoded.compress(compression)
         }
-        val message = MessageV2Builder.buildEncode(client = client,
+        val message = MessageV2Builder.buildEncode(
+            client = client,
             encodedContent = encoded,
             topic = topic,
-            keyMaterial = keyMaterial)
-        val envelope = EnvelopeBuilder.buildFromString(topic = topic,
+            keyMaterial = keyMaterial
+        )
+        val envelope = EnvelopeBuilder.buildFromString(
+            topic = topic,
             timestamp = Date(),
-            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray())
+            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray()
+        )
         return PreparedMessage(messageEnvelope = envelope, conversation = Conversation.V2(this)) {
             client.publish(envelopes = listOf(envelope))
         }

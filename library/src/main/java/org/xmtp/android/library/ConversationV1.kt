@@ -78,13 +78,13 @@ data class ConversationV1(
     ): String {
         val preparedMessage = prepareMessage(content = text, options = sendOptions)
         preparedMessage.send()
-        return preparedMessage.messageID
+        return preparedMessage.messageId
     }
 
     fun <T> send(content: T, options: SendOptions? = null): String {
         val preparedMessage = prepareMessage(content = content, options = options)
         preparedMessage.send()
-        return preparedMessage.messageID
+        return preparedMessage.messageId
     }
 
     fun <T> prepareMessage(content: T, options: SendOptions?): PreparedMessage {
@@ -113,26 +113,38 @@ data class ConversationV1(
             throw Exception("no signature for id key")
         }
         val date = sentAt
-        val message = MessageV1Builder.buildEncode(sender = client.privateKeyBundleV1,
+        val message = MessageV1Builder.buildEncode(
+            sender = client.privateKeyBundleV1,
             recipient = recipient,
             message = encoded.toByteArray(),
-            timestamp = date)
+            timestamp = date
+        )
         val messageEnvelope =
-            EnvelopeBuilder.buildFromTopic(topic = Topic.directMessageV1(client.address,
-                peerAddress),
+            EnvelopeBuilder.buildFromTopic(
+                topic = Topic.directMessageV1(client.address, peerAddress),
                 timestamp = date,
-                message = MessageBuilder.buildFromMessageV1(v1 = message).toByteArray())
-        return PreparedMessage(messageEnvelope = messageEnvelope,
-            conversation = Conversation.V1(this)) {
+                message = MessageBuilder.buildFromMessageV1(v1 = message).toByteArray()
+            )
+        return PreparedMessage(
+            messageEnvelope = messageEnvelope,
+            conversation = Conversation.V1(this)
+        ) {
             val envelopes = mutableListOf(messageEnvelope)
             if (client.contacts.needsIntroduction(peerAddress)) {
-                envelopes.addAll(listOf(EnvelopeBuilder.buildFromTopic(topic = Topic.userIntro(
-                    peerAddress),
-                    timestamp = date,
-                    message = MessageBuilder.buildFromMessageV1(v1 = message).toByteArray()),
-                    EnvelopeBuilder.buildFromTopic(topic = Topic.userIntro(client.address),
-                        timestamp = date,
-                        message = MessageBuilder.buildFromMessageV1(v1 = message).toByteArray())))
+                envelopes.addAll(
+                    listOf(
+                        EnvelopeBuilder.buildFromTopic(
+                            topic = Topic.userIntro(peerAddress),
+                            timestamp = date,
+                            message = MessageBuilder.buildFromMessageV1(v1 = message).toByteArray()
+                        ),
+                        EnvelopeBuilder.buildFromTopic(
+                            topic = Topic.userIntro(client.address),
+                            timestamp = date,
+                            message = MessageBuilder.buildFromMessageV1(v1 = message).toByteArray()
+                        )
+                    )
+                )
                 client.contacts.hasIntroduced[peerAddress] = true
             }
             client.publish(envelopes = envelopes)
