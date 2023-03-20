@@ -19,6 +19,7 @@ import org.xmtp.android.library.messages.SealedInvitationHeaderV1
 import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.Invitation
+import org.xmtp.proto.message.contents.encodedContent
 import java.util.Date
 
 data class ConversationV2(
@@ -73,6 +74,12 @@ data class ConversationV2(
         }
     }
 
+    fun streamMessages(): Flow<DecodedMessage> = flow {
+        client.subscribe(listOf(topic)).collect {
+            emit(decodeEnvelope(envelope = it))
+        }
+    }
+
     fun decodeEnvelope(envelope: Envelope): DecodedMessage {
         val message = Message.parseFrom(envelope.message)
         val decoded = decode(message.v2)
@@ -83,7 +90,31 @@ data class ConversationV2(
     fun decode(message: MessageV2): DecodedMessage =
         MessageV2Builder.buildDecode(message, keyMaterial = keyMaterial, topic = topic)
 
-    fun <T> send(content: T, options: SendOptions? = null) {
+    fun <T> send(content: T, options: SendOptions? = null): String {
+        val preparedMessage = prepareMessage(content = content, options = options)
+        preparedMessage.send()
+        return preparedMessage.messageID
+    }
+
+    fun send(text: String, options: SendOptions? = null, sentAt: Date? = null): String {
+        val preparedMessage = prepareMessage(content = text, options = options)
+        preparedMessage.send()
+        return preparedMessage.messageID
+    }
+
+    fun <Codec : ContentCodec<T>, T> encode(codec: Codec, content: T): ByteArray {
+        val encodedContent = codec.encode(content = content)
+        val message = MessageV2Builder.buildEncode(client = client,
+            encodedContent = encodedContent,
+            topic = topic,
+            keyMaterial = keyMaterial)
+        val envelope = EnvelopeBuilder.buildFromString(topic = topic,
+            timestamp = Date(),
+            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray())
+        return envelope.toByteArray()
+    }
+
+    fun <T> prepareMessage(content: T, options: SendOptions?): PreparedMessage {
         val codec = Client.codecRegistry.find(options?.contentType)
 
         fun <Codec : ContentCodec<T>> encode(codec: Codec, content: Any?): EncodedContent {
@@ -99,50 +130,19 @@ data class ConversationV2(
         encoded = encoded.toBuilder().also {
             it.fallback = options?.contentFallback ?: ""
         }.build()
-        send(encodedContent = encoded, sentAt = Date())
-    }
-
-    fun send(text: String, options: SendOptions? = null, sentAt: Date? = null) {
-        val encoder = TextCodec()
-        val encodedContent = encoder.encode(content = text)
-        send(encodedContent = encodedContent, options = options, sentAt = sentAt)
-    }
-
-    private fun send(
-        encodedContent: EncodedContent,
-        options: SendOptions? = null,
-        sentAt: Date? = null,
-    ) {
-        if (client.getUserContact(peerAddress = peerAddress) == null) {
-            throw XMTPException("Contact not found.")
+        val compression = options?.compression
+        if (compression != null) {
+            encoded = encoded.compress(compression)
         }
-        var content = encodedContent
-        val date = sentAt ?: Date()
-
-        if (options?.compression != null) {
-            content = content.compress(options.compression!!)
-        }
-
-        val message = MessageV2Builder.buildEncode(
-            client = client,
-            encodedContent = content,
+        val message = MessageV2Builder.buildEncode(client = client,
+            encodedContent = encoded,
             topic = topic,
-            keyMaterial = keyMaterial
-        )
-        client.publish(
-            envelopes = listOf(
-                EnvelopeBuilder.buildFromString(
-                    topic = topic,
-                    timestamp = date,
-                    message = MessageBuilder.buildFromMessageV2(message).toByteArray()
-                )
-            )
-        )
-    }
-
-    fun streamMessages(): Flow<DecodedMessage> = flow {
-        client.subscribe(listOf(topic)).collect {
-            emit(decodeEnvelope(envelope = it))
+            keyMaterial = keyMaterial)
+        val envelope = EnvelopeBuilder.buildFromString(topic = topic,
+            timestamp = Date(),
+            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray())
+        return PreparedMessage(messageEnvelope = envelope, conversation = Conversation.V2(this)) {
+            client.publish(envelopes = listOf(envelope))
         }
     }
 
