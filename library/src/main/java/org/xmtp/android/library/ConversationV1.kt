@@ -112,7 +112,7 @@ data class ConversationV1(
         if (!recipient.identityKey.hasSignature()) {
             throw Exception("no signature for id key")
         }
-        val date = sentAt
+        val date = Date()
         val message = MessageV1Builder.buildEncode(
             sender = client.privateKeyBundleV1,
             recipient = recipient,
