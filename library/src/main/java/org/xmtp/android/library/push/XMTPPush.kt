@@ -20,11 +20,11 @@ class XMTPPush() {
     ) : this() {
         this.context = context
         val id = PushPreferences.getInstallationId(context)
-        if (id != null) {
-            this.installationId = id
-        } else {
+        if (id.isNullOrBlank()) {
             installationId = UUID.randomUUID().toString()
             PushPreferences.setInstallationId(context, installationId)
+        } else {
+            this.installationId = id
         }
         this.pushServer = pushServer
     }
@@ -36,9 +36,10 @@ class XMTPPush() {
 
         val request = RegisterInstallationRequest.newBuilder().also { request ->
             request.installationId = installationId
-            request.deliveryMechanism = DeliveryMechanism.newBuilder().also { delivery ->
-                delivery.firebaseDeviceToken = token
-            }.build()
+            request.deliveryMechanismBuilder.apply {
+                clearDeliveryMechanismType()
+                firebaseDeviceToken = token
+            }
         }.build()
         client.registerInstallation(request = request)
     }

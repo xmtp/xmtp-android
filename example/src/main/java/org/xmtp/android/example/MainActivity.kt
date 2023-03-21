@@ -40,21 +40,11 @@ class MainActivity : AppCompatActivity(),
     private lateinit var adapter: ConversationsAdapter
     private var bottomSheet: NewConversationBottomSheet? = null
 
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            PushNotificationTokenManager.init(this, "YOUR PUSH SERVER HERE")
-            viewModel.setupPush()
-        } else {
-            // Inform user that that your app will not show notifications.
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         accountManager = AccountManager.get(this)
-        askNotificationPermission()
+        PushNotificationTokenManager.init(this, "10.0.2.2:8080")
+        viewModel.setupPush()
 
         val keys = loadKeys()
         if (keys == null) {
@@ -136,25 +126,6 @@ class MainActivity : AppCompatActivity(),
         copyWalletAddress()
     }
 
-    private fun askNotificationPermission() {
-        // This is only necessary for API level >= 33 (TIRAMISU)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                // FCM SDK (and your app) can post notifications.
-            } else if (shouldShowRequestPermissionRationale(POST_NOTIFICATIONS)) {
-                // display an educational UI explaining to the user the features that will be enabled
-                //       by them granting the POST_NOTIFICATION permission. This UI should provide the user
-                //       "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
-                //       If the user selects "No thanks," allow the user to continue without notifications.
-            } else {
-                // Directly ask for the permission
-                requestPermissionLauncher.launch(POST_NOTIFICATIONS)
-            }
-        }
-    }
-
     private fun ensureClientState(clientState: ClientManager.ClientState) {
         when (clientState) {
             is ClientManager.ClientState.Ready -> {
@@ -211,6 +182,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun disconnectWallet() {
         ClientManager.clearClient()
+        PushNotificationTokenManager.clearXMTPPush()
         val accounts = accountManager.getAccountsByType(resources.getString(R.string.account_type))
         accounts.forEach { account ->
             accountManager.removeAccount(account, null, null, null)

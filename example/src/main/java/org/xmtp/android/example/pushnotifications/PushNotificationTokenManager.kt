@@ -34,7 +34,7 @@ object PushNotificationTokenManager {
         get() = if (xmtpPushState.value == XMTPPushState.Ready) {
             _xmtpPush!!
         } else {
-            throw IllegalStateException("Client called before Ready state")
+            throw IllegalStateException("Push not setup")
         }
 
     fun init(applicationContext: Context, pushServer: String) {
@@ -49,14 +49,18 @@ object PushNotificationTokenManager {
                 return@OnCompleteListener
             }
             it.result?.let {
-                runBlocking { xmtpPush.register(it) }
-                configureNotificationChannels()
+                if (xmtpPushState.value  is XMTPPushState.Ready) {
+                    runBlocking { xmtpPush.register(it) }
+                    configureNotificationChannels()
+                }
             }
         })
     }
 
     internal fun syncPushNotificationsToken(token: String) {
-        runBlocking { xmtpPush.register(token) }
+        if (xmtpPushState.value  is XMTPPushState.Ready) {
+            runBlocking { xmtpPush.register(token) }
+        }
     }
 
     private fun configureNotificationChannels() {
@@ -75,13 +79,11 @@ object PushNotificationTokenManager {
     @UiThread
     fun createXMTPPush(pushServer: String) {
         if (xmtpPushState.value is XMTPPushState.Ready) return
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                _xmtpPush = XMTPPush(applicationContext, pushServer)
-                _xmtpPushState.value = XMTPPushState.Ready
-            } catch (e: Exception) {
-                _xmtpPushState.value = XMTPPushState.Error(e.localizedMessage.orEmpty())
-            }
+        try {
+            _xmtpPush = XMTPPush(applicationContext, pushServer)
+            _xmtpPushState.value = XMTPPushState.Ready
+        } catch (e: Exception) {
+            _xmtpPushState.value = XMTPPushState.Error(e.localizedMessage.orEmpty())
         }
     }
 
