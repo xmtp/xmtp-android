@@ -27,6 +27,11 @@ class PushNotificationsService : FirebaseMessagingService() {
         internal const val CHANNEL_ID = "xmtp_message"
     }
 
+    override fun onNewToken(token: String) {
+        super.onNewToken(token)
+        PushNotificationTokenManager.syncPushNotificationsToken(token)
+    }
+
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         Log.d(TAG, "On message received.")

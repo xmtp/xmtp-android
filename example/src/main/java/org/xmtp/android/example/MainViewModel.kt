@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.example.extension.flowWhileShared
 import org.xmtp.android.example.extension.stateFlow
 import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
@@ -42,8 +43,10 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val listItems = mutableListOf<MainListItem>()
             try {
+                val conversations = ClientManager.client.conversations.list()
+                PushNotificationTokenManager.xmtpPush.subscribe(conversations.map { it.topic })
                 listItems.addAll(
-                    ClientManager.client.conversations.list().map { conversation ->
+                    conversations.map { conversation ->
                         val lastMessage = fetchMostRecentMessage(conversation)
                         MainListItem.ConversationItem(
                             id = conversation.topic,

@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity(),
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            PushNotificationTokenManager.init(this)
+            PushNotificationTokenManager.init(this, "YOUR PUSH SERVER HERE")
             viewModel.setupPush()
         } else {
             // Inform user that that your app will not show notifications.
