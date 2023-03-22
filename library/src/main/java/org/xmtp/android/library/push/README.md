@@ -10,9 +10,9 @@ For this tutorial, we'll use [Firebase Cloud Messaging](https://console.firebase
 
 1. Create an FCM project.
 
-2. Add an app to the FCM project. This generates a `google-services.json` file that you need in subsequent steps.
+2. Add the example app to the FCM project. This generates a `google-services.json` file that you need in subsequent steps.
 
-3. Add the `google-services.json` file to the example app's Android project as described in the FCM project creation process.
+3. Add the `google-services.json` file to the example app's project as described in the FCM project creation process.
 
 4. Generate FCM credentials, which you need to run the example notification server. To do this, from the FCM dashboard, click the gear icon next to **Project Overview** and select **Project settings**. Select **Service accounts**. Select **Go** and click **Generate new private key**. 
 
@@ -46,7 +46,7 @@ This example branch can serve as the basis for what you might want to provide fo
 
 ## Update the example app to send push notifications
 
-1. Copy the contents of `google-services.json` into the example app's `google-services.json` file.
+1. Copy the contents of `google-services.json` into the example app's `google-services.json` file, if you haven't already done it as a part of the FCM project creation process.
 
 2. Uncomment `id 'com.google.gms.google-services'` in the example app's `build.gradle` file.
 
