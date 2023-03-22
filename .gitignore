@@ -1,5 +1,6 @@
 # Used for test:
 library/abcdefg
+example/google-services.json
 
 # Built application files
 *.apk
