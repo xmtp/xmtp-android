@@ -43,14 +43,14 @@ object PushNotificationTokenManager {
     }
 
     fun ensurePushTokenIsConfigured() {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener {
-            if (!it.isSuccessful) {
-                Log.e(TAG, "Firebase getInstanceId() failed", it.exception)
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { request ->
+            if (!request.isSuccessful) {
+                Log.e(TAG, "Firebase getInstanceId() failed", request.exception)
                 return@OnCompleteListener
             }
-            it.result?.let {
+            request.result?.let {
                 if (xmtpPushState.value  is XMTPPushState.Ready) {
-                    runBlocking { xmtpPush.register(it) }
+                    xmtpPush.register(it)
                     configureNotificationChannels()
                 }
             }
