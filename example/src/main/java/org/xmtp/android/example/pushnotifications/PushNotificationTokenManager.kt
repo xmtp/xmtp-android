@@ -11,6 +11,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
+import org.xmtp.android.example.R
 import org.xmtp.android.library.push.XMTPPush
 
 object PushNotificationTokenManager {
@@ -59,7 +60,7 @@ object PushNotificationTokenManager {
     private fun configureNotificationChannels() {
         val channel = NotificationChannel(
             PushNotificationsService.CHANNEL_ID,
-            "XMTP",
+            applicationContext.getString(R.string.xmtp_direct_message),
             NotificationManager.IMPORTANCE_DEFAULT
         )
 

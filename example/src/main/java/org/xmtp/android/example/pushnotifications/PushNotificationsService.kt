@@ -24,7 +24,7 @@ class PushNotificationsService : FirebaseMessagingService() {
     companion object {
         private const val TAG = "PushNotificationService"
 
-        internal const val CHANNEL_ID = "xmtp_message"
+        internal const val CHANNEL_ID = "xmtp_direct_message"
     }
 
     override fun onNewToken(token: String) {
