@@ -1,6 +1,5 @@
 package org.xmtp.android.example.pushnotifications
 
-import android.accounts.AccountManager
 import android.app.PendingIntent
 import android.util.Base64
 import android.util.Log
@@ -16,6 +15,7 @@ import org.xmtp.android.example.ClientManager
 import org.xmtp.android.example.R
 import org.xmtp.android.example.conversation.ConversationDetailActivity
 import org.xmtp.android.example.extension.truncatedAddress
+import org.xmtp.android.example.utils.KeyUtil
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import java.util.Date
 
@@ -36,7 +36,7 @@ class PushNotificationsService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         Log.d(TAG, "On message received.")
 
-        val keysData = loadKeys()
+        val keysData = KeyUtil(this).loadKeys()
         if (keysData == null) {
             Log.e(TAG, "Attempting to send push to a logged out user.")
             return
@@ -90,12 +90,5 @@ class PushNotificationsService : FirebaseMessagingService() {
         NotificationManagerCompat.from(this).apply {
             notify(topic.hashCode(), builder.build())
         }
-    }
-
-    private fun loadKeys(): String? {
-        val accountManager = AccountManager.get(this)
-        val accounts = accountManager.getAccountsByType(resources.getString(R.string.account_type))
-        val account = accounts.firstOrNull() ?: return null
-        return accountManager.getPassword(account)
     }
 }

@@ -24,6 +24,7 @@ import org.xmtp.android.example.conversation.ConversationsClickListener
 import org.xmtp.android.example.conversation.NewConversationBottomSheet
 import org.xmtp.android.example.databinding.ActivityMainBinding
 import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
+import org.xmtp.android.example.utils.KeyUtil
 import org.xmtp.android.library.Conversation
 
 class MainActivity : AppCompatActivity(),
@@ -41,7 +42,7 @@ class MainActivity : AppCompatActivity(),
         PushNotificationTokenManager.init(this, "YOUR_PUSH_SERVER")
         viewModel.setupPush()
 
-        val keys = loadKeys()
+        val keys = KeyUtil(this).loadKeys()
         if (keys == null) {
             showSignIn()
             return
@@ -157,12 +158,6 @@ class MainActivity : AppCompatActivity(),
                 showError(uiState.message)
             }
         }
-    }
-
-    private fun loadKeys(): String? {
-        val accounts = accountManager.getAccountsByType(resources.getString(R.string.account_type))
-        val account = accounts.firstOrNull() ?: return null
-        return accountManager.getPassword(account)
     }
 
     private fun showSignIn() {
