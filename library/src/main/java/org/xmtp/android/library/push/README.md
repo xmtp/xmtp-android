@@ -21,6 +21,23 @@ dev/run \                                                                       
   --fcm-project-id="YOURFCMPROJECTID"
   ```
 ***Now you should be able to see pushes coming across the network locally***
+- Get the `google-services.json` file from Firebase and copy the contents into the file in the example folder
+- Uncomment `id 'com.google.gms.google-services'` in the example `build.gradle`
+- Uncomment in the top level `build.gradle`
+```
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.gms:google-services:4.3.15'
+    }
+}
+```
+- Sync the gradle project
+- You'll need to add your push server address in `MainActivity` in this case it should be `PushNotificationTokenManager.init(this, "10.0.2.2:8080")`
+- You'll also need to change the environment `XMTPEnvironment.PRODUCTION`
 - The proto code from the example notification server has already been generated in the SDK
 - The final piece is setting up your app to register the FCM token with the network and then subscribing each conversation to push notifications.
 
