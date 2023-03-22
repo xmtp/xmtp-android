@@ -15,7 +15,7 @@ public final class Service {
                 (com.google.protobuf.ExtensionRegistryLite) registry);
     }
     public interface DeliveryMechanismOrBuilder extends
-            // @@protoc_insertion_point(interface_extends:org.xmtp.android.library.push.DeliveryMechanism)
+            // @@protoc_insertion_point(interface_extends:notifications.v1.DeliveryMechanism)
             com.google.protobuf.MessageOrBuilder {
 
         /**
@@ -55,11 +55,11 @@ public final class Service {
         public org.xmtp.android.library.push.Service.DeliveryMechanism.DeliveryMechanismTypeCase getDeliveryMechanismTypeCase();
     }
     /**
-     * Protobuf type {@code org.xmtp.android.library.push.DeliveryMechanism}
+     * Protobuf type {@code notifications.v1.DeliveryMechanism}
      */
     public static final class DeliveryMechanism extends
             com.google.protobuf.GeneratedMessageV3 implements
-            // @@protoc_insertion_point(message_implements:org.xmtp.android.library.push.DeliveryMechanism)
+            // @@protoc_insertion_point(message_implements:notifications.v1.DeliveryMechanism)
             DeliveryMechanismOrBuilder {
         private static final long serialVersionUID = 0L;
         // Use DeliveryMechanism.newBuilder() to construct.
@@ -421,11 +421,11 @@ public final class Service {
             return builder;
         }
         /**
-         * Protobuf type {@code org.xmtp.android.library.push.DeliveryMechanism}
+         * Protobuf type {@code notifications.v1.DeliveryMechanism}
          */
         public static final class Builder extends
                 com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-                // @@protoc_insertion_point(builder_implements:org.xmtp.android.library.push.DeliveryMechanism)
+                // @@protoc_insertion_point(builder_implements:notifications.v1.DeliveryMechanism)
                 org.xmtp.android.library.push.Service.DeliveryMechanismOrBuilder {
             public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
@@ -826,10 +826,10 @@ public final class Service {
             }
 
 
-            // @@protoc_insertion_point(builder_scope:org.xmtp.android.library.push.DeliveryMechanism)
+            // @@protoc_insertion_point(builder_scope:notifications.v1.DeliveryMechanism)
         }
 
-        // @@protoc_insertion_point(class_scope:org.xmtp.android.library.push.DeliveryMechanism)
+        // @@protoc_insertion_point(class_scope:notifications.v1.DeliveryMechanism)
         private static final org.xmtp.android.library.push.Service.DeliveryMechanism DEFAULT_INSTANCE;
         static {
             DEFAULT_INSTANCE = new org.xmtp.android.library.push.Service.DeliveryMechanism();
@@ -878,7 +878,7 @@ public final class Service {
     }
 
     public interface RegisterInstallationRequestOrBuilder extends
-            // @@protoc_insertion_point(interface_extends:org.xmtp.android.library.push.RegisterInstallationRequest)
+            // @@protoc_insertion_point(interface_extends:notifications.v1.RegisterInstallationRequest)
             com.google.protobuf.MessageOrBuilder {
 
         /**
@@ -894,26 +894,26 @@ public final class Service {
         getInstallationIdBytes();
 
         /**
-         * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+         * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
          * @return Whether the deliveryMechanism field is set.
          */
         boolean hasDeliveryMechanism();
         /**
-         * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+         * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
          * @return The deliveryMechanism.
          */
         org.xmtp.android.library.push.Service.DeliveryMechanism getDeliveryMechanism();
         /**
-         * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+         * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
          */
         org.xmtp.android.library.push.Service.DeliveryMechanismOrBuilder getDeliveryMechanismOrBuilder();
     }
     /**
-     * Protobuf type {@code org.xmtp.android.library.push.RegisterInstallationRequest}
+     * Protobuf type {@code notifications.v1.RegisterInstallationRequest}
      */
     public static final class RegisterInstallationRequest extends
             com.google.protobuf.GeneratedMessageV3 implements
-            // @@protoc_insertion_point(message_implements:org.xmtp.android.library.push.RegisterInstallationRequest)
+            // @@protoc_insertion_point(message_implements:notifications.v1.RegisterInstallationRequest)
             RegisterInstallationRequestOrBuilder {
         private static final long serialVersionUID = 0L;
         // Use RegisterInstallationRequest.newBuilder() to construct.
@@ -991,7 +991,7 @@ public final class Service {
         public static final int DELIVERY_MECHANISM_FIELD_NUMBER = 2;
         private org.xmtp.android.library.push.Service.DeliveryMechanism deliveryMechanism_;
         /**
-         * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+         * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
          * @return Whether the deliveryMechanism field is set.
          */
         @java.lang.Override
@@ -999,7 +999,7 @@ public final class Service {
             return deliveryMechanism_ != null;
         }
         /**
-         * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+         * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
          * @return The deliveryMechanism.
          */
         @java.lang.Override
@@ -1007,7 +1007,7 @@ public final class Service {
             return deliveryMechanism_ == null ? org.xmtp.android.library.push.Service.DeliveryMechanism.getDefaultInstance() : deliveryMechanism_;
         }
         /**
-         * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+         * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
          */
         @java.lang.Override
         public org.xmtp.android.library.push.Service.DeliveryMechanismOrBuilder getDeliveryMechanismOrBuilder() {
@@ -1185,11 +1185,11 @@ public final class Service {
             return builder;
         }
         /**
-         * Protobuf type {@code org.xmtp.android.library.push.RegisterInstallationRequest}
+         * Protobuf type {@code notifications.v1.RegisterInstallationRequest}
          */
         public static final class Builder extends
                 com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-                // @@protoc_insertion_point(builder_implements:org.xmtp.android.library.push.RegisterInstallationRequest)
+                // @@protoc_insertion_point(builder_implements:notifications.v1.RegisterInstallationRequest)
                 org.xmtp.android.library.push.Service.RegisterInstallationRequestOrBuilder {
             public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
@@ -1450,14 +1450,14 @@ public final class Service {
             private com.google.protobuf.SingleFieldBuilderV3<
                     org.xmtp.android.library.push.Service.DeliveryMechanism, org.xmtp.android.library.push.Service.DeliveryMechanism.Builder, org.xmtp.android.library.push.Service.DeliveryMechanismOrBuilder> deliveryMechanismBuilder_;
             /**
-             * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+             * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
              * @return Whether the deliveryMechanism field is set.
              */
             public boolean hasDeliveryMechanism() {
                 return ((bitField0_ & 0x00000002) != 0);
             }
             /**
-             * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+             * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
              * @return The deliveryMechanism.
              */
             public org.xmtp.android.library.push.Service.DeliveryMechanism getDeliveryMechanism() {
@@ -1468,7 +1468,7 @@ public final class Service {
                 }
             }
             /**
-             * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+             * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
              */
             public Builder setDeliveryMechanism(org.xmtp.android.library.push.Service.DeliveryMechanism value) {
                 if (deliveryMechanismBuilder_ == null) {
@@ -1484,7 +1484,7 @@ public final class Service {
                 return this;
             }
             /**
-             * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+             * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
              */
             public Builder setDeliveryMechanism(
                     org.xmtp.android.library.push.Service.DeliveryMechanism.Builder builderForValue) {
@@ -1498,7 +1498,7 @@ public final class Service {
                 return this;
             }
             /**
-             * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+             * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
              */
             public Builder mergeDeliveryMechanism(org.xmtp.android.library.push.Service.DeliveryMechanism value) {
                 if (deliveryMechanismBuilder_ == null) {
@@ -1517,7 +1517,7 @@ public final class Service {
                 return this;
             }
             /**
-             * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+             * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
              */
             public Builder clearDeliveryMechanism() {
                 bitField0_ = (bitField0_ & ~0x00000002);
@@ -1530,7 +1530,7 @@ public final class Service {
                 return this;
             }
             /**
-             * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+             * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
              */
             public org.xmtp.android.library.push.Service.DeliveryMechanism.Builder getDeliveryMechanismBuilder() {
                 bitField0_ |= 0x00000002;
@@ -1538,7 +1538,7 @@ public final class Service {
                 return getDeliveryMechanismFieldBuilder().getBuilder();
             }
             /**
-             * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+             * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
              */
             public org.xmtp.android.library.push.Service.DeliveryMechanismOrBuilder getDeliveryMechanismOrBuilder() {
                 if (deliveryMechanismBuilder_ != null) {
@@ -1549,7 +1549,7 @@ public final class Service {
                 }
             }
             /**
-             * <code>.org.xmtp.android.library.push.DeliveryMechanism delivery_mechanism = 2;</code>
+             * <code>.notifications.v1.DeliveryMechanism delivery_mechanism = 2;</code>
              */
             private com.google.protobuf.SingleFieldBuilderV3<
                     org.xmtp.android.library.push.Service.DeliveryMechanism, org.xmtp.android.library.push.Service.DeliveryMechanism.Builder, org.xmtp.android.library.push.Service.DeliveryMechanismOrBuilder>
@@ -1577,10 +1577,10 @@ public final class Service {
             }
 
 
-            // @@protoc_insertion_point(builder_scope:org.xmtp.android.library.push.RegisterInstallationRequest)
+            // @@protoc_insertion_point(builder_scope:notifications.v1.RegisterInstallationRequest)
         }
 
-        // @@protoc_insertion_point(class_scope:org.xmtp.android.library.push.RegisterInstallationRequest)
+        // @@protoc_insertion_point(class_scope:notifications.v1.RegisterInstallationRequest)
         private static final org.xmtp.android.library.push.Service.RegisterInstallationRequest DEFAULT_INSTANCE;
         static {
             DEFAULT_INSTANCE = new org.xmtp.android.library.push.Service.RegisterInstallationRequest();
@@ -1629,7 +1629,7 @@ public final class Service {
     }
 
     public interface RegisterInstallationResponseOrBuilder extends
-            // @@protoc_insertion_point(interface_extends:org.xmtp.android.library.push.RegisterInstallationResponse)
+            // @@protoc_insertion_point(interface_extends:notifications.v1.RegisterInstallationResponse)
             com.google.protobuf.MessageOrBuilder {
 
         /**
@@ -1651,11 +1651,11 @@ public final class Service {
         long getValidUntil();
     }
     /**
-     * Protobuf type {@code org.xmtp.android.library.push.RegisterInstallationResponse}
+     * Protobuf type {@code notifications.v1.RegisterInstallationResponse}
      */
     public static final class RegisterInstallationResponse extends
             com.google.protobuf.GeneratedMessageV3 implements
-            // @@protoc_insertion_point(message_implements:org.xmtp.android.library.push.RegisterInstallationResponse)
+            // @@protoc_insertion_point(message_implements:notifications.v1.RegisterInstallationResponse)
             RegisterInstallationResponseOrBuilder {
         private static final long serialVersionUID = 0L;
         // Use RegisterInstallationResponse.newBuilder() to construct.
@@ -1908,11 +1908,11 @@ public final class Service {
             return builder;
         }
         /**
-         * Protobuf type {@code org.xmtp.android.library.push.RegisterInstallationResponse}
+         * Protobuf type {@code notifications.v1.RegisterInstallationResponse}
          */
         public static final class Builder extends
                 com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-                // @@protoc_insertion_point(builder_implements:org.xmtp.android.library.push.RegisterInstallationResponse)
+                // @@protoc_insertion_point(builder_implements:notifications.v1.RegisterInstallationResponse)
                 org.xmtp.android.library.push.Service.RegisterInstallationResponseOrBuilder {
             public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
@@ -2205,10 +2205,10 @@ public final class Service {
             }
 
 
-            // @@protoc_insertion_point(builder_scope:org.xmtp.android.library.push.RegisterInstallationResponse)
+            // @@protoc_insertion_point(builder_scope:notifications.v1.RegisterInstallationResponse)
         }
 
-        // @@protoc_insertion_point(class_scope:org.xmtp.android.library.push.RegisterInstallationResponse)
+        // @@protoc_insertion_point(class_scope:notifications.v1.RegisterInstallationResponse)
         private static final org.xmtp.android.library.push.Service.RegisterInstallationResponse DEFAULT_INSTANCE;
         static {
             DEFAULT_INSTANCE = new org.xmtp.android.library.push.Service.RegisterInstallationResponse();
@@ -2257,7 +2257,7 @@ public final class Service {
     }
 
     public interface DeleteInstallationRequestOrBuilder extends
-            // @@protoc_insertion_point(interface_extends:org.xmtp.android.library.push.DeleteInstallationRequest)
+            // @@protoc_insertion_point(interface_extends:notifications.v1.DeleteInstallationRequest)
             com.google.protobuf.MessageOrBuilder {
 
         /**
@@ -2273,11 +2273,11 @@ public final class Service {
         getInstallationIdBytes();
     }
     /**
-     * Protobuf type {@code org.xmtp.android.library.push.DeleteInstallationRequest}
+     * Protobuf type {@code notifications.v1.DeleteInstallationRequest}
      */
     public static final class DeleteInstallationRequest extends
             com.google.protobuf.GeneratedMessageV3 implements
-            // @@protoc_insertion_point(message_implements:org.xmtp.android.library.push.DeleteInstallationRequest)
+            // @@protoc_insertion_point(message_implements:notifications.v1.DeleteInstallationRequest)
             DeleteInstallationRequestOrBuilder {
         private static final long serialVersionUID = 0L;
         // Use DeleteInstallationRequest.newBuilder() to construct.
@@ -2507,11 +2507,11 @@ public final class Service {
             return builder;
         }
         /**
-         * Protobuf type {@code org.xmtp.android.library.push.DeleteInstallationRequest}
+         * Protobuf type {@code notifications.v1.DeleteInstallationRequest}
          */
         public static final class Builder extends
                 com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-                // @@protoc_insertion_point(builder_implements:org.xmtp.android.library.push.DeleteInstallationRequest)
+                // @@protoc_insertion_point(builder_implements:notifications.v1.DeleteInstallationRequest)
                 org.xmtp.android.library.push.Service.DeleteInstallationRequestOrBuilder {
             public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
@@ -2760,10 +2760,10 @@ public final class Service {
             }
 
 
-            // @@protoc_insertion_point(builder_scope:org.xmtp.android.library.push.DeleteInstallationRequest)
+            // @@protoc_insertion_point(builder_scope:notifications.v1.DeleteInstallationRequest)
         }
 
-        // @@protoc_insertion_point(class_scope:org.xmtp.android.library.push.DeleteInstallationRequest)
+        // @@protoc_insertion_point(class_scope:notifications.v1.DeleteInstallationRequest)
         private static final org.xmtp.android.library.push.Service.DeleteInstallationRequest DEFAULT_INSTANCE;
         static {
             DEFAULT_INSTANCE = new org.xmtp.android.library.push.Service.DeleteInstallationRequest();
@@ -2812,7 +2812,7 @@ public final class Service {
     }
 
     public interface SubscribeRequestOrBuilder extends
-            // @@protoc_insertion_point(interface_extends:org.xmtp.android.library.push.SubscribeRequest)
+            // @@protoc_insertion_point(interface_extends:notifications.v1.SubscribeRequest)
             com.google.protobuf.MessageOrBuilder {
 
         /**
@@ -2853,11 +2853,11 @@ public final class Service {
         getTopicsBytes(int index);
     }
     /**
-     * Protobuf type {@code org.xmtp.android.library.push.SubscribeRequest}
+     * Protobuf type {@code notifications.v1.SubscribeRequest}
      */
     public static final class SubscribeRequest extends
             com.google.protobuf.GeneratedMessageV3 implements
-            // @@protoc_insertion_point(message_implements:org.xmtp.android.library.push.SubscribeRequest)
+            // @@protoc_insertion_point(message_implements:notifications.v1.SubscribeRequest)
             SubscribeRequestOrBuilder {
         private static final long serialVersionUID = 0L;
         // Use SubscribeRequest.newBuilder() to construct.
@@ -3141,11 +3141,11 @@ public final class Service {
             return builder;
         }
         /**
-         * Protobuf type {@code org.xmtp.android.library.push.SubscribeRequest}
+         * Protobuf type {@code notifications.v1.SubscribeRequest}
          */
         public static final class Builder extends
                 com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-                // @@protoc_insertion_point(builder_implements:org.xmtp.android.library.push.SubscribeRequest)
+                // @@protoc_insertion_point(builder_implements:notifications.v1.SubscribeRequest)
                 org.xmtp.android.library.push.Service.SubscribeRequestOrBuilder {
             public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
@@ -3525,10 +3525,10 @@ public final class Service {
             }
 
 
-            // @@protoc_insertion_point(builder_scope:org.xmtp.android.library.push.SubscribeRequest)
+            // @@protoc_insertion_point(builder_scope:notifications.v1.SubscribeRequest)
         }
 
-        // @@protoc_insertion_point(class_scope:org.xmtp.android.library.push.SubscribeRequest)
+        // @@protoc_insertion_point(class_scope:notifications.v1.SubscribeRequest)
         private static final org.xmtp.android.library.push.Service.SubscribeRequest DEFAULT_INSTANCE;
         static {
             DEFAULT_INSTANCE = new org.xmtp.android.library.push.Service.SubscribeRequest();
@@ -3577,7 +3577,7 @@ public final class Service {
     }
 
     public interface UnsubscribeRequestOrBuilder extends
-            // @@protoc_insertion_point(interface_extends:org.xmtp.android.library.push.UnsubscribeRequest)
+            // @@protoc_insertion_point(interface_extends:notifications.v1.UnsubscribeRequest)
             com.google.protobuf.MessageOrBuilder {
 
         /**
@@ -3618,11 +3618,11 @@ public final class Service {
         getTopicsBytes(int index);
     }
     /**
-     * Protobuf type {@code org.xmtp.android.library.push.UnsubscribeRequest}
+     * Protobuf type {@code notifications.v1.UnsubscribeRequest}
      */
     public static final class UnsubscribeRequest extends
             com.google.protobuf.GeneratedMessageV3 implements
-            // @@protoc_insertion_point(message_implements:org.xmtp.android.library.push.UnsubscribeRequest)
+            // @@protoc_insertion_point(message_implements:notifications.v1.UnsubscribeRequest)
             UnsubscribeRequestOrBuilder {
         private static final long serialVersionUID = 0L;
         // Use UnsubscribeRequest.newBuilder() to construct.
@@ -3906,11 +3906,11 @@ public final class Service {
             return builder;
         }
         /**
-         * Protobuf type {@code org.xmtp.android.library.push.UnsubscribeRequest}
+         * Protobuf type {@code notifications.v1.UnsubscribeRequest}
          */
         public static final class Builder extends
                 com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-                // @@protoc_insertion_point(builder_implements:org.xmtp.android.library.push.UnsubscribeRequest)
+                // @@protoc_insertion_point(builder_implements:notifications.v1.UnsubscribeRequest)
                 org.xmtp.android.library.push.Service.UnsubscribeRequestOrBuilder {
             public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
@@ -4290,10 +4290,10 @@ public final class Service {
             }
 
 
-            // @@protoc_insertion_point(builder_scope:org.xmtp.android.library.push.UnsubscribeRequest)
+            // @@protoc_insertion_point(builder_scope:notifications.v1.UnsubscribeRequest)
         }
 
-        // @@protoc_insertion_point(class_scope:org.xmtp.android.library.push.UnsubscribeRequest)
+        // @@protoc_insertion_point(class_scope:notifications.v1.UnsubscribeRequest)
         private static final org.xmtp.android.library.push.Service.UnsubscribeRequest DEFAULT_INSTANCE;
         static {
             DEFAULT_INSTANCE = new org.xmtp.android.library.push.Service.UnsubscribeRequest();
@@ -4380,13 +4380,13 @@ public final class Service {
             descriptor;
     static {
         java.lang.String[] descriptorData = {
-                "\n\rservice.proto\022\020org.xmtp.android.library.push\032\033googl" +
+                "\n\rservice.proto\022\020notifications.v1\032\033googl" +
                         "e/protobuf/empty.proto\"l\n\021DeliveryMechan" +
                         "ism\022\033\n\021apns_device_token\030\001 \001(\tH\000\022\037\n\025fire" +
                         "base_device_token\030\002 \001(\tH\000B\031\n\027delivery_me" +
                         "chanism_type\"w\n\033RegisterInstallationRequ" +
                         "est\022\027\n\017installation_id\030\001 \001(\t\022?\n\022delivery" +
-                        "_mechanism\030\002 \001(\0132#.org.xmtp.android.library.push.Deli" +
+                        "_mechanism\030\002 \001(\0132#.notifications.v1.Deli" +
                         "veryMechanism\"L\n\034RegisterInstallationRes" +
                         "ponse\022\027\n\017installation_id\030\001 \001(\t\022\023\n\013valid_" +
                         "until\030\002 \001(\004\"4\n\031DeleteInstallationRequest" +
@@ -4396,15 +4396,16 @@ public final class Service {
                         "tion_id\030\001 \001(\t\022\016\n\006topics\030\002 \003(\t2\367\002\n\rNotifi" +
                         "cations\022u\n\024RegisterInstallation\022-.notifi" +
                         "cations.v1.RegisterInstallationRequest\032." +
-                        ".org.xmtp.android.library.push.RegisterInstallationRe" +
+                        ".notifications.v1.RegisterInstallationRe" +
                         "sponse\022Y\n\022DeleteInstallation\022+.notificat" +
                         "ions.v1.DeleteInstallationRequest\032\026.goog" +
                         "le.protobuf.Empty\022G\n\tSubscribe\022\".notific" +
                         "ations.v1.SubscribeRequest\032\026.google.prot" +
                         "obuf.Empty\022K\n\013Unsubscribe\022$.notification" +
                         "s.v1.UnsubscribeRequest\032\026.google.protobu" +
-                        "f.EmptyB:Z8github.com/xmtp/example-notif" +
-                        "ication-server-go/pkg/protob\006proto3"
+                        "f.EmptyBY\n\035org.xmtp.android.library.push" +
+                        "Z8github.com/xmtp/example-notification-s" +
+                        "erver-go/pkg/protob\006proto3"
         };
         descriptor = com.google.protobuf.Descriptors.FileDescriptor
                 .internalBuildGeneratedFileFrom(descriptorData,

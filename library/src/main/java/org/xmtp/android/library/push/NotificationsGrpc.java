@@ -12,7 +12,7 @@ public final class NotificationsGrpc {
 
     private NotificationsGrpc() {}
 
-    public static final String SERVICE_NAME = "org.xmtp.android.library.push.Notifications";
+    public static final String SERVICE_NAME = "notifications.v1.Notifications";
 
     // Static method descriptors that strictly reflect the proto.
     private static volatile io.grpc.MethodDescriptor<org.xmtp.android.library.push.Service.RegisterInstallationRequest,
