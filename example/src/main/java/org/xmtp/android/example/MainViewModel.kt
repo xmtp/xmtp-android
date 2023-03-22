@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.xmtp.android.example.extension.flowWhileShared
 import org.xmtp.android.example.extension.stateFlow
 import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
@@ -110,13 +109,13 @@ class MainViewModel : ViewModel() {
         data class ConversationItem(
             override val id: String,
             val conversation: Conversation,
-            val mostRecentMessage: DecodedMessage?
+            val mostRecentMessage: DecodedMessage?,
         ) : MainListItem(id, ITEM_TYPE_CONVERSATION)
 
         data class Footer(
             override val id: String,
             val address: String,
-            val environment: String
+            val environment: String,
         ) : MainListItem(id, ITEM_TYPE_FOOTER)
     }
 }

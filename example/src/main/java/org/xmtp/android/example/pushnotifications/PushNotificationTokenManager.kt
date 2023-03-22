@@ -3,21 +3,14 @@ package org.xmtp.android.example.pushnotifications
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import androidx.annotation.UiThread
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.xmtp.android.example.ClientManager
-import org.xmtp.android.library.Client
-import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
 import org.xmtp.android.library.push.XMTPPush
 
 object PushNotificationTokenManager {
@@ -49,7 +42,7 @@ object PushNotificationTokenManager {
                 return@OnCompleteListener
             }
             request.result?.let {
-                if (xmtpPushState.value  is XMTPPushState.Ready) {
+                if (xmtpPushState.value is XMTPPushState.Ready) {
                     xmtpPush.register(it)
                     configureNotificationChannels()
                 }
@@ -58,7 +51,7 @@ object PushNotificationTokenManager {
     }
 
     internal fun syncPushNotificationsToken(token: String) {
-        if (xmtpPushState.value  is XMTPPushState.Ready) {
+        if (xmtpPushState.value is XMTPPushState.Ready) {
             runBlocking { xmtpPush.register(token) }
         }
     }

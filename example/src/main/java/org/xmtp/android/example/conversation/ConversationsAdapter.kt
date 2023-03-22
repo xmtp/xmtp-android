@@ -3,11 +3,9 @@ package org.xmtp.android.example.conversation
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.runBlocking
 import org.xmtp.android.example.MainViewModel
 import org.xmtp.android.example.databinding.ListItemConversationBinding
 import org.xmtp.android.example.databinding.ListItemConversationFooterBinding
-import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
 
 class ConversationsAdapter(
     private val clickListener: ConversationsClickListener
