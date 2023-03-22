@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         accountManager = AccountManager.get(this)
-        PushNotificationTokenManager.init(this, "10.0.2.2:8080")
+        PushNotificationTokenManager.init(this, "YOUR_PUSH_SERVER")
         viewModel.setupPush()
 
         val keys = loadKeys()

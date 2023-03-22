@@ -33,10 +33,7 @@ class XMTPPush() {
 
         val request = Service.RegisterInstallationRequest.newBuilder().also { request ->
             request.installationId = installationId
-            request.deliveryMechanismBuilder.apply {
-                clearDeliveryMechanismType()
-                firebaseDeviceToken = token
-            }
+            request.deliveryMechanismBuilder.firebaseDeviceToken = token
         }.build()
         client.registerInstallation(request)
     }
@@ -47,7 +44,6 @@ class XMTPPush() {
         }
         val request = Service.SubscribeRequest.newBuilder().also { request ->
             request.installationId = installationId
-            request.clearTopics()
             request.addAllTopics(topics)
         }.build()
         client.subscribe(request)

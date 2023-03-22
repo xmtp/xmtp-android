@@ -4,10 +4,9 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 
-class PushPreferences private constructor()  {
+class PushPreferences private constructor() {
     companion object {
         private const val PUSH_PREFERENCES = "push_preferences"
-
         private const val KEY_INSTALLATION_ID = "installation_id"
 
         private fun pushPreferences(context: Context): SharedPreferences =
