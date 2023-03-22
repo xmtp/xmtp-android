@@ -31,7 +31,7 @@ This example branch can serve as the basis for what you might want to provide fo
 3. Get the FCM project ID and `google-services.json` file you created earlier and run:
 
     ```bash
-    dev/run \                                                                                                                                                                                                                              ✘ 1
+    dev/run \                                                                     
     --xmtp-listener-tls \
     --xmtp-listener \
     --api \
