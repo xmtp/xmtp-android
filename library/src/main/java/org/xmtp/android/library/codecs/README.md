@@ -8,13 +8,17 @@ When you build an app with XMTP, all messages are encoded with a [content type](
 - `AttachmentCodec`: Enables sending attachments.
 - `RemoteAttachmentCodec`: Enables sending remote attachments.
 
-## Use `AttachmentCodec` and `RemoteAttachmentCodec` to handle remote attachments
+## Support remote media attachments
+
+The following examples demonstrate how to use `AttachmentCodec` and `RemoteAttachmentCodec` to support remote attachments in your app. Remote attachments can include rich media such as images, videos, GIFs, and more.
+
+For more details about attachment and remote attachment content types, see [Some new content types](https://xmtp.org/blog/attachments-and-remote-attachments).
 
 ### Register your client to accept the codecs
 
 ```kotlin
-        Client.register(codec = AttachmentCodec())
-        Client.register(codec = RemoteAttachmentCodec())
+Client.register(codec = AttachmentCodec())
+Client.register(codec = RemoteAttachmentCodec())
 ```
 
 ### Create an attachment 
@@ -27,7 +31,7 @@ data = "hello world".toByteStringUtf8(),
 )
 ```
 
-### Encode the attachment for transport
+### Encode and encrypt an attachment for transport
 
 ```kotlin
 val encodedEncryptedContent = RemoteAttachment.encodeEncrypted(
@@ -36,7 +40,7 @@ val encodedEncryptedContent = RemoteAttachment.encodeEncrypted(
 )
 ```
 
-### Create a `RemoteAttachment` from the encoded content
+### Create a remote attachment from an attachment
 
 ```kotlin
 val remoteAttachment = RemoteAttachment.from(
@@ -47,7 +51,7 @@ remoteAttachment.contentLength = attachment.data.size()
 remoteAttachment.filename = attachment.filename
 ```
 
-### Send a message with the attachment and set the contentType
+### Send a remote attachment and set the `contentType`
 
 ```kotlin
 val newConversation = client.conversations.newConversation(walletAddress)
@@ -58,7 +62,7 @@ newConversation.send(
 )
 ```
 
-### Load a remote attachment on the receiving end
+### Receive a remote attachment
 
 ```kotlin
 val message = newConversation.messages().first()
@@ -70,5 +74,9 @@ runBlocking {
 }
 ```
 
+## Create a custom content type
 
-You can create any content type you want to be used in your application you can read me about creating content types here: [LINK]
+If you want to send a content type other than plain text, attachments, and remote attachments, you can:
+
+- Propose a new [standard content type](https://github.com/orgs/xmtp/discussions/4) 
+- Create a [custom content type](https://xmtp.org/docs/client-sdk/javascript/tutorials/use-content-types#build-a-custom-content-type)
