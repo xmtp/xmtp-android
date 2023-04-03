@@ -1,23 +1,23 @@
-# Adding specific content types to your application
+# Use content types in your app
 
-You can create any content type you want to be used in your application you can read me about creating content types here: [LINK]
+When you build an app with XMTP, all messages are encoded with a [content type](https://xmtp.org/docs/dev-concepts/content-types) to ensure that an XMTP message API client knows how to encode and decode messages, ensuring interoperability and consistent display of messages across apps.
 
-We have a few content types backed into the sdk directly for easy consumption (encryption and decryption) across applications.
+`xmtp-android` supports the following content types:
 
-TextCodec - (always registered by default) allows the passing of plain text.
-AttachmentCodec - allows the passing of attachments
-RemoteAttachmentCodec - allows the passing of remote attachments
+- `TextCodec`: This is the default content type and enables sending plain text messages.
+- `AttachmentCodec`: Enables sending attachments.
+- `RemoteAttachmentCodec`: Enables sending remote attachments.
 
-## RemoteAttachment Example
+## Use `AttachmentCodec` and `RemoteAttachmentCodec` to handle remote attachments
 
-- Register your client to accept the codecs that you want
+### Register your client to accept the codecs
 
 ```kotlin
         Client.register(codec = AttachmentCodec())
         Client.register(codec = RemoteAttachmentCodec())
 ```
 
-- Create an Attachment 
+### Create an attachment 
 
 ```kotlin
 val attachment = Attachment(
@@ -27,7 +27,7 @@ data = "hello world".toByteStringUtf8(),
 )
 ```
 
-- Encode the attachment for transport
+### Encode the attachment for transport
 
 ```kotlin
 val encodedEncryptedContent = RemoteAttachment.encodeEncrypted(
@@ -36,7 +36,7 @@ val encodedEncryptedContent = RemoteAttachment.encodeEncrypted(
 )
 ```
 
-- Create a RemoteAttachment from the encoded content
+### Create a `RemoteAttachment` from the encoded content
 
 ```kotlin
 val remoteAttachment = RemoteAttachment.from(
@@ -47,7 +47,7 @@ remoteAttachment.contentLength = attachment.data.size()
 remoteAttachment.filename = attachment.filename
 ```
 
-- Send a message with the attachment and set the contentType
+### Send a message with the attachment and set the contentType
 
 ```kotlin
 val newConversation = client.conversations.newConversation(walletAddress)
@@ -58,7 +58,7 @@ newConversation.send(
 )
 ```
 
-- Load a remote attachment on the receiving end
+### Load a remote attachment on the receiving end
 
 ```kotlin
 val message = newConversation.messages().first()
@@ -69,3 +69,6 @@ runBlocking {
     val attachment: Attachment = loadedRemoteAttachment.load() 
 }
 ```
+
+
+You can create any content type you want to be used in your application you can read me about creating content types here: [LINK]
