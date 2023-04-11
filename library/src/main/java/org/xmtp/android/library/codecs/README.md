@@ -62,7 +62,7 @@ newConversation.send(
 )
 ```
 
-### Receive a remote attachment
+### Receive, decode, and decrypt a remote attachment
 
 ```kotlin
 val message = newConversation.messages().first()
