@@ -1,0 +1,10 @@
+version: v1
+managed:
+  enabled: true
+plugins:
+  - plugin: buf.build/grpc/kotlin
+    out: proto
+  - plugin: buf.build/grpc/java
+    out: proto
+  - plugin: buf.build/protocolbuffers/kotlin
+    out: proto
