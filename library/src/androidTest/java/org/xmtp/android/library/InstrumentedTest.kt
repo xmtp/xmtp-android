@@ -200,7 +200,7 @@ class InstrumentedTest {
 
     private fun publishLegacyContact(client: Client) {
         val contactBundle = Contact.ContactBundle.newBuilder().also {
-            it.v1Builder.keyBundle = client.privateKeyBundleV1.toPublicKeyBundle()
+            it.v1.toBuilder().keyBundle = client.privateKeyBundleV1.toPublicKeyBundle()
         }.build()
         val envelope = Envelope.newBuilder().also {
             it.contentTopic = Topic.contact(client.address).description

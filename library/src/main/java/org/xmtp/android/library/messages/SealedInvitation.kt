@@ -33,8 +33,8 @@ class SealedInvitationBuilder {
 
         fun buildFromCipherText(headerBytes: ByteArray, ciphertext: CipherText?): SealedInvitation {
             return SealedInvitation.newBuilder().apply {
-                v1Builder.headerBytes = headerBytes.toByteString()
-                v1Builder.ciphertext = ciphertext
+                v1.toBuilder().headerBytes = headerBytes.toByteString()
+                v1.toBuilder().ciphertext = ciphertext
             }.build()
         }
     }

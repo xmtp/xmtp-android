@@ -36,7 +36,7 @@ class Crypto {
                 val final = cipher.doFinal(message)
 
                 CiphertextOuterClass.Ciphertext.newBuilder().apply {
-                    aes256GcmHkdfSha256Builder.apply {
+                    aes256GcmHkdfSha256.toBuilder().apply {
                         payload = final.toByteString()
                         hkdfSalt = salt.toByteString()
                         gcmNonce = nonceData.toByteString()

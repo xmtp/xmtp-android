@@ -127,8 +127,8 @@ class MessageTest {
             ints.foldIndexed(ByteArray(ints.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
 
         val key = PrivateKeyOuterClass.PrivateKey.newBuilder().also {
-            it.secp256K1Builder.bytes = keyBytes.toByteString()
-            it.publicKeyBuilder.secp256K1UncompressedBuilder.bytes =
+            it.secp256K1.toBuilder().bytes = keyBytes.toByteString()
+            it.publicKey.toBuilder().secp256K1Uncompressed.toBuilder().bytes =
                 KeyUtil.addUncompressedByte(KeyUtil.getPublicKey(keyBytes)).toByteString()
         }.build()
 
@@ -152,8 +152,8 @@ class MessageTest {
             ints.foldIndexed(ByteArray(ints.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
 
         val key = PrivateKeyOuterClass.PrivateKey.newBuilder().also {
-            it.secp256K1Builder.bytes = keyBytes.toByteString()
-            it.publicKeyBuilder.secp256K1UncompressedBuilder.bytes =
+            it.secp256K1.toBuilder().bytes = keyBytes.toByteString()
+            it.publicKey.toBuilder().secp256K1Uncompressed.toBuilder().bytes =
                 KeyUtil.addUncompressedByte(KeyUtil.getPublicKey(keyBytes)).toByteString()
         }.build()
 
@@ -180,8 +180,8 @@ class MessageTest {
             ints.foldIndexed(ByteArray(ints.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
 
         val key = PrivateKeyOuterClass.PrivateKey.newBuilder().also {
-            it.secp256K1Builder.bytes = keyBytes.toByteString()
-            it.publicKeyBuilder.secp256K1UncompressedBuilder.bytes =
+            it.secp256K1.toBuilder().bytes = keyBytes.toByteString()
+            it.publicKey.toBuilder().secp256K1Uncompressed.toBuilder().bytes =
                 KeyUtil.addUncompressedByte(KeyUtil.getPublicKey(keyBytes)).toByteString()
         }.build()
         val client = Client().create(account = PrivateKeyBuilder(key))
@@ -246,8 +246,8 @@ class MessageTest {
         val bytes =
             ints.foldIndexed(ByteArray(ints.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
         val key = PrivateKeyOuterClass.PrivateKey.newBuilder().also {
-            it.secp256K1Builder.bytes = bytes.toByteString()
-            it.publicKeyBuilder.secp256K1UncompressedBuilder.bytes =
+            it.secp256K1.toBuilder().bytes = bytes.toByteString()
+            it.publicKey.toBuilder().secp256K1Uncompressed.toBuilder().bytes =
                 KeyUtil.addUncompressedByte(KeyUtil.getPublicKey(bytes)).toByteString()
         }.build()
         val keyBundleData =
