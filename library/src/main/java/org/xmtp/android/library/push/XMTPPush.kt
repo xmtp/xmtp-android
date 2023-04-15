@@ -4,6 +4,7 @@ import io.grpc.Grpc
 import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
 import org.xmtp.android.library.XMTPException
+import org.xmtp.android.library.push.Service.DeliveryMechanism
 import java.util.UUID
 
 class XMTPPush() {
@@ -33,7 +34,9 @@ class XMTPPush() {
 
         val request = Service.RegisterInstallationRequest.newBuilder().also { request ->
             request.installationId = installationId
-            request.deliveryMechanismBuilder.firebaseDeviceToken = token
+            request.deliveryMechanism.toBuilder().also { mechanism ->
+                mechanism.firebaseDeviceToken = token
+            }.build()
         }.build()
         client.registerInstallation(request)
     }
