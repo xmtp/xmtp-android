@@ -101,10 +101,8 @@ public object BatchQueryRequestKt {
     public fun com.google.protobuf.kotlin.DslList<com.xmtp.message_api.v1.QueryRequest, RequestsProxy>.clear() {
       _builder.clearRequests()
     }
-
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.BatchQueryRequest.copy(block: com.xmtp.message_api.v1.BatchQueryRequestKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.BatchQueryRequest =
   com.xmtp.message_api.v1.BatchQueryRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

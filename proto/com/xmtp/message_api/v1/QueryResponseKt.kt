@@ -102,7 +102,6 @@ public object QueryResponseKt {
       _builder.clearEnvelopes()
     }
 
-
     /**
      * `.xmtp.message_api.v1.PagingInfo paging_info = 2 [json_name = "pagingInfo"];`
      */
@@ -128,7 +127,6 @@ public object QueryResponseKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.QueryResponse.copy(block: com.xmtp.message_api.v1.QueryResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.QueryResponse =
   com.xmtp.message_api.v1.QueryResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

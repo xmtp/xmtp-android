@@ -81,7 +81,7 @@ public object MessageHeaderV1Kt {
     }
 
     /**
-     * `uint64 timestamp = 3 [json_name = "timestamp"];`
+     * <code>uint64 timestamp = 3 [json_name = "timestamp"];</code>
      */
     public var timestamp: kotlin.Long
       @JvmName("getTimestamp")
@@ -98,7 +98,6 @@ public object MessageHeaderV1Kt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.MessageHeaderV1.copy(block: com.xmtp.message_contents.MessageHeaderV1Kt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.MessageHeaderV1 =
   com.xmtp.message_contents.MessageHeaderV1Kt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

@@ -82,11 +82,11 @@ public object ContentTypeIdKt {
     }
 
     /**
-     * ```
+     * <pre>
      * major version of the type
-     * ```
+     * </pre>
      *
-     * `uint32 version_major = 3 [json_name = "versionMajor"];`
+     * <code>uint32 version_major = 3 [json_name = "versionMajor"];</code>
      */
     public var versionMajor: kotlin.Int
       @JvmName("getVersionMajor")
@@ -107,11 +107,11 @@ public object ContentTypeIdKt {
     }
 
     /**
-     * ```
+     * <pre>
      * minor version of the type
-     * ```
+     * </pre>
      *
-     * `uint32 version_minor = 4 [json_name = "versionMinor"];`
+     * <code>uint32 version_minor = 4 [json_name = "versionMinor"];</code>
      */
     public var versionMinor: kotlin.Int
       @JvmName("getVersionMinor")
@@ -132,7 +132,6 @@ public object ContentTypeIdKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.ContentTypeId.copy(block: com.xmtp.message_contents.ContentTypeIdKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.ContentTypeId =
   com.xmtp.message_contents.ContentTypeIdKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

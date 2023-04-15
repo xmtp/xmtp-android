@@ -101,7 +101,6 @@ public object SaveInvitesResponseKt {
     public fun com.google.protobuf.kotlin.DslList<com.xmtp.keystore_api.v1.SaveInvitesResponse.Response, ResponsesProxy>.clear() {
       _builder.clearResponses()
     }
-
   }
   @kotlin.jvm.JvmName("-initializeresponse")
   public inline fun response(block: com.xmtp.keystore_api.v1.SaveInvitesResponseKt.ResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.SaveInvitesResponse.Response =
@@ -237,15 +236,12 @@ public object SaveInvitesResponseKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.SaveInvitesResponse.copy(block: com.xmtp.keystore_api.v1.SaveInvitesResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.SaveInvitesResponse =
   com.xmtp.keystore_api.v1.SaveInvitesResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.SaveInvitesResponse.Response.copy(block: com.xmtp.keystore_api.v1.SaveInvitesResponseKt.ResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.SaveInvitesResponse.Response =
   com.xmtp.keystore_api.v1.SaveInvitesResponseKt.ResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.SaveInvitesResponse.Response.Success.copy(block: com.xmtp.keystore_api.v1.SaveInvitesResponseKt.ResponseKt.SuccessKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.SaveInvitesResponse.Response.Success =
   com.xmtp.keystore_api.v1.SaveInvitesResponseKt.ResponseKt.SuccessKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

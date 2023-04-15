@@ -34,7 +34,7 @@ public object IndexCursorKt {
     internal fun _build(): com.xmtp.message_api.v1.IndexCursor = _builder.build()
 
     /**
-     * `bytes digest = 1 [json_name = "digest"];`
+     * <code>bytes digest = 1 [json_name = "digest"];</code>
      */
     public var digest: com.google.protobuf.ByteString
       @JvmName("getDigest")
@@ -51,7 +51,7 @@ public object IndexCursorKt {
     }
 
     /**
-     * `uint64 sender_time_ns = 2 [json_name = "senderTimeNs"];`
+     * <code>uint64 sender_time_ns = 2 [json_name = "senderTimeNs"];</code>
      */
     public var senderTimeNs: kotlin.Long
       @JvmName("getSenderTimeNs")
@@ -68,7 +68,6 @@ public object IndexCursorKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.IndexCursor.copy(block: com.xmtp.message_api.v1.IndexCursorKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.IndexCursor =
   com.xmtp.message_api.v1.IndexCursorKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

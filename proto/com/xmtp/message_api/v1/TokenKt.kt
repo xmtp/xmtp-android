@@ -69,11 +69,11 @@ public object TokenKt {
     }
 
     /**
-     * ```
+     * <pre>
      * encoded bytes of AuthData
-     * ```
+     * </pre>
      *
-     * `bytes auth_data_bytes = 2 [json_name = "authDataBytes"];`
+     * <code>bytes auth_data_bytes = 2 [json_name = "authDataBytes"];</code>
      */
     public var authDataBytes: com.google.protobuf.ByteString
       @JvmName("getAuthDataBytes")
@@ -130,7 +130,6 @@ public object TokenKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.Token.copy(block: com.xmtp.message_api.v1.TokenKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.Token =
   com.xmtp.message_api.v1.TokenKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

@@ -167,11 +167,11 @@ public object InvitationV1Kt {
       internal fun _build(): com.xmtp.message_contents.InvitationV1.Aes256gcmHkdfsha256 = _builder.build()
 
       /**
-       * ```
+       * <pre>
        * randomly generated key material (32 bytes)
-       * ```
+       * </pre>
        *
-       * `bytes key_material = 1 [json_name = "keyMaterial"];`
+       * <code>bytes key_material = 1 [json_name = "keyMaterial"];</code>
        */
       public var keyMaterial: com.google.protobuf.ByteString
         @JvmName("getKeyMaterial")
@@ -336,15 +336,12 @@ public object InvitationV1Kt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.InvitationV1.copy(block: com.xmtp.message_contents.InvitationV1Kt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.InvitationV1 =
   com.xmtp.message_contents.InvitationV1Kt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.InvitationV1.Aes256gcmHkdfsha256.copy(block: com.xmtp.message_contents.InvitationV1Kt.Aes256gcmHkdfsha256Kt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.InvitationV1.Aes256gcmHkdfsha256 =
   com.xmtp.message_contents.InvitationV1Kt.Aes256gcmHkdfsha256Kt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.InvitationV1.Context.copy(block: com.xmtp.message_contents.InvitationV1Kt.ContextKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.InvitationV1.Context =
   com.xmtp.message_contents.InvitationV1Kt.ContextKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

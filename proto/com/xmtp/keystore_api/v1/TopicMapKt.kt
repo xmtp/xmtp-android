@@ -119,7 +119,7 @@ public object TopicMapKt {
       internal fun _build(): com.xmtp.keystore_api.v1.TopicMap.TopicData = _builder.build()
 
       /**
-       * `uint64 created_ns = 1 [json_name = "createdNs"];`
+       * <code>uint64 created_ns = 1 [json_name = "createdNs"];</code>
        */
       public var createdNs: kotlin.Long
         @JvmName("getCreatedNs")
@@ -178,11 +178,9 @@ public object TopicMapKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.TopicMap.copy(block: com.xmtp.keystore_api.v1.TopicMapKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.TopicMap =
   com.xmtp.keystore_api.v1.TopicMapKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.TopicMap.TopicData.copy(block: com.xmtp.keystore_api.v1.TopicMapKt.TopicDataKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.TopicMap.TopicData =
   com.xmtp.keystore_api.v1.TopicMapKt.TopicDataKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

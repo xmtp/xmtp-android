@@ -83,7 +83,7 @@ public object SealedInvitationHeaderV1Kt {
     }
 
     /**
-     * `uint64 created_ns = 3 [json_name = "createdNs"];`
+     * <code>uint64 created_ns = 3 [json_name = "createdNs"];</code>
      */
     public var createdNs: kotlin.Long
       @JvmName("getCreatedNs")
@@ -100,7 +100,6 @@ public object SealedInvitationHeaderV1Kt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.SealedInvitationHeaderV1.copy(block: com.xmtp.message_contents.SealedInvitationHeaderV1Kt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.SealedInvitationHeaderV1 =
   com.xmtp.message_contents.SealedInvitationHeaderV1Kt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

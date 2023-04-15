@@ -153,10 +153,8 @@ public object PrivateKeyBundleV1Kt {
     public fun com.google.protobuf.kotlin.DslList<com.xmtp.message_contents.PrivateKey, PreKeysProxy>.clear() {
       _builder.clearPreKeys()
     }
-
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.PrivateKeyBundleV1.copy(block: com.xmtp.message_contents.PrivateKeyBundleV1Kt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.PrivateKeyBundleV1 =
   com.xmtp.message_contents.PrivateKeyBundleV1Kt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

@@ -32,7 +32,6 @@ public object PublishResponseKt {
     internal fun _build(): com.xmtp.message_api.v1.PublishResponse = _builder.build()
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.PublishResponse.copy(block: com.xmtp.message_api.v1.PublishResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.PublishResponse =
   com.xmtp.message_api.v1.PublishResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

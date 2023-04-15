@@ -61,13 +61,13 @@ public object EnvelopeKt {
     }
 
     /**
-     * ```
+     * <pre>
      * Message creation timestamp
      * If the message includes the timestamp as well
      * it MUST be equivalent to the timestamp in the envelope.
-     * ```
+     * </pre>
      *
-     * `uint64 timestamp_ns = 2 [json_name = "timestampNs"];`
+     * <code>uint64 timestamp_ns = 2 [json_name = "timestampNs"];</code>
      */
     public var timestampNs: kotlin.Long
       @JvmName("getTimestampNs")
@@ -90,7 +90,7 @@ public object EnvelopeKt {
     }
 
     /**
-     * `bytes message = 3 [json_name = "message"];`
+     * <code>bytes message = 3 [json_name = "message"];</code>
      */
     public var message: com.google.protobuf.ByteString
       @JvmName("getMessage")
@@ -107,7 +107,6 @@ public object EnvelopeKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.Envelope.copy(block: com.xmtp.message_api.v1.EnvelopeKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.Envelope =
   com.xmtp.message_api.v1.EnvelopeKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

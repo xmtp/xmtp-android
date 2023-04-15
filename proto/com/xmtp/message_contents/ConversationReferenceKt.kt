@@ -66,7 +66,7 @@ public object ConversationReferenceKt {
     }
 
     /**
-     * `uint64 created_ns = 3 [json_name = "createdNs"];`
+     * <code>uint64 created_ns = 3 [json_name = "createdNs"];</code>
      */
     public var createdNs: kotlin.Long
       @JvmName("getCreatedNs")
@@ -107,7 +107,6 @@ public object ConversationReferenceKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.ConversationReference.copy(block: com.xmtp.message_contents.ConversationReferenceKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.ConversationReference =
   com.xmtp.message_contents.ConversationReferenceKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

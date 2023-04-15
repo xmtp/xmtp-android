@@ -32,11 +32,11 @@ public object PrivateKeyKt {
     internal fun _build(): com.xmtp.message_contents.PrivateKey = _builder.build()
 
     /**
-     * ```
+     * <pre>
      * time the key was created
-     * ```
+     * </pre>
      *
-     * `uint64 timestamp = 1 [json_name = "timestamp"];`
+     * <code>uint64 timestamp = 1 [json_name = "timestamp"];</code>
      */
     public var timestamp: kotlin.Long
       @JvmName("getTimestamp")
@@ -150,11 +150,11 @@ public object PrivateKeyKt {
       internal fun _build(): com.xmtp.message_contents.PrivateKey.Secp256k1 = _builder.build()
 
       /**
-       * ```
+       * <pre>
        * D big-endian, 32 bytes
-       * ```
+       * </pre>
        *
-       * `bytes bytes = 1 [json_name = "bytes"];`
+       * <code>bytes bytes = 1 [json_name = "bytes"];</code>
        */
       public var bytes: com.google.protobuf.ByteString
         @JvmName("getBytes")
@@ -176,11 +176,9 @@ public object PrivateKeyKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.PrivateKey.copy(block: com.xmtp.message_contents.PrivateKeyKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.PrivateKey =
   com.xmtp.message_contents.PrivateKeyKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.PrivateKey.Secp256k1.copy(block: com.xmtp.message_contents.PrivateKeyKt.Secp256k1Kt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.PrivateKey.Secp256k1 =
   com.xmtp.message_contents.PrivateKeyKt.Secp256k1Kt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

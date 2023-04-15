@@ -87,7 +87,6 @@ public object MessageKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.Message.copy(block: com.xmtp.message_contents.MessageKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.Message =
   com.xmtp.message_contents.MessageKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

@@ -32,7 +32,7 @@ public object CreateAuthTokenRequestKt {
     internal fun _build(): com.xmtp.keystore_api.v1.CreateAuthTokenRequest = _builder.build()
 
     /**
-     * `optional uint64 timestamp_ns = 1 [json_name = "timestampNs"];`
+     * <code>optional uint64 timestamp_ns = 1 [json_name = "timestampNs"];</code>
      */
     public var timestampNs: kotlin.Long
       @JvmName("getTimestampNs")
@@ -56,7 +56,6 @@ public object CreateAuthTokenRequestKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.CreateAuthTokenRequest.copy(block: com.xmtp.keystore_api.v1.CreateAuthTokenRequestKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.CreateAuthTokenRequest =
   com.xmtp.keystore_api.v1.CreateAuthTokenRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

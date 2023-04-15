@@ -36,11 +36,11 @@ public object EncryptedPrivateKeyBundleV1Kt {
     internal fun _build(): com.xmtp.message_contents.EncryptedPrivateKeyBundleV1 = _builder.build()
 
     /**
-     * ```
+     * <pre>
      * randomly generated pre-key 
-     * ```
+     * </pre>
      *
-     * `bytes wallet_pre_key = 1 [json_name = "walletPreKey"];`
+     * <code>bytes wallet_pre_key = 1 [json_name = "walletPreKey"];</code>
      */
     public var walletPreKey: com.google.protobuf.ByteString
       @JvmName("getWalletPreKey")
@@ -97,7 +97,6 @@ public object EncryptedPrivateKeyBundleV1Kt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.EncryptedPrivateKeyBundleV1.copy(block: com.xmtp.message_contents.EncryptedPrivateKeyBundleV1Kt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.EncryptedPrivateKeyBundleV1 =
   com.xmtp.message_contents.EncryptedPrivateKeyBundleV1Kt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

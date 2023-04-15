@@ -56,7 +56,7 @@ public object CreateInviteResponseKt {
     }
 
     /**
-     * `bytes payload = 2 [json_name = "payload"];`
+     * <code>bytes payload = 2 [json_name = "payload"];</code>
      */
     public var payload: com.google.protobuf.ByteString
       @JvmName("getPayload")
@@ -73,7 +73,6 @@ public object CreateInviteResponseKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.CreateInviteResponse.copy(block: com.xmtp.keystore_api.v1.CreateInviteResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.CreateInviteResponse =
   com.xmtp.keystore_api.v1.CreateInviteResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

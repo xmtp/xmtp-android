@@ -101,10 +101,8 @@ public object BatchQueryResponseKt {
     public fun com.google.protobuf.kotlin.DslList<com.xmtp.message_api.v1.QueryResponse, ResponsesProxy>.clear() {
       _builder.clearResponses()
     }
-
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.BatchQueryResponse.copy(block: com.xmtp.message_api.v1.BatchQueryResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.BatchQueryResponse =
   com.xmtp.message_api.v1.BatchQueryResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

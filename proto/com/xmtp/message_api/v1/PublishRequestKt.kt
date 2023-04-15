@@ -101,10 +101,8 @@ public object PublishRequestKt {
     public fun com.google.protobuf.kotlin.DslList<com.xmtp.message_api.v1.Envelope, EnvelopesProxy>.clear() {
       _builder.clearEnvelopes()
     }
-
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.PublishRequest.copy(block: com.xmtp.message_api.v1.PublishRequestKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.PublishRequest =
   com.xmtp.message_api.v1.PublishRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

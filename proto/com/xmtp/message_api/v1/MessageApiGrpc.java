@@ -37,11 +37,10 @@ public final class MessageApiGrpc {
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Publish"))
               .setSampledToLocalTracing(true)
-              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+              .setRequestMarshaller(io.grpc.protobuf.lite.ProtoLiteUtils.marshaller(
                   com.xmtp.message_api.v1.PublishRequest.getDefaultInstance()))
-              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+              .setResponseMarshaller(io.grpc.protobuf.lite.ProtoLiteUtils.marshaller(
                   com.xmtp.message_api.v1.PublishResponse.getDefaultInstance()))
-              .setSchemaDescriptor(new MessageApiMethodDescriptorSupplier("Publish"))
               .build();
         }
       }
@@ -68,11 +67,10 @@ public final class MessageApiGrpc {
               .setType(io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Subscribe"))
               .setSampledToLocalTracing(true)
-              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+              .setRequestMarshaller(io.grpc.protobuf.lite.ProtoLiteUtils.marshaller(
                   com.xmtp.message_api.v1.SubscribeRequest.getDefaultInstance()))
-              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+              .setResponseMarshaller(io.grpc.protobuf.lite.ProtoLiteUtils.marshaller(
                   com.xmtp.message_api.v1.Envelope.getDefaultInstance()))
-              .setSchemaDescriptor(new MessageApiMethodDescriptorSupplier("Subscribe"))
               .build();
         }
       }
@@ -99,11 +97,10 @@ public final class MessageApiGrpc {
               .setType(io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "SubscribeAll"))
               .setSampledToLocalTracing(true)
-              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+              .setRequestMarshaller(io.grpc.protobuf.lite.ProtoLiteUtils.marshaller(
                   com.xmtp.message_api.v1.SubscribeAllRequest.getDefaultInstance()))
-              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+              .setResponseMarshaller(io.grpc.protobuf.lite.ProtoLiteUtils.marshaller(
                   com.xmtp.message_api.v1.Envelope.getDefaultInstance()))
-              .setSchemaDescriptor(new MessageApiMethodDescriptorSupplier("SubscribeAll"))
               .build();
         }
       }
@@ -130,11 +127,10 @@ public final class MessageApiGrpc {
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Query"))
               .setSampledToLocalTracing(true)
-              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+              .setRequestMarshaller(io.grpc.protobuf.lite.ProtoLiteUtils.marshaller(
                   com.xmtp.message_api.v1.QueryRequest.getDefaultInstance()))
-              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+              .setResponseMarshaller(io.grpc.protobuf.lite.ProtoLiteUtils.marshaller(
                   com.xmtp.message_api.v1.QueryResponse.getDefaultInstance()))
-              .setSchemaDescriptor(new MessageApiMethodDescriptorSupplier("Query"))
               .build();
         }
       }
@@ -161,11 +157,10 @@ public final class MessageApiGrpc {
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "BatchQuery"))
               .setSampledToLocalTracing(true)
-              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+              .setRequestMarshaller(io.grpc.protobuf.lite.ProtoLiteUtils.marshaller(
                   com.xmtp.message_api.v1.BatchQueryRequest.getDefaultInstance()))
-              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+              .setResponseMarshaller(io.grpc.protobuf.lite.ProtoLiteUtils.marshaller(
                   com.xmtp.message_api.v1.BatchQueryResponse.getDefaultInstance()))
-              .setSchemaDescriptor(new MessageApiMethodDescriptorSupplier("BatchQuery"))
               .build();
         }
       }
@@ -588,41 +583,6 @@ public final class MessageApiGrpc {
         .build();
   }
 
-  private static abstract class MessageApiBaseDescriptorSupplier
-      implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
-    MessageApiBaseDescriptorSupplier() {}
-
-    @java.lang.Override
-    public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return com.xmtp.message_api.v1.MessageApiProto.getDescriptor();
-    }
-
-    @java.lang.Override
-    public com.google.protobuf.Descriptors.ServiceDescriptor getServiceDescriptor() {
-      return getFileDescriptor().findServiceByName("MessageApi");
-    }
-  }
-
-  private static final class MessageApiFileDescriptorSupplier
-      extends MessageApiBaseDescriptorSupplier {
-    MessageApiFileDescriptorSupplier() {}
-  }
-
-  private static final class MessageApiMethodDescriptorSupplier
-      extends MessageApiBaseDescriptorSupplier
-      implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
-    private final String methodName;
-
-    MessageApiMethodDescriptorSupplier(String methodName) {
-      this.methodName = methodName;
-    }
-
-    @java.lang.Override
-    public com.google.protobuf.Descriptors.MethodDescriptor getMethodDescriptor() {
-      return getServiceDescriptor().findMethodByName(methodName);
-    }
-  }
-
   private static volatile io.grpc.ServiceDescriptor serviceDescriptor;
 
   public static io.grpc.ServiceDescriptor getServiceDescriptor() {
@@ -632,7 +592,6 @@ public final class MessageApiGrpc {
         result = serviceDescriptor;
         if (result == null) {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
-              .setSchemaDescriptor(new MessageApiFileDescriptorSupplier())
               .addMethod(getPublishMethod())
               .addMethod(getSubscribeMethod())
               .addMethod(getSubscribeAllMethod())

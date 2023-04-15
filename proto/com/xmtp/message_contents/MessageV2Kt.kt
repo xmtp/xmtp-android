@@ -32,11 +32,11 @@ public object MessageV2Kt {
     internal fun _build(): com.xmtp.message_contents.MessageV2 = _builder.build()
 
     /**
-     * ```
+     * <pre>
      * encapsulates encoded MessageHeaderV2
-     * ```
+     * </pre>
      *
-     * `bytes header_bytes = 1 [json_name = "headerBytes"];`
+     * <code>bytes header_bytes = 1 [json_name = "headerBytes"];</code>
      */
     public var headerBytes: com.google.protobuf.ByteString
       @JvmName("getHeaderBytes")
@@ -93,7 +93,6 @@ public object MessageV2Kt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.MessageV2.copy(block: com.xmtp.message_contents.MessageV2Kt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.MessageV2 =
   com.xmtp.message_contents.MessageV2Kt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

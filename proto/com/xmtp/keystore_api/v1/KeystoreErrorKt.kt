@@ -73,7 +73,6 @@ public object KeystoreErrorKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.KeystoreError.copy(block: com.xmtp.keystore_api.v1.KeystoreErrorKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.KeystoreError =
   com.xmtp.keystore_api.v1.KeystoreErrorKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

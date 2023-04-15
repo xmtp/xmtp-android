@@ -32,7 +32,6 @@ public object SubscribeAllRequestKt {
     internal fun _build(): com.xmtp.message_api.v1.SubscribeAllRequest = _builder.build()
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.SubscribeAllRequest.copy(block: com.xmtp.message_api.v1.SubscribeAllRequestKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.SubscribeAllRequest =
   com.xmtp.message_api.v1.SubscribeAllRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

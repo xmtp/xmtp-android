@@ -42,7 +42,7 @@ public object QueryRequestKt {
      * @return A list containing the contentTopics.
      */
     public val contentTopics: com.google.protobuf.kotlin.DslList<kotlin.String, ContentTopicsProxy>
-      @kotlin.jvm.JvmSynthetic
+    @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
       get() = com.google.protobuf.kotlin.DslList(
         _builder.getContentTopicsList()
       )
@@ -102,7 +102,7 @@ public object QueryRequestKt {
       _builder.clearContentTopics()
     }
     /**
-     * `uint64 start_time_ns = 2 [json_name = "startTimeNs"];`
+     * <code>uint64 start_time_ns = 2 [json_name = "startTimeNs"];</code>
      */
     public var startTimeNs: kotlin.Long
       @JvmName("getStartTimeNs")
@@ -119,7 +119,7 @@ public object QueryRequestKt {
     }
 
     /**
-     * `uint64 end_time_ns = 3 [json_name = "endTimeNs"];`
+     * <code>uint64 end_time_ns = 3 [json_name = "endTimeNs"];</code>
      */
     public var endTimeNs: kotlin.Long
       @JvmName("getEndTimeNs")
@@ -160,7 +160,6 @@ public object QueryRequestKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.QueryRequest.copy(block: com.xmtp.message_api.v1.QueryRequestKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.QueryRequest =
   com.xmtp.message_api.v1.QueryRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

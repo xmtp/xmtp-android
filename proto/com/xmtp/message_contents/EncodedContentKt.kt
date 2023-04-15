@@ -242,11 +242,11 @@ public object EncodedContentKt {
     }
 
     /**
-     * ```
+     * <pre>
      * encoded content itself
-     * ```
+     * </pre>
      *
-     * `bytes content = 4 [json_name = "content"];`
+     * <code>bytes content = 4 [json_name = "content"];</code>
      */
     public var content: com.google.protobuf.ByteString
       @JvmName("getContent")
@@ -267,7 +267,6 @@ public object EncodedContentKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.EncodedContent.copy(block: com.xmtp.message_contents.EncodedContentKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.EncodedContent =
   com.xmtp.message_contents.EncodedContentKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

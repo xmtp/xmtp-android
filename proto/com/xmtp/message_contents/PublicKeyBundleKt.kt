@@ -105,7 +105,6 @@ public object PublicKeyBundleKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.PublicKeyBundle.copy(block: com.xmtp.message_contents.PublicKeyBundleKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.PublicKeyBundle =
   com.xmtp.message_contents.PublicKeyBundleKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

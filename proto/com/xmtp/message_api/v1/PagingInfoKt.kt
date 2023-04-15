@@ -33,11 +33,11 @@ public object PagingInfoKt {
     internal fun _build(): com.xmtp.message_api.v1.PagingInfo = _builder.build()
 
     /**
-     * ```
+     * <pre>
      * Note: this is a uint32, while go-waku's pageSize is a uint64
-     * ```
+     * </pre>
      *
-     * `uint32 limit = 1 [json_name = "limit"];`
+     * <code>uint32 limit = 1 [json_name = "limit"];</code>
      */
     public var limit: kotlin.Int
       @JvmName("getLimit")
@@ -106,7 +106,6 @@ public object PagingInfoKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.PagingInfo.copy(block: com.xmtp.message_api.v1.PagingInfoKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.PagingInfo =
   com.xmtp.message_api.v1.PagingInfoKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

@@ -35,11 +35,11 @@ public object MessageHeaderV2Kt {
     internal fun _build(): com.xmtp.message_contents.MessageHeaderV2 = _builder.build()
 
     /**
-     * ```
+     * <pre>
      * sender specified message creation time
-     * ```
+     * </pre>
      *
-     * `uint64 created_ns = 1 [json_name = "createdNs"];`
+     * <code>uint64 created_ns = 1 [json_name = "createdNs"];</code>
      */
     public var createdNs: kotlin.Long
       @JvmName("getCreatedNs")
@@ -85,7 +85,6 @@ public object MessageHeaderV2Kt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.MessageHeaderV2.copy(block: com.xmtp.message_contents.MessageHeaderV2Kt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.MessageHeaderV2 =
   com.xmtp.message_contents.MessageHeaderV2Kt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

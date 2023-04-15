@@ -35,11 +35,11 @@ public object SealedInvitationV1Kt {
     internal fun _build(): com.xmtp.message_contents.SealedInvitationV1 = _builder.build()
 
     /**
-     * ```
+     * <pre>
      * encoded SealedInvitationHeaderV1 used as associated data for Ciphertext
-     * ```
+     * </pre>
      *
-     * `bytes header_bytes = 1 [json_name = "headerBytes"];`
+     * <code>bytes header_bytes = 1 [json_name = "headerBytes"];</code>
      */
     public var headerBytes: com.google.protobuf.ByteString
       @JvmName("getHeaderBytes")
@@ -96,7 +96,6 @@ public object SealedInvitationV1Kt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.SealedInvitationV1.copy(block: com.xmtp.message_contents.SealedInvitationV1Kt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.SealedInvitationV1 =
   com.xmtp.message_contents.SealedInvitationV1Kt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

@@ -61,11 +61,11 @@ public object AuthDataKt {
     }
 
     /**
-     * ```
+     * <pre>
      * time when the token was generated/signed 
-     * ```
+     * </pre>
      *
-     * `uint64 created_ns = 2 [json_name = "createdNs"];`
+     * <code>uint64 created_ns = 2 [json_name = "createdNs"];</code>
      */
     public var createdNs: kotlin.Long
       @JvmName("getCreatedNs")
@@ -86,7 +86,6 @@ public object AuthDataKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.AuthData.copy(block: com.xmtp.message_api.v1.AuthDataKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.AuthData =
   com.xmtp.message_api.v1.AuthDataKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

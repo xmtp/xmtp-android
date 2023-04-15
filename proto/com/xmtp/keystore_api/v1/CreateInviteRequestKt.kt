@@ -80,7 +80,7 @@ public object CreateInviteRequestKt {
     }
 
     /**
-     * `uint64 created_ns = 3 [json_name = "createdNs"];`
+     * <code>uint64 created_ns = 3 [json_name = "createdNs"];</code>
      */
     public var createdNs: kotlin.Long
       @JvmName("getCreatedNs")
@@ -97,7 +97,6 @@ public object CreateInviteRequestKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.CreateInviteRequest.copy(block: com.xmtp.keystore_api.v1.CreateInviteRequestKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.CreateInviteRequest =
   com.xmtp.keystore_api.v1.CreateInviteRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

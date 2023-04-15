@@ -87,7 +87,6 @@ public object ContactBundleKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.ContactBundle.copy(block: com.xmtp.message_contents.ContactBundleKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.ContactBundle =
   com.xmtp.message_contents.ContactBundleKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

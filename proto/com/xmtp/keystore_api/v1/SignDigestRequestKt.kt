@@ -33,7 +33,7 @@ public object SignDigestRequestKt {
     internal fun _build(): com.xmtp.keystore_api.v1.SignDigestRequest = _builder.build()
 
     /**
-     * `bytes digest = 1 [json_name = "digest"];`
+     * <code>bytes digest = 1 [json_name = "digest"];</code>
      */
     public var digest: com.google.protobuf.ByteString
       @JvmName("getDigest")
@@ -50,7 +50,7 @@ public object SignDigestRequestKt {
     }
 
     /**
-     * `bool identity_key = 2 [json_name = "identityKey"];`
+     * <code>bool identity_key = 2 [json_name = "identityKey"];</code>
      */
     public var identityKey: kotlin.Boolean
       @JvmName("getIdentityKey")
@@ -74,7 +74,7 @@ public object SignDigestRequestKt {
     }
 
     /**
-     * `uint32 prekey_index = 3 [json_name = "prekeyIndex"];`
+     * <code>uint32 prekey_index = 3 [json_name = "prekeyIndex"];</code>
      */
     public var prekeyIndex: kotlin.Int
       @JvmName("getPrekeyIndex")
@@ -105,7 +105,6 @@ public object SignDigestRequestKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.SignDigestRequest.copy(block: com.xmtp.keystore_api.v1.SignDigestRequestKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.SignDigestRequest =
   com.xmtp.keystore_api.v1.SignDigestRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

@@ -63,7 +63,6 @@ public object CursorKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.Cursor.copy(block: com.xmtp.message_api.v1.CursorKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.Cursor =
   com.xmtp.message_api.v1.CursorKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

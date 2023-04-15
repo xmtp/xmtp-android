@@ -63,7 +63,6 @@ public object SealedInvitationKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.SealedInvitation.copy(block: com.xmtp.message_contents.SealedInvitationKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.SealedInvitation =
   com.xmtp.message_contents.SealedInvitationKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

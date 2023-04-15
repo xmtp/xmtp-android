@@ -93,11 +93,11 @@ public object CiphertextKt {
       internal fun _build(): com.xmtp.message_contents.Ciphertext.Aes256gcmHkdfsha256 = _builder.build()
 
       /**
-       * ```
+       * <pre>
        * 32 bytes
-       * ```
+       * </pre>
        *
-       * `bytes hkdf_salt = 1 [json_name = "hkdfSalt"];`
+       * <code>bytes hkdf_salt = 1 [json_name = "hkdfSalt"];</code>
        */
       public var hkdfSalt: com.google.protobuf.ByteString
         @JvmName("getHkdfSalt")
@@ -118,11 +118,11 @@ public object CiphertextKt {
       }
 
       /**
-       * ```
+       * <pre>
        * 12 bytes
-       * ```
+       * </pre>
        *
-       * `bytes gcm_nonce = 2 [json_name = "gcmNonce"];`
+       * <code>bytes gcm_nonce = 2 [json_name = "gcmNonce"];</code>
        */
       public var gcmNonce: com.google.protobuf.ByteString
         @JvmName("getGcmNonce")
@@ -143,11 +143,11 @@ public object CiphertextKt {
       }
 
       /**
-       * ```
+       * <pre>
        * encrypted payload
-       * ```
+       * </pre>
        *
-       * `bytes payload = 3 [json_name = "payload"];`
+       * <code>bytes payload = 3 [json_name = "payload"];</code>
        */
       public var payload: com.google.protobuf.ByteString
         @JvmName("getPayload")
@@ -169,11 +169,9 @@ public object CiphertextKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.Ciphertext.copy(block: com.xmtp.message_contents.CiphertextKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.Ciphertext =
   com.xmtp.message_contents.CiphertextKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.Ciphertext.Aes256gcmHkdfsha256.copy(block: com.xmtp.message_contents.CiphertextKt.Aes256gcmHkdfsha256Kt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.Ciphertext.Aes256gcmHkdfsha256 =
   com.xmtp.message_contents.CiphertextKt.Aes256gcmHkdfsha256Kt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

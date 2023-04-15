@@ -101,7 +101,6 @@ public object CompositeKt {
     public fun com.google.protobuf.kotlin.DslList<com.xmtp.message_contents.Composite.Part, PartsProxy>.clear() {
       _builder.clearParts()
     }
-
   }
   @kotlin.jvm.JvmName("-initializepart")
   public inline fun part(block: com.xmtp.message_contents.CompositeKt.PartKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.Composite.Part =
@@ -186,11 +185,9 @@ public object CompositeKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.Composite.copy(block: com.xmtp.message_contents.CompositeKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.Composite =
   com.xmtp.message_contents.CompositeKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.Composite.Part.copy(block: com.xmtp.message_contents.CompositeKt.PartKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.Composite.Part =
   com.xmtp.message_contents.CompositeKt.PartKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

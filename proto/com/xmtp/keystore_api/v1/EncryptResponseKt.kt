@@ -101,7 +101,6 @@ public object EncryptResponseKt {
     public fun com.google.protobuf.kotlin.DslList<com.xmtp.keystore_api.v1.EncryptResponse.Response, ResponsesProxy>.clear() {
       _builder.clearResponses()
     }
-
   }
   @kotlin.jvm.JvmName("-initializeresponse")
   public inline fun response(block: com.xmtp.keystore_api.v1.EncryptResponseKt.ResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.EncryptResponse.Response =
@@ -237,15 +236,12 @@ public object EncryptResponseKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.EncryptResponse.copy(block: com.xmtp.keystore_api.v1.EncryptResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.EncryptResponse =
   com.xmtp.keystore_api.v1.EncryptResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.EncryptResponse.Response.copy(block: com.xmtp.keystore_api.v1.EncryptResponseKt.ResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.EncryptResponse.Response =
   com.xmtp.keystore_api.v1.EncryptResponseKt.ResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.EncryptResponse.Response.Success.copy(block: com.xmtp.keystore_api.v1.EncryptResponseKt.ResponseKt.SuccessKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.EncryptResponse.Response.Success =
   com.xmtp.keystore_api.v1.EncryptResponseKt.ResponseKt.SuccessKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

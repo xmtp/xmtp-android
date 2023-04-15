@@ -109,7 +109,7 @@ public object DecodedMessageKt {
     }
 
     /**
-     * `uint64 sent_ns = 5 [json_name = "sentNs"];`
+     * <code>uint64 sent_ns = 5 [json_name = "sentNs"];</code>
      */
     public var sentNs: kotlin.Long
       @JvmName("getSentNs")
@@ -167,11 +167,11 @@ public object DecodedMessageKt {
     }
 
     /**
-     * ```
+     * <pre>
      * encapsulates EncodedContent
-     * ```
+     * </pre>
      *
-     * `bytes content_bytes = 8 [json_name = "contentBytes"];`
+     * <code>bytes content_bytes = 8 [json_name = "contentBytes"];</code>
      */
     public var contentBytes: com.google.protobuf.ByteString
       @JvmName("getContentBytes")
@@ -192,7 +192,6 @@ public object DecodedMessageKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.DecodedMessage.copy(block: com.xmtp.message_contents.DecodedMessageKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.DecodedMessage =
   com.xmtp.message_contents.DecodedMessageKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

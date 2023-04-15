@@ -32,11 +32,11 @@ public object SignedEciesCiphertextKt {
     internal fun _build(): com.xmtp.message_contents.SignedEciesCiphertext = _builder.build()
 
     /**
-     * ```
+     * <pre>
      * serialized Ecies message
-     * ```
+     * </pre>
      *
-     * `bytes ecies_bytes = 1 [json_name = "eciesBytes"];`
+     * <code>bytes ecies_bytes = 1 [json_name = "eciesBytes"];</code>
      */
     public var eciesBytes: com.google.protobuf.ByteString
       @JvmName("getEciesBytes")
@@ -119,11 +119,11 @@ public object SignedEciesCiphertextKt {
       internal fun _build(): com.xmtp.message_contents.SignedEciesCiphertext.Ecies = _builder.build()
 
       /**
-       * ```
+       * <pre>
        * 65 bytes
-       * ```
+       * </pre>
        *
-       * `bytes ephemeral_public_key = 1 [json_name = "ephemeralPublicKey"];`
+       * <code>bytes ephemeral_public_key = 1 [json_name = "ephemeralPublicKey"];</code>
        */
       public var ephemeralPublicKey: com.google.protobuf.ByteString
         @JvmName("getEphemeralPublicKey")
@@ -144,11 +144,11 @@ public object SignedEciesCiphertextKt {
       }
 
       /**
-       * ```
+       * <pre>
        * 16 bytes
-       * ```
+       * </pre>
        *
-       * `bytes iv = 2 [json_name = "iv"];`
+       * <code>bytes iv = 2 [json_name = "iv"];</code>
        */
       public var iv: com.google.protobuf.ByteString
         @JvmName("getIv")
@@ -169,11 +169,11 @@ public object SignedEciesCiphertextKt {
       }
 
       /**
-       * ```
+       * <pre>
        * 32 bytes
-       * ```
+       * </pre>
        *
-       * `bytes mac = 3 [json_name = "mac"];`
+       * <code>bytes mac = 3 [json_name = "mac"];</code>
        */
       public var mac: com.google.protobuf.ByteString
         @JvmName("getMac")
@@ -194,11 +194,11 @@ public object SignedEciesCiphertextKt {
       }
 
       /**
-       * ```
+       * <pre>
        * encrypted payload with block size of 16
-       * ```
+       * </pre>
        *
-       * `bytes ciphertext = 4 [json_name = "ciphertext"];`
+       * <code>bytes ciphertext = 4 [json_name = "ciphertext"];</code>
        */
       public var ciphertext: com.google.protobuf.ByteString
         @JvmName("getCiphertext")
@@ -220,11 +220,9 @@ public object SignedEciesCiphertextKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.SignedEciesCiphertext.copy(block: com.xmtp.message_contents.SignedEciesCiphertextKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.SignedEciesCiphertext =
   com.xmtp.message_contents.SignedEciesCiphertextKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.SignedEciesCiphertext.Ecies.copy(block: com.xmtp.message_contents.SignedEciesCiphertextKt.EciesKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.SignedEciesCiphertext.Ecies =
   com.xmtp.message_contents.SignedEciesCiphertextKt.EciesKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

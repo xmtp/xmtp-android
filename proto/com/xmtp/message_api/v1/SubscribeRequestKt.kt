@@ -42,7 +42,7 @@ public object SubscribeRequestKt {
      * @return A list containing the contentTopics.
      */
     public val contentTopics: com.google.protobuf.kotlin.DslList<kotlin.String, ContentTopicsProxy>
-      @kotlin.jvm.JvmSynthetic
+    @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
       get() = com.google.protobuf.kotlin.DslList(
         _builder.getContentTopicsList()
       )
@@ -102,7 +102,6 @@ public object SubscribeRequestKt {
       _builder.clearContentTopics()
     }}
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_api.v1.SubscribeRequest.copy(block: com.xmtp.message_api.v1.SubscribeRequestKt.Dsl.() -> kotlin.Unit): com.xmtp.message_api.v1.SubscribeRequest =
   com.xmtp.message_api.v1.SubscribeRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

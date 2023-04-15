@@ -101,7 +101,6 @@ public object SaveInvitesRequestKt {
     public fun com.google.protobuf.kotlin.DslList<com.xmtp.keystore_api.v1.SaveInvitesRequest.Request, RequestsProxy>.clear() {
       _builder.clearRequests()
     }
-
   }
   @kotlin.jvm.JvmName("-initializerequest")
   public inline fun request(block: com.xmtp.keystore_api.v1.SaveInvitesRequestKt.RequestKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.SaveInvitesRequest.Request =
@@ -147,7 +146,7 @@ public object SaveInvitesRequestKt {
       }
 
       /**
-       * `uint64 timestamp_ns = 2 [json_name = "timestampNs"];`
+       * <code>uint64 timestamp_ns = 2 [json_name = "timestampNs"];</code>
        */
       public var timestampNs: kotlin.Long
         @JvmName("getTimestampNs")
@@ -164,7 +163,7 @@ public object SaveInvitesRequestKt {
       }
 
       /**
-       * `bytes payload = 3 [json_name = "payload"];`
+       * <code>bytes payload = 3 [json_name = "payload"];</code>
        */
       public var payload: com.google.protobuf.ByteString
         @JvmName("getPayload")
@@ -182,11 +181,9 @@ public object SaveInvitesRequestKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.SaveInvitesRequest.copy(block: com.xmtp.keystore_api.v1.SaveInvitesRequestKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.SaveInvitesRequest =
   com.xmtp.keystore_api.v1.SaveInvitesRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.SaveInvitesRequest.Request.copy(block: com.xmtp.keystore_api.v1.SaveInvitesRequestKt.RequestKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.SaveInvitesRequest.Request =
   com.xmtp.keystore_api.v1.SaveInvitesRequestKt.RequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

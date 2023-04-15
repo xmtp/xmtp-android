@@ -32,11 +32,11 @@ public object SignedPublicKeyKt {
     internal fun _build(): com.xmtp.message_contents.SignedPublicKey = _builder.build()
 
     /**
-     * ```
+     * <pre>
      * embeds an UnsignedPublicKey
-     * ```
+     * </pre>
      *
-     * `bytes key_bytes = 1 [json_name = "keyBytes"];`
+     * <code>bytes key_bytes = 1 [json_name = "keyBytes"];</code>
      */
     public var keyBytes: com.google.protobuf.ByteString
       @JvmName("getKeyBytes")
@@ -93,7 +93,6 @@ public object SignedPublicKeyKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.SignedPublicKey.copy(block: com.xmtp.message_contents.SignedPublicKeyKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.SignedPublicKey =
   com.xmtp.message_contents.SignedPublicKeyKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

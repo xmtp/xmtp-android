@@ -32,11 +32,11 @@ public object SignedContentKt {
     internal fun _build(): com.xmtp.message_contents.SignedContent = _builder.build()
 
     /**
-     * ```
+     * <pre>
      * MUST contain EncodedContent
-     * ```
+     * </pre>
      *
-     * `bytes payload = 1 [json_name = "payload"];`
+     * <code>bytes payload = 1 [json_name = "payload"];</code>
      */
     public var payload: com.google.protobuf.ByteString
       @JvmName("getPayload")
@@ -123,7 +123,6 @@ public object SignedContentKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.SignedContent.copy(block: com.xmtp.message_contents.SignedContentKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.SignedContent =
   com.xmtp.message_contents.SignedContentKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

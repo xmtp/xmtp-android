@@ -114,11 +114,11 @@ public object SignatureKt {
       internal fun _build(): com.xmtp.message_contents.Signature.ECDSACompact = _builder.build()
 
       /**
-       * ```
+       * <pre>
        * compact representation [ R || S ], 64 bytes
-       * ```
+       * </pre>
        *
-       * `bytes bytes = 1 [json_name = "bytes"];`
+       * <code>bytes bytes = 1 [json_name = "bytes"];</code>
        */
       public var bytes: com.google.protobuf.ByteString
         @JvmName("getBytes")
@@ -139,11 +139,11 @@ public object SignatureKt {
       }
 
       /**
-       * ```
+       * <pre>
        * recovery bit
-       * ```
+       * </pre>
        *
-       * `uint32 recovery = 2 [json_name = "recovery"];`
+       * <code>uint32 recovery = 2 [json_name = "recovery"];</code>
        */
       public var recovery: kotlin.Int
         @JvmName("getRecovery")
@@ -194,11 +194,11 @@ public object SignatureKt {
       internal fun _build(): com.xmtp.message_contents.Signature.WalletECDSACompact = _builder.build()
 
       /**
-       * ```
+       * <pre>
        * compact representation [ R || S ], 64 bytes
-       * ```
+       * </pre>
        *
-       * `bytes bytes = 1 [json_name = "bytes"];`
+       * <code>bytes bytes = 1 [json_name = "bytes"];</code>
        */
       public var bytes: com.google.protobuf.ByteString
         @JvmName("getBytes")
@@ -219,11 +219,11 @@ public object SignatureKt {
       }
 
       /**
-       * ```
+       * <pre>
        * recovery bit
-       * ```
+       * </pre>
        *
-       * `uint32 recovery = 2 [json_name = "recovery"];`
+       * <code>uint32 recovery = 2 [json_name = "recovery"];</code>
        */
       public var recovery: kotlin.Int
         @JvmName("getRecovery")
@@ -245,15 +245,12 @@ public object SignatureKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.Signature.copy(block: com.xmtp.message_contents.SignatureKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.Signature =
   com.xmtp.message_contents.SignatureKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.Signature.ECDSACompact.copy(block: com.xmtp.message_contents.SignatureKt.ECDSACompactKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.Signature.ECDSACompact =
   com.xmtp.message_contents.SignatureKt.ECDSACompactKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.Signature.WalletECDSACompact.copy(block: com.xmtp.message_contents.SignatureKt.WalletECDSACompactKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.Signature.WalletECDSACompact =
   com.xmtp.message_contents.SignatureKt.WalletECDSACompactKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

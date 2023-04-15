@@ -63,7 +63,6 @@ public object EncryptedPrivateKeyBundleKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.message_contents.EncryptedPrivateKeyBundle.copy(block: com.xmtp.message_contents.EncryptedPrivateKeyBundleKt.Dsl.() -> kotlin.Unit): com.xmtp.message_contents.EncryptedPrivateKeyBundle =
   com.xmtp.message_contents.EncryptedPrivateKeyBundleKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

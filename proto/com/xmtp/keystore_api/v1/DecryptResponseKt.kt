@@ -101,7 +101,6 @@ public object DecryptResponseKt {
     public fun com.google.protobuf.kotlin.DslList<com.xmtp.keystore_api.v1.DecryptResponse.Response, ResponsesProxy>.clear() {
       _builder.clearResponses()
     }
-
   }
   @kotlin.jvm.JvmName("-initializeresponse")
   public inline fun response(block: com.xmtp.keystore_api.v1.DecryptResponseKt.ResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.DecryptResponse.Response =
@@ -211,7 +210,7 @@ public object DecryptResponseKt {
         internal fun _build(): com.xmtp.keystore_api.v1.DecryptResponse.Response.Success = _builder.build()
 
         /**
-         * `bytes decrypted = 1 [json_name = "decrypted"];`
+         * <code>bytes decrypted = 1 [json_name = "decrypted"];</code>
          */
         public var decrypted: com.google.protobuf.ByteString
           @JvmName("getDecrypted")
@@ -230,15 +229,12 @@ public object DecryptResponseKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.DecryptResponse.copy(block: com.xmtp.keystore_api.v1.DecryptResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.DecryptResponse =
   com.xmtp.keystore_api.v1.DecryptResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.DecryptResponse.Response.copy(block: com.xmtp.keystore_api.v1.DecryptResponseKt.ResponseKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.DecryptResponse.Response =
   com.xmtp.keystore_api.v1.DecryptResponseKt.ResponseKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.DecryptResponse.Response.Success.copy(block: com.xmtp.keystore_api.v1.DecryptResponseKt.ResponseKt.SuccessKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.DecryptResponse.Response.Success =
   com.xmtp.keystore_api.v1.DecryptResponseKt.ResponseKt.SuccessKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 

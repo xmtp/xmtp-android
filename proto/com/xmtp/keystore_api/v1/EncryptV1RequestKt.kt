@@ -101,7 +101,6 @@ public object EncryptV1RequestKt {
     public fun com.google.protobuf.kotlin.DslList<com.xmtp.keystore_api.v1.EncryptV1Request.Request, RequestsProxy>.clear() {
       _builder.clearRequests()
     }
-
   }
   @kotlin.jvm.JvmName("-initializerequest")
   public inline fun request(block: com.xmtp.keystore_api.v1.EncryptV1RequestKt.RequestKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.EncryptV1Request.Request =
@@ -154,7 +153,7 @@ public object EncryptV1RequestKt {
       }
 
       /**
-       * `bytes payload = 2 [json_name = "payload"];`
+       * <code>bytes payload = 2 [json_name = "payload"];</code>
        */
       public var payload: com.google.protobuf.ByteString
         @JvmName("getPayload")
@@ -171,7 +170,7 @@ public object EncryptV1RequestKt {
       }
 
       /**
-       * `bytes header_bytes = 3 [json_name = "headerBytes"];`
+       * <code>bytes header_bytes = 3 [json_name = "headerBytes"];</code>
        */
       public var headerBytes: com.google.protobuf.ByteString
         @JvmName("getHeaderBytes")
@@ -189,11 +188,9 @@ public object EncryptV1RequestKt {
     }
   }
 }
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.EncryptV1Request.copy(block: com.xmtp.keystore_api.v1.EncryptV1RequestKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.EncryptV1Request =
   com.xmtp.keystore_api.v1.EncryptV1RequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
-@kotlin.jvm.JvmSynthetic
 public inline fun com.xmtp.keystore_api.v1.EncryptV1Request.Request.copy(block: com.xmtp.keystore_api.v1.EncryptV1RequestKt.RequestKt.Dsl.() -> kotlin.Unit): com.xmtp.keystore_api.v1.EncryptV1Request.Request =
   com.xmtp.keystore_api.v1.EncryptV1RequestKt.RequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
 
