@@ -34,7 +34,9 @@ class XMTPPush() {
 
         val request = Service.RegisterInstallationRequest.newBuilder().also { request ->
             request.installationId = installationId
-            request.deliveryMechanism.toBuilder().firebaseDeviceToken = token
+            request.deliveryMechanism.toBuilder().also {
+                it.firebaseDeviceToken = token
+            }.build()
         }.build()
         client.registerInstallation(request)
     }

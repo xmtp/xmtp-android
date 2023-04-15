@@ -8,8 +8,10 @@ fun UnsignedPublicKey.generate(): UnsignedPublicKey {
     val unsigned = UnsignedPublicKey.newBuilder()
     val key = PrivateKey.newBuilder().build().generate()
     val createdNs = (Date().time * 1_000_000)
-    unsigned.secp256K1Uncompressed.toBuilder().bytes = key.publicKey.secp256K1Uncompressed.bytes
-    unsigned.createdNs = createdNs.toLong()
+    unsigned.secp256K1Uncompressed.toBuilder().also {
+        it.bytes = key.publicKey.secp256K1Uncompressed.bytes
+    }.build()
+    unsigned.createdNs = createdNs
     return unsigned.build()
 }
 
@@ -18,7 +20,9 @@ class UnsignedPublicKeyBuilder {
         fun buildFromPublicKey(publicKey: PublicKey): UnsignedPublicKey {
             return UnsignedPublicKey.newBuilder().apply {
                 createdNs = publicKey.timestamp
-                secp256K1Uncompressed.toBuilder().bytes = publicKey.secp256K1Uncompressed.bytes
+                secp256K1Uncompressed.toBuilder().also {
+                  it.bytes = publicKey.secp256K1Uncompressed.bytes
+                }.build()
             }.build()
         }
     }

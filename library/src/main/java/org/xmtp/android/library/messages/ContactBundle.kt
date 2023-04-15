@@ -18,7 +18,9 @@ class ContactBundleBuilder {
             val contactBundle = ContactBundle.newBuilder()
             // Try to deserialize legacy v1 bundle
             val publicKeyBundle = PublicKeyBundle.parseFrom(data)
-            contactBundle.v1.toBuilder().keyBundle = publicKeyBundle
+            contactBundle.v1.toBuilder().also {
+                it.keyBundle = publicKeyBundle
+            }.build()
             // It's not a legacy bundle so just deserialize as a ContactBundle
             if (contactBundle.v1.keyBundle.identityKey.secp256K1Uncompressed.bytes.isEmpty) {
                 contactBundle.mergeFrom(data)

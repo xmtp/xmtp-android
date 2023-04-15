@@ -22,12 +22,16 @@ class PrivateKeyBuilder : SigningKey {
             val time = Date().time
             it.timestamp = time
             val privateKeyData = SecureRandom().generateSeed(32)
-            it.secp256K1.toBuilder().bytes = privateKeyData.toByteString()
+            it.secp256K1.toBuilder().also { keyBuilder ->
+                keyBuilder.bytes = privateKeyData.toByteString()
+            }.build()
             val publicData = KeyUtil.getPublicKey(privateKeyData)
             val uncompressedKey = KeyUtil.addUncompressedByte(publicData)
             it.publicKey.toBuilder().also { pubKey ->
                 pubKey.timestamp = time
-                pubKey.secp256K1Uncompressed.toBuilder().bytes = uncompressedKey.toByteString()
+                pubKey.secp256K1Uncompressed.toBuilder().also { keyBuilder ->
+                    keyBuilder.bytes = uncompressedKey.toByteString()
+                }.build()
             }.build()
         }.build()
     }
@@ -41,7 +45,9 @@ class PrivateKeyBuilder : SigningKey {
             return PrivateKey.newBuilder().apply {
                 val time = Date().time
                 timestamp = time
-                secp256K1.toBuilder().bytes = privateKeyData.toByteString()
+                secp256K1.toBuilder().also { keyBuilder ->
+                    keyBuilder.bytes = privateKeyData.toByteString()
+                }.build()
                 val publicData = KeyUtil.getPublicKey(privateKeyData)
                 val uncompressedKey = KeyUtil.addUncompressedByte(publicData)
                 publicKey.toBuilder().apply {
@@ -56,7 +62,9 @@ class PrivateKeyBuilder : SigningKey {
         fun buildFromSignedPrivateKey(signedPrivateKey: SignedPrivateKey): PrivateKey {
             return PrivateKey.newBuilder().apply {
                 timestamp = signedPrivateKey.createdNs / 1_000_000
-                secp256K1.toBuilder().bytes = signedPrivateKey.secp256K1.bytes
+                secp256K1.toBuilder().also { keyBuilder ->
+                    keyBuilder.bytes = signedPrivateKey.secp256K1.bytes
+                }.build()
                 publicKey = PublicKeyBuilder.buildFromSignedPublicKey(signedPrivateKey.publicKey)
             }.build()
         }
