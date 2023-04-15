@@ -18,7 +18,7 @@ class ContactBundleBuilder {
             val contactBundle = ContactBundle.newBuilder()
             // Try to deserialize legacy v1 bundle
             val publicKeyBundle = PublicKeyBundle.parseFrom(data)
-            contactBundle.v1.toBuilder().also {
+            contactBundle.v1 = contactBundle.v1.toBuilder().also {
                 it.keyBundle = publicKeyBundle
             }.build()
             // It's not a legacy bundle so just deserialize as a ContactBundle

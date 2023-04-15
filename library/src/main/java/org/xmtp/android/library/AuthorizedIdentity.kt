@@ -42,9 +42,9 @@ data class AuthorizedIdentity(
     val toBundle: PrivateKeyBundle
         get() {
             return PrivateKeyOuterClass.PrivateKeyBundle.newBuilder().also {
-                it.v1.toBuilder().also { v1Builder ->
+                it.v1 = it.v1.toBuilder().also { v1Builder ->
                     v1Builder.identityKey = identity
-                    v1Builder.identityKey.toBuilder().also { idKeyBuilder ->
+                    v1Builder.identityKey = v1Builder.identityKey.toBuilder().also { idKeyBuilder ->
                         idKeyBuilder.publicKey = authorized
                     }.build()
                 }.build()

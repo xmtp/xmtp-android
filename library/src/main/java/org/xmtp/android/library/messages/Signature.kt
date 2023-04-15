@@ -23,7 +23,7 @@ class SignatureBuilder {
     companion object {
         fun buildFromSignatureData(data: ByteArray): Signature {
             return Signature.newBuilder().also {
-                it.ecdsaCompact.toBuilder().also { builder ->
+                it.ecdsaCompact = it.ecdsaCompact.toBuilder().also { builder ->
                     builder.bytes = data.take(64).toByteArray().toByteString()
                     builder.recovery = data[64].toInt()
                 }.build()

@@ -42,7 +42,7 @@ fun PrivateKeyBundleV1.generate(wallet: SigningKey): PrivateKeyBundleV1 {
     }
 
     preKey = preKey.toBuilder().apply {
-        publicKey.toBuilder().also {
+        publicKey = publicKey.toBuilder().also {
             it.signature = signature
         }.build()
     }.build()
@@ -52,16 +52,16 @@ fun PrivateKeyBundleV1.generate(wallet: SigningKey): PrivateKeyBundleV1 {
 
     preKey = preKey.toBuilder().apply {
         publicKey = PublicKeyBuilder.buildFromSignedPublicKey(signedPublicKey)
-        publicKey.toBuilder().also {
+        publicKey = publicKey.toBuilder().also {
             it.signature = signedPublicKey.signature
         }.build()
     }.build()
 
     bundle = bundle.toBuilder().apply {
-        v1.toBuilder().apply {
+        v1 = v1.toBuilder().apply {
             identityKey = authorizedIdentity.identity
-            identityKey.toBuilder().also {
-              it.publicKey = authorizedIdentity.authorized
+            identityKey = identityKey.toBuilder().also {
+                it.publicKey = authorizedIdentity.authorized
             }.build()
             addPreKeys(preKey)
         }.build()

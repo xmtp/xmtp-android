@@ -22,14 +22,14 @@ class PrivateKeyBuilder : SigningKey {
             val time = Date().time
             it.timestamp = time
             val privateKeyData = SecureRandom().generateSeed(32)
-            it.secp256K1.toBuilder().also { keyBuilder ->
+            it.secp256K1 = it.secp256K1.toBuilder().also { keyBuilder ->
                 keyBuilder.bytes = privateKeyData.toByteString()
             }.build()
             val publicData = KeyUtil.getPublicKey(privateKeyData)
             val uncompressedKey = KeyUtil.addUncompressedByte(publicData)
-            it.publicKey.toBuilder().also { pubKey ->
+            it.publicKey = it.publicKey.toBuilder().also { pubKey ->
                 pubKey.timestamp = time
-                pubKey.secp256K1Uncompressed.toBuilder().also { keyBuilder ->
+                pubKey.secp256K1Uncompressed = pubKey.secp256K1Uncompressed.toBuilder().also { keyBuilder ->
                     keyBuilder.bytes = uncompressedKey.toByteString()
                 }.build()
             }.build()
@@ -50,9 +50,9 @@ class PrivateKeyBuilder : SigningKey {
                 }.build()
                 val publicData = KeyUtil.getPublicKey(privateKeyData)
                 val uncompressedKey = KeyUtil.addUncompressedByte(publicData)
-                publicKey.toBuilder().apply {
+                publicKey = publicKey.toBuilder().apply {
                     timestamp = time
-                    secp256K1Uncompressed.toBuilder().apply {
+                    secp256K1Uncompressed = secp256K1Uncompressed.toBuilder().apply {
                         bytes = uncompressedKey.toByteString()
                     }.build()
                 }.build()
@@ -62,7 +62,7 @@ class PrivateKeyBuilder : SigningKey {
         fun buildFromSignedPrivateKey(signedPrivateKey: SignedPrivateKey): PrivateKey {
             return PrivateKey.newBuilder().apply {
                 timestamp = signedPrivateKey.createdNs / 1_000_000
-                secp256K1.toBuilder().also { keyBuilder ->
+                secp256K1 = secp256K1.toBuilder().also { keyBuilder ->
                     keyBuilder.bytes = signedPrivateKey.secp256K1.bytes
                 }.build()
                 publicKey = PublicKeyBuilder.buildFromSignedPublicKey(signedPrivateKey.publicKey)
@@ -86,7 +86,7 @@ class PrivateKeyBuilder : SigningKey {
             )
         val signature = SignatureOuterClass.Signature.newBuilder()
         val signatureKey = KeyUtil.getSignatureBytes(signatureData)
-        signature.ecdsaCompact.toBuilder().apply {
+        signature.ecdsaCompact = signature.ecdsaCompact.toBuilder().apply {
             bytes = signatureKey.take(64).toByteArray().toByteString()
             recovery = signatureKey[64].toInt()
         }.build()

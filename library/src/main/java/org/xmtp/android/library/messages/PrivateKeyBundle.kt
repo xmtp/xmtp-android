@@ -31,7 +31,7 @@ fun PrivateKeyBundle.encrypted(key: SigningKey): EncryptedPrivateKeyBundle {
         } ?: throw XMTPException("Illegal signature")
     val cipherText = Crypto.encrypt(signature.rawDataWithNormalizedRecovery, bundleBytes)
     return EncryptedPrivateKeyBundle.newBuilder().apply {
-        v1.toBuilder().also { v1Builder ->
+        v1 = v1.toBuilder().also { v1Builder ->
             v1Builder.walletPreKey = walletPreKey.toByteString()
             v1Builder.ciphertext = cipherText
         }.build()

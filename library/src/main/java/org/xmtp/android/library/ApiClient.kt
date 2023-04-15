@@ -78,22 +78,22 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
                 }
                 if (pagination?.startTime != null) {
                     it.endTimeNs = pagination.startTime.time * 1_000_000
-                    it.pagingInfo.toBuilder().also { info ->
+                    it.pagingInfo = it.pagingInfo.toBuilder().also { info ->
                         info.direction =
                             MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING
                     }.build()
                 }
                 if (pagination?.endTime != null) {
                     it.startTimeNs = pagination.endTime.time * 1_000_000
-                    it.pagingInfo.toBuilder().also { info ->
+                    it.pagingInfo =  it.pagingInfo.toBuilder().also { info ->
                         info.direction =
                             MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING
                     }.build()
                 }
                 if (cursor != null) {
-                    it.pagingInfo.toBuilder().also { info ->
+                    it.pagingInfo = it.pagingInfo.toBuilder().also { info ->
                         info.cursor = cursor
-                    }
+                    }.build()
                 }
             }.build()
 

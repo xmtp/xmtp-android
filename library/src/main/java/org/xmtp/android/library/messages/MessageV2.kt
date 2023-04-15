@@ -59,7 +59,7 @@ class MessageV2Builder {
             )
 
             val key = PublicKey.newBuilder().also {
-                it.secp256K1Uncompressed.toBuilder().also { keyBuilder ->
+                it.secp256K1Uncompressed = it.secp256K1Uncompressed.toBuilder().also { keyBuilder ->
                     keyBuilder.bytes =
                         KeyUtil.addUncompressedByte(publicKey.toByteArray()).toByteString()
                 }.build()

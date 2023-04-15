@@ -27,7 +27,7 @@ class SignedPublicKeyBuilder {
             }
             val unsignedKey = PublicKey.newBuilder().apply {
                 timestamp = publicKey.timestamp
-                secp256K1Uncompressed.toBuilder().also {
+                secp256K1Uncompressed = secp256K1Uncompressed.toBuilder().also {
                     it.bytes = publicKey.secp256K1Uncompressed.bytes
                 }.build()
             }.build()

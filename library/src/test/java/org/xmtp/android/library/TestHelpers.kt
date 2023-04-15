@@ -190,7 +190,7 @@ data class Fixtures(val aliceAccount: PrivateKeyBuilder, val bobAccount: Private
 
     fun publishLegacyContact(client: Client) {
         val contactBundle = ContactBundle.newBuilder().apply {
-            v1.toBuilder().apply {
+            v1 = v1.toBuilder().apply {
                 keyBundle = client.privateKeyBundleV1.toPublicKeyBundle()
             }.build()
         }.build()

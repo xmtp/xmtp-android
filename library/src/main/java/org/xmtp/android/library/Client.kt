@@ -198,7 +198,7 @@ class Client() {
         val envelopes: MutableList<MessageApiOuterClass.Envelope> = mutableListOf()
         if (legacy) {
             val contactBundle = ContactBundle.newBuilder().also {
-                it.v1.toBuilder().also { v1Builder ->
+                it.v1 = it.v1.toBuilder().also { v1Builder ->
                     v1Builder.keyBundle = privateKeyBundleV1.toPublicKeyBundle()
                 }.build()
             }.build()
@@ -212,10 +212,10 @@ class Client() {
             envelopes.add(envelope)
         }
         val contactBundle = ContactBundle.newBuilder().also {
-            it.v2.toBuilder().also { v2Builder ->
+            it.v2 = it.v2.toBuilder().also { v2Builder ->
                 v2Builder.keyBundle = keys.getPublicKeyBundle()
-                v2Builder.keyBundle.toBuilder().also { keyBuilder ->
-                    keyBuilder.identityKey.toBuilder().also { idBuilder ->
+                v2Builder. keyBundle = v2Builder.keyBundle.toBuilder().also { keyBuilder ->
+                    keyBuilder.identityKey = keyBuilder.identityKey.toBuilder().also { idBuilder ->
                         idBuilder.signature =
                             it.v2.keyBundle.identityKey.signature.ensureWalletSignature()
                     }.build()

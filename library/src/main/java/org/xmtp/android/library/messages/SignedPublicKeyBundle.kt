@@ -7,11 +7,11 @@ class SignedPublicKeyBundleBuilder {
         fun buildFromKeyBundle(publicKeyBundle: PublicKeyBundle): SignedPublicKeyBundle {
             return SignedPublicKeyBundle.newBuilder().apply {
                 identityKey = SignedPublicKeyBuilder.buildFromLegacy(publicKeyBundle.identityKey)
-                identityKey.toBuilder().also {
+                identityKey = identityKey.toBuilder().also {
                     it.signature = publicKeyBundle.identityKey.signature
                 }.build()
                 preKey = SignedPublicKeyBuilder.buildFromLegacy(publicKeyBundle.preKey)
-                preKey.toBuilder().also {
+                preKey = preKey.toBuilder().also {
                     it.signature = publicKeyBundle.preKey.signature
                 }.build()
             }.build()

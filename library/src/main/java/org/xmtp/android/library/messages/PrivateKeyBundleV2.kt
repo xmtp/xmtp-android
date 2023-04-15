@@ -70,7 +70,7 @@ fun PrivateKeyBundleV2.toV1(): PrivateKeyBundleV1 {
 fun PrivateKeyBundleV2.getPublicKeyBundle(): SignedPublicKeyBundle {
     return SignedPublicKeyBundle.newBuilder().also {
         it.identityKey = identityKey.publicKey
-        it.identityKey.toBuilder().also { idKeyBuilder ->
+        it.identityKey = it.identityKey.toBuilder().also { idKeyBuilder ->
             idKeyBuilder.signature = identityKey.publicKey.signature.ensureWalletSignature()
         }.build()
         it.preKey = preKeysList[0].publicKey
