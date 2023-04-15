@@ -45,7 +45,7 @@ class PrivateKeyBuilder : SigningKey {
             return PrivateKey.newBuilder().apply {
                 val time = Date().time
                 timestamp = time
-                secp256K1.toBuilder().also { keyBuilder ->
+                secp256K1 = secp256K1.toBuilder().also { keyBuilder ->
                     keyBuilder.bytes = privateKeyData.toByteString()
                 }.build()
                 val publicData = KeyUtil.getPublicKey(privateKeyData)
