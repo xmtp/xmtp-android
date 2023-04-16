@@ -85,7 +85,7 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
                 }
                 if (pagination?.endTime != null) {
                     it.startTimeNs = pagination.endTime.time * 1_000_000
-                    it.pagingInfo =  it.pagingInfo.toBuilder().also { info ->
+                    it.pagingInfo = it.pagingInfo.toBuilder().also { info ->
                         info.direction =
                             MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING
                     }.build()

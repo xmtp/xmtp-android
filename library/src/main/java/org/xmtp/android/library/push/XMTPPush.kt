@@ -4,7 +4,6 @@ import io.grpc.Grpc
 import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
 import org.xmtp.android.library.XMTPException
-import org.xmtp.android.library.push.Service.DeliveryMechanism
 import java.util.UUID
 
 class XMTPPush() {

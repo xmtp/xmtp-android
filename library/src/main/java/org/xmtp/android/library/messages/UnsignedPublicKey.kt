@@ -21,7 +21,7 @@ class UnsignedPublicKeyBuilder {
             return UnsignedPublicKey.newBuilder().apply {
                 createdNs = publicKey.timestamp
                 secp256K1Uncompressed = secp256K1Uncompressed.toBuilder().also {
-                  it.bytes = publicKey.secp256K1Uncompressed.bytes
+                    it.bytes = publicKey.secp256K1Uncompressed.bytes
                 }.build()
             }.build()
         }
