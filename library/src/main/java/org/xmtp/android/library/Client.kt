@@ -214,10 +214,11 @@ class Client() {
         val contactBundle = ContactBundle.newBuilder().also {
             it.v2 = it.v2.toBuilder().also { v2Builder ->
                 v2Builder.keyBundle = keys.getPublicKeyBundle()
+            }.build()
+            it.v2 = it.v2.toBuilder().also { v2Builder ->
                 v2Builder.keyBundle = v2Builder.keyBundle.toBuilder().also { keyBuilder ->
                     keyBuilder.identityKey = keyBuilder.identityKey.toBuilder().also { idBuilder ->
-                        idBuilder.signature =
-                            it.v2.keyBundle.identityKey.signature.ensureWalletSignature()
+                        idBuilder.signature = it.v2.keyBundle.identityKey.signature.ensureWalletSignature()
                     }.build()
                 }.build()
             }.build()

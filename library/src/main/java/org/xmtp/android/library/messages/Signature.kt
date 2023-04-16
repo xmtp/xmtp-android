@@ -102,16 +102,16 @@ private fun getPublicKeyFromBytes(pubKey: ByteArray): java.security.PublicKey {
 }
 
 fun Signature.ensureWalletSignature(): Signature {
-    when (unionCase) {
+    return when (unionCase) {
         SignatureOuterClass.Signature.UnionCase.ECDSA_COMPACT -> {
             val walletEcdsa = SignatureOuterClass.Signature.WalletECDSACompact.newBuilder().also {
                 it.bytes = ecdsaCompact.bytes
                 it.recovery = ecdsaCompact.recovery
             }.build()
-            return this.toBuilder().also {
+            this.toBuilder().also {
                 it.walletEcdsaCompact = walletEcdsa
             }.build()
         }
-        else -> return this
+        else -> this
     }
 }
