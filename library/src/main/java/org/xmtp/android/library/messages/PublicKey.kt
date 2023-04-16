@@ -31,7 +31,6 @@ class PublicKeyBuilder {
                     }.build()
                 }
                 signature = sig
-
             }.build()
         }
 
