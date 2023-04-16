@@ -84,13 +84,14 @@ class PrivateKeyBuilder : SigningKey {
                 ECKeyPair.create(privateKey.secp256K1.bytes.toByteArray()),
                 false,
             )
-        val signature = SignatureOuterClass.Signature.newBuilder()
         val signatureKey = KeyUtil.getSignatureBytes(signatureData)
-        signature.ecdsaCompact = signature.ecdsaCompact.toBuilder().apply {
-            bytes = signatureKey.take(64).toByteArray().toByteString()
-            recovery = signatureKey[64].toInt()
+
+        return SignatureOuterClass.Signature.newBuilder().also {
+            it.ecdsaCompact = it.ecdsaCompact.toBuilder().also { builder ->
+                builder.bytes = signatureKey.take(64).toByteArray().toByteString()
+                builder.recovery = signatureKey[64].toInt()
+            }.build()
         }.build()
-        return signature.build()
     }
 
     override suspend fun sign(message: String): SignatureOuterClass.Signature {

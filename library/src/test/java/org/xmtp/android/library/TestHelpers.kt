@@ -189,9 +189,9 @@ data class Fixtures(val aliceAccount: PrivateKeyBuilder, val bobAccount: Private
     constructor() : this(aliceAccount = PrivateKeyBuilder(), bobAccount = PrivateKeyBuilder())
 
     fun publishLegacyContact(client: Client) {
-        val contactBundle = ContactBundle.newBuilder().apply {
-            v1 = v1.toBuilder().apply {
-                keyBundle = client.privateKeyBundleV1.toPublicKeyBundle()
+        val contactBundle = ContactBundle.newBuilder().also { builder ->
+            builder.v1 = builder.v1.toBuilder().also {
+                it.keyBundle = client.privateKeyBundleV1.toPublicKeyBundle()
             }.build()
         }.build()
         val envelope = Envelope.newBuilder().apply {
