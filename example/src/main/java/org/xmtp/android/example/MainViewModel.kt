@@ -1,5 +1,6 @@
 package org.xmtp.android.example
 
+import android.util.Log
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.ViewModel
@@ -20,6 +21,7 @@ import org.xmtp.android.example.extension.stateFlow
 import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
 import org.xmtp.android.library.Conversation
 import org.xmtp.android.library.DecodedMessage
+import java.util.Date
 
 class MainViewModel : ViewModel() {
 
@@ -42,7 +44,13 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val listItems = mutableListOf<MainListItem>()
             try {
+                // Write code to time this function and divide by number of conversations
+                // to get an idea of how long it takes to load a conversation.
+                val start = Date().time
                 val conversations = ClientManager.client.conversations.list()
+                val end = Date().time
+                Log.d("MainViewModel", "Loaded ${conversations.size} conversations in ${end - start}ms")
+
                 PushNotificationTokenManager.xmtpPush.subscribe(conversations.map { it.topic })
                 listItems.addAll(
                     conversations.map { conversation ->
