@@ -13,8 +13,6 @@ import kotlinx.coroutines.launch
 import org.xmtp.android.example.ClientManager
 import org.xmtp.android.example.account.WalletConnectAccount
 import org.xmtp.android.library.Client
-import org.xmtp.android.library.ClientOptions
-import org.xmtp.android.library.XMTPEnvironment
 import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder

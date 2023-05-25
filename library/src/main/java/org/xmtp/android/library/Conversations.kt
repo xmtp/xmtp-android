@@ -161,6 +161,7 @@ data class Conversations(
         val invitations = listInvitations()
         val end2 = Date().time
         Log.d("PERF", "Loaded ${invitations.size} listInvitations in ${end2 - start2}ms")
+        val start3 = Date().time
         for (sealedInvitation in invitations) {
             try {
                 val unsealed = sealedInvitation.v1.getInvitation(viewer = client.keys)
@@ -174,6 +175,8 @@ data class Conversations(
                 Log.d(TAG, e.message.toString())
             }
         }
+        val end3 = Date().time
+        Log.d("PERF", "Unsealed ${invitations.size} invitations in ${end3 - start3}ms")
 
         conversations.clear()
         conversations.addAll(newConversations.filter { it.peerAddress != client.address })
