@@ -32,7 +32,7 @@ jobs:
         run: docker-compose -p xmtp -f dev/local/docker-compose.yml down
   library-integration:
     name: Library (Integration Tests)
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
       - name: Checkout project sources
         uses: actions/checkout@v3
