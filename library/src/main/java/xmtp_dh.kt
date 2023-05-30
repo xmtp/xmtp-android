@@ -3,7 +3,7 @@
 
 @file:Suppress("NAME_SHADOWING")
 
-package uniffi.xmtp_dh;
+package uniffi.xmtp_dh
 
 // Common helper code.
 //
@@ -31,9 +31,14 @@ import java.nio.ByteOrder
 
 @Structure.FieldOrder("capacity", "len", "data")
 open class RustBuffer : Structure() {
-    @JvmField var capacity: Int = 0
-    @JvmField var len: Int = 0
-    @JvmField var data: Pointer? = null
+    @JvmField
+    var capacity: Int = 0
+
+    @JvmField
+    var len: Int = 0
+
+    @JvmField
+    var data: Pointer? = null
 
     class ByValue : RustBuffer(), Structure.ByValue
     class ByReference : RustBuffer(), Structure.ByReference
@@ -41,9 +46,9 @@ open class RustBuffer : Structure() {
     companion object {
         internal fun alloc(size: Int = 0) = rustCall() { status ->
             _UniFFILib.INSTANCE.ffi_xmtp_dh_ff4a_rustbuffer_alloc(size, status).also {
-                if(it.data == null) {
-                   throw RuntimeException("RustBuffer.alloc() returned null data pointer (size=${size})")
-               }
+                if (it.data == null) {
+                    throw RuntimeException("RustBuffer.alloc() returned null data pointer (size=$size)")
+                }
             }
         }
 
@@ -86,11 +91,15 @@ class RustBufferByReference : ByReference(16) {
 
 @Structure.FieldOrder("len", "data")
 open class ForeignBytes : Structure() {
-    @JvmField var len: Int = 0
-    @JvmField var data: Pointer? = null
+    @JvmField
+    var len: Int = 0
+
+    @JvmField
+    var data: Pointer? = null
 
     class ByValue : ForeignBytes(), Structure.ByValue
 }
+
 // The FfiConverter interface handles converter types to and from the FFI
 //
 // All implementing objects should be public to support external types.  When a
@@ -146,11 +155,11 @@ public interface FfiConverter<KotlinType, FfiType> {
     fun liftFromRustBuffer(rbuf: RustBuffer.ByValue): KotlinType {
         val byteBuf = rbuf.asByteBuffer()!!
         try {
-           val item = read(byteBuf)
-           if (byteBuf.hasRemaining()) {
-               throw RuntimeException("junk remaining in buffer after lifting, something is very wrong!!")
-           }
-           return item
+            val item = read(byteBuf)
+            if (byteBuf.hasRemaining()) {
+                throw RuntimeException("junk remaining in buffer after lifting, something is very wrong!!")
+            }
+            return item
         } finally {
             RustBuffer.free(rbuf)
         }
@@ -158,17 +167,21 @@ public interface FfiConverter<KotlinType, FfiType> {
 }
 
 // FfiConverter that uses `RustBuffer` as the FfiType
-public interface FfiConverterRustBuffer<KotlinType>: FfiConverter<KotlinType, RustBuffer.ByValue> {
+public interface FfiConverterRustBuffer<KotlinType> : FfiConverter<KotlinType, RustBuffer.ByValue> {
     override fun lift(value: RustBuffer.ByValue) = liftFromRustBuffer(value)
     override fun lower(value: KotlinType) = lowerIntoRustBuffer(value)
 }
+
 // A handful of classes and functions to support the generated data structures.
 // This would be a good candidate for isolating in its own ffi-support lib.
 // Error runtime.
 @Structure.FieldOrder("code", "error_buf")
 internal open class RustCallStatus : Structure() {
-    @JvmField var code: Int = 0
-    @JvmField var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
+    @JvmField
+    var code: Int = 0
+
+    @JvmField
+    var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
 
     fun isSuccess(): Boolean {
         return code == 0
@@ -187,7 +200,7 @@ class InternalException(message: String) : Exception(message)
 
 // Each top-level error class has a companion object that can lift the error from the call status's rust buffer
 interface CallStatusErrorHandler<E> {
-    fun lift(error_buf: RustBuffer.ByValue): E;
+    fun lift(error_buf: RustBuffer.ByValue): E
 }
 
 // Helpers for calling Rust
@@ -195,8 +208,11 @@ interface CallStatusErrorHandler<E> {
 // synchronize itself
 
 // Call a rust function that returns a Result<>.  Pass in the Error class companion that corresponds to the Err
-private inline fun <U, E: Exception> rustCallWithError(errorHandler: CallStatusErrorHandler<E>, callback: (RustCallStatus) -> U): U {
-    var status = RustCallStatus();
+private inline fun <U, E : Exception> rustCallWithError(
+    errorHandler: CallStatusErrorHandler<E>,
+    callback: (RustCallStatus) -> U,
+): U {
+    var status = RustCallStatus()
     val return_value = callback(status)
     if (status.isSuccess()) {
         return return_value
@@ -217,7 +233,7 @@ private inline fun <U, E: Exception> rustCallWithError(errorHandler: CallStatusE
 }
 
 // CallStatusErrorHandler implementation for times when we don't expect a CALL_ERROR
-object NullCallStatusErrorHandler: CallStatusErrorHandler<InternalException> {
+object NullCallStatusErrorHandler : CallStatusErrorHandler<InternalException> {
     override fun lift(error_buf: RustBuffer.ByValue): InternalException {
         RustBuffer.free(error_buf)
         return InternalException("Unexpected CALL_ERROR")
@@ -226,7 +242,7 @@ object NullCallStatusErrorHandler: CallStatusErrorHandler<InternalException> {
 
 // Call a rust function that returns a plain value
 private inline fun <U> rustCall(callback: (RustCallStatus) -> U): U {
-    return rustCallWithError(NullCallStatusErrorHandler, callback);
+    return rustCallWithError(NullCallStatusErrorHandler, callback)
 }
 
 // Contains loading, initialization code,
@@ -241,7 +257,7 @@ private fun findLibraryName(componentName: String): String {
 }
 
 private inline fun <reified Lib : Library> loadIndirect(
-    componentName: String
+    componentName: String,
 ): Lib {
     return Native.load<Lib>(findLibraryName(componentName), Lib::class.java)
 }
@@ -253,37 +269,39 @@ internal interface _UniFFILib : Library {
     companion object {
         internal val INSTANCE: _UniFFILib by lazy {
             loadIndirect<_UniFFILib>(componentName = "xmtp_dh")
-            
         }
     }
 
-    fun xmtp_dh_ff4a_diffie_hellman_k256(`privateKeyBytes`: RustBuffer.ByValue,`publicKeyBytes`: RustBuffer.ByValue,
-    _uniffi_out_err: RustCallStatus
+    fun xmtp_dh_ff4a_diffie_hellman_k256(
+        `privateKeyBytes`: RustBuffer.ByValue,
+        `publicKeyBytes`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
 
-    fun ffi_xmtp_dh_ff4a_rustbuffer_alloc(`size`: Int,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_xmtp_dh_ff4a_rustbuffer_alloc(
+        `size`: Int,
+        _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
 
-    fun ffi_xmtp_dh_ff4a_rustbuffer_from_bytes(`bytes`: ForeignBytes.ByValue,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_xmtp_dh_ff4a_rustbuffer_from_bytes(
+        `bytes`: ForeignBytes.ByValue,
+        _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
 
-    fun ffi_xmtp_dh_ff4a_rustbuffer_free(`buf`: RustBuffer.ByValue,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_xmtp_dh_ff4a_rustbuffer_free(
+        `buf`: RustBuffer.ByValue,
+        _uniffi_out_err: RustCallStatus,
     ): Unit
 
-    fun ffi_xmtp_dh_ff4a_rustbuffer_reserve(`buf`: RustBuffer.ByValue,`additional`: Int,
-    _uniffi_out_err: RustCallStatus
+    fun ffi_xmtp_dh_ff4a_rustbuffer_reserve(
+        `buf`: RustBuffer.ByValue,
+        `additional`: Int,
+        _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
-
-    
 }
 
 // Public interface members begin here.
-
-
-public object FfiConverterUByte: FfiConverter<UByte, Byte> {
+public object FfiConverterUByte : FfiConverter<UByte, Byte> {
     override fun lift(value: Byte): UByte {
         return value.toUByte()
     }
@@ -303,7 +321,7 @@ public object FfiConverterUByte: FfiConverter<UByte, Byte> {
     }
 }
 
-public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
+public object FfiConverterString : FfiConverter<String, RustBuffer.ByValue> {
     // Note: we don't inherit from FfiConverterRustBuffer, because we use a
     // special encoding when lowering/lifting.  We can use `RustBuffer.len` to
     // store our length and avoid writing it out to the buffer.
@@ -349,29 +367,24 @@ public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
     }
 }
 
-
-
-
-
-sealed class DiffieHellmanException(message: String): Exception(message) {
-        // Each variant is a nested class
-        // Flat enums carries a string error message, so no special implementation is necessary.
-        class GenericException(message: String) : DiffieHellmanException(message)
-        
+sealed class DiffieHellmanException(message: String) : Exception(message) {
+    // Each variant is a nested class
+    // Flat enums carries a string error message, so no special implementation is necessary.
+    class GenericException(message: String) : DiffieHellmanException(message)
 
     companion object ErrorHandler : CallStatusErrorHandler<DiffieHellmanException> {
-        override fun lift(error_buf: RustBuffer.ByValue): DiffieHellmanException = FfiConverterTypeDiffieHellmanError.lift(error_buf)
+        override fun lift(error_buf: RustBuffer.ByValue): DiffieHellmanException =
+            FfiConverterTypeDiffieHellmanError.lift(error_buf)
     }
 }
 
 public object FfiConverterTypeDiffieHellmanError : FfiConverterRustBuffer<DiffieHellmanException> {
     override fun read(buf: ByteBuffer): DiffieHellmanException {
-        
-            return when(buf.getInt()) {
+
+        return when (buf.getInt()) {
             1 -> DiffieHellmanException.GenericException(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
-        
     }
 
     override fun allocationSize(value: DiffieHellmanException): Int {
@@ -379,20 +392,16 @@ public object FfiConverterTypeDiffieHellmanError : FfiConverterRustBuffer<Diffie
     }
 
     override fun write(value: DiffieHellmanException, buf: ByteBuffer) {
-        when(value) {
+        when (value) {
             is DiffieHellmanException.GenericException -> {
                 buf.putInt(1)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
-
 }
 
-
-
-
-public object FfiConverterSequenceUByte: FfiConverterRustBuffer<List<UByte>> {
+public object FfiConverterSequenceUByte : FfiConverterRustBuffer<List<UByte>> {
     override fun read(buf: ByteBuffer): List<UByte> {
         val len = buf.getInt()
         return List<UByte>(len) {
@@ -413,15 +422,22 @@ public object FfiConverterSequenceUByte: FfiConverterRustBuffer<List<UByte>> {
         }
     }
 }
+
 @Throws(DiffieHellmanException::class)
 
-fun `diffieHellmanK256`(`privateKeyBytes`: List<UByte>, `publicKeyBytes`: List<UByte>): List<UByte> {
+fun `diffieHellmanK256`(
+    `privateKeyBytes`: List<UByte>,
+    `publicKeyBytes`: List<UByte>,
+): List<UByte> {
     return FfiConverterSequenceUByte.lift(
-    rustCallWithError(DiffieHellmanException) { _status ->
-    _UniFFILib.INSTANCE.xmtp_dh_ff4a_diffie_hellman_k256(FfiConverterSequenceUByte.lower(`privateKeyBytes`), FfiConverterSequenceUByte.lower(`publicKeyBytes`), _status)
-})
+        rustCallWithError(DiffieHellmanException) { _status ->
+            _UniFFILib.INSTANCE.xmtp_dh_ff4a_diffie_hellman_k256(
+                FfiConverterSequenceUByte.lower(
+                    `privateKeyBytes`
+                ),
+                FfiConverterSequenceUByte.lower(`publicKeyBytes`),
+                _status
+            )
+        }
+    )
 }
-
-
-
-
