@@ -35,15 +35,11 @@ fun SealedInvitationV1.getInvitation(viewer: PrivateKeyBundleV2?): InvitationV1 
             isRecipient = false
         )
     } else {
-        val start4 = Date().time
-        val sec = viewer?.sharedSecret(
+        viewer?.sharedSecret(
             peer = header.sender,
             myPreKey = header.recipient.preKey,
             isRecipient = true
         ) ?: byteArrayOf()
-        val end4 = Date().time
-        Log.d("PERF", "Got shared secret in ${end4 - start4}ms")
-        sec
     }
 
     val decryptedBytes =
