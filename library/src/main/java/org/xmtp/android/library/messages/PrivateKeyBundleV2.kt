@@ -7,7 +7,7 @@ typealias PrivateKeyBundleV2 = org.xmtp.proto.message.contents.PrivateKeyOuterCl
 fun PrivateKeyBundleV2.sharedSecret(
     peer: SignedPublicKeyBundle,
     myPreKey: SignedPublicKey,
-    isRecipient: Boolean,
+    isRecipient: Boolean
 ): ByteArray {
     val dh1: ByteArray
     val dh2: ByteArray
