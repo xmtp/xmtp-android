@@ -1,11 +1,9 @@
 package org.xmtp.android.library.messages
 
-import android.util.Log
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.CipherText
 import org.xmtp.android.library.Crypto
 import org.xmtp.android.library.XMTPException
-import java.util.Date
 
 typealias SealedInvitationV1 = org.xmtp.proto.message.contents.Invitation.SealedInvitationV1
 
@@ -41,7 +39,6 @@ fun SealedInvitationV1.getInvitation(viewer: PrivateKeyBundleV2?): InvitationV1 
             isRecipient = true
         ) ?: byteArrayOf()
     }
-
     val decryptedBytes =
         Crypto.decrypt(secret, ciphertext, additionalData = headerBytes.toByteArray())
     return InvitationV1.parseFrom(decryptedBytes)
