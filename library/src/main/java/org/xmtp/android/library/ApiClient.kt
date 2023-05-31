@@ -31,7 +31,7 @@ interface ApiClient {
     ): QueryResponse
 
     suspend fun queryTopic(topic: Topic, pagination: Pagination? = null): QueryResponse
-    suspend fun batchQuery(topics: List<String>, pagination: Pagination? = null): BatchQueryResponse
+    suspend fun batchQuery(requests: List<QueryRequest>): BatchQueryResponse
     suspend fun envelopes(topic: String, pagination: Pagination? = null): List<Envelope>
     suspend fun publish(envelopes: List<Envelope>): PublishResponse
     suspend fun subscribe(topics: List<String>): Flow<Envelope>
@@ -130,32 +130,8 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
     }
 
     override suspend fun batchQuery(
-        topics: List<String>,
-        pagination: Pagination?,
+        requests: List<QueryRequest>,
     ): BatchQueryResponse {
-        val requests = topics.map { topic ->
-            QueryRequest.newBuilder()
-                .addContentTopics(topic).also {
-                    if (pagination != null) {
-                        it.pagingInfo = pagination.pagingInfo
-                    }
-                    if (pagination?.startTime != null) {
-                        it.endTimeNs = pagination.startTime.time * 1_000_000
-                        it.pagingInfo = it.pagingInfo.toBuilder().also { info ->
-                            info.direction =
-                                MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING
-                        }.build()
-                    }
-                    if (pagination?.endTime != null) {
-                        it.startTimeNs = pagination.endTime.time * 1_000_000
-                        it.pagingInfo = it.pagingInfo.toBuilder().also { info ->
-                            info.direction =
-                                MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING
-                        }.build()
-                    }
-                }.build()
-        }
-
         val batchRequest = BatchQueryRequest.newBuilder().addAllRequests(requests).build()
         val headers = Metadata()
 
