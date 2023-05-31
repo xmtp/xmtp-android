@@ -1,14 +1,8 @@
 package org.xmtp.android.library
 
 import com.google.protobuf.kotlin.toByteString
-import com.google.protobuf.kotlin.toByteStringUtf8
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.generate
-import org.xmtp.android.library.messages.sharedSecret
-import org.xmtp.android.library.messages.toPublicKeyBundle
-import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 
 class CryptoTest {
 
