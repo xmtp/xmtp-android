@@ -105,14 +105,6 @@ class FakeApiClient : ApiClient {
         return query(topic = topic.description, pagination)
     }
 
-    override suspend fun batchQuery(requests: List<MessageApiOuterClass.QueryRequest>): MessageApiOuterClass.BatchQueryResponse {
-        val response = query(requests.first().getContentTopics(0))
-
-        return MessageApiOuterClass.BatchQueryResponse.newBuilder().also {
-            it.addResponses(response)
-        }.build()
-    }
-
     suspend fun send(envelope: Envelope) {
         stream.emit(envelope)
     }
@@ -122,6 +114,14 @@ class FakeApiClient : ApiClient {
         pagination: Pagination?,
     ): List<MessageApiOuterClass.Envelope> {
         return query(topic = topic, pagination = pagination).envelopesList
+    }
+
+    override suspend fun batchQuery(requests: List<MessageApiOuterClass.QueryRequest>): MessageApiOuterClass.BatchQueryResponse {
+        val response = query(requests.first().getContentTopics(0))
+
+        return MessageApiOuterClass.BatchQueryResponse.newBuilder().also {
+            it.addResponses(response)
+        }.build()
     }
 
     override suspend fun query(
