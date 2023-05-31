@@ -10,6 +10,8 @@ import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryRequest
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Cursor
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishRequest
@@ -29,6 +31,7 @@ interface ApiClient {
     ): QueryResponse
 
     suspend fun queryTopic(topic: Topic, pagination: Pagination? = null): QueryResponse
+    suspend fun batchQuery(topics: List<String>, pagination: Pagination? = null): BatchQueryResponse
     suspend fun envelopes(topic: String, pagination: Pagination? = null): List<Envelope>
     suspend fun publish(envelopes: List<Envelope>): PublishResponse
     suspend fun subscribe(topics: List<String>): Flow<Envelope>
@@ -124,6 +127,46 @@ data class GRPCApiClient(override val environment: XMTPEnvironment, val secure: 
 
     override suspend fun queryTopic(topic: Topic, pagination: Pagination?): QueryResponse {
         return query(topic.description, pagination)
+    }
+
+    override suspend fun batchQuery(
+        topics: List<String>,
+        pagination: Pagination?,
+    ): BatchQueryResponse {
+        val requests = topics.map { topic ->
+            QueryRequest.newBuilder()
+                .addContentTopics(topic).also {
+                    if (pagination != null) {
+                        it.pagingInfo = pagination.pagingInfo
+                    }
+                    if (pagination?.startTime != null) {
+                        it.endTimeNs = pagination.startTime.time * 1_000_000
+                        it.pagingInfo = it.pagingInfo.toBuilder().also { info ->
+                            info.direction =
+                                MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING
+                        }.build()
+                    }
+                    if (pagination?.endTime != null) {
+                        it.startTimeNs = pagination.endTime.time * 1_000_000
+                        it.pagingInfo = it.pagingInfo.toBuilder().also { info ->
+                            info.direction =
+                                MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING
+                        }.build()
+                    }
+                }.build()
+        }
+
+        val batchRequest = BatchQueryRequest.newBuilder().addAllRequests(requests).build()
+        val headers = Metadata()
+
+        authToken?.let { token ->
+            headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
+        }
+        headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
+        if (appVersion != null) {
+            headers.put(APP_VERSION_HEADER_KEY, appVersion)
+        }
+        return client.batchQuery(batchRequest, headers = headers)
     }
 
     override suspend fun publish(envelopes: List<Envelope>): PublishResponse {

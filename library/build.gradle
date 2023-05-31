@@ -79,7 +79,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
     implementation 'org.web3j:crypto:5.0.0'
     api 'com.google.protobuf:protobuf-kotlin-lite:3.22.3'
-    api 'org.xmtp:proto-kotlin:3.23.2'
+    api 'org.xmtp:proto-kotlin:3.24.1'
 
     testImplementation 'app.cash.turbine:turbine:0.12.1'
     testImplementation 'junit:junit:4.13.2'
