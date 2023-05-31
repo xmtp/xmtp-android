@@ -1,9 +1,11 @@
 package org.xmtp.android.library
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.Attachment
 import org.xmtp.android.library.codecs.AttachmentCodec
 import org.xmtp.android.library.codecs.ContentTypeRemoteAttachment
@@ -13,6 +15,7 @@ import org.xmtp.android.library.messages.walletAddress
 import java.io.File
 import java.net.URL
 
+@RunWith(AndroidJUnit4::class)
 class RemoteAttachmentTest {
     @Test
     fun testCanUseRemoteAttachmentCodec() {

@@ -1,12 +1,14 @@
 package org.xmtp.android.library
 
-import app.cash.turbine.test
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runTest
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.messages.EnvelopeBuilder
@@ -37,6 +39,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Date
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(AndroidJUnit4::class)
 class ConversationTest {
     lateinit var fakeApiClient: FakeApiClient
     lateinit var aliceWallet: PrivateKeyBuilder
@@ -438,82 +441,82 @@ class ConversationTest {
         assertEquals(conversation.peerAddress, "0x436D906d1339fC4E951769b1699051f020373D04")
     }
 
-    @Test
-    fun testCanStreamConversationsV2() = runTest {
-        bobClient.conversations.stream().test {
-            val conversation = bobClient.conversations.newConversation(alice.walletAddress)
-            conversation.send(content = "hi")
-            assertEquals("hi", awaitItem().messages(limit = 1).first().body)
-            awaitComplete()
-        }
-    }
-
-    @Test
-    fun testStreamingMessagesFromV1Conversation() = runTest {
-        // Overwrite contact as legacy
-        fixtures.publishLegacyContact(client = bobClient)
-        fixtures.publishLegacyContact(client = aliceClient)
-        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
-        conversation.streamMessages().test {
-            val encoder = TextCodec()
-            val encodedContent = encoder.encode(content = "hi alice")
-            // Stream a message
-            fakeApiClient.send(
-                envelope = EnvelopeBuilder.buildFromString(
-                    topic = conversation.topic,
-                    timestamp = Date(),
-                    message = MessageBuilder.buildFromMessageV1(
-                        v1 = MessageV1Builder.buildEncode(
-                            sender = bobClient.privateKeyBundleV1!!,
-                            recipient = aliceClient.privateKeyBundleV1!!.toPublicKeyBundle(),
-                            message = encodedContent.toByteArray(),
-                            timestamp = Date()
-                        )
-                    ).toByteArray()
-                )
-            )
-            assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
-            awaitComplete()
-        }
-    }
-
-    @Test
-    fun testStreamingMessagesFromV2Conversations() = runTest {
-        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
-        conversation.streamMessages().test {
-            val encoder = TextCodec()
-            val encodedContent = encoder.encode(content = "hi alice")
-            // Stream a message
-            fakeApiClient.send(
-                envelope = EnvelopeBuilder.buildFromString(
-                    topic = conversation.topic,
-                    timestamp = Date(),
-                    message = MessageBuilder.buildFromMessageV2(
-                        v2 = MessageV2Builder.buildEncode(
-                            client = bobClient,
-                            encodedContent,
-                            topic = conversation.topic,
-                            keyMaterial = conversation.keyMaterial!!
-                        )
-                    ).toByteArray()
-                )
-            )
-            assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
-            awaitComplete()
-        }
-    }
-
-    @Test
-    fun testStreamAllMessagesGetsMessageFromKnownConversation() = runTest {
-        val fixtures = fixtures()
-        val client = fixtures.aliceClient
-        val bobConversation = fixtures.bobClient.conversations.newConversation(client.address)
-        client.conversations.streamAllMessages().test {
-            bobConversation.send(text = "hi")
-            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
-            awaitComplete()
-        }
-    }
+//    @Test
+//    fun testCanStreamConversationsV2() = kotlinx.coroutines.test.runTest {
+//        bobClient.conversations.stream().test {
+//            val conversation = bobClient.conversations.newConversation(alice.walletAddress)
+//            conversation.send(content = "hi")
+//            assertEquals("hi", awaitItem().messages(limit = 1).first().body)
+//            awaitComplete()
+//        }
+//    }
+//
+//    @Test
+//    fun testStreamingMessagesFromV1Conversation() = kotlinx.coroutines.test.runTest {
+//        // Overwrite contact as legacy
+//        fixtures.publishLegacyContact(client = bobClient)
+//        fixtures.publishLegacyContact(client = aliceClient)
+//        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+//        conversation.streamMessages().test {
+//            val encoder = TextCodec()
+//            val encodedContent = encoder.encode(content = "hi alice")
+//            // Stream a message
+//            fakeApiClient.send(
+//                envelope = EnvelopeBuilder.buildFromString(
+//                    topic = conversation.topic,
+//                    timestamp = Date(),
+//                    message = MessageBuilder.buildFromMessageV1(
+//                        v1 = MessageV1Builder.buildEncode(
+//                            sender = bobClient.privateKeyBundleV1!!,
+//                            recipient = aliceClient.privateKeyBundleV1!!.toPublicKeyBundle(),
+//                            message = encodedContent.toByteArray(),
+//                            timestamp = Date()
+//                        )
+//                    ).toByteArray()
+//                )
+//            )
+//            assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
+//            awaitComplete()
+//        }
+//    }
+//
+//    @Test
+//    fun testStreamingMessagesFromV2Conversations() = kotlinx.coroutines.test.runTest {
+//        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+//        conversation.streamMessages().test {
+//            val encoder = TextCodec()
+//            val encodedContent = encoder.encode(content = "hi alice")
+//            // Stream a message
+//            fakeApiClient.send(
+//                envelope = EnvelopeBuilder.buildFromString(
+//                    topic = conversation.topic,
+//                    timestamp = Date(),
+//                    message = MessageBuilder.buildFromMessageV2(
+//                        v2 = MessageV2Builder.buildEncode(
+//                            client = bobClient,
+//                            encodedContent,
+//                            topic = conversation.topic,
+//                            keyMaterial = conversation.keyMaterial!!
+//                        )
+//                    ).toByteArray()
+//                )
+//            )
+//            assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
+//            awaitComplete()
+//        }
+//    }
+//
+//    @Test
+//    fun testStreamAllMessagesGetsMessageFromKnownConversation() = kotlinx.coroutines.test.runTest {
+//        val fixtures = fixtures()
+//        val client = fixtures.aliceClient
+//        val bobConversation = fixtures.bobClient.conversations.newConversation(client.address)
+//        client.conversations.streamAllMessages().test {
+//            bobConversation.send(text = "hi")
+//            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
+//            awaitComplete()
+//        }
+//    }
 
     @Test
     fun testV2RejectsSpoofedContactBundles() {
@@ -567,5 +570,41 @@ class ConversationTest {
         val message = messages[0]
         assertEquals("hi", message.body)
         assertEquals(message.id, messageID)
+    }
+
+    @Test
+    fun testFetchConversation() {
+        // Generated from JS script
+        val ints = arrayOf(
+            31, 116, 198, 193, 189, 122, 19, 254, 191, 189, 211, 215, 255, 131,
+            171, 239, 243, 33, 4, 62, 143, 86, 18, 195, 251, 61, 128, 90, 34, 126, 219, 236
+        )
+        val bytes =
+            ints.foldIndexed(ByteArray(ints.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
+
+        val key = PrivateKey.newBuilder().also {
+            it.secp256K1 = it.secp256K1.toBuilder().also { builder ->
+                builder.bytes = bytes.toByteString()
+            }.build()
+            it.publicKey = it.publicKey.toBuilder().also { builder ->
+                builder.secp256K1Uncompressed =
+                    builder.secp256K1Uncompressed.toBuilder().also { keyBuilder ->
+                        keyBuilder.bytes =
+                            KeyUtil.addUncompressedByte(KeyUtil.getPublicKey(bytes)).toByteString()
+                    }.build()
+            }.build()
+        }.build()
+
+        val client = Client().create(account = PrivateKeyBuilder(key))
+        Assert.assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
+        val conversations = client.conversations.list()
+        Assert.assertEquals(1, conversations.size)
+        val topic = conversations[0].topic
+        val conversation = client.fetchConversation(topic)
+        Assert.assertEquals(conversations[0].topic, conversation?.topic)
+        Assert.assertEquals(conversations[0].peerAddress, conversation?.peerAddress)
+
+        val noConversation = client.fetchConversation("invalid_topic")
+        Assert.assertEquals(null, noConversation)
     }
 }

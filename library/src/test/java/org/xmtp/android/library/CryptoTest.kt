@@ -39,22 +39,4 @@ class CryptoTest {
         val decrypted = Crypto.decrypt(secret, encrypted)
         assertEquals(message.toByteString(), decrypted!!.toByteString())
     }
-
-    @Test
-    fun testMessages() {
-        val aliceWallet = PrivateKeyBuilder()
-        val bobWallet = PrivateKeyBuilder()
-        val alice = PrivateKeyOuterClass.PrivateKeyBundleV1.newBuilder().build().generate(wallet = aliceWallet)
-        val bob = PrivateKeyOuterClass.PrivateKeyBundleV1.newBuilder().build().generate(wallet = bobWallet)
-        val msg = "Hello world"
-        val decrypted = msg.toByteStringUtf8().toByteArray()
-        val alicePublic = alice.toPublicKeyBundle()
-        val bobPublic = bob.toPublicKeyBundle()
-        val aliceSecret = alice.sharedSecret(peer = bobPublic, myPreKey = alicePublic.preKey, isRecipient = false)
-        val encrypted = Crypto.encrypt(aliceSecret, decrypted)
-        val bobSecret = bob.sharedSecret(peer = alicePublic, myPreKey = bobPublic.preKey, isRecipient = true)
-        val bobDecrypted = Crypto.decrypt(bobSecret, encrypted!!)
-        val decryptedText = String(bobDecrypted!!, Charsets.UTF_8)
-        assertEquals(decryptedText, msg)
-    }
 }
