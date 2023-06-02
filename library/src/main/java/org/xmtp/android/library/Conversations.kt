@@ -232,29 +232,31 @@ data class Conversations(
         val requests = topics.map { topic ->
             makeQueryRequest(topic = topic, pagination = pagination)
         }
-        /// The maximum number of requests permitted in a single batch call.
+
+        // The maximum number of requests permitted in a single batch call.
         val maxQueryRequestsPerBatch = 50
         val messages: MutableList<DecodedMessage> = mutableListOf()
         val batches = requests.chunked(maxQueryRequestsPerBatch)
         for (batch in batches) {
             runBlocking {
-                messages.addAll(client.batchQuery(batch).responsesOrBuilderList.flatMap { res ->
-                    res.envelopesList.mapNotNull { envelope ->
-                        val conversation =
-                            conversations.firstOrNull { it.topic == envelope.contentTopic }
-                        if (conversation == null) {
-                            Log.d(TAG, "discarding message, unknown conversation $envelope")
-                            return@mapNotNull null
+                messages.addAll(
+                    client.batchQuery(batch).responsesOrBuilderList.flatMap { res ->
+                        res.envelopesList.mapNotNull { envelope ->
+                            val conversation =
+                                conversations.firstOrNull { it.topic == envelope.contentTopic }
+                            if (conversation == null) {
+                                Log.d(TAG, "discarding message, unknown conversation $envelope")
+                                return@mapNotNull null
+                            }
+                            val msg = conversation.decode(envelope)
+                            msg
                         }
-                        val msg = conversation.decode(envelope)
-                        msg
                     }
-                })
+                )
             }
         }
         return messages
     }
-
 
     fun sendInvitation(
         recipient: SignedPublicKeyBundle,
