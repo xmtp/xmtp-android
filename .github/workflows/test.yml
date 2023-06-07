@@ -32,7 +32,7 @@ jobs:
         run: docker-compose -p xmtp -f dev/local/docker-compose.yml down
   library-integration:
     name: Library (Integration Tests)
-    runs-on: macos-latest
+    runs-on: macos-11
     steps:
       - name: Checkout project sources
         uses: actions/checkout@v3
@@ -49,12 +49,12 @@ jobs:
       - name: Start Colima
         run: colima start
       - name: Start local test server
-        run: docker-compose -p xmtp-android-kotlin -f dev/local/docker-compose.yml up -d
+        run: docker-compose -p xmtp -f dev/local/docker-compose.yml up -d
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
           script: ./gradlew connectedCheck
       - name: Stop local test server
-        run: docker-compose -p xmtp-android-kotlin -f dev/local/docker-compose.yml down
+        run: docker-compose -p xmtp -f dev/local/docker-compose.yml down
 
