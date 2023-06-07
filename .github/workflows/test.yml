@@ -58,15 +58,13 @@ jobs:
           echo "DOCKER_HOST=unix://$HOME/.colima/default/docker.sock" >> $GITHUB_ENV
           # Verify Docker
           docker ps
-      - name: Grant permission to script
-        run: chmod +x ./dev/docker-compose
       - name: Start local test server
-        run: ./dev/docker-compose up -d
+        run: docker-compose -p xmtp-js -f dev/docker-compose.yml "$@" up -d
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
           script: ./gradlew connectedCheck
       - name: Stop local test server
-        run: ./dev/docker-compose down -d
+        run: docker-compose -p xmtp-js -f dev/docker-compose.yml down
 
