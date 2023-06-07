@@ -47,7 +47,7 @@ jobs:
       - name: Set up Docker
         uses: crazy-max/ghaction-setup-docker@v1
         with:
-          version: 23.0.4
+          version: v23.0.4
       - name: Start local test server
         run: docker-compose -p xmtp -f dev/local/docker-compose.yml up -d
       - name: Gradle Run Integration Tests
