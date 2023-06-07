@@ -48,10 +48,8 @@ jobs:
         run: brew install docker docker-compose
       - name: Start Colima
         run: colima start
-      - name: Stop local test server
-        run: docker-compose -p xmtp-android-kotlin -f dev/local/docker-compose.yml down
       - name: Start local test server
-        run: docker-compose -p xmtp-android-kotlin -f dev/local/docker-compose.yml up
+        run: docker-compose -p xmtp-android-kotlin -f dev/local/docker-compose.yml up -d
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
