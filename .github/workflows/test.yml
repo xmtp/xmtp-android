@@ -44,20 +44,14 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
-      - name: Install docker
+      - name: Setup docker (missing on MacOS)
+        if: runner.os == 'macos'
         run: |
-          mkdir -p ~/.docker/machine/cache
-          curl -Lo ~/.docker/machine/cache/boot2docker.iso https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso
-          brew install docker docker-compose
-      - name: Start colima
-        run: |
-          # Docker engine is no longer available because of licensing
-          # Alternative Colima is part of the github macOS runner
+          brew install docker
           colima start
-          # Ensure colima is configured for later user
-          echo "DOCKER_HOST=unix://$HOME/.colima/default/docker.sock" >> $GITHUB_ENV
-          # Verify Docker
-          docker ps
+          # For testcontainers to find the Colima socket
+          # https://github.com/abiosoft/colima/blob/main/docs/FAQ.md#cannot-connect-to-the-docker-daemon-at-unixvarrundockersock-is-the-docker-daemon-running
+          sudo ln -sf $HOME/.colima/default/docker.sock /var/run/docker.sock
       - name: Start local test server
         run: docker-compose -p xmtp -f dev/local/docker-compose.yml up -d
       - name: Gradle Run Integration Tests
