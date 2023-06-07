@@ -58,6 +58,8 @@ jobs:
           echo "DOCKER_HOST=unix://$HOME/.colima/default/docker.sock" >> $GITHUB_ENV
           # Verify Docker
           docker ps
+      - name: Grant permission to script
+        run: chmod +x ./dev/docker-compose
       - name: Start local test server
         run: ./dev/docker-compose up -d
       - name: Gradle Run Integration Tests
