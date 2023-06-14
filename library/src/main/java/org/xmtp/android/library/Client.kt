@@ -34,6 +34,7 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
+import uniffi.xmtp_dh.org.xmtp.android.library.GroupChat
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -54,6 +55,9 @@ class Client() {
     lateinit var apiClient: ApiClient
     lateinit var contacts: Contacts
     lateinit var conversations: Conversations
+    var isGroupChatEnabled: Boolean = false
+        private set
+
 
     companion object {
         private const val TAG = "Client"
@@ -347,4 +351,10 @@ class Client() {
 
     val keys: PrivateKeyBundleV2
         get() = privateKeyBundleV1.toV2()
+
+    fun enableGroupChat() {
+        this.isGroupChatEnabled = true
+        GroupChat.registerCodecs()
+    }
+
 }
