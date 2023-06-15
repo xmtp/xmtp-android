@@ -1,19 +1,14 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.protobuf.kotlin.toByteStringUtf8
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.codecs.Attachment
-import org.xmtp.android.library.codecs.AttachmentCodec
-import org.xmtp.android.library.codecs.ContentTypeAttachment
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtp_dh.org.xmtp.android.library.codecs.ContentTypeGroupChatMemberAdded
 import uniffi.xmtp_dh.org.xmtp.android.library.codecs.ContentTypeGroupTitleChangedAdded
 import uniffi.xmtp_dh.org.xmtp.android.library.codecs.GroupChatMemberAdded
 import uniffi.xmtp_dh.org.xmtp.android.library.codecs.GroupChatTitleChanged
-import uniffi.xmtp_dh.org.xmtp.android.library.codecs.GroupChatTitleChangedCodec
 
 @RunWith(AndroidJUnit4::class)
 class GroupChatTest {
