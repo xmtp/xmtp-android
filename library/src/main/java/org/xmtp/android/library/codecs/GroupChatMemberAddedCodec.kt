@@ -1,5 +1,6 @@
 package uniffi.xmtp_dh.org.xmtp.android.library.codecs
 
+import android.util.Log
 import com.google.gson.GsonBuilder
 import com.google.protobuf.kotlin.toByteStringUtf8
 import org.xmtp.android.library.codecs.ContentCodec
@@ -31,6 +32,6 @@ data class GroupChatMemberAddedCodec(override var contentType: ContentTypeId = C
 
     override fun decode(content: EncodedContent): GroupChatMemberAdded {
         val gson = GsonBuilder().create()
-        return gson.fromJson(content.content.toString(), GroupChatMemberAdded::class.java)
+        return gson.fromJson(content.content.toStringUtf8(), GroupChatMemberAdded::class.java)
     }
 }

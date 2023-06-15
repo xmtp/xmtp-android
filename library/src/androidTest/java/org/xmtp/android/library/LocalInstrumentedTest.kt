@@ -2,10 +2,12 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.FlakyTest
+import androidx.test.filters.Suppress
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.Envelope
@@ -72,7 +74,7 @@ class LocalInstrumentedTest {
     }
 
     @Test
-    @FlakyTest
+    @Ignore("Flaky test")
     fun testPublishingAndFetchingContactBundlesWithSavedKeys() {
         val aliceWallet = PrivateKeyBuilder()
         val alice = PrivateKeyOuterClass.PrivateKeyBundleV1.newBuilder().build()

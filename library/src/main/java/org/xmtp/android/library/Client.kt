@@ -46,7 +46,11 @@ typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.P
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 
 data class ClientOptions(val api: Api = Api()) {
-    data class Api(val env: XMTPEnvironment = XMTPEnvironment.DEV, val isSecure: Boolean = true, val appVersion: String? = null)
+    data class Api(
+        val env: XMTPEnvironment = XMTPEnvironment.DEV,
+        val isSecure: Boolean = true,
+        val appVersion: String? = null,
+    )
 }
 
 class Client() {
@@ -57,7 +61,6 @@ class Client() {
     lateinit var conversations: Conversations
     var isGroupChatEnabled: Boolean = false
         private set
-
 
     companion object {
         private const val TAG = "Client"
@@ -224,7 +227,8 @@ class Client() {
             it.v2 = it.v2.toBuilder().also { v2Builder ->
                 v2Builder.keyBundle = v2Builder.keyBundle.toBuilder().also { keyBuilder ->
                     keyBuilder.identityKey = keyBuilder.identityKey.toBuilder().also { idBuilder ->
-                        idBuilder.signature = it.v2.keyBundle.identityKey.signature.ensureWalletSignature()
+                        idBuilder.signature =
+                            it.v2.keyBundle.identityKey.signature.ensureWalletSignature()
                     }.build()
                 }.build()
             }.build()
@@ -356,5 +360,4 @@ class Client() {
         this.isGroupChatEnabled = true
         GroupChat.registerCodecs()
     }
-
 }

@@ -30,6 +30,6 @@ data class GroupChatTitleChangedCodec(override var contentType: ContentTypeId = 
 
     override fun decode(content: EncodedContent): GroupChatTitleChanged {
         val gson = GsonBuilder().create()
-        return gson.fromJson(content.content.toString(), GroupChatTitleChanged::class.java)
+        return gson.fromJson(content.content.toStringUtf8(), GroupChatTitleChanged::class.java)
     }
 }
