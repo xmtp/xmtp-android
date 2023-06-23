@@ -645,10 +645,9 @@ class ConversationTest {
     @Test
     fun testCanSendEncodedContentV2Message() {
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
-        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
         val encodedContent = TextCodec().encode(content = "hi")
         bobConversation.send(encodedContent = encodedContent)
-        val messages = aliceConversation.messages()
+        val messages = bobConversation.messages()
         assertEquals(1, messages.size)
         assertEquals("hi", messages[0].content())
     }
