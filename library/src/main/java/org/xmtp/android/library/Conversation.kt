@@ -105,7 +105,7 @@ sealed class Conversation {
         }
     }
 
-    fun send(encodedContent: EncodedContent) : String {
+    fun send(encodedContent: EncodedContent): String {
         return when (this) {
             is V1 -> conversationV1.send(encodedContent = encodedContent)
             is V2 -> conversationV2.send(encodedContent = encodedContent)

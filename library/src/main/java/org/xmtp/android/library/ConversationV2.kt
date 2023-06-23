@@ -157,7 +157,6 @@ data class ConversationV2(
             encoded = encoded.compress(compression)
         }
         return prepareMessage(encoded)
-
     }
 
     fun prepareMessage(encodedContent: EncodedContent): PreparedMessage {

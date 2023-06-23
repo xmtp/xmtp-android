@@ -13,7 +13,6 @@ import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Message
 import org.xmtp.android.library.messages.MessageBuilder
 import org.xmtp.android.library.messages.MessageV1Builder
-import org.xmtp.android.library.messages.MessageV2Builder
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.decrypt
@@ -98,7 +97,7 @@ data class ConversationV1(
         return preparedMessage.messageId
     }
 
-    fun send(encodedContent: EncodedContent) : String {
+    fun send(encodedContent: EncodedContent): String {
         val preparedMessage = prepareMessage(encodedContent = encodedContent)
         preparedMessage.send()
         return preparedMessage.messageId
