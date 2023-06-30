@@ -80,7 +80,6 @@ fun InvitationV1.createDeterministic(
         this.keyMaterial = keyMaterial.toByteString()
     }.build()
 
-
     return InvitationV1Builder.buildFromTopic(
         topic = topic,
         context = inviteContext,

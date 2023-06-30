@@ -28,8 +28,17 @@ class ConversationsTest {
         val created = Date()
         val newWallet = PrivateKeyBuilder()
         val newClient = Client().create(account = newWallet, apiClient = fixtures.fakeApiClient)
-        val message = MessageV1Builder.buildEncode(sender = newClient.privateKeyBundleV1, recipient = fixtures.aliceClient.v1keys.toPublicKeyBundle(), message = TextCodec().encode(content = "hello").toByteArray(), timestamp = created)
-        val envelope = EnvelopeBuilder.buildFromTopic(topic = Topic.userIntro(client.address), timestamp = created, message = MessageBuilder.buildFromMessageV1(v1 = message).toByteArray())
+        val message = MessageV1Builder.buildEncode(
+            sender = newClient.privateKeyBundleV1,
+            recipient = fixtures.aliceClient.v1keys.toPublicKeyBundle(),
+            message = TextCodec().encode(content = "hello").toByteArray(),
+            timestamp = created
+        )
+        val envelope = EnvelopeBuilder.buildFromTopic(
+            topic = Topic.userIntro(client.address),
+            timestamp = created,
+            message = MessageBuilder.buildFromMessageV1(v1 = message).toByteArray()
+        )
         val conversation = client.conversations.fromIntro(envelope = envelope)
         assertEquals(conversation.peerAddress, newWallet.address)
         assertEquals(conversation.createdAt.time, created.time)
@@ -42,40 +51,24 @@ class ConversationsTest {
         val created = Date()
         val newWallet = PrivateKeyBuilder()
         val newClient = Client().create(account = newWallet, apiClient = fixtures.fakeApiClient)
-        val invitation = InvitationV1.newBuilder().build().createDeterministic(sender= newClient.keys, recipient= client.keys.getPublicKeyBundle())
-        val sealed = SealedInvitationBuilder.buildFromV1(sender = newClient.keys, recipient = client.keys.getPublicKeyBundle(), created = created, invitation = invitation)
+        val invitation = InvitationV1.newBuilder().build().createDeterministic(
+            sender = newClient.keys,
+            recipient = client.keys.getPublicKeyBundle()
+        )
+        val sealed = SealedInvitationBuilder.buildFromV1(
+            sender = newClient.keys,
+            recipient = client.keys.getPublicKeyBundle(),
+            created = created,
+            invitation = invitation
+        )
         val peerAddress = fixtures.alice.walletAddress
-        val envelope = EnvelopeBuilder.buildFromTopic(topic = Topic.userInvite(peerAddress), timestamp = created, message = sealed.toByteArray())
+        val envelope = EnvelopeBuilder.buildFromTopic(
+            topic = Topic.userInvite(peerAddress),
+            timestamp = created,
+            message = sealed.toByteArray()
+        )
         val conversation = client.conversations.fromInvite(envelope = envelope)
         assertEquals(conversation.peerAddress, newWallet.address)
         assertEquals(conversation.createdAt.time, created.time)
     }
-
-//    @Test
-//    fun usesDeterministicTopic() {
-//        val recipient = SignedPublicKeyBundle.fromLegacyBundle(bobKeys.publicKeyBundle)
-//        val baseTime = Date()
-//        val timestamps = Array(25) { i -> Date(baseTime.time + i) }
-//        // Shuffle the order they go into the store
-//        val shuffled = timestamps.toMutableList().apply { shuffle() }
-//        val responses = mutableListOf<CreateInviteResponse>()
-//        runBlocking {
-//            shuffled.map { createdAt ->
-//                async {
-//                    val response = aliceKeystore.createInvite(
-//                        recipient = recipient,
-//                        createdNs = dateToNs(createdAt),
-//                        context = null
-//                    )
-//                    responses.add(response)
-//                    response
-//                }
-//            }.awaitAll()
-//        }
-//        val firstResponse = responses[0]
-//        val topicName = firstResponse.conversation?.topic
-//        expect(responses.filter { response ->
-//            response.conversation?.topic == topicName
-//        }).toHaveLength(25)
-//    }
 }

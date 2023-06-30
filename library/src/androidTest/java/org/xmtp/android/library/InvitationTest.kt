@@ -116,5 +116,4 @@ class InvitationTest {
         val invite = makeInvite("example.com/conversation-bar")
         assertNotEquals(original.topic, invite.topic)
     }
-
 }

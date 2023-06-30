@@ -86,5 +86,4 @@ class Crypto {
     fun deriveKey(secret: ByteArray, nonce: ByteArray, info: ByteArray): ByteArray {
         return Hkdf.computeHkdf("HMACSHA256", secret, nonce, info, 32)
     }
-
 }
