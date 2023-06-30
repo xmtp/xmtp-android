@@ -7,6 +7,7 @@ import org.xmtp.proto.message.contents.CiphertextOuterClass
 import java.security.GeneralSecurityException
 import java.security.SecureRandom
 import javax.crypto.Cipher
+import javax.crypto.Mac
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
@@ -74,4 +75,16 @@ class Crypto {
             }
         }
     }
+
+    fun calculateMac(message: ByteArray, secret: ByteArray): ByteArray {
+        val sha256HMAC: Mac = Mac.getInstance("HmacSHA256")
+        val secretKey = SecretKeySpec(secret, "HmacSHA256")
+        sha256HMAC.init(secretKey)
+        return sha256HMAC.doFinal(message)
+    }
+
+    fun deriveKey(secret: ByteArray, nonce: ByteArray, info: ByteArray): ByteArray {
+        return Hkdf.computeHkdf("HMACSHA256", secret, nonce, info, 32)
+    }
+
 }

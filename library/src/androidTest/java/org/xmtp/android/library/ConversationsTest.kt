@@ -50,4 +50,32 @@ class ConversationsTest {
         assertEquals(conversation.peerAddress, newWallet.address)
         assertEquals(conversation.createdAt.time, created.time)
     }
+
+//    @Test
+//    fun usesDeterministicTopic() {
+//        val recipient = SignedPublicKeyBundle.fromLegacyBundle(bobKeys.publicKeyBundle)
+//        val baseTime = Date()
+//        val timestamps = Array(25) { i -> Date(baseTime.time + i) }
+//        // Shuffle the order they go into the store
+//        val shuffled = timestamps.toMutableList().apply { shuffle() }
+//        val responses = mutableListOf<CreateInviteResponse>()
+//        runBlocking {
+//            shuffled.map { createdAt ->
+//                async {
+//                    val response = aliceKeystore.createInvite(
+//                        recipient = recipient,
+//                        createdNs = dateToNs(createdAt),
+//                        context = null
+//                    )
+//                    responses.add(response)
+//                    response
+//                }
+//            }.awaitAll()
+//        }
+//        val firstResponse = responses[0]
+//        val topicName = firstResponse.conversation?.topic
+//        expect(responses.filter { response ->
+//            response.conversation?.topic == topicName
+//        }).toHaveLength(25)
+//    }
 }
