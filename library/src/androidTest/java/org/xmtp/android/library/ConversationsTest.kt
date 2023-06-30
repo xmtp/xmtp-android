@@ -12,7 +12,7 @@ import org.xmtp.android.library.messages.MessageV1Builder
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.SealedInvitationBuilder
 import org.xmtp.android.library.messages.Topic
-import org.xmtp.android.library.messages.createRandom
+import org.xmtp.android.library.messages.createDeterministic
 import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
@@ -42,7 +42,7 @@ class ConversationsTest {
         val created = Date()
         val newWallet = PrivateKeyBuilder()
         val newClient = Client().create(account = newWallet, apiClient = fixtures.fakeApiClient)
-        val invitation = InvitationV1.newBuilder().build().createRandom(context = null)
+        val invitation = InvitationV1.newBuilder().build().createDeterministic(sender= newClient.keys, recipient= client.keys.getPublicKeyBundle())
         val sealed = SealedInvitationBuilder.buildFromV1(sender = newClient.keys, recipient = client.keys.getPublicKeyBundle(), created = created, invitation = invitation)
         val peerAddress = fixtures.alice.walletAddress
         val envelope = EnvelopeBuilder.buildFromTopic(topic = Topic.userInvite(peerAddress), timestamp = created, message = sealed.toByteArray())
