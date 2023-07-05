@@ -1,18 +1,12 @@
 # xmtp-android
 
-![Test](https://github.com/xmtp/xmtp-android/actions/workflows/test.yml/badge.svg) ![Lint](https://github.com/xmtp/xmtp-android/actions/workflows/lint.yml/badge.svg) ![Status](https://img.shields.io/badge/Project_Status-Beta-yellow)
+![Test](https://github.com/xmtp/xmtp-android/actions/workflows/test.yml/badge.svg) ![Lint](https://github.com/xmtp/xmtp-android/actions/workflows/lint.yml/badge.svg) ![Status](https://img.shields.io/badge/Project_Status-Production-31CA54)
 
 `xmtp-android` provides a Kotlin implementation of an XMTP message API client for use with Android apps.
 
 Use `xmtp-android` to build with XMTP to send messages between blockchain accounts, including DMs, notifications, announcements, and more.
 
-This SDK is in **beta** status and ready for you to start building with.
-
-However, we do **not** recommend using beta software in production apps. Software in this status may change based on feedback.
-
-Specifically, while push notifications should work with the current SDK, we are working on providing push notifications in the example app. We are also working on providing performance optimizations in the example app. These updates to the example app may inform changes to the SDK.
-
-Follow along in the [tracking issue](https://github.com/xmtp/xmtp-android/issues/1) for updates.
+To keep up with the latest SDK developments, see the [Issues tab](https://github.com/xmtp/xmtp-android/issues) in this repo.
 
 To learn more about XMTP and get answers to frequently asked questions, see the [XMTP documentation](https://xmtp.org/docs).
 
@@ -57,12 +51,19 @@ conversation.streamMessages().collect {
 }
 ```
 
+## Use local storage
+
+> **Important**  
+> If you are building a production-grade app, be sure to use an architecture that includes a local cache backed by an XMTP SDK.  
+
+To learn more, see [Use a local cache](https://xmtp.org/docs/tutorials/performance#use-a-local-cache).
+
 ## Create a client
 
 A client is created with `Client().create(account: SigningKey): Client` that requires passing in an object capable of creating signatures on your behalf. The client will request a signature in two cases:
 
 1. To sign the newly generated key bundle. This happens only the very first time when a key bundle is not found in storage.
-2. To sign a random salt used to encrypt the key bundle in storage. This happens every time the client is started, including the very first time).
+2. To sign a random salt used to encrypt the key bundle in storage. This happens every time the client is started, including the very first time.
 
 > **Note**  
 > The client connects to the XMTP `dev` environment by default. [Use `ClientOptions`](#configure-the-client) to change this and other parameters of the network connection.
