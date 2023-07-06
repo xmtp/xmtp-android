@@ -73,7 +73,7 @@ fun InvitationV1.createDeterministic(
     val topic = Topic.directMessageV2(topicId)
     val keyMaterial = Crypto().deriveKey(
         secret = secret,
-        nonce = "__XMTP__INVITATION__SALT__XMTP__".toByteArray(),
+        salt = "__XMTP__INVITATION__SALT__XMTP__".toByteArray(),
         info = (listOf("0") + addresses).joinToString(separator = "|").toByteArray()
     )
     val aes256GcmHkdfSha256 = Invitation.InvitationV1.Aes256gcmHkdfsha256.newBuilder().apply {
