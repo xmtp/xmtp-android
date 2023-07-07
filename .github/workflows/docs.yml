@@ -17,6 +17,4 @@ jobs:
       - name: Publish documentation
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: build/dokka/html
+          folder: build/dokka/html
