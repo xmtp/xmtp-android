@@ -14,7 +14,6 @@ import javax.crypto.Mac
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-
 typealias CipherText = CiphertextOuterClass.Ciphertext
 
 class Crypto {
