@@ -12,7 +12,6 @@ import uniffi.xmtp_dh.org.xmtp.android.library.codecs.GroupChatTitleChanged
 
 @RunWith(AndroidJUnit4::class)
 class GroupChatTest {
-    
     @Test
     fun testCanAddMemberToGroupChatCodec() {
         val fixtures = fixtures()
