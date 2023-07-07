@@ -11,7 +11,6 @@ enum class MessageVersion(val rawValue: String) {
             MessageVersion.values().firstOrNull { it.rawValue == rawValue }
     }
 }
-
 class MessageBuilder {
     companion object {
         fun buildFromMessageV1(v1: MessageV1): Message {
