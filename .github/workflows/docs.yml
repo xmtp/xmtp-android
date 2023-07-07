@@ -17,4 +17,4 @@ jobs:
       - name: Publish documentation
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: build/dokka/html
+          folder: library/build/dokka/html
