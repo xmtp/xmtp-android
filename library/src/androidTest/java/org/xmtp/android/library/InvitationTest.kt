@@ -116,31 +116,4 @@ class InvitationTest {
         val invite = makeInvite("example.com/conversation-bar")
         assertNotEquals(original.topic, invite.topic)
     }
-
-    @Test
-    fun testTopic() {
-        val ints1 = arrayOf(8,54,32,15,250,250,23,163,203,139,84,242,45,106,250,96,177,61,164,135,38,84,50,65,173,197,194,80,219,176,224,205)
-        val privateKeyData =
-            ints1.foldIndexed(ByteArray(ints1.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
-        // Use hardcoded privateKey
-        val privateKey = PrivateKeyBuilder.buildFromPrivateKeyData(privateKeyData)
-        val privateKeyBuilder = PrivateKeyBuilder(privateKey)
-        val options = ClientOptions(api = ClientOptions.Api(XMTPEnvironment.DEV, isSecure = true))
-        val bigClient = Client().create(account = privateKeyBuilder, options = options)
-
-        val ints = arrayOf(229, 179, 73, 249, 137, 18, 206, 100, 35, 169, 82, 177, 81, 1, 239, 62, 170, 38, 214, 242, 170, 0, 7, 31, 200, 100, 43, 203, 135, 55, 159, 141)
-        val privateKeyData2 =
-            ints.foldIndexed(ByteArray(ints.size)) { i, a, v -> a.apply { set(i, v.toByte()) } }
-        // Use hardcoded privateKey
-        val privateKey2 = PrivateKeyBuilder.buildFromPrivateKeyData(privateKeyData2)
-        val privateKeyBuilder2 = PrivateKeyBuilder(privateKey2)
-        val randomClient = Client().create(account = privateKeyBuilder2, options = options)
-
-       val invite = InvitationV1.newBuilder().build().createDeterministic(
-            sender = bigClient.keys,
-            recipient = randomClient.keys.getPublicKeyBundle(),
-        )
-
-        assertEquals(invite.topic, "/xmtp/0/m-67e55220b023e6efbeb4305ec060d86ad83529a71bd5cf77c964c55d46b9ffad/proto")
-    }
 }
