@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.protobuf.kotlin.toByteString
 import org.junit.Assert
@@ -142,7 +141,6 @@ class InvitationTest {
             recipient = randomClient.keys.getPublicKeyBundle(),
         )
 
-        assertEquals(invite.topic, "/xmtp/0/m-09b6d88bcc2a64787b9dbae93a50105c8d89db739770a4284fb568982d3355c9/proto")
-        Log.d("LOPI",invite.topic)
+        assertEquals(invite.topic, "/xmtp/0/m-67e55220b023e6efbeb4305ec060d86ad83529a71bd5cf77c964c55d46b9ffad/proto")
     }
 }

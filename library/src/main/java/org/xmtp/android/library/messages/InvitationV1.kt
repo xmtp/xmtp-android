@@ -67,14 +67,22 @@ fun InvitationV1.createDeterministic(
         myPreKey = sender.preKeysList[0].publicKey,
         isRecipient = false
     )
-    val addresses = listOf(sender.toV1().walletAddress, recipient.walletAddress).sorted()
-    val msg = "${context?.conversationId}${addresses.joinToString()}"
-    val topicId = Crypto().calculateMac(msg.toByteArray(), secret).toHex()
+
+    val addresses = arrayOf(sender.toV1().walletAddress, recipient.walletAddress)
+    addresses.sort()
+
+    val msg = if (context != null && !context.conversationId.isNullOrBlank()) {
+        context.conversationId + addresses.joinToString(separator = ",")
+    } else {
+        addresses.joinToString(separator = ",")
+    }
+
+    val topicId = Crypto().calculateMac(secret = secret, message = msg.toByteArray()).toHex()
     val topic = Topic.directMessageV2(topicId)
     val keyMaterial = Crypto().deriveKey(
         secret = secret,
         salt = "__XMTP__INVITATION__SALT__XMTP__".toByteArray(),
-        info = (listOf("0") + addresses).joinToString(separator = "|").toByteArray()
+        info = listOf("0").plus(addresses).joinToString(separator = "|").toByteArray()
     )
     val aes256GcmHkdfSha256 = Invitation.InvitationV1.Aes256gcmHkdfsha256.newBuilder().apply {
         this.keyMaterial = keyMaterial.toByteString()

@@ -1,10 +1,8 @@
 package org.xmtp.android.library
 
 import android.util.Log
-import com.google.common.base.Preconditions
 import com.google.crypto.tink.subtle.Hkdf
 import com.google.protobuf.kotlin.toByteString
-import org.bouncycastle.crypto.DerivationParameters
 import org.bouncycastle.crypto.digests.SHA256Digest
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator
 import org.bouncycastle.crypto.params.HKDFParameters
@@ -82,7 +80,7 @@ class Crypto {
         }
     }
 
-    fun calculateMac(message: ByteArray, secret: ByteArray): ByteArray {
+    fun calculateMac(secret: ByteArray, message: ByteArray): ByteArray {
         val sha256HMAC: Mac = Mac.getInstance("HmacSHA256")
         val secretKey = SecretKeySpec(secret, "HmacSHA256")
         sha256HMAC.init(secretKey)
