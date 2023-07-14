@@ -12,11 +12,16 @@ To learn more about XMTP and get answers to frequently asked questions, see the 
 
 ![x-red-sm](https://user-images.githubusercontent.com/510695/163488403-1fb37e86-c673-4b48-954e-8460ae4d4b05.png)
 
-## Quickstart app built with `xmtp-android`
+## Example app built with `xmtp-android`
 
 Use the [XMTP Android quickstart app](https://github.com/xmtp/xmtp-android/tree/main/example) as a tool to start building an app with XMTP. This basic messaging app has an intentionally unopinionated UI to help make it easier for you to build with.
 
 To learn about example app push notifications, see [Enable the quickstart app to send push notifications](library/src/main/java/org/xmtp/android/library/push/README.md).
+
+## Reference docs
+
+> **View the reference**  
+> Access the [Kotin client SDK reference documentation](https://xmtp.github.io/xmtp-android/).
 
 ## Install from Maven Central
 
@@ -164,15 +169,14 @@ val newConversation = client.conversations.newConversation("0x3F11b27F323b62B159
 
 ### Send messages
 
-To be able to send a message, the recipient must have already created a client at least once and consequently advertised their key bundle on the network. Messages are addressed using account addresses. The message payload must be a plain string.
-
-> **Note**  
-> Other types of content are currently not supported.
+To be able to send a message, the recipient must have already created a client at least once and consequently advertised their key bundle on the network. Messages are addressed using account addresses. In this example, the message payload is a plain text string.
 
 ```kotlin
 val conversation = client.conversations.newConversation("0x3F11b27F323b62B159D2642964fa27C46C841897")
 conversation.send(text = "Hello world")
 ```
+
+To learn how to send other types of content, see [Handle different content types](#handle-different-types-of-content).
 
 ### List messages in a conversation
 
@@ -250,9 +254,11 @@ decodedConversation.send(text = "hi")
 
 ### Handle different types of content
 
-All the send functions support SendOptions as an optional parameter. The contentType option allows specifying different types of content than the default simple string, which is identified with content type identifier ContentTypeText. Support for other types of content can be added by registering additional ContentCodecs with the Client. Every codec is associated with a content type identifier, ContentTypeId, which is used to signal to the Client which codec should be used to process the content that is being sent or received. See XIP-5 for more details on codecs and content types.
+All the send functions support `SendOptions` as an optional parameter. The `contentType` option allows specifying different types of content than the default simple string, which is identified with content type identifier `ContentTypeText`. 
 
-Codecs and content types may be proposed as interoperable standards through XRCs. If there is a concern that the recipient may not be able to handle a non-standard content type, the sender can use the contentFallback option to provide a string that describes the content being sent. If the recipient fails to decode the original content, the fallback will replace it and can be used to inform the recipient what the original content was.
+To learn more about content types, see [Content types with XMTP](https://xmtp.org/docs/concepts/content-types).
+
+Support for other types of content can be added by registering additional `ContentCodec`s with the Client. Every codec is associated with a content type identifier, `ContentTypeId`, which is used to signal to the Client which codec should be used to process the content that is being sent or received. 
 
 ```kotlin
 // Assuming we've loaded a fictional NumberCodec that can be used to encode numbers,
@@ -262,6 +268,15 @@ Client.register(codec = NumberCodec())
 val options = ClientOptions(api = ClientOptions.Api(contentType = ContentTypeNumber, contentFallback = "sending you a pie"))
 aliceConversation.send(content = 3.14, options = options)
 ```
+
+As shown in the example above, you must provide a `contentFallback` value. Use it to provide an alt text-like description of the original content. Providing a `contentFallback` value enables clients that don't support the content type to still display something meaningful.
+
+> **Caution**  
+> If you don't provide a `contentFallback` value, clients that don't support the content type will display an empty message. This results in a poor user experience and breaks interoperability.
+
+#### Handle custom content types
+
+Beyond this, custom codecs and content types may be proposed as interoperable standards through XRCs. To learn more about the custom content type proposal process, see [XIP-5](https://github.com/xmtp/XIPs/blob/main/XIPs/xip-5-message-content-types.md).
 
 ### Compression
 
