@@ -150,7 +150,8 @@ class FakeApiClient : ApiClient {
         val endAt = pagination?.after
         if (endAt != null) {
             result = result.filter {
-                it.timestampNs > endAt.time }
+                it.timestampNs > endAt.time
+            }
                 .sortedBy { it.timestampNs }.toMutableList()
         }
         val limit = pagination?.limit
@@ -190,7 +191,11 @@ class FakeApiClient : ApiClient {
     }
 }
 
-data class Fixtures(val aliceAccount: PrivateKeyBuilder, val bobAccount: PrivateKeyBuilder, val steveAccount: PrivateKeyBuilder) {
+data class Fixtures(
+    val aliceAccount: PrivateKeyBuilder,
+    val bobAccount: PrivateKeyBuilder,
+    val steveAccount: PrivateKeyBuilder,
+) {
     var fakeApiClient: FakeApiClient = FakeApiClient()
     var alice: PrivateKey = aliceAccount.getPrivateKey()
     var aliceClient: Client = Client().create(account = aliceAccount, apiClient = fakeApiClient)
@@ -199,7 +204,11 @@ data class Fixtures(val aliceAccount: PrivateKeyBuilder, val bobAccount: Private
     var steve: PrivateKey = steveAccount.getPrivateKey()
     var steveClient: Client = Client().create(account = steveAccount, apiClient = fakeApiClient)
 
-    constructor() : this(aliceAccount = PrivateKeyBuilder(), bobAccount = PrivateKeyBuilder(), steveAccount = PrivateKeyBuilder())
+    constructor() : this(
+        aliceAccount = PrivateKeyBuilder(),
+        bobAccount = PrivateKeyBuilder(),
+        steveAccount = PrivateKeyBuilder()
+    )
 
     fun publishLegacyContact(client: Client) {
         val contactBundle = ContactBundle.newBuilder().also { builder ->
