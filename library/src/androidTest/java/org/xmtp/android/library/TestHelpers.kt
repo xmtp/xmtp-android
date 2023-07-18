@@ -117,10 +117,12 @@ class FakeApiClient : ApiClient {
     }
 
     override suspend fun batchQuery(requests: List<MessageApiOuterClass.QueryRequest>): MessageApiOuterClass.BatchQueryResponse {
-        val response = query(requests.first().getContentTopics(0))
+        val responses = requests.map {
+            query(it.getContentTopics(0), Pagination(after = Date(it.startTimeNs)))
+        }
 
         return MessageApiOuterClass.BatchQueryResponse.newBuilder().also {
-            it.addResponses(response)
+            it.addAllResponses(responses)
         }.build()
     }
 
@@ -142,12 +144,13 @@ class FakeApiClient : ApiClient {
 
         val startAt = pagination?.before
         if (startAt != null) {
-            result = result.filter { it.timestampNs < startAt.time * 1_000_000 }
+            result = result.filter { it.timestampNs < startAt.time }
                 .sortedBy { it.timestampNs }.toMutableList()
         }
         val endAt = pagination?.after
         if (endAt != null) {
-            result = result.filter { it.timestampNs > endAt.time * 1_000_000 }
+            result = result.filter {
+                it.timestampNs > endAt.time }
                 .sortedBy { it.timestampNs }.toMutableList()
         }
         val limit = pagination?.limit
