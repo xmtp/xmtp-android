@@ -20,6 +20,7 @@ import org.xmtp.android.library.messages.MessageBuilder
 import org.xmtp.android.library.messages.MessageHeaderV2Builder
 import org.xmtp.android.library.messages.MessageV1Builder
 import org.xmtp.android.library.messages.MessageV2Builder
+import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.SealedInvitationBuilder
@@ -433,8 +434,8 @@ class ConversationTest {
         bobConversation.send(text = "hey alice 3")
         val messages = aliceClient.conversations.listBatchMessages(
             listOf(
-                aliceConversation.topic,
-                bobConversation.topic
+                Pair(aliceConversation.topic, null),
+                Pair(bobConversation.topic, Pagination(limit = 1))
             )
         )
         assertEquals(3, messages.size)
