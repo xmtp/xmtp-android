@@ -3,6 +3,9 @@ $dokka.linkExtension:html
 $dokka.location:org.xmtp.android.library.codecs////PointingToDeclaration/library/org.xmtp.android.library.codecs/index.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeAttachment/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-attachment.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeComposite/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-composite.html
+$dokka.location:org.xmtp.android.library.codecs//ContentTypeGroupChatMemberAdded/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-group-chat-member-added.html
+$dokka.location:org.xmtp.android.library.codecs//ContentTypeGroupTitleChangedAdded/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-group-title-changed-added.html
+$dokka.location:org.xmtp.android.library.codecs//ContentTypeReaction/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-reaction.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeRemoteAttachment/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-remote-attachment.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeText/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-text.html
 $dokka.location:org.xmtp.android.library.codecs//compress/org.xmtp.proto.message.contents.Content.EncodedContent#org.xmtp.android.library.EncodedContentCompression/PointingToDeclaration/library/org.xmtp.android.library.codecs/compress.html
@@ -54,9 +57,47 @@ $dokka.location:org.xmtp.android.library.codecs/EncryptedEncodedContent/salt/#/P
 $dokka.location:org.xmtp.android.library.codecs/EncryptedEncodedContent/secret/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-encrypted-encoded-content/secret.html
 $dokka.location:org.xmtp.android.library.codecs/Fetcher///PointingToDeclaration/library/org.xmtp.android.library.codecs/-fetcher/index.html
 $dokka.location:org.xmtp.android.library.codecs/Fetcher/fetch/#java.net.URL/PointingToDeclaration/library/org.xmtp.android.library.codecs/-fetcher/fetch.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatMemberAdded///PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-member-added/index.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatMemberAdded/GroupChatMemberAdded/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-member-added/-group-chat-member-added.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatMemberAdded/member/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-member-added/member.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatMemberAddedCodec///PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-member-added-codec/index.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatMemberAddedCodec/GroupChatMemberAddedCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-member-added-codec/-group-chat-member-added-codec.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatMemberAddedCodec/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-member-added-codec/content-type.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatMemberAddedCodec/decode/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-member-added-codec/decode.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatMemberAddedCodec/encode/#org.xmtp.android.library.codecs.GroupChatMemberAdded/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-member-added-codec/encode.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatTitleChanged///PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-title-changed/index.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatTitleChanged/GroupChatTitleChanged/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-title-changed/-group-chat-title-changed.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatTitleChanged/newTitle/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-title-changed/new-title.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatTitleChangedCodec///PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-title-changed-codec/index.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatTitleChangedCodec/GroupChatTitleChangedCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-title-changed-codec/-group-chat-title-changed-codec.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatTitleChangedCodec/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-title-changed-codec/content-type.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatTitleChangedCodec/decode/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-title-changed-codec/decode.html
+$dokka.location:org.xmtp.android.library.codecs/GroupChatTitleChangedCodec/encode/#org.xmtp.android.library.codecs.GroupChatTitleChanged/PointingToDeclaration/library/org.xmtp.android.library.codecs/-group-chat-title-changed-codec/encode.html
 $dokka.location:org.xmtp.android.library.codecs/HTTPFetcher///PointingToDeclaration/library/org.xmtp.android.library.codecs/-h-t-t-p-fetcher/index.html
 $dokka.location:org.xmtp.android.library.codecs/HTTPFetcher/HTTPFetcher/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-h-t-t-p-fetcher/-h-t-t-p-fetcher.html
 $dokka.location:org.xmtp.android.library.codecs/HTTPFetcher/fetch/#java.net.URL/PointingToDeclaration/library/org.xmtp.android.library.codecs/-h-t-t-p-fetcher/fetch.html
+$dokka.location:org.xmtp.android.library.codecs/Reaction///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/index.html
+$dokka.location:org.xmtp.android.library.codecs/Reaction/Reaction/#kotlin.String#org.xmtp.android.library.codecs.ReactionAction#kotlin.String#org.xmtp.android.library.codecs.ReactionSchema/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/-reaction.html
+$dokka.location:org.xmtp.android.library.codecs/Reaction/action/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/action.html
+$dokka.location:org.xmtp.android.library.codecs/Reaction/content/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/content.html
+$dokka.location:org.xmtp.android.library.codecs/Reaction/reference/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/reference.html
+$dokka.location:org.xmtp.android.library.codecs/Reaction/schema/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/schema.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionAction.added///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library.codecs/-reaction-action/added/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionAction.removed///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library.codecs/-reaction-action/removed/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionAction///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-action/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionAction/valueOf/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-action/value-of.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionAction/values/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-action/values.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionCodec///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-codec/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionCodec/ReactionCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-codec/-reaction-codec.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionCodec/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-codec/content-type.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionCodec/decode/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-codec/decode.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionCodec/encode/#org.xmtp.android.library.codecs.Reaction/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-codec/encode.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionSchema.custom///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library.codecs/-reaction-schema/custom/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionSchema.shortcode///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library.codecs/-reaction-schema/shortcode/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionSchema.unicode///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library.codecs/-reaction-schema/unicode/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionSchema///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-schema/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionSchema/valueOf/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-schema/value-of.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionSchema/values/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-schema/values.html
 $dokka.location:org.xmtp.android.library.codecs/RemoteAttachment.Companion///PointingToDeclaration/library/org.xmtp.android.library.codecs/-remote-attachment/-companion/index.html
 $dokka.location:org.xmtp.android.library.codecs/RemoteAttachment.Companion/encodeEncrypted/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.codecs.ContentCodec[TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/library/org.xmtp.android.library.codecs/-remote-attachment/-companion/encode-encrypted.html
 $dokka.location:org.xmtp.android.library.codecs/RemoteAttachment.Companion/from/#java.net.URL#org.xmtp.android.library.codecs.EncryptedEncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/-remote-attachment/-companion/from.html
@@ -847,25 +888,6 @@ $dokka.location:org.xmtp.android.library/XMTPEnvironment/valueOf/#kotlin.String/
 $dokka.location:org.xmtp.android.library/XMTPEnvironment/values/#/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/values.html
 $dokka.location:org.xmtp.android.library/XMTPException///PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/index.html
 $dokka.location:org.xmtp.android.library/XMTPException/XMTPException/#kotlin.String#java.lang.Exception?/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/-x-m-t-p-exception.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs////PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/index.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs//ContentTypeGroupChatMemberAdded/#/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-content-type-group-chat-member-added.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs//ContentTypeGroupTitleChangedAdded/#/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-content-type-group-title-changed-added.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatMemberAdded///PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-member-added/index.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatMemberAdded/GroupChatMemberAdded/#kotlin.String/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-member-added/-group-chat-member-added.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatMemberAdded/member/#/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-member-added/member.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatMemberAddedCodec///PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-member-added-codec/index.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatMemberAddedCodec/GroupChatMemberAddedCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-member-added-codec/-group-chat-member-added-codec.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatMemberAddedCodec/contentType/#/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-member-added-codec/content-type.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatMemberAddedCodec/decode/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-member-added-codec/decode.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatMemberAddedCodec/encode/#uniffi.xmtp_dh.org.xmtp.android.library.codecs.GroupChatMemberAdded/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-member-added-codec/encode.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatTitleChanged///PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-title-changed/index.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatTitleChanged/GroupChatTitleChanged/#kotlin.String/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-title-changed/-group-chat-title-changed.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatTitleChanged/newTitle/#/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-title-changed/new-title.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatTitleChangedCodec///PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-title-changed-codec/index.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatTitleChangedCodec/GroupChatTitleChangedCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-title-changed-codec/-group-chat-title-changed-codec.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatTitleChangedCodec/contentType/#/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-title-changed-codec/content-type.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatTitleChangedCodec/decode/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-title-changed-codec/decode.html
-$dokka.location:uniffi.xmtp_dh.org.xmtp.android.library.codecs/GroupChatTitleChangedCodec/encode/#uniffi.xmtp_dh.org.xmtp.android.library.codecs.GroupChatTitleChanged/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library.codecs/-group-chat-title-changed-codec/encode.html
 $dokka.location:uniffi.xmtp_dh.org.xmtp.android.library////PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library/index.html
 $dokka.location:uniffi.xmtp_dh.org.xmtp.android.library/GroupChat.Companion///PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library/-group-chat/-companion/index.html
 $dokka.location:uniffi.xmtp_dh.org.xmtp.android.library/GroupChat.Companion/registerCodecs/#/PointingToDeclaration/library/uniffi.xmtp_dh.org.xmtp.android.library/-group-chat/-companion/register-codecs.html
@@ -941,5 +963,4 @@ org.xmtp.android.library.messages
 org.xmtp.android.library.push
 uniffi.xmtp_dh
 uniffi.xmtp_dh.org.xmtp.android.library
-uniffi.xmtp_dh.org.xmtp.android.library.codecs
 
