@@ -18,11 +18,11 @@ data class Reaction(
 )
 
 enum class ReactionAction {
-    ADDED, REMOVED
+    added, removed
 }
 
 enum class ReactionSchema {
-    UNICODE, SHORTCODE, CUSTOM
+    unicode, shortcode, custom
 }
 
 data class ReactionCodec(override var contentType: ContentTypeId = ContentTypeReaction) :

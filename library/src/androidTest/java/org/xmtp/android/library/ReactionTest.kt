@@ -29,9 +29,9 @@ class ReactionTest {
 
         val attachment = Reaction(
             reference = messageToReact.id,
-            action = ReactionAction.ADDED,
+            action = ReactionAction.added,
             content = "U+1F603",
-            schema = ReactionSchema.UNICODE
+            schema = ReactionSchema.unicode
         )
 
         aliceConversation.send(
@@ -44,8 +44,8 @@ class ReactionTest {
             val content: Reaction? = messages.first().content()
             assertEquals("U+1F603", content?.content)
             assertEquals(messageToReact.id, content?.reference)
-            assertEquals(ReactionAction.ADDED, content?.action)
-            assertEquals(ReactionSchema.UNICODE, content?.schema)
+            assertEquals(ReactionAction.added, content?.action)
+            assertEquals(ReactionSchema.unicode, content?.schema)
         }
     }
 }
