@@ -7,6 +7,7 @@ $dokka.location:org.xmtp.android.library.codecs//ContentTypeGroupChatMemberAdded
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeGroupTitleChangedAdded/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-group-title-changed-added.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeReaction/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-reaction.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeRemoteAttachment/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-remote-attachment.html
+$dokka.location:org.xmtp.android.library.codecs//ContentTypeReply/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-reply.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeText/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-text.html
 $dokka.location:org.xmtp.android.library.codecs//compress/org.xmtp.proto.message.contents.Content.EncodedContent#org.xmtp.android.library.EncodedContentCompression/PointingToDeclaration/library/org.xmtp.android.library.codecs/compress.html
 $dokka.location:org.xmtp.android.library.codecs//decoded/org.xmtp.proto.message.contents.Content.EncodedContent#/PointingToDeclaration/library/org.xmtp.android.library.codecs/decoded.html
@@ -118,6 +119,16 @@ $dokka.location:org.xmtp.android.library.codecs/RemoteAttachmentCodec/RemoteAtta
 $dokka.location:org.xmtp.android.library.codecs/RemoteAttachmentCodec/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-remote-attachment-codec/content-type.html
 $dokka.location:org.xmtp.android.library.codecs/RemoteAttachmentCodec/decode/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/-remote-attachment-codec/decode.html
 $dokka.location:org.xmtp.android.library.codecs/RemoteAttachmentCodec/encode/#org.xmtp.android.library.codecs.RemoteAttachment/PointingToDeclaration/library/org.xmtp.android.library.codecs/-remote-attachment-codec/encode.html
+$dokka.location:org.xmtp.android.library.codecs/Reply///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reply/index.html
+$dokka.location:org.xmtp.android.library.codecs/Reply/Reply/#kotlin.String#kotlin.Any#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reply/-reply.html
+$dokka.location:org.xmtp.android.library.codecs/Reply/content/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reply/content.html
+$dokka.location:org.xmtp.android.library.codecs/Reply/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reply/content-type.html
+$dokka.location:org.xmtp.android.library.codecs/Reply/reference/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reply/reference.html
+$dokka.location:org.xmtp.android.library.codecs/ReplyCodec///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reply-codec/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReplyCodec/ReplyCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reply-codec/-reply-codec.html
+$dokka.location:org.xmtp.android.library.codecs/ReplyCodec/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reply-codec/content-type.html
+$dokka.location:org.xmtp.android.library.codecs/ReplyCodec/decode/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reply-codec/decode.html
+$dokka.location:org.xmtp.android.library.codecs/ReplyCodec/encode/#org.xmtp.android.library.codecs.Reply/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reply-codec/encode.html
 $dokka.location:org.xmtp.android.library.codecs/TextCodec///PointingToDeclaration/library/org.xmtp.android.library.codecs/-text-codec/index.html
 $dokka.location:org.xmtp.android.library.codecs/TextCodec/TextCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-text-codec/-text-codec.html
 $dokka.location:org.xmtp.android.library.codecs/TextCodec/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-text-codec/content-type.html
