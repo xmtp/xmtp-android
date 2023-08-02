@@ -46,7 +46,6 @@ data class ReplyCodec(override var contentType: ContentTypeId = ContentTypeReply
         )
     }
 
-
     private fun <Codec : ContentCodec<T>, T> encodeReply(
         codec: Codec,
         content: Any,
