@@ -712,6 +712,7 @@ $dokka.location:org.xmtp.android.library/CodecRegistry///PointingToDeclaration/
 $dokka.location:org.xmtp.android.library/CodecRegistry/CodecRegistry/#kotlin.collections.MutableMap[kotlin.String,org.xmtp.android.library.codecs.ContentCodec[*]]/PointingToDeclaration/library/org.xmtp.android.library/-codec-registry/-codec-registry.html
 $dokka.location:org.xmtp.android.library/CodecRegistry/codecs/#/PointingToDeclaration/library/org.xmtp.android.library/-codec-registry/codecs.html
 $dokka.location:org.xmtp.android.library/CodecRegistry/find/#org.xmtp.proto.message.contents.Content.ContentTypeId?/PointingToDeclaration/library/org.xmtp.android.library/-codec-registry/find.html
+$dokka.location:org.xmtp.android.library/CodecRegistry/findFromId/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-codec-registry/find-from-id.html
 $dokka.location:org.xmtp.android.library/CodecRegistry/register/#org.xmtp.android.library.codecs.ContentCodec[*]/PointingToDeclaration/library/org.xmtp.android.library/-codec-registry/register.html
 $dokka.location:org.xmtp.android.library/Constants///PointingToDeclaration/library/org.xmtp.android.library/-constants/index.html
 $dokka.location:org.xmtp.android.library/Constants/VERSION/#/PointingToDeclaration/library/org.xmtp.android.library/-constants/-v-e-r-s-i-o-n.html
