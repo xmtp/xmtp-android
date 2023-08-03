@@ -6,6 +6,7 @@ $dokka.location:org.xmtp.android.library.codecs//ContentTypeComposite/#/Pointing
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeGroupChatMemberAdded/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-group-chat-member-added.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeGroupTitleChangedAdded/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-group-title-changed-added.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeReaction/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-reaction.html
+$dokka.location:org.xmtp.android.library.codecs//ContentTypeReadReceipt/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-read-receipt.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeRemoteAttachment/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-remote-attachment.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeReply/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-reply.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeText/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-text.html
@@ -99,6 +100,14 @@ $dokka.location:org.xmtp.android.library.codecs/ReactionSchema.unicode///Pointin
 $dokka.location:org.xmtp.android.library.codecs/ReactionSchema///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-schema/index.html
 $dokka.location:org.xmtp.android.library.codecs/ReactionSchema/valueOf/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-schema/value-of.html
 $dokka.location:org.xmtp.android.library.codecs/ReactionSchema/values/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-schema/values.html
+$dokka.location:org.xmtp.android.library.codecs/ReadReceipt///PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReadReceipt/ReadReceipt/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt/-read-receipt.html
+$dokka.location:org.xmtp.android.library.codecs/ReadReceipt/timestamp/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt/timestamp.html
+$dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec///PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec/ReadReceiptCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/-read-receipt-codec.html
+$dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/content-type.html
+$dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec/decode/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/decode.html
+$dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec/encode/#org.xmtp.android.library.codecs.ReadReceipt/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/encode.html
 $dokka.location:org.xmtp.android.library.codecs/RemoteAttachment.Companion///PointingToDeclaration/library/org.xmtp.android.library.codecs/-remote-attachment/-companion/index.html
 $dokka.location:org.xmtp.android.library.codecs/RemoteAttachment.Companion/encodeEncrypted/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.codecs.ContentCodec[TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/library/org.xmtp.android.library.codecs/-remote-attachment/-companion/encode-encrypted.html
 $dokka.location:org.xmtp.android.library.codecs/RemoteAttachment.Companion/from/#java.net.URL#org.xmtp.android.library.codecs.EncryptedEncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/-remote-attachment/-companion/from.html
