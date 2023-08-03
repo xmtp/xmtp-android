@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import io.grpc.Grpc
 import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
@@ -123,7 +124,7 @@ data class GRPCApiClient(
     }
 
     override suspend fun envelopes(topic: String, pagination: Pagination?): List<Envelope> {
-        val envelopes: MutableList<Envelope> = mutableListOf()
+        var envelopes: MutableList<Envelope> = mutableListOf()
         var hasNextPage = true
         var cursor: Cursor? = null
         while (hasNextPage) {
@@ -131,6 +132,10 @@ data class GRPCApiClient(
             envelopes.addAll(response.envelopesList)
             cursor = response.pagingInfo.cursor
             hasNextPage = response.envelopesList.isNotEmpty() && response.pagingInfo.hasCursor()
+            if (pagination?.limit != null && envelopes.size >= pagination.limit) {
+                envelopes = envelopes.take(pagination.limit).toMutableList()
+                break
+            }
         }
         return envelopes
     }
