@@ -644,6 +644,7 @@ $dokka.location:org.xmtp.android.library.push/XMTPPush/installationId/#/Pointing
 $dokka.location:org.xmtp.android.library.push/XMTPPush/pushServer/#/PointingToDeclaration/library/org.xmtp.android.library.push/-x-m-t-p-push/push-server.html
 $dokka.location:org.xmtp.android.library.push/XMTPPush/register/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.push/-x-m-t-p-push/register.html
 $dokka.location:org.xmtp.android.library.push/XMTPPush/subscribe/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library.push/-x-m-t-p-push/subscribe.html
+$dokka.location:org.xmtp.android.library.push/XMTPPush/unsubscribe/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library.push/-x-m-t-p-push/unsubscribe.html
 $dokka.location:org.xmtp.android.library////PointingToDeclaration/library/org.xmtp.android.library/index.html
 $dokka.location:org.xmtp.android.library//createIdentity/org.xmtp.android.library.SigningKey#org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey/PointingToDeclaration/library/org.xmtp.android.library/create-identity.html
 $dokka.location:org.xmtp.android.library//toHex/kotlin.ByteArray#/PointingToDeclaration/library/org.xmtp.android.library/to-hex.html
