@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import io.grpc.Grpc
 import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
