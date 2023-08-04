@@ -382,7 +382,6 @@ class LocalInstrumentedTest {
             context = InvitationV1ContextBuilder.buildFromConversation("https://example.com/3")
         )
 
-//        assertEquals(bobConversation.topic, aliceConversation.topic)
         bobConversation.streamEphemeral().mapLatest {
             assertEquals("hi", it.message.toStringUtf8())
         }
