@@ -13,6 +13,7 @@ $dokka.location:org.xmtp.android.library.codecs//ContentTypeText/#/PointingToDec
 $dokka.location:org.xmtp.android.library.codecs//compress/org.xmtp.proto.message.contents.Content.EncodedContent#org.xmtp.android.library.EncodedContentCompression/PointingToDeclaration/library/org.xmtp.android.library.codecs/compress.html
 $dokka.location:org.xmtp.android.library.codecs//decoded/org.xmtp.proto.message.contents.Content.EncodedContent#/PointingToDeclaration/library/org.xmtp.android.library.codecs/decoded.html
 $dokka.location:org.xmtp.android.library.codecs//decompressContent/org.xmtp.proto.message.contents.Content.EncodedContent#/PointingToDeclaration/library/org.xmtp.android.library.codecs/decompress-content.html
+$dokka.location:org.xmtp.android.library.codecs//description/org.xmtp.proto.message.contents.Content.ContentTypeId#/PointingToDeclaration/library/org.xmtp.android.library.codecs/description.html
 $dokka.location:org.xmtp.android.library.codecs//id/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/id.html
 $dokka.location:org.xmtp.android.library.codecs//id/org.xmtp.proto.message.contents.Content.ContentTypeId#/PointingToDeclaration/library/org.xmtp.android.library.codecs/id.html
 $dokka.location:org.xmtp.android.library.codecs/Attachment///PointingToDeclaration/library/org.xmtp.android.library.codecs/-attachment/index.html
