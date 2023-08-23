@@ -824,9 +824,9 @@ $dokka.location:org.xmtp.android.library/Crypto/Crypto/#/PointingToDeclaration/
 $dokka.location:org.xmtp.android.library/Crypto/calculateMac/#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-crypto/calculate-mac.html
 $dokka.location:org.xmtp.android.library/Crypto/deriveKey/#kotlin.ByteArray#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-crypto/derive-key.html
 $dokka.location:org.xmtp.android.library/DecodedMessage.Companion///PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/-companion/index.html
-$dokka.location:org.xmtp.android.library/DecodedMessage.Companion/preview/#kotlin.String#kotlin.String#java.util.Date/PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/-companion/preview.html
+$dokka.location:org.xmtp.android.library/DecodedMessage.Companion/preview/#kotlin.String#kotlin.String#kotlin.String#java.util.Date/PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/-companion/preview.html
 $dokka.location:org.xmtp.android.library/DecodedMessage///PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/index.html
-$dokka.location:org.xmtp.android.library/DecodedMessage/DecodedMessage/#org.xmtp.proto.message.contents.Content.EncodedContent#kotlin.String#java.util.Date/PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/-decoded-message.html
+$dokka.location:org.xmtp.android.library/DecodedMessage/DecodedMessage/#kotlin.String#org.xmtp.proto.message.contents.Content.EncodedContent#kotlin.String#java.util.Date/PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/-decoded-message.html
 $dokka.location:org.xmtp.android.library/DecodedMessage/body/#/PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/body.html
 $dokka.location:org.xmtp.android.library/DecodedMessage/content/#/PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/content.html
 $dokka.location:org.xmtp.android.library/DecodedMessage/encodedContent/#/PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/encoded-content.html
@@ -834,6 +834,7 @@ $dokka.location:org.xmtp.android.library/DecodedMessage/fallbackContent/#/Pointi
 $dokka.location:org.xmtp.android.library/DecodedMessage/id/#/PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/id.html
 $dokka.location:org.xmtp.android.library/DecodedMessage/senderAddress/#/PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/sender-address.html
 $dokka.location:org.xmtp.android.library/DecodedMessage/sent/#/PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/sent.html
+$dokka.location:org.xmtp.android.library/DecodedMessage/topic/#/PointingToDeclaration/library/org.xmtp.android.library/-decoded-message/topic.html
 $dokka.location:org.xmtp.android.library/EncodedContentCompression.DEFLATE///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-encoded-content-compression/-d-e-f-l-a-t-e/index.html
 $dokka.location:org.xmtp.android.library/EncodedContentCompression.GZIP///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-encoded-content-compression/-g-z-i-p/index.html
 $dokka.location:org.xmtp.android.library/EncodedContentCompression///PointingToDeclaration/library/org.xmtp.android.library/-encoded-content-compression/index.html
