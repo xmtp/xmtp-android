@@ -21,6 +21,8 @@ import org.xmtp.android.library.messages.generate
 import org.xmtp.android.library.messages.getInvitation
 import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.header
+import org.xmtp.android.library.messages.sharedSecret
+import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.toV2
 import java.util.Date
 
@@ -141,5 +143,40 @@ class InvitationTest {
             invite.topic,
             "/xmtp/0/m-4b52be1e8567d72d0bc407debe2d3c7fca2ae93a47e58c3f9b5c5068aff80ec5/proto"
         )
+    }
+
+    @Test
+    fun testCreatesDeterministicTopicsBidirectionally() {
+        val aliceWallet = FakeWallet.generate()
+        val bobWallet = FakeWallet.generate()
+        val alice = PrivateKeyBundleV1.newBuilder().build().generate(wallet = aliceWallet)
+        val bob = PrivateKeyBundleV1.newBuilder().build().generate(wallet = bobWallet)
+
+        val aliceInvite = InvitationV1.newBuilder().build().createDeterministic(
+            sender = alice.toV2(),
+            recipient = bob.toV2().getPublicKeyBundle(),
+            context = null
+        )
+
+        val bobInvite = InvitationV1.newBuilder().build().createDeterministic(
+            sender = bob.toV2(),
+            recipient = alice.toV2().getPublicKeyBundle(),
+            context = null
+        )
+
+        val aliceSharedSecret = alice.sharedSecret(
+            bob.toPublicKeyBundle(),
+            alice.getPreKeys(0).publicKey,
+            false
+        )
+
+        val bobSharedSecret = bob.sharedSecret(
+            alice.toPublicKeyBundle(), bob.getPreKeys(0).publicKey,
+            true
+        )
+
+        assertEquals(aliceSharedSecret, bobSharedSecret)
+
+        assertEquals(aliceInvite.topic, bobInvite.topic)
     }
 }
