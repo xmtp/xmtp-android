@@ -68,7 +68,7 @@ fun InvitationV1.createDeterministic(
     val secret = sender.sharedSecret(
         peer = recipient,
         myPreKey = sender.preKeysList[0].publicKey,
-        isRecipient = myAddress > theirAddress
+        isRecipient = myAddress < theirAddress
     )
 
     val addresses = arrayOf(myAddress, theirAddress)
