@@ -37,14 +37,15 @@ class ReactionTest {
         // So we test here to make sure we can still decode them.
         val legacyEncoded = EncodedContent.newBuilder().also {
             it.type = ContentTypeReaction
-            it.putAllParameters(mapOf(
-                "action" to "added",
-                "reference" to "abc123",
-                "schema" to "shortcode",
-            ))
+            it.putAllParameters(
+                mapOf(
+                    "action" to "added",
+                    "reference" to "abc123",
+                    "schema" to "shortcode",
+                )
+            )
             it.content = "smile".toByteStringUtf8()
         }.build()
-
 
         val canonical = codec.decode(canonicalEncoded)
         val legacy = codec.decode(legacyEncoded)
