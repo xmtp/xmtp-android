@@ -36,6 +36,10 @@ data class NumberCodec(
 
     override fun decode(content: EncodedContent): Double =
         content.content.toStringUtf8().filter { it.isDigit() || it == '.' }.toDouble()
+
+    override fun fallback(content: Double): String? {
+        return "Error: This app does not support numbers."
+    }
 }
 @RunWith(AndroidJUnit4::class)
 class CodecTest {

@@ -32,4 +32,8 @@ data class AttachmentCodec(override var contentType: ContentTypeId = ContentType
             data = encodedContent,
         )
     }
+
+    override fun fallback(content: Attachment): String? {
+        return "Error: Sorry, this app cannot display attachments"
+    }
 }

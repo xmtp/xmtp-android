@@ -53,4 +53,8 @@ data class ReactionCodec(override var contentType: ContentTypeId = ContentTypeRe
             content = text,
         )
     }
+
+    override fun fallback(content: Reaction): String? {
+        return "Error: Sorry, this app cannot display reactions"
+    }
 }

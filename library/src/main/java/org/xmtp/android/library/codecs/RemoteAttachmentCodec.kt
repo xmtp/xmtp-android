@@ -167,4 +167,8 @@ data class RemoteAttachmentCodec(override var contentType: ContentTypeId = Conte
             filename = filename,
         )
     }
+
+    override fun fallback(content: RemoteAttachment): String? {
+        return "Error: Sorry, this app cannot display attachments"
+    }
 }
