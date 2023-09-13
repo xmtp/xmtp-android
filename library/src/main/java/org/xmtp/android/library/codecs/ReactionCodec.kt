@@ -2,6 +2,7 @@ package org.xmtp.android.library.codecs
 
 import com.google.gson.GsonBuilder
 import com.google.protobuf.kotlin.toByteStringUtf8
+import java.util.Locale
 
 val ContentTypeReaction = ContentTypeIdBuilder.builderFromAuthorityId(
     "xmtp.org",
@@ -17,12 +18,34 @@ data class Reaction(
     val schema: ReactionSchema,
 )
 
-enum class ReactionAction {
-    added, removed
+sealed class ReactionAction {
+    object Removed : ReactionAction()
+    object Added : ReactionAction()
+    object Unknown : ReactionAction()
 }
 
-enum class ReactionSchema {
-    unicode, shortcode, custom
+sealed class ReactionSchema {
+    object Unicode : ReactionSchema()
+    object Shortcode : ReactionSchema()
+    object Custom : ReactionSchema()
+    object Unknown : ReactionSchema()
+}
+
+private fun getReactionSchema(schema: String): ReactionSchema {
+    return when (schema) {
+        "unicode" -> ReactionSchema.Unicode
+        "shortcode" -> ReactionSchema.Shortcode
+        "custom" -> ReactionSchema.Custom
+        else -> ReactionSchema.Unknown
+    }
+}
+
+private fun getReactionAction(action: String): ReactionAction {
+    return when (action) {
+        "removed" -> ReactionAction.Removed
+        "added" -> ReactionAction.Added
+        else -> ReactionAction.Unknown
+    }
 }
 
 data class ReactionCodec(override var contentType: ContentTypeId = ContentTypeReaction) :
@@ -48,16 +71,17 @@ data class ReactionCodec(override var contentType: ContentTypeId = ContentTypeRe
         // If that fails, try to decode it in the legacy form.
         return Reaction(
             reference = content.parametersMap["reference"] ?: "",
-            action = content.parametersMap["action"]?.let { ReactionAction.valueOf(it) }!!,
-            schema = content.parametersMap["schema"]?.let { ReactionSchema.valueOf(it) }!!,
+            action = getReactionAction(content.parametersMap["action"]?.lowercase(Locale.ROOT) ?: ""),
+            schema = getReactionSchema(content.parametersMap["schema"]?.lowercase(Locale.ROOT) ?: ""),
             content = text,
         )
     }
 
     override fun fallback(content: Reaction): String? {
         return when (content.action) {
-            ReactionAction.added -> "Reacted “${content.content}” to an earlier message"
-            ReactionAction.removed -> "Removed “${content.content}” from an earlier message"
+            ReactionAction.Added -> "Reacted “${content.content}” to an earlier message"
+            ReactionAction.Removed -> "Removed “${content.content}” from an earlier message"
+            else -> null
         }
     }
 }
