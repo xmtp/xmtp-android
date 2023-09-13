@@ -20,6 +20,7 @@ import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.SealedInvitationHeaderV1
 import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
 
@@ -60,9 +61,10 @@ data class ConversationV2(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
-        direction: PagingInfoSortDirection? = null
+        direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
     ): List<DecodedMessage> {
-        val pagination = Pagination(limit = limit, before = before, after = after, direction = direction)
+        val pagination =
+            Pagination(limit = limit, before = before, after = after, direction = direction)
         val result = runBlocking {
             client.apiClient.envelopes(
                 topic = topic,
