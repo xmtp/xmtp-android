@@ -743,7 +743,7 @@ $dokka.location:org.xmtp.android.library/Conversation/createdAt/#/PointingToDecl
 $dokka.location:org.xmtp.android.library/Conversation/decode/#org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope/PointingToDeclaration/library/org.xmtp.android.library/-conversation/decode.html
 $dokka.location:org.xmtp.android.library/Conversation/decodeOrNull/#org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope/PointingToDeclaration/library/org.xmtp.android.library/-conversation/decode-or-null.html
 $dokka.location:org.xmtp.android.library/Conversation/keyMaterial/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/key-material.html
-$dokka.location:org.xmtp.android.library/Conversation/messages/#kotlin.Int?#java.util.Date?#java.util.Date?/PointingToDeclaration/library/org.xmtp.android.library/-conversation/messages.html
+$dokka.location:org.xmtp.android.library/Conversation/messages/#kotlin.Int?#java.util.Date?#java.util.Date?#org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection/PointingToDeclaration/library/org.xmtp.android.library/-conversation/messages.html
 $dokka.location:org.xmtp.android.library/Conversation/peerAddress/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/peer-address.html
 $dokka.location:org.xmtp.android.library/Conversation/prepareMessage/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-conversation/prepare-message.html
 $dokka.location:org.xmtp.android.library/Conversation/send/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-conversation/send.html
@@ -760,7 +760,7 @@ $dokka.location:org.xmtp.android.library/ConversationV1/ConversationV1/#org.xmtp
 $dokka.location:org.xmtp.android.library/ConversationV1/client/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v1/client.html
 $dokka.location:org.xmtp.android.library/ConversationV1/decode/#org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v1/decode.html
 $dokka.location:org.xmtp.android.library/ConversationV1/ephemeralTopic/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v1/ephemeral-topic.html
-$dokka.location:org.xmtp.android.library/ConversationV1/messages/#kotlin.Int?#java.util.Date?#java.util.Date?/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v1/messages.html
+$dokka.location:org.xmtp.android.library/ConversationV1/messages/#kotlin.Int?#java.util.Date?#java.util.Date?#org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v1/messages.html
 $dokka.location:org.xmtp.android.library/ConversationV1/peerAddress/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v1/peer-address.html
 $dokka.location:org.xmtp.android.library/ConversationV1/prepareMessage/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v1/prepare-message.html
 $dokka.location:org.xmtp.android.library/ConversationV1/prepareMessage/#org.xmtp.proto.message.contents.Content.EncodedContent#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v1/prepare-message.html
@@ -789,7 +789,7 @@ $dokka.location:org.xmtp.android.library/ConversationV2/decodeEnvelope/#org.xmtp
 $dokka.location:org.xmtp.android.library/ConversationV2/encode/#TypeParam(bounds=[org.xmtp.android.library.codecs.ContentCodec[TypeParam(bounds=[kotlin.Any?])]])#TypeParam(bounds=[kotlin.Any?])/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v2/encode.html
 $dokka.location:org.xmtp.android.library/ConversationV2/ephemeralTopic/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v2/ephemeral-topic.html
 $dokka.location:org.xmtp.android.library/ConversationV2/keyMaterial/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v2/key-material.html
-$dokka.location:org.xmtp.android.library/ConversationV2/messages/#kotlin.Int?#java.util.Date?#java.util.Date?/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v2/messages.html
+$dokka.location:org.xmtp.android.library/ConversationV2/messages/#kotlin.Int?#java.util.Date?#java.util.Date?#org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v2/messages.html
 $dokka.location:org.xmtp.android.library/ConversationV2/peerAddress/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v2/peer-address.html
 $dokka.location:org.xmtp.android.library/ConversationV2/prepareMessage/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v2/prepare-message.html
 $dokka.location:org.xmtp.android.library/ConversationV2/prepareMessage/#org.xmtp.proto.message.contents.Content.EncodedContent#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-conversation-v2/prepare-message.html
