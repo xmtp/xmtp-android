@@ -1,8 +1,14 @@
 package org.xmtp.android.library.codecs
 
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonSerializationContext
+import com.google.gson.JsonSerializer
 import com.google.protobuf.kotlin.toByteStringUtf8
-import java.util.Locale
+import java.lang.reflect.Type
 
 val ContentTypeReaction = ContentTypeIdBuilder.builderFromAuthorityId(
     "xmtp.org",
@@ -52,7 +58,10 @@ data class ReactionCodec(override var contentType: ContentTypeId = ContentTypeRe
     ContentCodec<Reaction> {
 
     override fun encode(content: Reaction): EncodedContent {
-        val gson = GsonBuilder().create()
+        val gson = GsonBuilder()
+            .registerTypeAdapter(Reaction::class.java, ReactionSerializer())
+            .create()
+
         return EncodedContent.newBuilder().also {
             it.type = ContentTypeReaction
             it.content = gson.toJson(content).toByteStringUtf8()
@@ -60,20 +69,22 @@ data class ReactionCodec(override var contentType: ContentTypeId = ContentTypeRe
     }
 
     override fun decode(content: EncodedContent): Reaction {
-        val text = content.content.toStringUtf8()
+        val json = content.content.toStringUtf8()
 
-        // First try to decode it in the canonical form.
+        val gson = GsonBuilder()
+            .registerTypeAdapter(Reaction::class.java, ReactionDeserializer())
+            .create()
         try {
-            return GsonBuilder().create().fromJson(text, Reaction::class.java)
+            return gson.fromJson(json, Reaction::class.java)
         } catch (ignore: Exception) {
         }
 
         // If that fails, try to decode it in the legacy form.
         return Reaction(
             reference = content.parametersMap["reference"] ?: "",
-            action = getReactionAction(content.parametersMap["action"]?.lowercase(Locale.ROOT) ?: ""),
-            schema = getReactionSchema(content.parametersMap["schema"]?.lowercase(Locale.ROOT) ?: ""),
-            content = text,
+            action = getReactionAction(content.parametersMap["action"]?.lowercase() ?: ""),
+            schema = getReactionSchema(content.parametersMap["schema"]?.lowercase() ?: ""),
+            content = json,
         )
     }
 
@@ -83,5 +94,39 @@ data class ReactionCodec(override var contentType: ContentTypeId = ContentTypeRe
             ReactionAction.Removed -> "Removed “${content.content}” from an earlier message"
             else -> null
         }
+    }
+}
+
+private class ReactionSerializer : JsonSerializer<Reaction> {
+    override fun serialize(
+        src: Reaction,
+        typeOfSrc: Type,
+        context: JsonSerializationContext,
+    ): JsonObject {
+        val json = JsonObject()
+        json.addProperty("reference", src.reference)
+        json.addProperty("action", src.action.javaClass.simpleName.lowercase())
+        json.addProperty("content", src.content)
+        json.addProperty("schema", src.schema.javaClass.simpleName.lowercase())
+        return json
+    }
+}
+
+private class ReactionDeserializer : JsonDeserializer<Reaction> {
+    override fun deserialize(
+        json: JsonElement,
+        typeOfT: Type?,
+        context: JsonDeserializationContext?,
+    ): Reaction {
+        val jsonObject = json.asJsonObject
+        val reference = jsonObject.get("reference").asString
+        val actionStr = jsonObject.get("action").asString.lowercase()
+        val content = jsonObject.get("content").asString
+        val schemaStr = jsonObject.get("schema").asString.lowercase()
+
+        val action = getReactionAction(actionStr)
+        val schema = getReactionSchema(schemaStr)
+
+        return Reaction(reference, action, content, schema)
     }
 }
