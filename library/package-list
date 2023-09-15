@@ -88,8 +88,6 @@ $dokka.location:org.xmtp.android.library.codecs/ReactionSchema.Unicode///Pointin
 $dokka.location:org.xmtp.android.library.codecs/ReactionSchema.Unknown///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-schema/-unknown/index.html
 $dokka.location:org.xmtp.android.library.codecs/ReactionSchema///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-schema/index.html
 $dokka.location:org.xmtp.android.library.codecs/ReadReceipt///PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt/index.html
-$dokka.location:org.xmtp.android.library.codecs/ReadReceipt/ReadReceipt/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt/-read-receipt.html
-$dokka.location:org.xmtp.android.library.codecs/ReadReceipt/timestamp/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt/timestamp.html
 $dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec///PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/index.html
 $dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec/ReadReceiptCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/-read-receipt-codec.html
 $dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/content-type.html
