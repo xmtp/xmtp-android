@@ -1,7 +1,6 @@
 package org.xmtp.android.library.codecs
 
 import com.google.protobuf.ByteString
-import org.xmtp.android.library.XMTPException
 
 val ContentTypeReadReceipt = ContentTypeIdBuilder.builderFromAuthorityId(
     "xmtp.org",
