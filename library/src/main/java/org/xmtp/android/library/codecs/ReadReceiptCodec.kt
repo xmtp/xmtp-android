@@ -10,10 +10,7 @@ val ContentTypeReadReceipt = ContentTypeIdBuilder.builderFromAuthorityId(
     versionMinor = 0
 )
 
-data class ReadReceipt(
-    // The timestamp the read receipt was sent, in ISO 8601 format
-    val timestamp: String,
-)
+object ReadReceipt
 
 data class ReadReceiptCodec(override var contentType: ContentTypeId = ContentTypeReadReceipt) :
     ContentCodec<ReadReceipt> {
@@ -21,15 +18,12 @@ data class ReadReceiptCodec(override var contentType: ContentTypeId = ContentTyp
     override fun encode(content: ReadReceipt): EncodedContent {
         return EncodedContent.newBuilder().also {
             it.type = ContentTypeReadReceipt
-            it.putParameters("timestamp", content.timestamp)
             it.content = ByteString.EMPTY
         }.build()
     }
 
     override fun decode(content: EncodedContent): ReadReceipt {
-        val timestamp = content.parametersMap["timestamp"] ?: throw XMTPException("Invalid Content")
-
-        return ReadReceipt(timestamp = timestamp)
+        return ReadReceipt
     }
 
     override fun fallback(content: ReadReceipt): String? {
