@@ -94,6 +94,7 @@ data class RemoteAttachment(
         }
 
         fun from(url: URL, encryptedEncodedContent: EncryptedEncodedContent): RemoteAttachment {
+            val scheme = "https://"
             if (URI(url.toString()).scheme != "https") {
                 throw XMTPException("scheme must be https://")
             }
@@ -104,7 +105,7 @@ data class RemoteAttachment(
                 secret = encryptedEncodedContent.secret,
                 salt = encryptedEncodedContent.salt,
                 nonce = encryptedEncodedContent.nonce,
-                scheme = URI(url.toString()).scheme,
+                scheme = scheme,
             )
         }
     }
