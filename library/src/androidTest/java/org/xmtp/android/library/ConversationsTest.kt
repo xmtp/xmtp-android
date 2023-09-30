@@ -1,12 +1,10 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -97,11 +95,9 @@ class ConversationsTest {
                 alixClient.conversations.streamAllMessages().collect { message ->
                     allMessages.add(message)
                 }
-            } catch (e: Exception) {
-
-            }
+            } catch (e: Exception) {}
         }
-        sleep(5000)
+        sleep(2500)
 
         for (i in 0 until 5) {
             boConversation.send(text = "Message $i")
@@ -112,6 +108,8 @@ class ConversationsTest {
         val caro = PrivateKeyBuilder()
         val caroClient = Client().create(caro, clientOptions)
         val caroConversation = caroClient.conversations.newConversation(alixClient.address)
+
+        sleep(2500)
 
         for (i in 0 until 5) {
             caroConversation.send(text = "Message $i")
@@ -130,7 +128,7 @@ class ConversationsTest {
             } catch (e: Exception) {
             }
         }
-        sleep(5000)
+        sleep(2500)
 
         for (i in 0 until 5) {
             boConversation.send(text = "Message $i")
@@ -139,5 +137,4 @@ class ConversationsTest {
 
         assertEquals(allMessages.size, 15)
     }
-
 }

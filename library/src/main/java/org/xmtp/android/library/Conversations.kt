@@ -1,24 +1,10 @@
 package org.xmtp.android.library
 
 import android.util.Log
-import com.google.common.collect.Collections2.transform
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.coroutineContext
-import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.messages.Envelope
@@ -41,7 +27,6 @@ import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.toSignedPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
-import org.xmtp.proto.message.api.v1.envelope
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
@@ -406,14 +391,12 @@ data class Conversations(
                             currentCoroutineContext().job.cancel()
                         }
 
-                        else -> {
-                        }
+                        else -> {}
                     }
                 }
             } catch (error: Exception) {
                 continue
             }
-            delay(500)
         }
     }
 }
