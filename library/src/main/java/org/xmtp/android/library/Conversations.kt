@@ -1,8 +1,24 @@
 package org.xmtp.android.library
 
 import android.util.Log
+import com.google.common.collect.Collections2.transform
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.coroutineContext
+import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.messages.Envelope
@@ -25,6 +41,7 @@ import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.toSignedPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
+import org.xmtp.proto.message.api.v1.envelope
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
@@ -374,25 +391,29 @@ data class Conversations(
                         }
 
                         envelope.contentTopic.startsWith("/xmtp/0/invite-") -> {
-                            val conversation = fromInvite(envelope)
+                            val conversation = fromInvite(envelope = envelope)
                             conversationsByTopic[conversation.topic] = conversation
-                            // Break so we can resubscribe with the new conversation
-                            return@collect
+                            topics.add(conversation.topic)
+                            currentCoroutineContext().job.cancel()
                         }
 
                         envelope.contentTopic.startsWith("/xmtp/0/intro-") -> {
-                            val conversation = fromIntro(envelope)
+                            val conversation = fromIntro(envelope = envelope)
                             conversationsByTopic[conversation.topic] = conversation
                             val decoded = conversation.decode(envelope)
                             emit(decoded)
-                            // Break so we can resubscribe with the new conversation
-                            return@collect
+                            topics.add(conversation.topic)
+                            currentCoroutineContext().job.cancel()
+                        }
+
+                        else -> {
                         }
                     }
                 }
             } catch (error: Exception) {
-                throw error
+                continue
             }
+            delay(500)
         }
     }
 }
