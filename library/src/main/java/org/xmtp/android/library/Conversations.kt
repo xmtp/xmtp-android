@@ -356,16 +356,15 @@ data class Conversations(
     }
 
     fun streamAllMessages(): Flow<DecodedMessage> = flow {
+        val topics = mutableListOf(
+            Topic.userInvite(client.address).description,
+            Topic.userIntro(client.address).description
+        )
+
+        for (conversation in list()) {
+            topics.add(conversation.topic)
+        }
         while (true) {
-            val topics = mutableListOf(
-                Topic.userInvite(client.address).description,
-                Topic.userIntro(client.address).description
-            )
-
-            for (conversation in list()) {
-                topics.add(conversation.topic)
-            }
-
             try {
                 client.subscribe(topics = topics).collect { envelope ->
                     when {
