@@ -12,6 +12,12 @@ dokkaGfmPartial {
     outputDirectory.set(file("build/docs/partial"))
 }
 
+ktlint {
+    filter {
+        exclude { it.file.path.contains("xmtp_dh") }
+    }
+}
+
 android {
     namespace 'org.xmtp.android.library'
     compileSdk 33
