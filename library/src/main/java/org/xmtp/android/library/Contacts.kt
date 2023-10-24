@@ -4,25 +4,27 @@ import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.ContactBundleBuilder
 import org.xmtp.android.library.messages.EnvelopeBuilder
+import org.xmtp.android.library.messages.Message
+import org.xmtp.android.library.messages.MessageV2Builder
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.message.contents.PrivatePreferences
+import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesAction
 import java.util.Date
 
-enum class AllowState {
-    ALLOWED, BLOCKED, UNKNOWN
-}
+typealias MessageType = PrivatePreferences.PrivatePreferencesAction.MessageTypeCase
 
 data class AllowListEntry(
     val value: String,
     val entryType: EntryType,
-    val permissionType: AllowState,
+    val permissionType: MessageType,
 ) {
     enum class EntryType {
         ADDRESS
     }
 
     companion object {
-        fun address(address: String, type: AllowState = AllowState.UNKNOWN): AllowListEntry {
+        fun address(address: String, type: MessageType = MessageType.MESSAGETYPE_NOT_SET): AllowListEntry {
             return AllowListEntry(address, EntryType.ADDRESS, type)
         }
     }
@@ -32,7 +34,7 @@ data class AllowListEntry(
 }
 
 class AllowList {
-    private val entries: MutableMap<String, AllowState> = mutableMapOf()
+    private val entries: MutableMap<String, MessageType> = mutableMapOf()
 
     companion object {
         @OptIn(ExperimentalUnsignedTypes::class)
@@ -54,17 +56,26 @@ class AllowList {
                     envelope.message.toByteArray().toUByteArray().toList()
                 )
 
-                val entry = JSON.decodeFromString(AllowListEntry.serializer(), String(payload))
-
-                allowList.entries[entry.key] = entry.permissionType
+                val entry = PrivatePreferencesAction.parseFrom(payload.toUByteArray().toByteArray())
+                when (entry.messageTypeCase) {
+                    PrivatePreferencesAction.MessageTypeCase.ALLOW -> entry.allow.getWalletAddresses(0)
+                    PrivatePreferencesAction.MessageTypeCase.BLOCK -> entry.block.getWalletAddresses(0)
+                    else -> TODO()
+                }
+                allowList.entries[entry.key] = entry.messageTypeCase
             }
-
             return allowList
         }
 
         @OptIn(ExperimentalUnsignedTypes::class)
-        suspend fun publish(entry: AllowListEntry, client: Client) {
-            val payload = JSON.encodeToString(entry)
+        fun publish(entry: AllowListEntry, client: Client) {
+            val payload = PrivatePreferencesAction.newBuilder().also {
+                when (entry.permissionType) {
+                    PrivatePreferencesAction.MessageTypeCase.ALLOW -> it.setAllow(PrivatePreferencesAction.Allow.newBuilder().addWalletAddresses(entry.value))
+                    PrivatePreferencesAction.MessageTypeCase.BLOCK -> it.setBlock(PrivatePreferencesAction.Block.newBuilder().addWalletAddresses(entry.value))
+                    PrivatePreferencesAction.MessageTypeCase.MESSAGETYPE_NOT_SET -> it.clearMessageType()
+                }
+            }.build()
 
             val publicKey =
                 client.privateKeyBundleV1.identityKey.publicKey.secp256K1Uncompressed.bytes
@@ -89,21 +100,21 @@ class AllowList {
     }
 
     fun allow(address: String): AllowListEntry {
-        entries[AllowListEntry.address(address).key] = AllowState.ALLOWED
+        entries[AllowListEntry.address(address).key] = MessageType.ALLOW
 
-        return AllowListEntry.address(address, AllowState.ALLOWED)
+        return AllowListEntry.address(address, MessageType.ALLOW)
     }
 
     fun block(address: String): AllowListEntry {
-        entries[AllowListEntry.address(address).key] = AllowState.BLOCKED
+        entries[AllowListEntry.address(address).key] = MessageType.BLOCK
 
-        return AllowListEntry.address(address, AllowState.BLOCKED)
+        return AllowListEntry.address(address, MessageType.BLOCK)
     }
 
-    fun state(address: String): AllowState {
+    fun state(address: String): MessageType {
         val state = entries[AllowListEntry.address(address).key]
 
-        return state ?: AllowState.UNKNOWN
+        return state ?: MessageType.MESSAGETYPE_NOT_SET
     }
 }
 
@@ -120,11 +131,11 @@ data class Contacts(
     }
 
     fun isAllowed(address: String): Boolean {
-        return allowList.state(address) == AllowState.ALLOWED
+        return allowList.state(address) == MessageType.ALLOW
     }
 
     fun isBlocked(address: String): Boolean {
-        return allowList.state(address) == AllowState.BLOCKED
+        return allowList.state(address) == MessageType.BLOCK
     }
 
     suspend fun allow(addresses: List<String>) {
