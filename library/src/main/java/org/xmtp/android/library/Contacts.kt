@@ -46,7 +46,7 @@ class AllowList(val client: Client) {
 
     @OptIn(ExperimentalUnsignedTypes::class)
     suspend fun load(): AllowList {
-        val envelopes = client.query(Topic.allowList(identifier))
+        val envelopes = client.query(Topic.preferenceList(identifier))
         val allowList = AllowList(client)
         val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
 
@@ -98,7 +98,7 @@ class AllowList(val client: Client) {
         )
 
         val envelope = EnvelopeBuilder.buildFromTopic(
-            Topic.allowList(identifier),
+            Topic.preferenceList(identifier),
             Date(),
             ByteArray(message.size) { message[it].toByte() })
 
