@@ -33,84 +33,76 @@ data class AllowListEntry(
         get() = "${entryType.name}-$value"
 }
 
-class AllowList {
+class AllowList(val client: Client) {
     private val entries: MutableMap<String, MessageType> = mutableMapOf()
+    private val publicKey =
+        client.privateKeyBundleV1.identityKey.publicKey.secp256K1Uncompressed.bytes
+    private val privateKey = client.privateKeyBundleV1.identityKey.secp256K1.bytes
 
-    companion object {
-        @OptIn(ExperimentalUnsignedTypes::class)
-        suspend fun load(client: Client): AllowList {
-            val publicKey =
-                client.privateKeyBundleV1.identityKey.publicKey.secp256K1Uncompressed.bytes
-            val privateKey = client.privateKeyBundleV1.identityKey.secp256K1.bytes
+    @OptIn(ExperimentalUnsignedTypes::class)
+    private val identifier: String = uniffi.xmtp_dh.generatePrivatePreferencesTopicIdentifier(
+        privateKey.toByteArray().toUByteArray().toList()
+    )
 
-            val identifier = uniffi.xmtp_dh.generatePrivatePreferencesTopicIdentifier(
-                privateKey.toByteArray().toUByteArray().toList()
-            )
-            val envelopes = client.query(Topic.allowList(identifier))
-            val allowList = AllowList()
-            val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
+    @OptIn(ExperimentalUnsignedTypes::class)
+    suspend fun load(): AllowList {
+        val envelopes = client.query(Topic.allowList(identifier))
+        val allowList = AllowList(client)
+        val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
 
-            for (envelope in envelopes.envelopesList) {
-                val payload = uniffi.xmtp_dh.eciesDecryptK256Sha3256(
-                    publicKey.toByteArray().toUByteArray().toList(),
-                    privateKey.toByteArray().toUByteArray().toList(),
-                    envelope.message.toByteArray().toUByteArray().toList()
-                )
-
-                preferences.add(
-                    PrivatePreferencesAction.parseFrom(
-                        payload.toUByteArray().toByteArray()
-                    )
-                )
-            }
-
-            preferences.forEach { preference ->
-                preference.allow?.walletAddressesList?.forEach { address ->
-                    allowList.allow(address)
-                }
-                preference.block?.walletAddressesList?.forEach { address ->
-                    allowList.block(address)
-                }
-            }
-            return allowList
-        }
-
-        @OptIn(ExperimentalUnsignedTypes::class)
-        fun publish(entry: AllowListEntry, client: Client) {
-            val payload = PrivatePreferencesAction.newBuilder().also {
-                when (entry.permissionType) {
-                    PrivatePreferencesAction.MessageTypeCase.ALLOW -> it.setAllow(
-                        PrivatePreferencesAction.Allow.newBuilder().addWalletAddresses(entry.value)
-                    )
-
-                    PrivatePreferencesAction.MessageTypeCase.BLOCK -> it.setBlock(
-                        PrivatePreferencesAction.Block.newBuilder().addWalletAddresses(entry.value)
-                    )
-
-                    PrivatePreferencesAction.MessageTypeCase.MESSAGETYPE_NOT_SET -> it.clearMessageType()
-                }
-            }.build()
-
-            val publicKey =
-                client.privateKeyBundleV1.identityKey.publicKey.secp256K1Uncompressed.bytes
-            val privateKey = client.privateKeyBundleV1.identityKey.secp256K1.bytes
-            val identifier = uniffi.xmtp_dh.generatePrivatePreferencesTopicIdentifier(
-                privateKey.toByteArray().toUByteArray().toList()
-            )
-
-            val message = uniffi.xmtp_dh.eciesDecryptK256Sha3256(
+        for (envelope in envelopes.envelopesList) {
+            val payload = uniffi.xmtp_dh.eciesDecryptK256Sha3256(
                 publicKey.toByteArray().toUByteArray().toList(),
                 privateKey.toByteArray().toUByteArray().toList(),
-                payload.toByteArray().toUByteArray().toList()
+                envelope.message.toByteArray().toUByteArray().toList()
             )
 
-            val envelope = EnvelopeBuilder.buildFromTopic(
-                Topic.allowList(identifier),
-                Date(),
-                ByteArray(message.size) { message[it].toByte() })
-
-            client.publish(listOf(envelope))
+            preferences.add(
+                PrivatePreferencesAction.parseFrom(
+                    payload.toUByteArray().toByteArray()
+                )
+            )
         }
+
+        preferences.forEach { preference ->
+            preference.allow?.walletAddressesList?.forEach { address ->
+                allowList.allow(address)
+            }
+            preference.block?.walletAddressesList?.forEach { address ->
+                allowList.block(address)
+            }
+        }
+        return allowList
+    }
+
+    @OptIn(ExperimentalUnsignedTypes::class)
+    fun publish(entry: AllowListEntry) {
+        val payload = PrivatePreferencesAction.newBuilder().also {
+            when (entry.permissionType) {
+                PrivatePreferencesAction.MessageTypeCase.ALLOW -> it.setAllow(
+                    PrivatePreferencesAction.Allow.newBuilder().addWalletAddresses(entry.value)
+                )
+
+                PrivatePreferencesAction.MessageTypeCase.BLOCK -> it.setBlock(
+                    PrivatePreferencesAction.Block.newBuilder().addWalletAddresses(entry.value)
+                )
+
+                PrivatePreferencesAction.MessageTypeCase.MESSAGETYPE_NOT_SET -> it.clearMessageType()
+            }
+        }.build()
+
+        val message = uniffi.xmtp_dh.eciesDecryptK256Sha3256(
+            publicKey.toByteArray().toUByteArray().toList(),
+            privateKey.toByteArray().toUByteArray().toList(),
+            payload.toByteArray().toUByteArray().toList()
+        )
+
+        val envelope = EnvelopeBuilder.buildFromTopic(
+            Topic.allowList(identifier),
+            Date(),
+            ByteArray(message.size) { message[it].toByte() })
+
+        client.publish(listOf(envelope))
     }
 
     fun allow(address: String): AllowListEntry {
@@ -138,11 +130,11 @@ data class Contacts(
     val hasIntroduced: MutableMap<String, Boolean> = mutableMapOf(),
 ) {
 
-    var allowList: AllowList = AllowList()
+    var allowList: AllowList = AllowList(client)
 
     fun refreshAllowList() {
         runBlocking {
-            allowList = AllowList.load(client)
+            allowList = AllowList(client).load()
         }
     }
 
@@ -156,13 +148,13 @@ data class Contacts(
 
     fun allow(addresses: List<String>) {
         for (address in addresses) {
-            AllowList.publish(allowList.allow(address), client)
+            AllowList(client).publish(allowList.allow(address))
         }
     }
 
     fun block(addresses: List<String>) {
         for (address in addresses) {
-            AllowList.publish(allowList.block(address), client)
+            AllowList(client).publish(allowList.block(address))
         }
     }
 
