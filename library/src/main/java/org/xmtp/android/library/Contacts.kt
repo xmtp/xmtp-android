@@ -4,15 +4,12 @@ import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.ContactBundleBuilder
 import org.xmtp.android.library.messages.EnvelopeBuilder
-import org.xmtp.android.library.messages.Message
-import org.xmtp.android.library.messages.MessageV2Builder
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
-import org.xmtp.proto.message.contents.PrivatePreferences
 import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesAction
 import java.util.Date
 
-typealias MessageType = PrivatePreferences.PrivatePreferencesAction.MessageTypeCase
+typealias MessageType = PrivatePreferencesAction.MessageTypeCase
 
 data class AllowListEntry(
     val value: String,
@@ -24,7 +21,10 @@ data class AllowListEntry(
     }
 
     companion object {
-        fun address(address: String, type: MessageType = MessageType.MESSAGETYPE_NOT_SET): AllowListEntry {
+        fun address(
+            address: String,
+            type: MessageType = MessageType.MESSAGETYPE_NOT_SET,
+        ): AllowListEntry {
             return AllowListEntry(address, EntryType.ADDRESS, type)
         }
     }
@@ -48,6 +48,7 @@ class AllowList {
             )
             val envelopes = client.query(Topic.allowList(identifier))
             val allowList = AllowList()
+            val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
 
             for (envelope in envelopes.envelopesList) {
                 val payload = uniffi.xmtp_dh.eciesDecryptK256Sha3256(
@@ -56,13 +57,20 @@ class AllowList {
                     envelope.message.toByteArray().toUByteArray().toList()
                 )
 
-                val entry = PrivatePreferencesAction.parseFrom(payload.toUByteArray().toByteArray())
-                when (entry.messageTypeCase) {
-                    PrivatePreferencesAction.MessageTypeCase.ALLOW -> entry.allow.getWalletAddresses(0)
-                    PrivatePreferencesAction.MessageTypeCase.BLOCK -> entry.block.getWalletAddresses(0)
-                    else -> TODO()
+                preferences.add(
+                    PrivatePreferencesAction.parseFrom(
+                        payload.toUByteArray().toByteArray()
+                    )
+                )
+            }
+
+            preferences.forEach { preference ->
+                preference.allow?.walletAddressesList?.forEach { address ->
+                    allowList.allow(address)
                 }
-                allowList.entries[entry.key] = entry.messageTypeCase
+                preference.block?.walletAddressesList?.forEach { address ->
+                    allowList.block(address)
+                }
             }
             return allowList
         }
@@ -71,8 +79,14 @@ class AllowList {
         fun publish(entry: AllowListEntry, client: Client) {
             val payload = PrivatePreferencesAction.newBuilder().also {
                 when (entry.permissionType) {
-                    PrivatePreferencesAction.MessageTypeCase.ALLOW -> it.setAllow(PrivatePreferencesAction.Allow.newBuilder().addWalletAddresses(entry.value))
-                    PrivatePreferencesAction.MessageTypeCase.BLOCK -> it.setBlock(PrivatePreferencesAction.Block.newBuilder().addWalletAddresses(entry.value))
+                    PrivatePreferencesAction.MessageTypeCase.ALLOW -> it.setAllow(
+                        PrivatePreferencesAction.Allow.newBuilder().addWalletAddresses(entry.value)
+                    )
+
+                    PrivatePreferencesAction.MessageTypeCase.BLOCK -> it.setBlock(
+                        PrivatePreferencesAction.Block.newBuilder().addWalletAddresses(entry.value)
+                    )
+
                     PrivatePreferencesAction.MessageTypeCase.MESSAGETYPE_NOT_SET -> it.clearMessageType()
                 }
             }.build()
@@ -126,8 +140,10 @@ data class Contacts(
 
     var allowList: AllowList = AllowList()
 
-    suspend fun refreshAllowList() {
-        allowList = AllowList.load(client)
+    fun refreshAllowList() {
+        runBlocking {
+            allowList = AllowList.load(client)
+        }
     }
 
     fun isAllowed(address: String): Boolean {
@@ -138,13 +154,13 @@ data class Contacts(
         return allowList.state(address) == MessageType.BLOCK
     }
 
-    suspend fun allow(addresses: List<String>) {
+    fun allow(addresses: List<String>) {
         for (address in addresses) {
             AllowList.publish(allowList.allow(address), client)
         }
     }
 
-    suspend fun block(addresses: List<String>) {
+    fun block(addresses: List<String>) {
         for (address in addresses) {
             AllowList.publish(allowList.block(address), client)
         }

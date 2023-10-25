@@ -40,6 +40,7 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.proto.message.contents.Invitation.InvitationV1.Context
+import org.xmtp.proto.message.contents.PrivatePreferences
 import java.nio.charset.StandardCharsets
 import java.util.Date
 
@@ -712,5 +713,35 @@ class ConversationTest {
         val messages = bobConversation.messages()
         assertEquals(1, messages.size)
         assertEquals("hi", messages[0].content())
+    }
+
+    @Test
+    fun testCanHaveAllowState() {
+        val bobConversation = bobClient.conversations.newConversation(alice.walletAddress, null)
+        val isAllowed = bobConversation.allowState() == PrivatePreferences.PrivatePreferencesAction.MessageTypeCase.ALLOW
+
+        // Conversations you start should start as allowed
+        assertTrue(isAllowed)
+
+        val aliceConversation = aliceClient.conversations.list()[0]
+        val isUnknown = aliceConversation.allowState() == PrivatePreferences.PrivatePreferencesAction.MessageTypeCase.MESSAGETYPE_NOT_SET
+
+        // Conversations started with you should start as unknown
+        assertTrue(isUnknown)
+
+        aliceClient.contacts.allow(listOf(bob.walletAddress))
+
+        val isBobAllowed = aliceConversation.allowState() == PrivatePreferences.PrivatePreferencesAction.MessageTypeCase.ALLOW
+        assertTrue(isBobAllowed)
+
+        val aliceClient2 = Client().create(aliceWallet, fakeApiClient)
+        val aliceConversation2 = aliceClient2.conversations.list()[0]
+
+        aliceClient2.contacts.refreshAllowList()
+
+        // Allow state should sync across clients
+        val isBobAllowed2 = aliceConversation2.allowState() == PrivatePreferences.PrivatePreferencesAction.MessageTypeCase.ALLOW
+
+        assertTrue(isBobAllowed2)
     }
 }
