@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.ContactBundleBuilder
@@ -91,7 +92,7 @@ class AllowList(val client: Client) {
             }
         }.build()
 
-        val message = uniffi.xmtp_dh.eciesDecryptK256Sha3256(
+        val message = uniffi.xmtp_dh.eciesEncryptK256Sha3256(
             publicKey.toByteArray().toUByteArray().toList(),
             privateKey.toByteArray().toUByteArray().toList(),
             payload.toByteArray().toUByteArray().toList()
