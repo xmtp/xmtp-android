@@ -628,7 +628,7 @@ public object FfiConverterSequenceUByte : FfiConverterRustBuffer<List<UByte>> {
 
     override fun write(value: List<UByte>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.forEach {
+        value.iterator().forEach {
             FfiConverterUByte.write(it, buf)
         }
     }
