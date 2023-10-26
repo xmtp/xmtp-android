@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.ContactBundleBuilder
@@ -101,7 +100,8 @@ class AllowList(val client: Client) {
         val envelope = EnvelopeBuilder.buildFromTopic(
             Topic.preferenceList(identifier),
             Date(),
-            ByteArray(message.size) { message[it].toByte() })
+            ByteArray(message.size) { message[it].toByte() }
+        )
 
         client.publish(listOf(envelope))
     }

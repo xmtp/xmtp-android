@@ -3,7 +3,6 @@ package org.xmtp.android.library
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
 import org.xmtp.android.library.messages.UnsignedPublicKey
 import org.xmtp.android.library.messages.generate
 import org.xmtp.android.library.messages.getPublicKeyBundle
