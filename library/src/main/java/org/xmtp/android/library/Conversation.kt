@@ -61,7 +61,7 @@ sealed class Conversation {
             }
         }
 
-    fun allowState(): MessageType {
+    fun allowState(): AllowState {
         val client: Client = when (this) {
             is V1 -> conversationV1.client
             is V2 -> conversationV2.client

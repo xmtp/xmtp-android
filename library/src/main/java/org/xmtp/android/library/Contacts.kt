@@ -11,10 +11,15 @@ import java.util.Date
 
 typealias MessageType = PrivatePreferencesAction.MessageTypeCase
 
+enum class AllowState {
+    ALLOW,
+    BLOCK,
+    UNKNOWN
+}
 data class AllowListEntry(
     val value: String,
     val entryType: EntryType,
-    val permissionType: MessageType,
+    val permissionType: AllowState,
 ) {
     enum class EntryType {
         ADDRESS
@@ -23,7 +28,7 @@ data class AllowListEntry(
     companion object {
         fun address(
             address: String,
-            type: MessageType = MessageType.MESSAGETYPE_NOT_SET,
+            type: AllowState = AllowState.UNKNOWN,
         ): AllowListEntry {
             return AllowListEntry(address, EntryType.ADDRESS, type)
         }
@@ -34,7 +39,7 @@ data class AllowListEntry(
 }
 
 class AllowList(val client: Client) {
-    private val entries: MutableMap<String, MessageType> = mutableMapOf()
+    private val entries: MutableMap<String, AllowState> = mutableMapOf()
     private val publicKey =
         client.privateKeyBundleV1.identityKey.publicKey.secp256K1Uncompressed.bytes
     private val privateKey = client.privateKeyBundleV1.identityKey.secp256K1.bytes
@@ -79,15 +84,9 @@ class AllowList(val client: Client) {
     fun publish(entry: AllowListEntry) {
         val payload = PrivatePreferencesAction.newBuilder().also {
             when (entry.permissionType) {
-                PrivatePreferencesAction.MessageTypeCase.ALLOW -> it.setAllow(
-                    PrivatePreferencesAction.Allow.newBuilder().addWalletAddresses(entry.value)
-                )
-
-                PrivatePreferencesAction.MessageTypeCase.BLOCK -> it.setBlock(
-                    PrivatePreferencesAction.Block.newBuilder().addWalletAddresses(entry.value)
-                )
-
-                PrivatePreferencesAction.MessageTypeCase.MESSAGETYPE_NOT_SET -> it.clearMessageType()
+                AllowState.ALLOW -> it.setAllow(PrivatePreferencesAction.Allow.newBuilder().addWalletAddresses(entry.value))
+                AllowState.BLOCK -> it.setBlock(PrivatePreferencesAction.Block.newBuilder().addWalletAddresses(entry.value))
+                AllowState.UNKNOWN -> it.clearMessageType()
             }
         }.build()
 
@@ -107,21 +106,21 @@ class AllowList(val client: Client) {
     }
 
     fun allow(address: String): AllowListEntry {
-        entries[AllowListEntry.address(address).key] = MessageType.ALLOW
+        entries[AllowListEntry.address(address).key] = AllowState.ALLOW
 
-        return AllowListEntry.address(address, MessageType.ALLOW)
+        return AllowListEntry.address(address, AllowState.ALLOW)
     }
 
     fun block(address: String): AllowListEntry {
-        entries[AllowListEntry.address(address).key] = MessageType.BLOCK
+        entries[AllowListEntry.address(address).key] = AllowState.BLOCK
 
-        return AllowListEntry.address(address, MessageType.BLOCK)
+        return AllowListEntry.address(address, AllowState.BLOCK)
     }
 
-    fun state(address: String): MessageType {
+    fun state(address: String): AllowState {
         val state = entries[AllowListEntry.address(address).key]
 
-        return state ?: MessageType.MESSAGETYPE_NOT_SET
+        return state ?: AllowState.UNKNOWN
     }
 }
 
@@ -140,11 +139,11 @@ data class Contacts(
     }
 
     fun isAllowed(address: String): Boolean {
-        return allowList.state(address) == MessageType.ALLOW
+        return allowList.state(address) == AllowState.ALLOW
     }
 
     fun isBlocked(address: String): Boolean {
-        return allowList.state(address) == MessageType.BLOCK
+        return allowList.state(address) == AllowState.BLOCK
     }
 
     fun allow(addresses: List<String>) {

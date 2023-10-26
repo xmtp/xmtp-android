@@ -718,20 +718,20 @@ class ConversationTest {
     @Test
     fun testCanHaveAllowState() {
         val bobConversation = bobClient.conversations.newConversation(alice.walletAddress, null)
-        val isAllowed = bobConversation.allowState() == PrivatePreferences.PrivatePreferencesAction.MessageTypeCase.ALLOW
+        val isAllowed = bobConversation.allowState() == AllowState.ALLOW
 
         // Conversations you start should start as allowed
         assertTrue(isAllowed)
 
         val aliceConversation = aliceClient.conversations.list()[0]
-        val isUnknown = aliceConversation.allowState() == PrivatePreferences.PrivatePreferencesAction.MessageTypeCase.MESSAGETYPE_NOT_SET
+        val isUnknown = aliceConversation.allowState() == AllowState.UNKNOWN
 
         // Conversations started with you should start as unknown
         assertTrue(isUnknown)
 
         aliceClient.contacts.allow(listOf(bob.walletAddress))
 
-        val isBobAllowed = aliceConversation.allowState() == PrivatePreferences.PrivatePreferencesAction.MessageTypeCase.ALLOW
+        val isBobAllowed = aliceConversation.allowState() == AllowState.ALLOW
         assertTrue(isBobAllowed)
 
         val aliceClient2 = Client().create(aliceWallet, fakeApiClient)
@@ -740,7 +740,7 @@ class ConversationTest {
         aliceClient2.contacts.refreshAllowList()
 
         // Allow state should sync across clients
-        val isBobAllowed2 = aliceConversation2.allowState() == PrivatePreferences.PrivatePreferencesAction.MessageTypeCase.ALLOW
+        val isBobAllowed2 = aliceConversation2.allowState() == AllowState.ALLOW
 
         assertTrue(isBobAllowed2)
     }
