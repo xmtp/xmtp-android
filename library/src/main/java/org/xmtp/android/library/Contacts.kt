@@ -64,7 +64,7 @@ class AllowList(val client: Client) {
             )
         }
 
-        preferences.forEach { preference ->
+        preferences.iterator().forEach { preference ->
             preference.allow?.walletAddressesList?.forEach { address ->
                 allowList.allow(address)
             }
