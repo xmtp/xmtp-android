@@ -715,7 +715,7 @@ class ConversationTest {
     }
 
     @Test
-    fun testCanHaveAllowState() {
+    fun testCanHaveConsentState() {
         val bobConversation = bobClient.conversations.newConversation(alice.walletAddress, null)
         val isAllowed = bobConversation.consentState() == ConsentState.ALLOW
 
