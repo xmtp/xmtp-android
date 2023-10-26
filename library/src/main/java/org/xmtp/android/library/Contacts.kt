@@ -10,8 +10,8 @@ import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesActi
 import java.util.Date
 
 enum class ConsentState {
-    ALLOW,
-    BLOCK,
+    ALLOWED,
+    BLOCKED,
     UNKNOWN
 }
 data class ConsentListEntry(
@@ -82,8 +82,8 @@ class ConsentList(val client: Client) {
     fun publish(entry: ConsentListEntry) {
         val payload = PrivatePreferencesAction.newBuilder().also {
             when (entry.consentType) {
-                ConsentState.ALLOW -> it.setAllow(PrivatePreferencesAction.Allow.newBuilder().addWalletAddresses(entry.value))
-                ConsentState.BLOCK -> it.setBlock(PrivatePreferencesAction.Block.newBuilder().addWalletAddresses(entry.value))
+                ConsentState.ALLOWED -> it.setAllow(PrivatePreferencesAction.Allow.newBuilder().addWalletAddresses(entry.value))
+                ConsentState.BLOCKED -> it.setBlock(PrivatePreferencesAction.Block.newBuilder().addWalletAddresses(entry.value))
                 ConsentState.UNKNOWN -> it.clearMessageType()
             }
         }.build()
@@ -104,15 +104,15 @@ class ConsentList(val client: Client) {
     }
 
     fun allow(address: String): ConsentListEntry {
-        entries[ConsentListEntry.address(address).key] = ConsentState.ALLOW
+        entries[ConsentListEntry.address(address).key] = ConsentState.ALLOWED
 
-        return ConsentListEntry.address(address, ConsentState.ALLOW)
+        return ConsentListEntry.address(address, ConsentState.ALLOWED)
     }
 
     fun block(address: String): ConsentListEntry {
-        entries[ConsentListEntry.address(address).key] = ConsentState.BLOCK
+        entries[ConsentListEntry.address(address).key] = ConsentState.BLOCKED
 
-        return ConsentListEntry.address(address, ConsentState.BLOCK)
+        return ConsentListEntry.address(address, ConsentState.BLOCKED)
     }
 
     fun state(address: String): ConsentState {
@@ -137,11 +137,11 @@ data class Contacts(
     }
 
     fun isAllowed(address: String): Boolean {
-        return consentList.state(address) == ConsentState.ALLOW
+        return consentList.state(address) == ConsentState.ALLOWED
     }
 
     fun isBlocked(address: String): Boolean {
-        return consentList.state(address) == ConsentState.BLOCK
+        return consentList.state(address) == ConsentState.BLOCKED
     }
 
     fun allow(addresses: List<String>) {

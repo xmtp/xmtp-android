@@ -717,7 +717,7 @@ class ConversationTest {
     @Test
     fun testCanHaveConsentState() {
         val bobConversation = bobClient.conversations.newConversation(alice.walletAddress, null)
-        val isAllowed = bobConversation.consentState() == ConsentState.ALLOW
+        val isAllowed = bobConversation.consentState() == ConsentState.ALLOWED
 
         // Conversations you start should start as allowed
         assertTrue(isAllowed)
@@ -731,7 +731,7 @@ class ConversationTest {
 
         aliceClient.contacts.allow(listOf(bob.walletAddress))
 
-        val isBobAllowed = aliceConversation.consentState() == ConsentState.ALLOW
+        val isBobAllowed = aliceConversation.consentState() == ConsentState.ALLOWED
         assertTrue(isBobAllowed)
 
         val aliceClient2 = Client().create(aliceWallet, fakeApiClient)
@@ -740,7 +740,7 @@ class ConversationTest {
         aliceClient2.contacts.refreshConsentList()
 
         // Allow state should sync across clients
-        val isBobAllowed2 = aliceConversation2.consentState() == ConsentState.ALLOW
+        val isBobAllowed2 = aliceConversation2.consentState() == ConsentState.ALLOWED
 
         assertTrue(isBobAllowed2)
     }
