@@ -737,7 +737,7 @@ class ConversationTest {
         val aliceClient2 = Client().create(aliceWallet, fakeApiClient)
         val aliceConversation2 = aliceClient2.conversations.list()[0]
 
-        aliceClient2.contacts.refreshAllowList()
+        aliceClient2.contacts.refreshConsentList()
 
         // Allow state should sync across clients
         val isBobAllowed2 = aliceConversation2.consentState() == ConsentState.ALLOW

@@ -130,7 +130,7 @@ data class Contacts(
 
     var consentList: ConsentList = ConsentList(client)
 
-    fun refreshAllowList() {
+    fun refreshConsentList() {
         runBlocking {
             consentList = ConsentList(client).load()
         }
