@@ -67,14 +67,22 @@ class ConsentList(val client: Client) {
             )
         }
 
-        preferences.iterator().forEach { preference ->
-            preference.allow?.walletAddressesList?.forEach { address ->
-                consentList.allow(address)
-            }
-            preference.block?.walletAddressesList?.forEach { address ->
-                consentList.block(address)
+        preferences.reversed().iterator().forEach { preference ->
+            when(preference.messageTypeCase) {
+                PrivatePreferencesAction.MessageTypeCase.ALLOW -> {
+                    preference.allow.walletAddressesList.forEach {
+                        consentList.allow(it)
+                    }
+                }
+                PrivatePreferencesAction.MessageTypeCase.BLOCK -> {
+                    preference.block.walletAddressesList.forEach {
+                        consentList.block(it)
+                    }
+                }
+                else -> Unit
             }
         }
+
         return consentList
     }
 
