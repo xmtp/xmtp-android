@@ -40,7 +40,6 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.proto.message.contents.Invitation.InvitationV1.Context
-import org.xmtp.proto.message.contents.PrivatePreferences
 import java.nio.charset.StandardCharsets
 import java.util.Date
 
