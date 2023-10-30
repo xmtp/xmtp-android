@@ -713,4 +713,41 @@ class ConversationTest {
         assertEquals(1, messages.size)
         assertEquals("hi", messages[0].content())
     }
+
+    @Test
+    fun testCanHaveConsentState() {
+        val bobConversation = bobClient.conversations.newConversation(alice.walletAddress, null)
+        val isAllowed = bobConversation.consentState() == ConsentState.ALLOWED
+
+        // Conversations you start should start as allowed
+        assertTrue(isAllowed)
+        assertTrue(bobClient.contacts.isAllowed(alice.walletAddress))
+
+        bobClient.contacts.block(listOf(alice.walletAddress))
+        bobClient.contacts.refreshConsentList()
+
+        val isBlocked = bobConversation.consentState() == ConsentState.BLOCKED
+        assertTrue(isBlocked)
+
+        val aliceConversation = aliceClient.conversations.list()[0]
+        val isUnknown = aliceConversation.consentState() == ConsentState.UNKNOWN
+
+        // Conversations started with you should start as unknown
+        assertTrue(isUnknown)
+
+        aliceClient.contacts.allow(listOf(bob.walletAddress))
+
+        val isBobAllowed = aliceConversation.consentState() == ConsentState.ALLOWED
+        assertTrue(isBobAllowed)
+
+        val aliceClient2 = Client().create(aliceWallet, fakeApiClient)
+        val aliceConversation2 = aliceClient2.conversations.list()[0]
+
+        aliceClient2.contacts.refreshConsentList()
+
+        // Allow state should sync across clients
+        val isBobAllowed2 = aliceConversation2.consentState() == ConsentState.ALLOWED
+
+        assertTrue(isBobAllowed2)
+    }
 }

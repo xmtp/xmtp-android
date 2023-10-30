@@ -61,6 +61,14 @@ sealed class Conversation {
             }
         }
 
+    fun consentState(): ConsentState {
+        val client: Client = when (this) {
+            is V1 -> conversationV1.client
+            is V2 -> conversationV2.client
+        }
+        return client.contacts.consentList.state(address = peerAddress)
+    }
+
     fun toTopicData(): TopicData {
         val data = TopicData.newBuilder()
             .setCreatedNs(createdAt.time * 1_000_000)
