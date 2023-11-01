@@ -752,7 +752,7 @@ class ConversationTest {
     }
 
     @Test
-    fun testImplicitConsentWhenSendingAMessage() {
+    fun testCanHaveImplicitConsentOnMessageSend() {
         val bobConversation = bobClient.conversations.newConversation(alice.walletAddress, null)
         val isAllowed = bobConversation.consentState() == ConsentState.ALLOWED
 

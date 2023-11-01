@@ -4,8 +4,10 @@ import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.ContactBundleBuilder
 import org.xmtp.android.library.messages.EnvelopeBuilder
+import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesAction
 import java.util.Date
 
@@ -50,7 +52,10 @@ class ConsentList(val client: Client) {
 
     @OptIn(ExperimentalUnsignedTypes::class)
     suspend fun load(): ConsentList {
-        val envelopes = client.query(Topic.preferenceList(identifier))
+        val envelopes = client.query(
+            Topic.preferenceList(identifier),
+            Pagination(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING)
+        )
         val consentList = ConsentList(client)
         val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
 
@@ -68,7 +73,7 @@ class ConsentList(val client: Client) {
             )
         }
 
-        preferences.reversed().iterator().forEach { preference ->
+        preferences.iterator().forEach { preference ->
             preference.allow?.walletAddressesList?.forEach { address ->
                 consentList.allow(address)
             }
