@@ -406,9 +406,11 @@ class ConversationTest {
         val messages2 = aliceConversation.messages(limit = 1, after = date)
         assertEquals(1, messages2.size)
         assertEquals("hey alice 1", messages2[0].body)
-        val messagesAsc = aliceConversation.messages(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING)
+        val messagesAsc =
+            aliceConversation.messages(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING)
         assertEquals("hey alice 1", messagesAsc[0].body)
-        val messagesDesc = aliceConversation.messages(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING)
+        val messagesDesc =
+            aliceConversation.messages(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING)
         assertEquals("hey alice 3", messagesDesc[0].body)
     }
 
