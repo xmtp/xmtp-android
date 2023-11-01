@@ -715,8 +715,8 @@ $dokka.location:org.xmtp.android.library/CodecRegistry/register/#org.xmtp.androi
 $dokka.location:org.xmtp.android.library/ConsentList///PointingToDeclaration/library/org.xmtp.android.library/-consent-list/index.html
 $dokka.location:org.xmtp.android.library/ConsentList/ConsentList/#org.xmtp.android.library.Client/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/-consent-list.html
 $dokka.location:org.xmtp.android.library/ConsentList/allow/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/allow.html
-$dokka.location:org.xmtp.android.library/ConsentList/block/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/block.html
 $dokka.location:org.xmtp.android.library/ConsentList/client/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/client.html
+$dokka.location:org.xmtp.android.library/ConsentList/deny/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/deny.html
 $dokka.location:org.xmtp.android.library/ConsentList/load/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/load.html
 $dokka.location:org.xmtp.android.library/ConsentList/publish/#org.xmtp.android.library.ConsentListEntry/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/publish.html
 $dokka.location:org.xmtp.android.library/ConsentList/state/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/state.html
@@ -733,7 +733,7 @@ $dokka.location:org.xmtp.android.library/ConsentListEntry/entryType/#/PointingTo
 $dokka.location:org.xmtp.android.library/ConsentListEntry/key/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/key.html
 $dokka.location:org.xmtp.android.library/ConsentListEntry/value/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/value.html
 $dokka.location:org.xmtp.android.library/ConsentState.ALLOWED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-consent-state/-a-l-l-o-w-e-d/index.html
-$dokka.location:org.xmtp.android.library/ConsentState.BLOCKED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-consent-state/-b-l-o-c-k-e-d/index.html
+$dokka.location:org.xmtp.android.library/ConsentState.DENIED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-consent-state/-d-e-n-i-e-d/index.html
 $dokka.location:org.xmtp.android.library/ConsentState.UNKNOWN///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-consent-state/-u-n-k-n-o-w-n/index.html
 $dokka.location:org.xmtp.android.library/ConsentState///PointingToDeclaration/library/org.xmtp.android.library/-consent-state/index.html
 $dokka.location:org.xmtp.android.library/ConsentState/valueOf/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-state/value-of.html
@@ -743,14 +743,14 @@ $dokka.location:org.xmtp.android.library/Constants/VERSION/#/PointingToDeclarati
 $dokka.location:org.xmtp.android.library/Contacts///PointingToDeclaration/library/org.xmtp.android.library/-contacts/index.html
 $dokka.location:org.xmtp.android.library/Contacts/Contacts/#org.xmtp.android.library.Client#kotlin.collections.MutableMap[kotlin.String,org.xmtp.proto.message.contents.Contact.ContactBundle]#kotlin.collections.MutableMap[kotlin.String,kotlin.Boolean]/PointingToDeclaration/library/org.xmtp.android.library/-contacts/-contacts.html
 $dokka.location:org.xmtp.android.library/Contacts/allow/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-contacts/allow.html
-$dokka.location:org.xmtp.android.library/Contacts/block/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-contacts/block.html
 $dokka.location:org.xmtp.android.library/Contacts/client/#/PointingToDeclaration/library/org.xmtp.android.library/-contacts/client.html
 $dokka.location:org.xmtp.android.library/Contacts/consentList/#/PointingToDeclaration/library/org.xmtp.android.library/-contacts/consent-list.html
+$dokka.location:org.xmtp.android.library/Contacts/deny/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-contacts/deny.html
 $dokka.location:org.xmtp.android.library/Contacts/find/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-contacts/find.html
 $dokka.location:org.xmtp.android.library/Contacts/has/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-contacts/has.html
 $dokka.location:org.xmtp.android.library/Contacts/hasIntroduced/#/PointingToDeclaration/library/org.xmtp.android.library/-contacts/has-introduced.html
 $dokka.location:org.xmtp.android.library/Contacts/isAllowed/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-contacts/is-allowed.html
-$dokka.location:org.xmtp.android.library/Contacts/isBlocked/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-contacts/is-blocked.html
+$dokka.location:org.xmtp.android.library/Contacts/isDenied/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-contacts/is-denied.html
 $dokka.location:org.xmtp.android.library/Contacts/knownBundles/#/PointingToDeclaration/library/org.xmtp.android.library/-contacts/known-bundles.html
 $dokka.location:org.xmtp.android.library/Contacts/needsIntroduction/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-contacts/needs-introduction.html
 $dokka.location:org.xmtp.android.library/Contacts/refreshConsentList/#/PointingToDeclaration/library/org.xmtp.android.library/-contacts/refresh-consent-list.html
