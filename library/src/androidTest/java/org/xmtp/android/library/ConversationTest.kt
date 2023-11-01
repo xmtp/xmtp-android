@@ -723,11 +723,11 @@ class ConversationTest {
         assertTrue(isAllowed)
         assertTrue(bobClient.contacts.isAllowed(alice.walletAddress))
 
-        bobClient.contacts.block(listOf(alice.walletAddress))
+        bobClient.contacts.deny(listOf(alice.walletAddress))
         bobClient.contacts.refreshConsentList()
 
-        val isBlocked = bobConversation.consentState() == ConsentState.BLOCKED
-        assertTrue(isBlocked)
+        val isDenied = bobConversation.consentState() == ConsentState.DENIED
+        assertTrue(isDenied)
 
         val aliceConversation = aliceClient.conversations.list()[0]
         val isUnknown = aliceConversation.consentState() == ConsentState.UNKNOWN
