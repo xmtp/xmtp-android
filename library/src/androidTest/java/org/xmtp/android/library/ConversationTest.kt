@@ -771,6 +771,5 @@ class ConversationTest {
 
         // Conversations you send a message to get marked as allowed
         assertTrue(isNowAllowed)
-
     }
 }
