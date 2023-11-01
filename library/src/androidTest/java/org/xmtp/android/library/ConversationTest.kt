@@ -750,4 +750,27 @@ class ConversationTest {
 
         assertTrue(isBobAllowed2)
     }
+
+    @Test
+    fun testImplicitConsentWhenSendingAMessage() {
+        val bobConversation = bobClient.conversations.newConversation(alice.walletAddress, null)
+        val isAllowed = bobConversation.consentState() == ConsentState.ALLOWED
+
+        // Conversations you start should start as allowed
+        assertTrue(isAllowed)
+
+        val aliceConversation = aliceClient.conversations.list()[0]
+        val isUnknown = aliceConversation.consentState() == ConsentState.UNKNOWN
+
+        // Conversations you receive should start as unknown
+        assertTrue(isUnknown)
+
+        aliceConversation.send(content = "hey bob")
+        aliceClient.contacts.refreshConsentList()
+        val isNowAllowed = aliceConversation.consentState() == ConsentState.ALLOWED
+
+        // Conversations you send a message to get marked as allowed
+        assertTrue(isNowAllowed)
+
+    }
 }
