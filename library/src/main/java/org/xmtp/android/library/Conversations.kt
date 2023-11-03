@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
+import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1
@@ -26,7 +27,9 @@ import org.xmtp.android.library.messages.senderAddress
 import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.toSignedPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.android.library.push.Service.SubscribeRequest
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
@@ -365,9 +368,11 @@ data class Conversations(
         for (conversation in list()) {
             topics.add(conversation.topic)
         }
+
+        val subscribeFlow = createSubscribeFlow(topics)
         while (true) {
             try {
-                client.subscribe(topics = topics).collect { envelope ->
+                client.subscribe2(request = subscribeFlow).collect { envelope ->
                     when {
                         conversationsByTopic.containsKey(envelope.contentTopic) -> {
                             val conversation = conversationsByTopic[envelope.contentTopic]
@@ -398,5 +403,9 @@ data class Conversations(
                 continue
             }
         }
+    }
+
+    private fun createSubscribeFlow(topics: List<String>): Flow<MessageApiOuterClass.SubscribeRequest> = flow {
+        emit(makeSubscribeRequest(topics))
     }
 }
