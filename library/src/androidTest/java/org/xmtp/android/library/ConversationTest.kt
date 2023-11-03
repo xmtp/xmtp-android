@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import com.google.protobuf.kotlin.toByteString
@@ -774,27 +773,5 @@ class ConversationTest {
 
         // Conversations you send a message to get marked as allowed
         assertTrue(isNowAllowed)
-    }
-
-    @Test
-    fun testPerformance() {
-        val bobConversation = aliceClient.conversations.newConversation(bob.walletAddress)
-        val steveConversation = aliceClient.conversations.newConversation(fixtures.steve.walletAddress)
-
-        val numberOfIterations = 5000
-        for (i in 1..numberOfIterations) {
-            bobConversation.send(text = "hey bob $i")
-            steveConversation.send(text = "hey steve $i")
-        }
-        Log.d("PERF", "Done sending messages")
-
-        val start = Date().time
-        val messages = aliceClient.conversations.listBatchMessages(
-            listOf(
-                Pair(steveConversation.topic, null), Pair(bobConversation.topic, null)
-            )
-        )
-        val end = Date().time
-        Log.d("PERF", "Loaded ${messages.size} messages in ${end - start}ms")
     }
 }
