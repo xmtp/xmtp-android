@@ -1,5 +1,6 @@
 package org.xmtp.android.library.messages
 
+import android.util.Log
 import com.google.protobuf.kotlin.toByteString
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.ECPointUtil
@@ -14,6 +15,7 @@ import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECPublicKeySpec
+import java.util.Date
 
 typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
 

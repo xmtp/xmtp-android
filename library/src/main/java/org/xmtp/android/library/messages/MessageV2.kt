@@ -1,5 +1,6 @@
 package org.xmtp.android.library.messages
 
+import android.util.Log
 import com.google.protobuf.kotlin.toByteString
 import org.web3j.crypto.ECDSASignature
 import org.web3j.crypto.Hash
