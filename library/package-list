@@ -944,6 +944,7 @@ $dokka.location:uniffi.xmtp_dh//diffieHellmanK256/#kotlin.collections.List[kotli
 $dokka.location:uniffi.xmtp_dh//eciesDecryptK256Sha3256/#kotlin.collections.List[kotlin.UByte]#kotlin.collections.List[kotlin.UByte]#kotlin.collections.List[kotlin.UByte]/PointingToDeclaration/library/uniffi.xmtp_dh/ecies-decrypt-k256-sha3256.html
 $dokka.location:uniffi.xmtp_dh//eciesEncryptK256Sha3256/#kotlin.collections.List[kotlin.UByte]#kotlin.collections.List[kotlin.UByte]#kotlin.collections.List[kotlin.UByte]/PointingToDeclaration/library/uniffi.xmtp_dh/ecies-encrypt-k256-sha3256.html
 $dokka.location:uniffi.xmtp_dh//generatePrivatePreferencesTopicIdentifier/#kotlin.collections.List[kotlin.UByte]/PointingToDeclaration/library/uniffi.xmtp_dh/generate-private-preferences-topic-identifier.html
+$dokka.location:uniffi.xmtp_dh//verifyK256Sha256/#kotlin.collections.List[kotlin.UByte]#kotlin.collections.List[kotlin.UByte]#kotlin.collections.List[kotlin.UByte]#kotlin.UByte/PointingToDeclaration/library/uniffi.xmtp_dh/verify-k256-sha256.html
 $dokka.location:uniffi.xmtp_dh/CallStatusErrorHandler///PointingToDeclaration/library/uniffi.xmtp_dh/-call-status-error-handler/index.html
 $dokka.location:uniffi.xmtp_dh/CallStatusErrorHandler/lift/#uniffi.xmtp_dh.RustBuffer.ByValue/PointingToDeclaration/library/uniffi.xmtp_dh/-call-status-error-handler/lift.html
 $dokka.location:uniffi.xmtp_dh/DiffieHellmanException.ErrorHandler///PointingToDeclaration/library/uniffi.xmtp_dh/-diffie-hellman-exception/-error-handler/index.html
@@ -964,6 +965,12 @@ $dokka.location:uniffi.xmtp_dh/FfiConverter/lower/#TypeParam(bounds=[kotlin.Any?
 $dokka.location:uniffi.xmtp_dh/FfiConverter/lowerIntoRustBuffer/#TypeParam(bounds=[kotlin.Any?])/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter/lower-into-rust-buffer.html
 $dokka.location:uniffi.xmtp_dh/FfiConverter/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter/read.html
 $dokka.location:uniffi.xmtp_dh/FfiConverter/write/#TypeParam(bounds=[kotlin.Any?])#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter/write.html
+$dokka.location:uniffi.xmtp_dh/FfiConverterBoolean///PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-boolean/index.html
+$dokka.location:uniffi.xmtp_dh/FfiConverterBoolean/allocationSize/#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-boolean/allocation-size.html
+$dokka.location:uniffi.xmtp_dh/FfiConverterBoolean/lift/#kotlin.Byte/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-boolean/lift.html
+$dokka.location:uniffi.xmtp_dh/FfiConverterBoolean/lower/#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-boolean/lower.html
+$dokka.location:uniffi.xmtp_dh/FfiConverterBoolean/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-boolean/read.html
+$dokka.location:uniffi.xmtp_dh/FfiConverterBoolean/write/#kotlin.Boolean#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-boolean/write.html
 $dokka.location:uniffi.xmtp_dh/FfiConverterRustBuffer///PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-rust-buffer/index.html
 $dokka.location:uniffi.xmtp_dh/FfiConverterRustBuffer/lift/#uniffi.xmtp_dh.RustBuffer.ByValue/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-rust-buffer/lift.html
 $dokka.location:uniffi.xmtp_dh/FfiConverterRustBuffer/lower/#TypeParam(bounds=[kotlin.Any?])/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-rust-buffer/lower.html
@@ -985,6 +992,10 @@ $dokka.location:uniffi.xmtp_dh/FfiConverterTypeEciesError///PointingToDeclaratio
 $dokka.location:uniffi.xmtp_dh/FfiConverterTypeEciesError/allocationSize/#uniffi.xmtp_dh.EciesException/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-type-ecies-error/allocation-size.html
 $dokka.location:uniffi.xmtp_dh/FfiConverterTypeEciesError/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-type-ecies-error/read.html
 $dokka.location:uniffi.xmtp_dh/FfiConverterTypeEciesError/write/#uniffi.xmtp_dh.EciesException#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-type-ecies-error/write.html
+$dokka.location:uniffi.xmtp_dh/FfiConverterTypeVerifyError///PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-type-verify-error/index.html
+$dokka.location:uniffi.xmtp_dh/FfiConverterTypeVerifyError/allocationSize/#uniffi.xmtp_dh.VerifyException/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-type-verify-error/allocation-size.html
+$dokka.location:uniffi.xmtp_dh/FfiConverterTypeVerifyError/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-type-verify-error/read.html
+$dokka.location:uniffi.xmtp_dh/FfiConverterTypeVerifyError/write/#uniffi.xmtp_dh.VerifyException#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-type-verify-error/write.html
 $dokka.location:uniffi.xmtp_dh/FfiConverterUByte///PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-u-byte/index.html
 $dokka.location:uniffi.xmtp_dh/FfiConverterUByte/allocationSize/#kotlin.UByte/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-u-byte/allocation-size.html
 $dokka.location:uniffi.xmtp_dh/FfiConverterUByte/lift/#kotlin.Byte/PointingToDeclaration/library/uniffi.xmtp_dh/-ffi-converter-u-byte/lift.html
@@ -1025,6 +1036,11 @@ $dokka.location:uniffi.xmtp_dh/USize/toByte/#/PointingToDeclaration/library/uni
 $dokka.location:uniffi.xmtp_dh/USize/toChar/#/PointingToDeclaration/library/uniffi.xmtp_dh/-u-size/to-char.html
 $dokka.location:uniffi.xmtp_dh/USize/toShort/#/PointingToDeclaration/library/uniffi.xmtp_dh/-u-size/to-short.html
 $dokka.location:uniffi.xmtp_dh/USize/writeToBuffer/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtp_dh/-u-size/write-to-buffer.html
+$dokka.location:uniffi.xmtp_dh/VerifyException.ErrorHandler///PointingToDeclaration/library/uniffi.xmtp_dh/-verify-exception/-error-handler/index.html
+$dokka.location:uniffi.xmtp_dh/VerifyException.ErrorHandler/lift/#uniffi.xmtp_dh.RustBuffer.ByValue/PointingToDeclaration/library/uniffi.xmtp_dh/-verify-exception/-error-handler/lift.html
+$dokka.location:uniffi.xmtp_dh/VerifyException.GenericException///PointingToDeclaration/library/uniffi.xmtp_dh/-verify-exception/-generic-exception/index.html
+$dokka.location:uniffi.xmtp_dh/VerifyException.GenericException/GenericException/#kotlin.String/PointingToDeclaration/library/uniffi.xmtp_dh/-verify-exception/-generic-exception/-generic-exception.html
+$dokka.location:uniffi.xmtp_dh/VerifyException///PointingToDeclaration/library/uniffi.xmtp_dh/-verify-exception/index.html
 org.xmtp.android.library
 org.xmtp.android.library.codecs
 org.xmtp.android.library.messages
