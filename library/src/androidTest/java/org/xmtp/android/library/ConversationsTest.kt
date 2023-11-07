@@ -108,8 +108,6 @@ class ConversationsTest {
         val caroClient = Client().create(caro, clientOptions)
         val caroConversation = caroClient.conversations.newConversation(alixClient.address)
 
-        sleep(2500)
-
         for (i in 0 until 5) {
             caroConversation.send(text = "Message $i")
             sleep(1000)
