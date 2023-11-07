@@ -199,6 +199,10 @@ class FakeApiClient : ApiClient {
         }
         return flowOf()
     }
+
+    override suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<MessageApiOuterClass.Envelope> {
+        TODO("Not yet implemented")
+    }
 }
 
 data class Fixtures(

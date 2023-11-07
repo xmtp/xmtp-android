@@ -1,10 +1,10 @@
 package org.xmtp.android.library
 
 import android.util.Log
-import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
@@ -27,9 +27,7 @@ import org.xmtp.android.library.messages.senderAddress
 import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.toSignedPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
-import org.xmtp.android.library.push.Service.SubscribeRequest
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import java.util.Date
@@ -369,7 +367,8 @@ data class Conversations(
             topics.add(conversation.topic)
         }
 
-        val subscribeFlow = createSubscribeFlow(topics)
+        val subscribeFlow = MutableStateFlow(makeSubscribeRequest(topics))
+
         while (true) {
             try {
                 client.subscribe2(request = subscribeFlow).collect { envelope ->
@@ -384,7 +383,7 @@ data class Conversations(
                             val conversation = fromInvite(envelope = envelope)
                             conversationsByTopic[conversation.topic] = conversation
                             topics.add(conversation.topic)
-                            currentCoroutineContext().job.cancel()
+                            subscribeFlow.value = makeSubscribeRequest(topics)
                         }
 
                         envelope.contentTopic.startsWith("/xmtp/0/intro-") -> {
@@ -393,19 +392,17 @@ data class Conversations(
                             val decoded = conversation.decode(envelope)
                             emit(decoded)
                             topics.add(conversation.topic)
-                            currentCoroutineContext().job.cancel()
+                            subscribeFlow.value = makeSubscribeRequest(topics)
                         }
 
                         else -> {}
                     }
                 }
+            } catch (error: CancellationException) {
+                break
             } catch (error: Exception) {
                 continue
             }
         }
-    }
-
-    private fun createSubscribeFlow(topics: List<String>): Flow<MessageApiOuterClass.SubscribeRequest> = flow {
-        emit(makeSubscribeRequest(topics))
     }
 }

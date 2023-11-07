@@ -4,9 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.TextCodec
@@ -79,8 +77,7 @@ class ConversationsTest {
     }
 
     @Test
-    @Ignore("Flaky Test")
-    fun testStreamAllMessages() = runBlocking {
+    fun testStreamAllMessages() {
         val bo = PrivateKeyBuilder()
         val alix = PrivateKeyBuilder()
         val clientOptions =
