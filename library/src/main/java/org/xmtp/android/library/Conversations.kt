@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import android.util.Log
+import io.grpc.StatusException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -400,6 +401,12 @@ data class Conversations(
                 }
             } catch (error: CancellationException) {
                 break
+            } catch (error: StatusException) {
+                if (error.status.code == io.grpc.Status.Code.UNAVAILABLE) {
+                    continue
+                } else {
+                    break
+                }
             } catch (error: Exception) {
                 continue
             }
