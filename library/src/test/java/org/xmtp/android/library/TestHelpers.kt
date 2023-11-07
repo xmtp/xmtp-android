@@ -197,7 +197,12 @@ class FakeApiClient : ApiClient {
     }
 
     override suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<MessageApiOuterClass.Envelope> {
-        TODO("Not yet implemented")
+        val env = stream.counts().first()
+
+        if (request.first().contentTopicsList.contains(env.contentTopic)) {
+            return flowOf(env)
+        }
+        return flowOf()
     }
 }
 
