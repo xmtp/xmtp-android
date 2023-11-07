@@ -656,6 +656,7 @@ $dokka.location:org.xmtp.android.library/ApiClient/query/#kotlin.String#org.xmtp
 $dokka.location:org.xmtp.android.library/ApiClient/queryTopic/#org.xmtp.android.library.messages.Topic#org.xmtp.android.library.messages.Pagination?/PointingToDeclaration/library/org.xmtp.android.library/-api-client/query-topic.html
 $dokka.location:org.xmtp.android.library/ApiClient/setAuthToken/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-api-client/set-auth-token.html
 $dokka.location:org.xmtp.android.library/ApiClient/subscribe/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-api-client/subscribe.html
+$dokka.location:org.xmtp.android.library/ApiClient/subscribe2/#kotlinx.coroutines.flow.Flow[org.xmtp.proto.message.api.v1.MessageApiOuterClass.SubscribeRequest]/PointingToDeclaration/library/org.xmtp.android.library/-api-client/subscribe2.html
 $dokka.location:org.xmtp.android.library/AuthorizedIdentity///PointingToDeclaration/library/org.xmtp.android.library/-authorized-identity/index.html
 $dokka.location:org.xmtp.android.library/AuthorizedIdentity/AuthorizedIdentity/#kotlin.String#org.xmtp.proto.message.contents.PublicKeyOuterClass.PublicKey#org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey/PointingToDeclaration/library/org.xmtp.android.library/-authorized-identity/-authorized-identity.html
 $dokka.location:org.xmtp.android.library/AuthorizedIdentity/AuthorizedIdentity/#org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV1/PointingToDeclaration/library/org.xmtp.android.library/-authorized-identity/-authorized-identity.html
@@ -696,6 +697,7 @@ $dokka.location:org.xmtp.android.library/Client/publish/#kotlin.collections.List
 $dokka.location:org.xmtp.android.library/Client/publishUserContact/#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client/publish-user-contact.html
 $dokka.location:org.xmtp.android.library/Client/query/#org.xmtp.android.library.messages.Topic#org.xmtp.android.library.messages.Pagination?/PointingToDeclaration/library/org.xmtp.android.library/-client/query.html
 $dokka.location:org.xmtp.android.library/Client/subscribe/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-client/subscribe.html
+$dokka.location:org.xmtp.android.library/Client/subscribe2/#kotlinx.coroutines.flow.Flow[org.xmtp.proto.message.api.v1.MessageApiOuterClass.SubscribeRequest]/PointingToDeclaration/library/org.xmtp.android.library/-client/subscribe2.html
 $dokka.location:org.xmtp.android.library/Client/subscribeTopic/#kotlin.collections.List[org.xmtp.android.library.messages.Topic]/PointingToDeclaration/library/org.xmtp.android.library/-client/subscribe-topic.html
 $dokka.location:org.xmtp.android.library/Client/v1keys/#/PointingToDeclaration/library/org.xmtp.android.library/-client/v1keys.html
 $dokka.location:org.xmtp.android.library/ClientOptions.Api///PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/index.html
@@ -889,6 +891,7 @@ $dokka.location:org.xmtp.android.library/GRPCApiClient.Companion/APP_VERSION_HEA
 $dokka.location:org.xmtp.android.library/GRPCApiClient.Companion/AUTHORIZATION_HEADER_KEY/#/PointingToDeclaration/library/org.xmtp.android.library/-g-r-p-c-api-client/-companion/-a-u-t-h-o-r-i-z-a-t-i-o-n_-h-e-a-d-e-r_-k-e-y.html
 $dokka.location:org.xmtp.android.library/GRPCApiClient.Companion/CLIENT_VERSION_HEADER_KEY/#/PointingToDeclaration/library/org.xmtp.android.library/-g-r-p-c-api-client/-companion/-c-l-i-e-n-t_-v-e-r-s-i-o-n_-h-e-a-d-e-r_-k-e-y.html
 $dokka.location:org.xmtp.android.library/GRPCApiClient.Companion/makeQueryRequest/#kotlin.String#org.xmtp.android.library.messages.Pagination?#org.xmtp.proto.message.api.v1.MessageApiOuterClass.Cursor?/PointingToDeclaration/library/org.xmtp.android.library/-g-r-p-c-api-client/-companion/make-query-request.html
+$dokka.location:org.xmtp.android.library/GRPCApiClient.Companion/makeSubscribeRequest/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-g-r-p-c-api-client/-companion/make-subscribe-request.html
 $dokka.location:org.xmtp.android.library/GRPCApiClient///PointingToDeclaration/library/org.xmtp.android.library/-g-r-p-c-api-client/index.html
 $dokka.location:org.xmtp.android.library/GRPCApiClient/GRPCApiClient/#org.xmtp.android.library.XMTPEnvironment#kotlin.Boolean#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library/-g-r-p-c-api-client/-g-r-p-c-api-client.html
 $dokka.location:org.xmtp.android.library/GRPCApiClient/appVersion/#/PointingToDeclaration/library/org.xmtp.android.library/-g-r-p-c-api-client/app-version.html
@@ -902,6 +905,7 @@ $dokka.location:org.xmtp.android.library/GRPCApiClient/queryTopic/#org.xmtp.andr
 $dokka.location:org.xmtp.android.library/GRPCApiClient/secure/#/PointingToDeclaration/library/org.xmtp.android.library/-g-r-p-c-api-client/secure.html
 $dokka.location:org.xmtp.android.library/GRPCApiClient/setAuthToken/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-g-r-p-c-api-client/set-auth-token.html
 $dokka.location:org.xmtp.android.library/GRPCApiClient/subscribe/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-g-r-p-c-api-client/subscribe.html
+$dokka.location:org.xmtp.android.library/GRPCApiClient/subscribe2/#kotlinx.coroutines.flow.Flow[org.xmtp.proto.message.api.v1.MessageApiOuterClass.SubscribeRequest]/PointingToDeclaration/library/org.xmtp.android.library/-g-r-p-c-api-client/subscribe2.html
 $dokka.location:org.xmtp.android.library/KeyUtil///PointingToDeclaration/library/org.xmtp.android.library/-key-util/index.html
 $dokka.location:org.xmtp.android.library/KeyUtil/addUncompressedByte/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-key-util/add-uncompressed-byte.html
 $dokka.location:org.xmtp.android.library/KeyUtil/getPublicKey/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-key-util/get-public-key.html
