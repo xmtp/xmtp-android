@@ -66,6 +66,11 @@ dependencies {
     implementation 'dev.pinkroom:walletconnectkit:0.3.2'
     implementation 'org.web3j:crypto:5.0.0'
 
+    // WalletConnect V2: core library + WalletConnectModal
+    implementation(platform("com.walletconnect:android-bom:1.19.1"))
+    implementation("com.walletconnect:android-core")
+    implementation("com.walletconnect:walletconnect-modal")
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
