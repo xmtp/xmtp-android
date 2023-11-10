@@ -13,12 +13,12 @@ plugins {
 
 android {
     namespace 'org.xmtp.android.example'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "org.xmtp.android.example"
         minSdk 27
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -70,6 +70,11 @@ dependencies {
     implementation(platform("com.walletconnect:android-bom:1.19.1"))
     implementation("com.walletconnect:android-core")
     implementation("com.walletconnect:walletconnect-modal")
+
+    //Navigation Component
+    def nav_version = "2.7.5"
+    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
