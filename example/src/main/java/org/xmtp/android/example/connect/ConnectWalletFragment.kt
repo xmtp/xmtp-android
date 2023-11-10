@@ -61,8 +61,7 @@ class ConnectWalletFragment : Fragment() {
         binding.connectButton.isEnabled = isConnectWalletAvailable
         binding.connectError.isVisible = !isConnectWalletAvailable
         binding.connectButton.setOnClickListener {
-            //binding.connectButton.start(viewModel.walletConnectKit, ::onConnected, ::onDisconnected)
-            findNavController().openWalletConnectModal(id = R.id.action_to_bottomSheet)
+            binding.connectButton.start(viewModel.walletConnectKit, ::onConnected, ::onDisconnected)
         }
 
     }
