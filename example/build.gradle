@@ -26,6 +26,7 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+        buildConfigField("String", "PROJECT_ID", "\"Your Application ID from https://cloud.walletconnect.com/\"")
     }
 
     buildTypes {
