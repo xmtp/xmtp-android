@@ -5,27 +5,24 @@ import android.accounts.AccountManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
 import androidx.navigation.fragment.findNavController
-import com.walletconnect.wcmodal.client.Modal
 import com.walletconnect.wcmodal.client.WalletConnectModal
 import com.walletconnect.wcmodal.ui.openWalletConnectModal
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.MainActivity
 import org.xmtp.android.example.R
 import org.xmtp.android.example.databinding.FragmentConnectWalletBinding
+import timber.log.Timber
 
 
 class ConnectWalletFragment : Fragment() {
@@ -39,7 +36,7 @@ class ConnectWalletFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentConnectWalletBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -53,6 +50,12 @@ class ConnectWalletFragment : Fragment() {
             }
         }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.showWalletState.collect(::showWalletState)
+            }
+        }
+
         binding.generateButton.setOnClickListener {
             viewModel.generateWallet()
         }
@@ -61,17 +64,10 @@ class ConnectWalletFragment : Fragment() {
         binding.connectButton.isEnabled = isConnectWalletAvailable
         binding.connectError.isVisible = !isConnectWalletAvailable
         binding.connectButton.setOnClickListener {
-            binding.connectButton.start(viewModel.walletConnectKit, ::onConnected, ::onDisconnected)
+            WalletConnectModal.setSessionParams(viewModel.getSessionParams())
+            findNavController().openWalletConnectModal(id = R.id.action_to_bottomSheet)
         }
 
-    }
-
-    private fun onConnected(address: String) {
-        viewModel.connectWallet()
-    }
-
-    private fun onDisconnected() {
-        // No-op currently.
     }
 
     private fun isConnectAvailable(): Boolean {
@@ -89,7 +85,21 @@ class ConnectWalletFragment : Fragment() {
                 uiState.address,
                 uiState.encodedKeyData
             )
+
             ConnectWalletViewModel.ConnectUiState.Unknown -> Unit
+        }
+    }
+
+    private fun showWalletState(walletState: ConnectWalletViewModel.ShowWalletForSigningState) {
+        if (walletState.showWallet) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, walletState.uri)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                requireActivity().startActivity(intent)
+                viewModel.clearShowWalletState()
+            } catch (e: Exception) {
+                Timber.tag(FRAGMENT_LOG_TAG).e("Activity not found: $e")
+            }
         }
     }
 
@@ -124,6 +134,7 @@ class ConnectWalletFragment : Fragment() {
 
     companion object {
         private const val WC_URI_SCHEME = "wc://wc?uri="
+        private const val FRAGMENT_LOG_TAG = "ConnectWalletFragment"
     }
 
 }
