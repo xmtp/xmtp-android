@@ -28,10 +28,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <dev.pinkroom.walletconnectkit.WalletConnectButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/connectButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
+        style="?attr/materialButtonOutlinedStyle"
+        android:text="@string/wallet_connect"
+        android:textColor="#FF006FFF"
+        app:icon="@drawable/ic_wallet_connect_logo"
+        app:iconTint="#FF006FFF"
+        app:iconGravity="textStart"
+        app:strokeColor="#FF006FFF"
         android:layout_marginStart="@dimen/padding"
         android:layout_marginEnd="@dimen/padding"
         app:layout_constraintEnd_toEndOf="parent"
