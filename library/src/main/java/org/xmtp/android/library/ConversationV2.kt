@@ -13,7 +13,6 @@ import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Message
 import org.xmtp.android.library.messages.MessageBuilder
-import org.xmtp.android.library.messages.MessageV2
 import org.xmtp.android.library.messages.MessageV2Builder
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.PagingInfoSortDirection
