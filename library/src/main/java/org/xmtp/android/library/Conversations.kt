@@ -175,8 +175,10 @@ data class Conversations(
             }
         }
 
-        conversationsByTopic += newConversations.filter { it.peerAddress != client.address }
-            .map { Pair(it.topic, it) }
+        val regex = Regex("[A-Za-z0-9\\-\\/]+")
+        conversationsByTopic += newConversations.filter {
+            it.peerAddress != client.address && it.topic.matches(regex)
+        }.map { Pair(it.topic, it) }
 
         // TODO(perf): use DB to persist + sort
         return conversationsByTopic.values.sortedByDescending { it.createdAt }
