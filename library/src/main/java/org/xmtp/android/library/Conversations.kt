@@ -175,13 +175,22 @@ data class Conversations(
             }
         }
 
-        val regex = Regex("[A-Za-z0-9\\-\\/]+")
         conversationsByTopic += newConversations.filter {
-            it.peerAddress != client.address && it.topic.matches(regex)
+            it.peerAddress != client.address && isValidTopic(it.topic)
         }.map { Pair(it.topic, it) }
 
         // TODO(perf): use DB to persist + sort
         return conversationsByTopic.values.sortedByDescending { it.createdAt }
+    }
+
+    fun isValidTopic(topic: String): Boolean {
+        val regex = Regex("^[\\x00-\\x7F]+$")
+        val index = topic.indexOf("0/")
+        if (index != -1) {
+            val unwrappedTopic = topic.substring(index + 2, topic.lastIndexOf("/proto"))
+            return unwrappedTopic.matches(regex)
+        }
+        return false
     }
 
     fun importTopicData(data: TopicData): Conversation {
