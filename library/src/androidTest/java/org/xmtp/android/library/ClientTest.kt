@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -79,6 +80,18 @@ class ClientTest {
         val notOnNetwork = PrivateKeyBuilder()
         val canMessage = fixtures.aliceClient.canMessage(fixtures.bobClient.address)
         val cannotMessage = fixtures.aliceClient.canMessage(notOnNetwork.address)
+        assert(canMessage)
+        assert(!cannotMessage)
+    }
+    @Test
+    @Ignore("CI Issues")
+    fun testPublicCanMessage() {
+        val fixtures = fixtures()
+        val notOnNetwork = PrivateKeyBuilder()
+        val clientOptions =
+            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false, appVersion = "XMTPTest/v1.0.0"))
+        val canMessage = Client.canMessage(fixtures.bobClient.address, clientOptions)
+        val cannotMessage = Client.canMessage(notOnNetwork.address, clientOptions)
         assert(canMessage)
         assert(!cannotMessage)
     }
