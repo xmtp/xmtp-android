@@ -84,14 +84,17 @@ class ClientTest {
         assert(!cannotMessage)
     }
     @Test
-    @Ignore("CI Issues")
     fun testPublicCanMessage() {
-        val fixtures = fixtures()
+        val aliceWallet = PrivateKeyBuilder()
         val notOnNetwork = PrivateKeyBuilder()
-        val clientOptions =
-            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false, appVersion = "XMTPTest/v1.0.0"))
-        val canMessage = Client.canMessage(fixtures.bobClient.address, clientOptions)
-        val cannotMessage = Client.canMessage(notOnNetwork.address, clientOptions)
+        val identity = PrivateKeyBuilder().getPrivateKey()
+        val authorized = aliceWallet.createIdentity(identity)
+        val authToken = authorized.createAuthToken()
+        val api = GRPCApiClient(environment = XMTPEnvironment.DEV, secure = false)
+        api.setAuthToken(authToken)
+
+        val canMessage = Client.canMessage(aliceWallet.address, apiClient =  api)
+        val cannotMessage = Client.canMessage(notOnNetwork.address, apiClient = api)
         assert(canMessage)
         assert(!cannotMessage)
     }
