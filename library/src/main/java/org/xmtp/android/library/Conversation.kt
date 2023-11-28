@@ -193,6 +193,15 @@ sealed class Conversation {
         }
     }
 
+    fun decrypt(
+        envelope: Envelope
+    ): DecryptedMessage {
+        return when (this) {
+            is V1 -> conversationV1.decrypt(envelope)
+            is V2 -> conversationV2.decrypt(envelope)
+        }
+    }
+
     val client: Client
         get() {
             return when (this) {
