@@ -31,7 +31,7 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
-import uniffi.xmtp_dh.org.xmtp.android.library.messages.DecryptedMessage
+import org.xmtp.android.library.messages.DecryptedMessage
 import java.util.Date
 
 data class Conversations(
