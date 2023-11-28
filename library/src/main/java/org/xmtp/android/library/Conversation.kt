@@ -194,7 +194,7 @@ sealed class Conversation {
     }
 
     fun decrypt(
-        envelope: Envelope
+        envelope: Envelope,
     ): DecryptedMessage {
         return when (this) {
             is V1 -> conversationV1.decrypt(envelope)
