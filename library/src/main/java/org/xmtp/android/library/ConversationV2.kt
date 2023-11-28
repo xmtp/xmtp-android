@@ -17,10 +17,7 @@ import org.xmtp.android.library.messages.MessageV2Builder
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.SealedInvitationHeaderV1
-import org.xmtp.android.library.messages.decrypt
 import org.xmtp.android.library.messages.getPublicKeyBundle
-import org.xmtp.android.library.messages.header
-import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
