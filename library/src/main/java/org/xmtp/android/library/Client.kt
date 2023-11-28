@@ -114,7 +114,7 @@ class Client() {
                 )
             )
         }
-        fun canMessage(peerAddress: String, options: ClientOptions? = null, apiClient: GRPCApiClient? = null): Boolean {
+        fun canMessage(peerAddress: String, options: ClientOptions? = null, apiClient: ApiClient? = null): Boolean {
             val clientOptions = options ?: ClientOptions()
             val api = apiClient ?: GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
             return runBlocking { api.queryTopic(Topic.contact(peerAddress)).envelopesList.size > 0 }

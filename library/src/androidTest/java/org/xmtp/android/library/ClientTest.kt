@@ -2,7 +2,6 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -37,7 +36,7 @@ class ClientTest {
         val client = Client().buildFrom(v1Copy)
         assertEquals(
             wallet.address,
-            client.address
+            client.address,
         )
     }
 
@@ -50,11 +49,11 @@ class ClientTest {
         assertEquals(client.address, clientFromV1Bundle.address)
         assertEquals(
             client.privateKeyBundleV1?.identityKey,
-            clientFromV1Bundle.privateKeyBundleV1?.identityKey
+            clientFromV1Bundle.privateKeyBundleV1?.identityKey,
         )
         assertEquals(
             client.privateKeyBundleV1?.preKeysList,
-            clientFromV1Bundle.privateKeyBundleV1?.preKeysList
+            clientFromV1Bundle.privateKeyBundleV1?.preKeysList,
         )
     }
 
@@ -67,13 +66,14 @@ class ClientTest {
         assertEquals(client.address, clientFromV1Bundle.address)
         assertEquals(
             client.privateKeyBundleV1?.identityKey,
-            clientFromV1Bundle.privateKeyBundleV1?.identityKey
+            clientFromV1Bundle.privateKeyBundleV1?.identityKey,
         )
         assertEquals(
             client.privateKeyBundleV1?.preKeysList,
-            clientFromV1Bundle.privateKeyBundleV1?.preKeysList
+            clientFromV1Bundle.privateKeyBundleV1?.preKeysList,
         )
     }
+
     @Test
     fun testCanMessage() {
         val fixtures = fixtures()
@@ -83,17 +83,19 @@ class ClientTest {
         assert(canMessage)
         assert(!cannotMessage)
     }
+
     @Test
     fun testPublicCanMessage() {
-        val aliceWallet = PrivateKeyBuilder()
+        val fixtures = fixtures()
+        val aliceWallet = fixtures.aliceClient
         val notOnNetwork = PrivateKeyBuilder()
         val identity = PrivateKeyBuilder().getPrivateKey()
-        val authorized = aliceWallet.createIdentity(identity)
+        val authorized = fixtures.aliceAccount.createIdentity(identity)
         val authToken = authorized.createAuthToken()
-        val api = GRPCApiClient(environment = XMTPEnvironment.DEV, secure = false)
+        val api = fixtures.aliceClient.apiClient
         api.setAuthToken(authToken)
 
-        val canMessage = Client.canMessage(aliceWallet.address, apiClient =  api)
+        val canMessage = Client.canMessage(aliceWallet.address, apiClient = api)
         val cannotMessage = Client.canMessage(notOnNetwork.address, apiClient = api)
         assert(canMessage)
         assert(!cannotMessage)
