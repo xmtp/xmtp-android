@@ -208,6 +208,13 @@ sealed class Conversation {
         }
     }
 
+    fun streamDecryptedMessages(): Flow<DecryptedMessage> {
+        return when (this) {
+            is V1 -> conversationV1.streamDecryptedMessages()
+            is V2 -> conversationV2.streamDecryptedMessages()
+        }
+    }
+
     fun streamEphemeral(): Flow<Envelope> {
         return when (this) {
             is V1 -> return conversationV1.streamEphemeral()

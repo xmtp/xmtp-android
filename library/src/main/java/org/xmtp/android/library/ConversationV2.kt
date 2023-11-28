@@ -17,7 +17,10 @@ import org.xmtp.android.library.messages.MessageV2Builder
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.SealedInvitationHeaderV1
+import org.xmtp.android.library.messages.decrypt
 import org.xmtp.android.library.messages.getPublicKeyBundle
+import org.xmtp.android.library.messages.header
+import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
@@ -88,15 +91,19 @@ data class ConversationV2(
         val envelopes = runBlocking { client.apiClient.envelopes(topic, pagination) }
 
         return envelopes.map { envelope ->
-            val message = Message.parseFrom(envelope.message)
-            MessageV2Builder.buildDecrypt(
-                id = generateId(envelope = envelope),
-                topic,
-                message.v2,
-                keyMaterial,
-                client
-            )
+            decrypt(envelope)
         }
+    }
+
+    fun decrypt(envelope: Envelope): DecryptedMessage {
+        val message = Message.parseFrom(envelope.message)
+        return MessageV2Builder.buildDecrypt(
+            id = generateId(envelope = envelope),
+            topic,
+            message.v2,
+            keyMaterial,
+            client
+        )
     }
 
     fun streamMessages(): Flow<DecodedMessage> = flow {
@@ -217,6 +224,12 @@ data class ConversationV2(
     fun streamEphemeral(): Flow<Envelope> = flow {
         client.subscribe(topics = listOf(ephemeralTopic)).collect {
             emit(it)
+        }
+    }
+
+    fun streamDecryptedMessages(): Flow<DecryptedMessage> = flow {
+        client.subscribe(listOf(topic)).collect {
+            emit(decrypt(envelope = it))
         }
     }
 }

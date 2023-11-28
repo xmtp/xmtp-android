@@ -233,4 +233,10 @@ data class ConversationV1(
             emit(it)
         }
     }
+
+    fun streamDecryptedMessages(): Flow<DecryptedMessage> = flow {
+        client.subscribe(listOf(topic.description)).collect {
+            emit(decrypt(envelope = it))
+        }
+    }
 }
