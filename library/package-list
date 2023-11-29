@@ -676,6 +676,7 @@ $dokka.location:org.xmtp.android.library/AuthorizedIdentity/toBundle/#/PointingT
 $dokka.location:org.xmtp.android.library/Client.Companion///PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/index.html
 $dokka.location:org.xmtp.android.library/Client.Companion/authCheck/#org.xmtp.android.library.ApiClient#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/auth-check.html
 $dokka.location:org.xmtp.android.library/Client.Companion/authSave/#org.xmtp.android.library.ApiClient#org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV1#org.xmtp.proto.message.contents.PrivateKeyOuterClass.EncryptedPrivateKeyBundle/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/auth-save.html
+$dokka.location:org.xmtp.android.library/Client.Companion/canMessage/#kotlin.String#org.xmtp.android.library.ClientOptions?/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/can-message.html
 $dokka.location:org.xmtp.android.library/Client.Companion/codecRegistry/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/codec-registry.html
 $dokka.location:org.xmtp.android.library/Client.Companion/register/#org.xmtp.android.library.codecs.ContentCodec[*]/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/register.html
 $dokka.location:org.xmtp.android.library/Client///PointingToDeclaration/library/org.xmtp.android.library/-client/index.html
