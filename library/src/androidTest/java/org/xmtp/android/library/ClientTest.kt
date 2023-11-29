@@ -86,17 +86,20 @@ class ClientTest {
 
     @Test
     fun testPublicCanMessage() {
-        val fixtures = fixtures()
-        val aliceWallet = fixtures.aliceClient
+        val aliceWallet = PrivateKeyBuilder()
         val notOnNetwork = PrivateKeyBuilder()
-        val identity = PrivateKeyBuilder().getPrivateKey()
-        val authorized = fixtures.aliceAccount.createIdentity(identity)
-        val authToken = authorized.createAuthToken()
-        val api = fixtures.aliceClient.apiClient
-        api.setAuthToken(authToken)
+        val opts = ClientOptions(ClientOptions.Api(XMTPEnvironment.LOCAL, false))
+        val aliceClient = Client().create(aliceWallet, opts)
+        aliceClient.ensureUserContactPublished()
 
-        val canMessage = Client.canMessage(aliceWallet.address, apiClient = api)
-        val cannotMessage = Client.canMessage(notOnNetwork.address, apiClient = api)
+        val canMessage = Client.canMessage(
+            aliceWallet.address,
+            ClientOptions(ClientOptions.Api(XMTPEnvironment.LOCAL, false))
+        )
+        val cannotMessage = Client.canMessage(
+            notOnNetwork.address,
+        )
+
         assert(canMessage)
         assert(!cannotMessage)
     }
