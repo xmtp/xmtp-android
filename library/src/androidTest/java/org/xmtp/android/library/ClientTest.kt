@@ -92,13 +92,8 @@ class ClientTest {
         val aliceClient = Client().create(aliceWallet, opts)
         aliceClient.ensureUserContactPublished()
 
-        val canMessage = Client.canMessage(
-            aliceWallet.address,
-            ClientOptions(ClientOptions.Api(XMTPEnvironment.LOCAL, false))
-        )
-        val cannotMessage = Client.canMessage(
-            notOnNetwork.address,
-        )
+        val canMessage = Client.canMessage(aliceWallet.address, opts)
+        val cannotMessage = Client.canMessage(notOnNetwork.address, opts)
 
         assert(canMessage)
         assert(!cannotMessage)
