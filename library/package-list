@@ -318,6 +318,8 @@ $dokka.location:org.xmtp.android.library.messages/SignedPublicKeyBundleBuilder.C
 $dokka.location:org.xmtp.android.library.messages/SignedPublicKeyBundleBuilder.Companion/buildFromKeyBundle/#org.xmtp.proto.message.contents.PublicKeyOuterClass.PublicKeyBundle/PointingToDeclaration/library/org.xmtp.android.library.messages/-signed-public-key-bundle-builder/-companion/build-from-key-bundle.html
 $dokka.location:org.xmtp.android.library.messages/SignedPublicKeyBundleBuilder///PointingToDeclaration/library/org.xmtp.android.library.messages/-signed-public-key-bundle-builder/index.html
 $dokka.location:org.xmtp.android.library.messages/SignedPublicKeyBundleBuilder/SignedPublicKeyBundleBuilder/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-signed-public-key-bundle-builder/-signed-public-key-bundle-builder.html
+$dokka.location:org.xmtp.android.library.messages/Topic.Companion///PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/-companion/index.html
+$dokka.location:org.xmtp.android.library.messages/Topic.Companion/isValidTopic/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/-companion/is-valid-topic.html
 $dokka.location:org.xmtp.android.library.messages/Topic.contact///PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/contact/index.html
 $dokka.location:org.xmtp.android.library.messages/Topic.contact/address/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/contact/address.html
 $dokka.location:org.xmtp.android.library.messages/Topic.contact/contact/#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/contact/contact.html
@@ -871,7 +873,6 @@ $dokka.location:org.xmtp.android.library/Conversations/conversationsByTopic/#/Po
 $dokka.location:org.xmtp.android.library/Conversations/fromIntro/#org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope/PointingToDeclaration/library/org.xmtp.android.library/-conversations/from-intro.html
 $dokka.location:org.xmtp.android.library/Conversations/fromInvite/#org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope/PointingToDeclaration/library/org.xmtp.android.library/-conversations/from-invite.html
 $dokka.location:org.xmtp.android.library/Conversations/importTopicData/#org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData/PointingToDeclaration/library/org.xmtp.android.library/-conversations/import-topic-data.html
-$dokka.location:org.xmtp.android.library/Conversations/isValidTopic/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversations/is-valid-topic.html
 $dokka.location:org.xmtp.android.library/Conversations/list/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/list.html
 $dokka.location:org.xmtp.android.library/Conversations/listBatchDecryptedMessages/#kotlin.collections.List[kotlin.Pair[kotlin.String,org.xmtp.android.library.messages.Pagination?]]/PointingToDeclaration/library/org.xmtp.android.library/-conversations/list-batch-decrypted-messages.html
 $dokka.location:org.xmtp.android.library/Conversations/listBatchMessages/#kotlin.collections.List[kotlin.Pair[kotlin.String,org.xmtp.android.library.messages.Pagination?]]/PointingToDeclaration/library/org.xmtp.android.library/-conversations/list-batch-messages.html
