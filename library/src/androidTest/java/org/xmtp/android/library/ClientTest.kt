@@ -2,12 +2,15 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
 import org.xmtp.android.library.messages.generate
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class ClientTest {
@@ -97,5 +100,49 @@ class ClientTest {
 
         assert(canMessage)
         assert(!cannotMessage)
+    }
+
+    @Test
+    fun testPreEnableIdentityCallback() {
+        val fakeWallet = PrivateKeyBuilder()
+        val expectation = CompletableFuture<Unit>()
+
+        val preEnableIdentityCallback: suspend () -> Unit = {
+            println("preEnableIdentityCallback called")
+            expectation.complete(Unit)
+        }
+
+        val opts = ClientOptions(ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+            preEnableIdentityCallback = preEnableIdentityCallback
+        )
+
+        try {
+            Client().create(account = fakeWallet, options = opts)
+            expectation.get(5, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            fail("Error: $e")
+        }
+    }
+
+    @Test
+    fun testPreCreateIdentityCallback() {
+        val fakeWallet = PrivateKeyBuilder()
+        val expectation = CompletableFuture<Unit>()
+
+        val preCreateIdentityCallback: suspend () -> Unit = {
+            println("preCreateIdentityCallback called")
+            expectation.complete(Unit)
+        }
+
+        val opts = ClientOptions(ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+            preCreateIdentityCallback = preCreateIdentityCallback
+        )
+
+        try {
+            Client().create(account = fakeWallet, options = opts)
+            expectation.get(5, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            fail("Error: $e")
+        }
     }
 }
