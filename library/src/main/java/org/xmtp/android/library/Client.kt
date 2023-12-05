@@ -45,7 +45,7 @@ typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.P
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 typealias PreEventCallback = suspend () -> Unit
 
-data class ClientOptions(val api: Api = Api(), val preCreateIdentityCallback: PreEventCallback? = null, val preEnableIdentityCallback: PreEventCallback? = null ) {
+data class ClientOptions(val api: Api = Api(), val preCreateIdentityCallback: PreEventCallback? = null, val preEnableIdentityCallback: PreEventCallback? = null) {
     data class Api(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
         val isSecure: Boolean = true,
