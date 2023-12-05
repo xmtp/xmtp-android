@@ -2,12 +2,16 @@ package org.xmtp.android.library.messages
 
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.Crypto
+import org.xmtp.android.library.PreEventCallback
 import org.xmtp.android.library.SigningKey
 import org.xmtp.android.library.XMTPException
 
 typealias EncryptedPrivateKeyBundle = org.xmtp.proto.message.contents.PrivateKeyOuterClass.EncryptedPrivateKeyBundle
 
-fun EncryptedPrivateKeyBundle.decrypted(key: SigningKey): PrivateKeyBundle {
+fun EncryptedPrivateKeyBundle.decrypted(key: SigningKey, preEnableIdentityCallback: PreEventCallback? = null): PrivateKeyBundle {
+    runBlocking {
+        preEnableIdentityCallback?.invoke()
+    }
     val signature = runBlocking {
         key.sign(
             message = Signature.newBuilder().build()
