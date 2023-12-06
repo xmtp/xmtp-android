@@ -730,6 +730,7 @@ $dokka.location:org.xmtp.android.library/ConsentList/ConsentList/#org.xmtp.andro
 $dokka.location:org.xmtp.android.library/ConsentList/allow/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/allow.html
 $dokka.location:org.xmtp.android.library/ConsentList/client/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/client.html
 $dokka.location:org.xmtp.android.library/ConsentList/deny/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/deny.html
+$dokka.location:org.xmtp.android.library/ConsentList/entries/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/entries.html
 $dokka.location:org.xmtp.android.library/ConsentList/load/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/load.html
 $dokka.location:org.xmtp.android.library/ConsentList/publish/#org.xmtp.android.library.ConsentListEntry/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/publish.html
 $dokka.location:org.xmtp.android.library/ConsentList/state/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/state.html
