@@ -145,10 +145,11 @@ data class Contacts(
 
     var consentList: ConsentList = ConsentList(client)
 
-    fun refreshConsentList() {
+    fun refreshConsentList(): ConsentList {
         runBlocking {
             consentList = ConsentList(client).load()
         }
+        return consentList
     }
 
     fun isAllowed(address: String): Boolean {
