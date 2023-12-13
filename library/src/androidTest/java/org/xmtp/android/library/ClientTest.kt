@@ -113,7 +113,8 @@ class ClientTest {
             expectation.complete(Unit)
         }
 
-        val opts = ClientOptions(ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+        val opts = ClientOptions(
+            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
             preEnableIdentityCallback = preEnableIdentityCallback
         )
 
@@ -135,7 +136,8 @@ class ClientTest {
             expectation.complete(Unit)
         }
 
-        val opts = ClientOptions(ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+        val opts = ClientOptions(
+            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
             preCreateIdentityCallback = preCreateIdentityCallback
         )
 
