@@ -12,9 +12,12 @@ fun EncryptedPrivateKeyBundle.decrypted(
     key: SigningKey,
     preEnableIdentityCallback: PreEventCallback? = null,
 ): PrivateKeyBundle {
-    runBlocking {
-        preEnableIdentityCallback?.invoke()
+    preEnableIdentityCallback?.let {
+        runBlocking {
+            it.invoke()
+        }
     }
+
     val signature = runBlocking {
         key.sign(
             message = Signature.newBuilder().build()

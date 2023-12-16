@@ -27,9 +27,13 @@ fun PrivateKeyBundle.encrypted(
 ): EncryptedPrivateKeyBundle {
     val bundleBytes = toByteArray()
     val walletPreKey = SecureRandom().generateSeed(32)
-    runBlocking {
-        preEnableIdentityCallback?.invoke()
+
+    preEnableIdentityCallback?.let {
+        runBlocking {
+            it.invoke()
+        }
     }
+
     val signature =
         runBlocking {
             key.sign(

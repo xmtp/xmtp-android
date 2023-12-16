@@ -33,8 +33,10 @@ fun SigningKey.createIdentity(
         secp256K1Uncompressed = identity.publicKey.secp256K1Uncompressed
     }.build()
 
-    runBlocking {
-        preCreateIdentityCallback?.invoke()
+    preCreateIdentityCallback?.let {
+        runBlocking {
+            it.invoke()
+        }
     }
 
     val signatureClass = Signature.newBuilder().build()
