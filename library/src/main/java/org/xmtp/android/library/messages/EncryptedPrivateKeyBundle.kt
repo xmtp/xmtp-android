@@ -8,7 +8,10 @@ import org.xmtp.android.library.XMTPException
 
 typealias EncryptedPrivateKeyBundle = org.xmtp.proto.message.contents.PrivateKeyOuterClass.EncryptedPrivateKeyBundle
 
-fun EncryptedPrivateKeyBundle.decrypted(key: SigningKey, preEnableIdentityCallback: PreEventCallback? = null): PrivateKeyBundle {
+fun EncryptedPrivateKeyBundle.decrypted(
+    key: SigningKey,
+    preEnableIdentityCallback: PreEventCallback? = null,
+): PrivateKeyBundle {
     runBlocking {
         preEnableIdentityCallback?.invoke()
     }

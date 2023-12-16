@@ -24,7 +24,10 @@ interface SigningKey {
     suspend fun sign(message: String): SignatureOuterClass.Signature?
 }
 
-fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey, preCreateIdentityCallback: PreEventCallback? = null): AuthorizedIdentity {
+fun SigningKey.createIdentity(
+    identity: PrivateKeyOuterClass.PrivateKey,
+    preCreateIdentityCallback: PreEventCallback? = null,
+): AuthorizedIdentity {
     val slimKey = PublicKeyOuterClass.PublicKey.newBuilder().apply {
         timestamp = Date().time
         secp256K1Uncompressed = identity.publicKey.secp256K1Uncompressed

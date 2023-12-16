@@ -32,9 +32,13 @@ class PrivateKeyBundleV1Builder {
     }
 }
 
-fun PrivateKeyBundleV1.generate(wallet: SigningKey, options: ClientOptions? = null): PrivateKeyBundleV1 {
+fun PrivateKeyBundleV1.generate(
+    wallet: SigningKey,
+    options: ClientOptions? = null,
+): PrivateKeyBundleV1 {
     val privateKey = PrivateKeyBuilder()
-    val authorizedIdentity = wallet.createIdentity(privateKey.getPrivateKey(), options?.preCreateIdentityCallback)
+    val authorizedIdentity =
+        wallet.createIdentity(privateKey.getPrivateKey(), options?.preCreateIdentityCallback)
     var bundle = authorizedIdentity.toBundle
     var preKey = PrivateKey.newBuilder().build().generate()
     val bytesToSign = UnsignedPublicKeyBuilder.buildFromPublicKey(preKey.publicKey).toByteArray()

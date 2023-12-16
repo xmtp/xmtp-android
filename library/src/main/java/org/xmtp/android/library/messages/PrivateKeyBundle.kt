@@ -21,7 +21,10 @@ class PrivateKeyBundleBuilder {
     }
 }
 
-fun PrivateKeyBundle.encrypted(key: SigningKey, preEnableIdentityCallback: PreEventCallback? = null): EncryptedPrivateKeyBundle {
+fun PrivateKeyBundle.encrypted(
+    key: SigningKey,
+    preEnableIdentityCallback: PreEventCallback? = null,
+): EncryptedPrivateKeyBundle {
     val bundleBytes = toByteArray()
     val walletPreKey = SecureRandom().generateSeed(32)
     runBlocking {
