@@ -32,11 +32,21 @@ interface SigningKey {
  * @return AuthorizedIdentity object that contains the `identity` key signed by the wallet,
  * together with a `publicKey` and `address` signed by the `identity` key.
  */
-fun SigningKey.createIdentity(identity: PrivateKeyOuterClass.PrivateKey): AuthorizedIdentity {
+fun SigningKey.createIdentity(
+    identity: PrivateKeyOuterClass.PrivateKey,
+    preCreateIdentityCallback: PreEventCallback? = null,
+): AuthorizedIdentity {
     val slimKey = PublicKeyOuterClass.PublicKey.newBuilder().apply {
         timestamp = Date().time
         secp256K1Uncompressed = identity.publicKey.secp256K1Uncompressed
     }.build()
+
+    preCreateIdentityCallback?.let {
+        runBlocking {
+            it.invoke()
+        }
+    }
+
     val signatureClass = Signature.newBuilder().build()
     val signatureText = signatureClass.createIdentityText(key = slimKey.toByteArray())
     val digest = signatureClass.ethHash(message = signatureText)
