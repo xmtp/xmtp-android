@@ -130,7 +130,10 @@ sealed class Conversation {
         }
     }
 
-    fun prepareMessage(encodedContent: EncodedContent, options: SendOptions? = null): PreparedMessage {
+    fun prepareMessage(
+        encodedContent: EncodedContent,
+        options: SendOptions? = null,
+    ): PreparedMessage {
         return when (this) {
             is V1 -> {
                 conversationV1.prepareMessage(encodedContent = encodedContent, options = options)
