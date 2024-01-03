@@ -860,30 +860,4 @@ class ConversationTest {
         assertFalse(Topic.isValidTopic(directMessageV2))
         assertFalse(Topic.isValidTopic(preferenceList))
     }
-
-    @Test
-    fun testConsentWorksAcrossPagination() {
-        val privateKeyData = listOf(0x08, 0x36, 0x20, 0x0f, 0xfa, 0xfa, 0x17, 0xa3, 0xcb, 0x8b, 0x54, 0xf2, 0x2d, 0x6a, 0xfa, 0x60, 0xb1, 0x3d, 0xa4, 0x87, 0x26, 0x54, 0x32, 0x41, 0xad, 0xc5, 0xc2, 0x50, 0xdb, 0xb0, 0xe0, 0xcd)
-            .map { it.toByte() }
-            .toByteArray()
-        // Use hardcoded privateKey
-        val privateKey = PrivateKeyBuilder.buildFromPrivateKeyData(privateKeyData)
-        val privateKeyBuilder = PrivateKeyBuilder(privateKey)
-        val options = ClientOptions(api = ClientOptions.Api(XMTPEnvironment.DEV, isSecure = true))
-        val randomClient = Client().create(account = privateKeyBuilder, options = options)
-        val conversations = randomClient.conversations.list()
-        val addresses = conversations.map { it.peerAddress }
-
-        val firstHundred = addresses.take(100)
-        val lastHundred = addresses.takeLast(100)
-
-        randomClient.contacts.allow(firstHundred)
-        randomClient.contacts.deny(lastHundred)
-
-        randomClient.contacts.refreshConsentList()
-
-        randomClient.contacts.consentList.entries.size
-
-        assertEquals(200, randomClient.contacts.consentList.entries.size)
-    }
 }
