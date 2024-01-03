@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.ContactBundleBuilder
@@ -52,14 +53,13 @@ class ConsentList(val client: Client) {
 
     @OptIn(ExperimentalUnsignedTypes::class)
     suspend fun load(): ConsentList {
-        val envelopes = client.query(
-            Topic.preferenceList(identifier),
+        val envelopes = client.apiClient.envelopes(
+            Topic.preferenceList(identifier).description,
             Pagination(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING)
         )
         val consentList = ConsentList(client)
         val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
-
-        for (envelope in envelopes.envelopesList) {
+        for (envelope in envelopes) {
             val payload = uniffi.xmtp_dh.userPreferencesDecrypt(
                 publicKey.toByteArray().toUByteArray().toList(),
                 privateKey.toByteArray().toUByteArray().toList(),
