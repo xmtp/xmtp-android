@@ -40,7 +40,7 @@ sealed class Conversation {
         get() {
             return when (this) {
                 is V1 -> conversationV1.sentAt
-                is V2 -> conversationV2.createdAt
+                is V2 -> conversationV2.conversationCreatedAt
             }
         }
 

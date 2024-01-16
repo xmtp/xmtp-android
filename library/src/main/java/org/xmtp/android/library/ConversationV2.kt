@@ -30,6 +30,7 @@ data class ConversationV2(
     val context: Invitation.InvitationV1.Context,
     val peerAddress: String,
     val client: Client,
+    val createdAt: Long? = null,
     private val header: SealedInvitationHeaderV1,
 ) {
 
@@ -50,12 +51,13 @@ data class ConversationV2(
                 context = invitation.context,
                 peerAddress = peerAddress,
                 client = client,
+                createdAt = header.createdNs,
                 header = header,
             )
         }
     }
 
-    val createdAt: Date = Date(header.createdNs / 1_000_000)
+    val conversationCreatedAt: Date = Date((createdAt ?: 0L) / 1_000_000)
 
     /**
      * This lists messages sent to the [Conversation].
