@@ -20,7 +20,6 @@ import org.xmtp.android.library.messages.createDeterministic
 import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
-import org.xmtp.proto.keystore.api.v1.Keystore
 import java.lang.Thread.sleep
 import java.util.Date
 
