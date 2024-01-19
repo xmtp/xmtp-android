@@ -179,7 +179,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.send(text = text, sendOptions, sentAt)
             is V2 -> conversationV2.send(text = text, sendOptions, sentAt)
-            is Group -> TODO()
+            is Group -> group.send(text)
         }
     }
 
@@ -202,7 +202,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.topic.description
                 is V2 -> conversationV2.topic
-                is Group -> TODO()
+                is Group -> group.id.toString()
             }
         }
 

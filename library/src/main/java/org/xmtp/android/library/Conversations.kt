@@ -218,7 +218,7 @@ data class Conversations(
 
         if (includeGroups) {
             val groups = runBlocking { listGroups() }
-            // conversationsByTopic += groups.map { Pair(it.id(), Conversation.Group(it) }
+            conversationsByTopic += groups.map { Pair(it.id.toString(), Conversation.Group(it)) }
         }
         return conversationsByTopic.values.sortedByDescending { it.createdAt }
     }

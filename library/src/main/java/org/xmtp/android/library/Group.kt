@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.libxmtp.Message
 import uniffi.xmtp_dh.FfiGroup
 import uniffi.xmtp_dh.FfiListMessagesOptions
@@ -8,8 +9,13 @@ class Group(val client: Client, val libXMTPGroup: FfiGroup) {
     val id: List<UByte>
         get() = libXMTPGroup.id()
 
-    suspend fun send(text: String) {
-        libXMTPGroup.send(contentBytes = text.toByteArray(Charsets.UTF_8).toUByteArray().toList())
+    fun send(text: String): String {
+        runBlocking {
+            libXMTPGroup.send(
+                contentBytes = text.toByteArray(Charsets.UTF_8).toUByteArray().toList()
+            )
+        }
+        return id.toString()
     }
 
     suspend fun messages(): List<Message> {
