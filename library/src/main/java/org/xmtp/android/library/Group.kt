@@ -18,15 +18,17 @@ class Group(val client: Client, val libXMTPGroup: FfiGroup) {
         return id.toString()
     }
 
-    suspend fun messages(): List<Message> {
-        return libXMTPGroup.findMessages(
-            opts = FfiListMessagesOptions(
-                sentBeforeNs = null,
-                sentAfterNs = null,
-                limit = null
-            )
-        ).map {
-            Message(client, it)
+    fun messages(): List<DecodedMessage> {
+        return runBlocking {
+            libXMTPGroup.findMessages(
+                opts = FfiListMessagesOptions(
+                    sentBeforeNs = null,
+                    sentAfterNs = null,
+                    limit = null
+                )
+            ).map {
+                Message(client, it).decode()
+            }
         }
     }
 }
