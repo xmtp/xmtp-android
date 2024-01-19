@@ -32,11 +32,13 @@ import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.android.library.messages.DecryptedMessage
+import uniffi.xmtp_dh.FfiConversations
 import java.util.Date
 
 data class Conversations(
     var client: Client,
     var conversationsByTopic: MutableMap<String, Conversation> = mutableMapOf(),
+    val libXMTPConversations: FfiConversations? = null,
 ) {
 
     companion object {
@@ -79,6 +81,17 @@ data class Conversations(
                 sentAt = messageV1.sentAt,
             ),
         )
+    }
+
+    suspend fun newGroup(accountAddress: String): Group {
+        val group = libXMTPConversations?.createGroup(accountAddress)
+            ?: throw XMTPException("Client does not support Groups")
+        return Group(client, group)
+    }
+
+    suspend fun listGroups(): List<Group> {
+        return libXMTPConversations?.list()?.map { Group(client, it) }
+            ?: throw XMTPException("Client does not support Groups")
     }
 
     /**
@@ -174,7 +187,7 @@ data class Conversations(
      * Get the list of conversations that current user has
      * @return The list of [Conversation] that the current [Client] has.
      */
-    fun list(): List<Conversation> {
+    fun list(includeGroups: Boolean = false): List<Conversation> {
         val newConversations = mutableListOf<Conversation>()
         val mostRecent = conversationsByTopic.values.maxOfOrNull { it.createdAt }
         val pagination = Pagination(after = mostRecent)
@@ -203,7 +216,10 @@ data class Conversations(
             it.peerAddress != client.address && Topic.isValidTopic(it.topic)
         }.map { Pair(it.topic, it) }
 
-        // TODO(perf): use DB to persist + sort
+        if (includeGroups) {
+            val groups = runBlocking { listGroups() }
+            // conversationsByTopic += groups.map { Pair(it.id(), Conversation.Group(it) }
+        }
         return conversationsByTopic.values.sortedByDescending { it.createdAt }
     }
 

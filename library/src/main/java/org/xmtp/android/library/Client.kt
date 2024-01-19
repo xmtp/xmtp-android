@@ -34,6 +34,11 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
+import uniffi.xmtp_dh.FfiInboxOwner
+import uniffi.xmtp_dh.FfiXmtpClient
+import uniffi.xmtp_dh.createClient
+import uniffi.xmtp_dh.org.xmtp.android.library.libxmtp.InboxOwner
+import uniffi.xmtp_dh.org.xmtp.android.library.libxmtp.XMTPLogger
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -63,6 +68,8 @@ class Client() {
     lateinit var apiClient: ApiClient
     lateinit var contacts: Contacts
     lateinit var conversations: Conversations
+    lateinit var logger: XMTPLogger
+    var libXMTPClient: FfiXmtpClient? = null
 
     companion object {
         private const val TAG = "Client"
@@ -137,12 +144,15 @@ class Client() {
         address: String,
         privateKeyBundleV1: PrivateKeyBundleV1,
         apiClient: ApiClient,
+        libXmtpClient: FfiXmtpClient? = null
     ) : this() {
-        this.address = address
+        this.address = libXMTPClient?.accountAddress() ?: address
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
         this.contacts = Contacts(client = this)
-        this.conversations = Conversations(client = this)
+        this.conversations = Conversations(client = this, libXMTPConversations = libXmtpClient?.conversations())
+        this.logger = XMTPLogger()
+        this.libXMTPClient = libXmtpClient
     }
 
     fun buildFrom(bundle: PrivateKeyBundleV1, options: ClientOptions? = null): Client {
@@ -153,18 +163,44 @@ class Client() {
         return Client(address = address, privateKeyBundleV1 = bundle, apiClient = apiClient)
     }
 
-    fun create(account: SigningKey, options: ClientOptions? = null): Client {
+    fun create(
+        account: SigningKey,
+        options: ClientOptions? = null,
+        inboxOwner: InboxOwner? = null,
+    ): Client {
         val clientOptions = options ?: ClientOptions()
         val apiClient =
             GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
-        return create(account = account, apiClient = apiClient, options = options)
+        return create(
+            account = account,
+            apiClient = apiClient,
+            options = options,
+            inboxOwner = inboxOwner
+        )
     }
 
-    fun create(account: SigningKey, apiClient: ApiClient, options: ClientOptions? = null): Client {
+    fun create(
+        account: SigningKey,
+        apiClient: ApiClient,
+        options: ClientOptions? = null,
+        inboxOwner: InboxOwner? = null,
+    ): Client {
         return runBlocking {
             try {
                 val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient, options)
-                val client = Client(account.address, privateKeyBundleV1, apiClient)
+                val libXMTPClient: FfiXmtpClient? = if (inboxOwner != null) {
+                    createClient(
+                        logger = logger,
+                        ffiInboxOwner = inboxOwner,
+                        host = "https://dev.xmtp.network:5556",
+                        isSecure = true,
+                        db = null,
+                        encryptionKey = null
+                    )
+                } else {
+                    null
+                }
+                val client = Client(account.address, privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
                 client
             } catch (e: java.lang.Exception) {
