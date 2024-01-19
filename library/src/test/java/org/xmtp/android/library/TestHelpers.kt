@@ -50,8 +50,8 @@ class FakeWallet : SigningKey {
         return signature
     }
 
-    override suspend fun sign(message: String): Signature {
-        val signature = privateKeyBuilder.sign(message)
+    override suspend fun signLegacy(message: String): Signature {
+        val signature = privateKeyBuilder.signLegacy(message)
         return signature
     }
 }

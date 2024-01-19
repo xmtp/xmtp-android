@@ -94,7 +94,7 @@ class PrivateKeyBuilder : SigningKey {
         }.build()
     }
 
-    override suspend fun sign(message: String): SignatureOuterClass.Signature {
+    override suspend fun signLegacy(message: String): SignatureOuterClass.Signature {
         val digest = Signature.newBuilder().build().ethHash(message)
         return sign(digest)
     }

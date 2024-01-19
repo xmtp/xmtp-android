@@ -34,10 +34,8 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
-import uniffi.xmtp_dh.FfiInboxOwner
 import uniffi.xmtp_dh.FfiXmtpClient
 import uniffi.xmtp_dh.createClient
-import uniffi.xmtp_dh.org.xmtp.android.library.libxmtp.InboxOwner
 import uniffi.xmtp_dh.org.xmtp.android.library.libxmtp.XMTPLogger
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
@@ -166,7 +164,6 @@ class Client() {
     fun create(
         account: SigningKey,
         options: ClientOptions? = null,
-        inboxOwner: InboxOwner? = null,
     ): Client {
         val clientOptions = options ?: ClientOptions()
         val apiClient =
@@ -175,7 +172,6 @@ class Client() {
             account = account,
             apiClient = apiClient,
             options = options,
-            inboxOwner = inboxOwner
         )
     }
 
@@ -183,23 +179,19 @@ class Client() {
         account: SigningKey,
         apiClient: ApiClient,
         options: ClientOptions? = null,
-        inboxOwner: InboxOwner? = null,
     ): Client {
         return runBlocking {
             try {
                 val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient, options)
-                val libXMTPClient: FfiXmtpClient? = if (inboxOwner != null) {
+                val libXMTPClient: FfiXmtpClient =
                     createClient(
                         logger = logger,
-                        ffiInboxOwner = inboxOwner,
+                        ffiInboxOwner = account,
                         host = "https://dev.xmtp.network:5556",
                         isSecure = true,
                         db = null,
                         encryptionKey = null
                     )
-                } else {
-                    null
-                }
                 val client = Client(account.address, privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
                 client

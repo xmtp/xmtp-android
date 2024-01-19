@@ -13,15 +13,18 @@ import org.xmtp.android.library.messages.rawData
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
+import uniffi.xmtp_dh.FfiInboxOwner
 import java.math.BigInteger
 import java.util.Date
 
-interface SigningKey {
+interface SigningKey: FfiInboxOwner{
     val address: String
 
     suspend fun sign(data: ByteArray): SignatureOuterClass.Signature?
 
-    suspend fun sign(message: String): SignatureOuterClass.Signature?
+    suspend fun signLegacy(message: String): SignatureOuterClass.Signature?
+
+    override suspend fun sign(text: String): ByteArray
 }
 
 /**
@@ -50,7 +53,7 @@ fun SigningKey.createIdentity(
     val signatureClass = Signature.newBuilder().build()
     val signatureText = signatureClass.createIdentityText(key = slimKey.toByteArray())
     val digest = signatureClass.ethHash(message = signatureText)
-    val signature = runBlocking { sign(signatureText) } ?: throw XMTPException("Illegal signature")
+    val signature = runBlocking { signLegacy(signatureText) } ?: throw XMTPException("Illegal signature")
 
     val signatureData = KeyUtil.getSignatureData(signature.rawData.toByteString().toByteArray())
     val publicKey = Sign.recoverFromSignature(

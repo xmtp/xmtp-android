@@ -22,7 +22,6 @@ import com.sun.jna.IntegerType
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.Structure
-import com.sun.jna.Callback
 import com.sun.jna.ptr.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -31,7 +30,6 @@ import java.nio.charset.CodingErrorAction
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -1681,7 +1679,7 @@ public abstract class FfiConverterCallbackInterface<CallbackInterface>(
 
 public interface FfiInboxOwner {
     fun `getAddress`(): String
-    fun `sign`(`text`: String): ByteArray
+    suspend fun `sign`(`text`: String): ByteArray
 
 }
 
@@ -1764,7 +1762,7 @@ internal class ForeignCallbackTypeFfiInboxOwner : ForeignCallback {
             it.order(ByteOrder.BIG_ENDIAN)
         }
         fun makeCall() : Int {
-            val returnValue = kotlinCallbackInterface.`sign`(
+            val returnValue = kotlinCallbackInterface.signLegacy(
                 FfiConverterString.read(argsBuf)
 
             )

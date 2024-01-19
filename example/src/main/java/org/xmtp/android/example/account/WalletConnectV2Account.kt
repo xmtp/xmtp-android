@@ -25,10 +25,10 @@ data class WalletConnectV2Account(
         )
 
     override suspend fun sign(data: ByteArray): SignatureOuterClass.Signature? {
-        return sign(String(data))
+        return signLegacy(String(data))
     }
 
-    override suspend fun sign(message: String): SignatureOuterClass.Signature? {
+    override suspend fun signLegacy(message: String): SignatureOuterClass.Signature? {
         val (parentChain, chainId, account) = session.namespaces.getValue(chain).accounts[0].split(":")
         val requestParams = session.namespaces.getValue(chain).methods.find { method ->
             method == "personal_sign"
