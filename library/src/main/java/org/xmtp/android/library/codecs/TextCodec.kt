@@ -36,4 +36,8 @@ data class TextCodec(override var contentType: ContentTypeId = ContentTypeText) 
     override fun fallback(content: String): String? {
         return null
     }
+
+    override fun shouldPush(): Boolean {
+        return true
+    }
 }

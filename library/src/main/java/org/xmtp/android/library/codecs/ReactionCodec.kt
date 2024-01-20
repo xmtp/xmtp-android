@@ -95,6 +95,10 @@ data class ReactionCodec(override var contentType: ContentTypeId = ContentTypeRe
             else -> null
         }
     }
+
+    override fun shouldPush(): Boolean {
+        return true
+    }
 }
 
 private class ReactionSerializer : JsonSerializer<Reaction> {

@@ -36,4 +36,8 @@ data class AttachmentCodec(override var contentType: ContentTypeId = ContentType
     override fun fallback(content: Attachment): String? {
         return "Can’t display \"${content.filename}”. This app doesn’t support attachments."
     }
+
+    override fun shouldPush(): Boolean {
+        return true
+    }
 }
