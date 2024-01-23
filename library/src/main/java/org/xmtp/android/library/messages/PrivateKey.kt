@@ -9,6 +9,7 @@ import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.SigningKey
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
+import java.nio.charset.StandardCharsets
 import java.security.SecureRandom
 import java.util.Date
 
@@ -29,9 +30,10 @@ class PrivateKeyBuilder : SigningKey {
             val uncompressedKey = KeyUtil.addUncompressedByte(publicData)
             it.publicKey = it.publicKey.toBuilder().also { pubKey ->
                 pubKey.timestamp = time
-                pubKey.secp256K1Uncompressed = pubKey.secp256K1Uncompressed.toBuilder().also { keyBuilder ->
-                    keyBuilder.bytes = uncompressedKey.toByteString()
-                }.build()
+                pubKey.secp256K1Uncompressed =
+                    pubKey.secp256K1Uncompressed.toBuilder().also { keyBuilder ->
+                        keyBuilder.bytes = uncompressedKey.toByteString()
+                    }.build()
             }.build()
         }.build()
     }
@@ -92,7 +94,12 @@ class PrivateKeyBuilder : SigningKey {
     }
 
     override fun sign(text: String): ByteArray {
-        TODO("Not yet implemented")
+        val messageBytes: ByteArray = text.toByteArray(StandardCharsets.UTF_8)
+        val signature = Sign.signPrefixedMessage(
+            messageBytes,
+            ECKeyPair.create(privateKey.secp256K1.bytes.toByteArray())
+        )
+        return signature.r + signature.s + signature.v
     }
 
     override suspend fun signLegacy(message: String): SignatureOuterClass.Signature {

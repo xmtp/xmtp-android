@@ -83,7 +83,7 @@ class ClientTest {
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
         val v3Client = client.libXMTPClient
-        assertEquals(client.address, v3Client?.accountAddress())
+        assertEquals(client.address.lowercase(), v3Client?.accountAddress()?.lowercase())
     }
 
     @Test

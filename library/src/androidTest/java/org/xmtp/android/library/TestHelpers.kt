@@ -48,7 +48,7 @@ class FakeWallet : SigningKey {
     }
 
     override fun sign(text: String): ByteArray {
-        TODO("Not yet implemented")
+        return privateKeyBuilder.sign(text)
     }
 
     override suspend fun signLegacy(message: String): Signature {
