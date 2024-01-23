@@ -186,8 +186,8 @@ class Client() {
                     createClient(
                         logger = logger,
                         ffiInboxOwner = account,
-                        host = "https://dev.xmtp.network:5556",
-                        isSecure = true,
+                        host = "${XMTPEnvironment.LOCAL}:5556",
+                        isSecure = false,
                         db = null,
                         encryptionKey = null
                     )
