@@ -142,13 +142,13 @@ class Client() {
         address: String,
         privateKeyBundleV1: PrivateKeyBundleV1,
         apiClient: ApiClient,
-        libXmtpClient: FfiXmtpClient? = null
+        libXmtpClient: FfiXmtpClient? = null,
     ) : this() {
         this.address = libXMTPClient?.accountAddress() ?: address
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
         this.contacts = Contacts(client = this)
-        this.conversations = Conversations(client = this, libXMTPConversations = libXmtpClient?.conversations())
+        this.conversations = Conversations(client = this)
         this.libXMTPClient = libXmtpClient
     }
 
@@ -191,7 +191,8 @@ class Client() {
                         db = null,
                         encryptionKey = null
                     )
-                val client = Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
+                val client =
+                    Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
                 client
             } catch (e: java.lang.Exception) {
