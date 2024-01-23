@@ -188,8 +188,8 @@ class Client() {
                         createClient(
                             logger = logger,
                             ffiInboxOwner = account,
-                            host = "${XMTPEnvironment.LOCAL}:5556",
-                            isSecure = false,
+                            host = "http://${XMTPEnvironment.LOCAL}:5556",
+                            isSecure = true,
                             db = null,
                             encryptionKey = null
                         )

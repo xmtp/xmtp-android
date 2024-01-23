@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.fail
 import org.junit.Ignore
 import org.junit.Test
@@ -81,9 +82,18 @@ class ClientTest {
     @Test
     fun testCreatesAV3Client() {
         val fakeWallet = PrivateKeyBuilder()
-        val client = Client().create(account = fakeWallet)
+        val client =
+            Client().create(account = fakeWallet, options = ClientOptions(enableLibXmtpV3 = true))
         val v3Client = client.libXMTPClient
         assertEquals(client.address.lowercase(), v3Client?.accountAddress()?.lowercase())
+    }
+
+    @Test
+    fun testDoesNotCreateAV3Client() {
+        val fakeWallet = PrivateKeyBuilder()
+        val client = Client().create(account = fakeWallet)
+        val v3Client = client.libXMTPClient
+        assertNull(v3Client)
     }
 
     @Test
