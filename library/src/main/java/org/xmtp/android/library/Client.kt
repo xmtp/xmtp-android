@@ -52,6 +52,7 @@ data class ClientOptions(
     val api: Api = Api(),
     val preCreateIdentityCallback: PreEventCallback? = null,
     val preEnableIdentityCallback: PreEventCallback? = null,
+    val enableLibXmtpV3: Boolean = false,
 ) {
     data class Api(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
@@ -182,15 +183,19 @@ class Client() {
         return runBlocking {
             try {
                 val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient, options)
-                val libXMTPClient: FfiXmtpClient =
-                    createClient(
-                        logger = logger,
-                        ffiInboxOwner = account,
-                        host = "${XMTPEnvironment.LOCAL}:5556",
-                        isSecure = false,
-                        db = null,
-                        encryptionKey = null
-                    )
+                val libXMTPClient: FfiXmtpClient? =
+                    if (options != null && options.enableLibXmtpV3) {
+                        createClient(
+                            logger = logger,
+                            ffiInboxOwner = account,
+                            host = "${XMTPEnvironment.LOCAL}:5556",
+                            isSecure = false,
+                            db = null,
+                            encryptionKey = null
+                        )
+                    } else {
+                        null
+                    }
                 val client =
                     Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
