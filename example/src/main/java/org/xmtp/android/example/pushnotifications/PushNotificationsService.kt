@@ -1,8 +1,11 @@
 package org.xmtp.android.example.pushnotifications
 
+import android.Manifest
 import android.app.PendingIntent
+import android.content.pm.PackageManager
 import android.util.Base64
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -87,8 +90,22 @@ class PushNotificationsService : FirebaseMessagingService() {
             .setContentIntent(pendingIntent)
 
         // Use the URL as the ID for now until one is passed back from the server.
-        NotificationManagerCompat.from(this).apply {
-            notify(topic.hashCode(), builder.build())
+        NotificationManagerCompat.from(this).also {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return
+            }
+            it.notify(topic.hashCode(), builder.build())
         }
     }
 }
