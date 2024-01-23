@@ -45,7 +45,7 @@ class ConversationsTest {
             message = MessageBuilder.buildFromMessageV1(v1 = message).toByteArray()
         )
         val conversation = client.conversations.fromIntro(envelope = envelope)
-        assertEquals(conversation.peerAddress, newWallet.address)
+        assertEquals(conversation.peerAddress, newWallet.getAddress())
         assertEquals(conversation.createdAt.time, created.time)
     }
 
@@ -73,7 +73,7 @@ class ConversationsTest {
             message = sealed.toByteArray()
         )
         val conversation = client.conversations.fromInvite(envelope = envelope)
-        assertEquals(conversation.peerAddress, newWallet.address)
+        assertEquals(conversation.peerAddress, newWallet.getAddress())
         assertEquals(conversation.createdAt.time, created.time)
     }
 

@@ -32,7 +32,7 @@ import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.android.library.messages.DecryptedMessage
-import uniffi.xmtp_dh.FfiConversations
+import uniffi.xmtpv3.FfiConversations
 import java.util.Date
 
 data class Conversations(

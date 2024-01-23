@@ -2,17 +2,17 @@ package org.xmtp.android.library
 
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.libxmtp.Message
-import uniffi.xmtp_dh.FfiGroup
-import uniffi.xmtp_dh.FfiListMessagesOptions
+import uniffi.xmtpv3.FfiGroup
+import uniffi.xmtpv3.FfiListMessagesOptions
 
 class Group(val client: Client, val libXMTPGroup: FfiGroup) {
-    val id: List<UByte>
+    val id: ByteArray
         get() = libXMTPGroup.id()
 
     fun send(text: String): String {
         runBlocking {
             libXMTPGroup.send(
-                contentBytes = text.toByteArray(Charsets.UTF_8).toUByteArray().toList()
+                contentBytes = text.toByteArray(Charsets.UTF_8)
             )
         }
         return id.toString()

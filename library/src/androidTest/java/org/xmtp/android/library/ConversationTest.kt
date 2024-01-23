@@ -169,39 +169,39 @@ class ConversationTest {
         // Overwrite contact as legacy so we can get v1
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
-        val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
-        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
+        val bobConversation = bobClient.conversations.newConversation(aliceWallet.getAddress())
+        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.getAddress())
 
         bobConversation.send(content = "hey alice")
         bobConversation.send(content = "hey alice again")
         val messages = aliceConversation.messages()
         assertEquals(2, messages.size)
         assertEquals("hey alice", messages[1].body)
-        assertEquals(bobWallet.address, messages[1].senderAddress)
+        assertEquals(bobWallet.getAddress(), messages[1].senderAddress)
     }
 
     @Test
     fun testCanLoadV2Messages() {
         val bobConversation = bobClient.conversations.newConversation(
-            aliceWallet.address,
+            aliceWallet.getAddress(),
             InvitationV1ContextBuilder.buildFromConversation("hi"),
         )
 
         val aliceConversation = aliceClient.conversations.newConversation(
-            bobWallet.address,
+            bobWallet.getAddress(),
             InvitationV1ContextBuilder.buildFromConversation("hi"),
         )
         bobConversation.send(content = "hey alice")
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
         assertEquals("hey alice", messages[0].body)
-        assertEquals(bobWallet.address, messages[0].senderAddress)
+        assertEquals(bobWallet.getAddress(), messages[0].senderAddress)
     }
 
     @Test
     fun testVerifiesV2MessageSignature() {
         val aliceConversation = aliceClient.conversations.newConversation(
-            bobWallet.address,
+            bobWallet.getAddress(),
             context = InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
         )
 
@@ -237,7 +237,7 @@ class ConversationTest {
         )
         aliceClient.publish(envelopes = listOf(tamperedEnvelope))
         val bobConversation = bobClient.conversations.newConversation(
-            aliceWallet.address,
+            aliceWallet.getAddress(),
             InvitationV1ContextBuilder.buildFromConversation("hi"),
         )
         assertThrows("Invalid signature", XMTPException::class.java) {
@@ -251,8 +251,8 @@ class ConversationTest {
     fun testCanSendGzipCompressedV1Messages() {
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
-        val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
-        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
+        val bobConversation = bobClient.conversations.newConversation(aliceWallet.getAddress())
+        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.getAddress())
         bobConversation.send(
             text = MutableList(1000) { "A" }.toString(),
             sendOptions = SendOptions(compression = EncodedContentCompression.GZIP),
@@ -266,8 +266,8 @@ class ConversationTest {
     fun testCanSendDeflateCompressedV1Messages() {
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
-        val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
-        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
+        val bobConversation = bobClient.conversations.newConversation(aliceWallet.getAddress())
+        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.getAddress())
         bobConversation.send(
             content = MutableList(1000) { "A" }.toString(),
             options = SendOptions(compression = EncodedContentCompression.DEFLATE),
@@ -280,11 +280,11 @@ class ConversationTest {
     @Test
     fun testCanSendGzipCompressedV2Messages() {
         val bobConversation = bobClient.conversations.newConversation(
-            aliceWallet.address,
+            aliceWallet.getAddress(),
             InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
         )
         val aliceConversation = aliceClient.conversations.newConversation(
-            bobWallet.address,
+            bobWallet.getAddress(),
             InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
         )
         bobConversation.send(
@@ -294,17 +294,17 @@ class ConversationTest {
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
         assertEquals(MutableList(1000) { "A" }.toString(), messages[0].body)
-        assertEquals(bobWallet.address, messages[0].senderAddress)
+        assertEquals(bobWallet.getAddress(), messages[0].senderAddress)
     }
 
     @Test
     fun testCanSendDeflateCompressedV2Messages() {
         val bobConversation = bobClient.conversations.newConversation(
-            aliceWallet.address,
+            aliceWallet.getAddress(),
             InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
         )
         val aliceConversation = aliceClient.conversations.newConversation(
-            bobWallet.address,
+            bobWallet.getAddress(),
             InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
         )
         bobConversation.send(
@@ -314,7 +314,7 @@ class ConversationTest {
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
         assertEquals(MutableList(1000) { "A" }.toString(), messages[0].body)
-        assertEquals(bobWallet.address, messages[0].senderAddress)
+        assertEquals(bobWallet.getAddress(), messages[0].senderAddress)
     }
 
     @Test
@@ -324,8 +324,8 @@ class ConversationTest {
         fakeContactClient.publishUserContact()
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
-        val contact = client.getUserContact(peerAddress = fakeContactWallet.address)!!
-        assertEquals(contact.walletAddress, fakeContactWallet.address)
+        val contact = client.getUserContact(peerAddress = fakeContactWallet.getAddress())!!
+        assertEquals(contact.walletAddress, fakeContactWallet.getAddress())
         val created = Date()
         val invitationContext = Invitation.InvitationV1.Context.newBuilder().also {
             it.conversationId = "https://example.com/1"
@@ -338,7 +338,7 @@ class ConversationTest {
         val senderBundle = client.privateKeyBundleV1?.toV2()
         assertEquals(
             senderBundle?.identityKey?.publicKey?.recoverWalletSignerPublicKey()?.walletAddress,
-            fakeWallet.address,
+            fakeWallet.getAddress(),
         )
         val invitation = SealedInvitationBuilder.buildFromV1(
             sender = client.privateKeyBundleV1!!.toV2(),
@@ -347,12 +347,12 @@ class ConversationTest {
             invitation = invitationv1,
         )
         val inviteHeader = invitation.v1.header
-        assertEquals(inviteHeader.sender.walletAddress, fakeWallet.address)
-        assertEquals(inviteHeader.recipient.walletAddress, fakeContactWallet.address)
+        assertEquals(inviteHeader.sender.walletAddress, fakeWallet.getAddress())
+        assertEquals(inviteHeader.recipient.walletAddress, fakeContactWallet.getAddress())
         val header = SealedInvitationHeaderV1.parseFrom(invitation.v1.headerBytes)
         val conversation =
             ConversationV2.create(client = client, invitation = invitationv1, header = header)
-        assertEquals(fakeContactWallet.address, conversation.peerAddress)
+        assertEquals(fakeContactWallet.getAddress(), conversation.peerAddress)
 
         conversation.send(content = "hello world")
 
@@ -734,8 +734,8 @@ class ConversationTest {
     fun testCanSendEncodedContentV1Message() {
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
-        val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
-        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
+        val bobConversation = bobClient.conversations.newConversation(aliceWallet.getAddress())
+        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.getAddress())
         val encodedContent = TextCodec().encode(content = "hi")
         bobConversation.send(encodedContent = encodedContent)
         val messages = aliceConversation.messages()
@@ -745,7 +745,7 @@ class ConversationTest {
 
     @Test
     fun testCanSendEncodedContentV2Message() {
-        val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
+        val bobConversation = bobClient.conversations.newConversation(aliceWallet.getAddress())
         val encodedContent = TextCodec().encode(content = "hi")
         bobConversation.send(encodedContent = encodedContent)
         val messages = bobConversation.messages()

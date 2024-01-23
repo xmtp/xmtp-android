@@ -42,17 +42,22 @@ class FakeWallet : SigningKey {
         }
     }
 
-    override val address: String
-        get() = privateKey.walletAddress
-
     override suspend fun sign(data: ByteArray): Signature {
         val signature = privateKeyBuilder.sign(data)
         return signature
     }
 
+    override fun sign(text: String): ByteArray {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun signLegacy(message: String): Signature {
         val signature = privateKeyBuilder.signLegacy(message)
         return signature
+    }
+
+    override fun getAddress(): String {
+        return privateKey.walletAddress
     }
 }
 

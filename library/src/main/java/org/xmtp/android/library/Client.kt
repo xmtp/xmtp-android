@@ -10,6 +10,7 @@ import org.web3j.crypto.Keys
 import org.web3j.crypto.Keys.toChecksumAddress
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
+import org.xmtp.android.library.libxmtp.XMTPLogger
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.EncryptedPrivateKeyBundle
 import org.xmtp.android.library.messages.Envelope
@@ -34,9 +35,8 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
-import uniffi.xmtp_dh.FfiXmtpClient
-import uniffi.xmtp_dh.createClient
-import uniffi.xmtp_dh.org.xmtp.android.library.libxmtp.XMTPLogger
+import uniffi.xmtpv3.FfiXmtpClient
+import uniffi.xmtpv3.createClient
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -66,7 +66,7 @@ class Client() {
     lateinit var apiClient: ApiClient
     lateinit var contacts: Contacts
     lateinit var conversations: Conversations
-    lateinit var logger: XMTPLogger
+    var logger: XMTPLogger = XMTPLogger()
     var libXMTPClient: FfiXmtpClient? = null
 
     companion object {
@@ -149,7 +149,6 @@ class Client() {
         this.apiClient = apiClient
         this.contacts = Contacts(client = this)
         this.conversations = Conversations(client = this, libXMTPConversations = libXmtpClient?.conversations())
-        this.logger = XMTPLogger()
         this.libXMTPClient = libXmtpClient
     }
 
@@ -192,7 +191,7 @@ class Client() {
                         db = null,
                         encryptionKey = null
                     )
-                val client = Client(account.address, privateKeyBundleV1, apiClient, libXMTPClient)
+                val client = Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
                 client
             } catch (e: java.lang.Exception) {
@@ -253,7 +252,7 @@ class Client() {
         apiClient: ApiClient,
         options: ClientOptions? = null,
     ): PrivateKeyBundleV1? {
-        val encryptedBundles = authCheck(apiClient, account.address)
+        val encryptedBundles = authCheck(apiClient, account.getAddress())
         for (encryptedBundle in encryptedBundles) {
             try {
                 val bundle = encryptedBundle.decrypted(account, options?.preEnableIdentityCallback)
