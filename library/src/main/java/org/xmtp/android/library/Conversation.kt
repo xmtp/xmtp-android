@@ -24,7 +24,9 @@ sealed class Conversation {
     data class V1(val conversationV1: ConversationV1) : Conversation()
     data class V2(val conversationV2: ConversationV2) : Conversation()
 
-    enum class Version { V1, V2 }
+    data class Group(val group: org.xmtp.android.library.Group) : Conversation()
+
+    enum class Version { V1, V2, GROUP }
 
     // This indicates whether this a v1 or v2 conversation.
     val version: Version
@@ -32,6 +34,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> Version.V1
                 is V2 -> Version.V2
+                is Group -> Version.GROUP
             }
         }
 
@@ -41,6 +44,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.sentAt
                 is V2 -> conversationV2.createdAt
+                is Group -> group.createdAt
             }
         }
 
@@ -50,6 +54,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.peerAddress
                 is V2 -> conversationV2.peerAddress
+                is Group -> TODO()
             }
         }
 
@@ -60,6 +65,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> null
                 is V2 -> conversationV2.context.conversationId
+                is Group -> null
             }
         }
 
@@ -68,6 +74,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> null
                 is V2 -> conversationV2.keyMaterial
+                is Group -> null
             }
         }
 
@@ -75,6 +82,7 @@ sealed class Conversation {
         val client: Client = when (this) {
             is V1 -> conversationV1.client
             is V2 -> conversationV2.client
+            is Group -> group.client
         }
         return client.contacts.consentList.state(address = peerAddress)
     }
@@ -99,6 +107,7 @@ sealed class Conversation {
                             .setKeyMaterial(conversationV2.keyMaterial.toByteString()),
                     ),
             ).build()
+            is Group -> TODO()
         }
     }
 
@@ -106,6 +115,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.decode(envelope)
             is V2 -> conversationV2.decodeEnvelope(envelope)
+            is Group -> TODO()
         }
     }
 
@@ -127,6 +137,8 @@ sealed class Conversation {
             is V2 -> {
                 conversationV2.prepareMessage(content = content, options = options)
             }
+
+            is Group -> TODO()
         }
     }
 
@@ -142,6 +154,8 @@ sealed class Conversation {
             is V2 -> {
                 conversationV2.prepareMessage(encodedContent = encodedContent, options = options)
             }
+
+            is Group -> TODO()
         }
     }
 
@@ -149,6 +163,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.send(prepared = prepared)
             is V2 -> conversationV2.send(prepared = prepared)
+            is Group -> TODO()
         }
     }
 
@@ -156,6 +171,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.send(content = content, options = options)
             is V2 -> conversationV2.send(content = content, options = options)
+            is Group -> TODO()
         }
     }
 
@@ -163,6 +179,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.send(text = text, sendOptions, sentAt)
             is V2 -> conversationV2.send(text = text, sendOptions, sentAt)
+            is Group -> group.send(text)
         }
     }
 
@@ -170,6 +187,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.send(encodedContent = encodedContent, options = options)
             is V2 -> conversationV2.send(encodedContent = encodedContent, options = options)
+            is Group -> TODO()
         }
     }
 
@@ -184,6 +202,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.topic.description
                 is V2 -> conversationV2.topic
+                is Group -> group.id.toString()
             }
         }
 
@@ -221,6 +240,8 @@ sealed class Conversation {
                     after = after,
                     direction = direction,
                 )
+
+            is Group -> group.messages()
         }
     }
 
@@ -233,6 +254,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.decryptedMessages(limit, before, after, direction)
             is V2 -> conversationV2.decryptedMessages(limit, before, after, direction)
+            is Group -> TODO()
         }
     }
 
@@ -242,6 +264,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.decrypt(envelope)
             is V2 -> conversationV2.decrypt(envelope)
+            is Group -> TODO()
         }
     }
 
@@ -251,6 +274,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.client
                 is V2 -> conversationV2.client
+                is Group -> group.client
             }
         }
 
@@ -262,6 +286,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.streamMessages()
             is V2 -> conversationV2.streamMessages()
+            is Group -> TODO()
         }
     }
 
@@ -269,6 +294,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.streamDecryptedMessages()
             is V2 -> conversationV2.streamDecryptedMessages()
+            is Group -> TODO()
         }
     }
 
@@ -276,6 +302,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> return conversationV1.streamEphemeral()
             is V2 -> return conversationV2.streamEphemeral()
+            is Group -> TODO()
         }
     }
 }
