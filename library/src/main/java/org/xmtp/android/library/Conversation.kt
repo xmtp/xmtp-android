@@ -44,7 +44,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.sentAt
                 is V2 -> conversationV2.createdAt
-                is Group -> TODO()
+                is Group -> group.createdAt
             }
         }
 

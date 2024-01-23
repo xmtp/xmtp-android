@@ -4,10 +4,14 @@ import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.libxmtp.Message
 import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiListMessagesOptions
+import java.util.Date
 
 class Group(val client: Client, val libXMTPGroup: FfiGroup) {
     val id: ByteArray
         get() = libXMTPGroup.id()
+
+    val createdAt: Date
+        get() = Date(libXMTPGroup.createdAtNs() / 1_000_000)
 
     fun send(text: String): String {
         runBlocking {
