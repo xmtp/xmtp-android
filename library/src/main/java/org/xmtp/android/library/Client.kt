@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import com.google.crypto.tink.subtle.Base64
@@ -37,7 +38,9 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.createClient
+import java.io.File
 import java.nio.charset.StandardCharsets
+import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
@@ -52,6 +55,7 @@ data class ClientOptions(
     val api: Api = Api(),
     val preCreateIdentityCallback: PreEventCallback? = null,
     val preEnableIdentityCallback: PreEventCallback? = null,
+    val appContext: Context? = null,
     val enableLibXmtpV3: Boolean = false,
 ) {
     data class Api(
@@ -184,18 +188,22 @@ class Client() {
             try {
                 val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient, options)
                 val libXMTPClient: FfiXmtpClient? =
-                    if (options != null && options.enableLibXmtpV3) {
+                    if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
+                        val dbDir = File(options.appContext.filesDir.absolutePath, "xmtp_db")
+                        dbDir.mkdir()
+                        val dbPath: String = dbDir.absolutePath + "/xmtp-${account.getAddress()}.db3"
                         createClient(
                             logger = logger,
                             ffiInboxOwner = account,
-                            host = "http://${XMTPEnvironment.LOCAL}:5556",
+                            host = "http://10.0.2.2:5556",
                             isSecure = false,
-                            db = null,
+                            db = dbPath,
                             encryptionKey = null
                         )
                     } else {
                         null
                     }
+                libXMTPClient?.registerIdentity()
                 val client =
                     Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
