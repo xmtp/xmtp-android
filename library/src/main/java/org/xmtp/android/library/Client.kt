@@ -191,16 +191,14 @@ class Client() {
                     if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
                         val dbDir = File(options.appContext.filesDir.absolutePath, "xmtp_db")
                         dbDir.mkdir()
-                        val dbPath: String = dbDir.absolutePath + "/xmtp.db3"
-                        val dbEncryptionKey: ByteArray = SecureRandom().generateSeed(32)
-
+                        val dbPath: String = dbDir.absolutePath + "/xmtp-${account.getAddress()}.db3"
                         createClient(
                             logger = logger,
                             ffiInboxOwner = account,
                             host = "http://10.0.2.2:5556",
                             isSecure = false,
                             db = dbPath,
-                            encryptionKey = dbEncryptionKey
+                            encryptionKey = null
                         )
                     } else {
                         null
