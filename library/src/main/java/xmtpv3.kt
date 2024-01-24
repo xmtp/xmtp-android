@@ -394,9 +394,11 @@ internal interface _UniFFILib : Library {
 
     fun uniffi_xmtpv3_fn_free_fficonversations(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
     ): Unit
-    fun uniffi_xmtpv3_fn_method_fficonversations_create_group(`ptr`: Pointer,`accountAddress`: RustBuffer.ByValue,
+    fun uniffi_xmtpv3_fn_method_fficonversations_create_group(`ptr`: Pointer,`accountAddresses`: RustBuffer.ByValue,
     ): Pointer
-    fun uniffi_xmtpv3_fn_method_fficonversations_list(`ptr`: Pointer,
+    fun uniffi_xmtpv3_fn_method_fficonversations_list(`ptr`: Pointer,`opts`: RustBuffer.ByValue,
+    ): Pointer
+    fun uniffi_xmtpv3_fn_method_fficonversations_sync(`ptr`: Pointer,
     ): Pointer
     fun uniffi_xmtpv3_fn_free_ffigroup(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
     ): Unit
@@ -628,6 +630,8 @@ internal interface _UniFFILib : Library {
     ): Short
     fun uniffi_xmtpv3_checksum_method_fficonversations_list(
     ): Short
+    fun uniffi_xmtpv3_checksum_method_fficonversations_sync(
+    ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_add_members(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_created_at_ns(
@@ -736,10 +740,13 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_xmtpv3_checksum_func_verify_k256_sha256() != 31332.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_create_group() != 30537.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_create_group() != 45500.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_list() != 49805.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_list() != 44067.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_sync() != 62598.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_add_members() != 24978.toShort()) {
@@ -1206,8 +1213,9 @@ abstract class FFIObject(
 
 public interface FfiConversationsInterface {
     @Throws(GenericException::class)
-    suspend fun `createGroup`(`accountAddress`: String): FfiGroup@Throws(GenericException::class)
-    suspend fun `list`(): List<FfiGroup>
+    suspend fun `createGroup`(`accountAddresses`: List<String>): FfiGroup@Throws(GenericException::class)
+    suspend fun `list`(`opts`: FfiListConversationsOptions): List<FfiGroup>@Throws(GenericException::class)
+    suspend fun `sync`()
     companion object
 }
 
@@ -1232,12 +1240,12 @@ class FfiConversations(
 
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `createGroup`(`accountAddress`: String) : FfiGroup {
+    override suspend fun `createGroup`(`accountAddresses`: List<String>) : FfiGroup {
         return uniffiRustCallAsync(
             callWithPointer { thisPtr ->
                 _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_create_group(
                     thisPtr,
-                    FfiConverterString.lower(`accountAddress`),
+                    FfiConverterSequenceString.lower(`accountAddresses`),
                 )
             },
             { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, continuation) },
@@ -1252,19 +1260,40 @@ class FfiConversations(
 
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `list`() : List<FfiGroup> {
+    override suspend fun `list`(`opts`: FfiListConversationsOptions) : List<FfiGroup> {
         return uniffiRustCallAsync(
             callWithPointer { thisPtr ->
                 _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list(
                     thisPtr,
-
-                    )
+                    FfiConverterTypeFfiListConversationsOptions.lower(`opts`),
+                )
             },
             { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, continuation) },
             { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
             { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterSequenceTypeFfiGroup.lift(it) },
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `sync`() {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_sync(
+                    thisPtr,
+
+                    )
+            },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, continuation) },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+            // lift function
+            { Unit },
+
             // Error FFI converter
             GenericException.ErrorHandler,
         )
@@ -2061,6 +2090,40 @@ public object FfiConverterTypeFfiGroupMember: FfiConverterRustBuffer<FfiGroupMem
     override fun write(value: FfiGroupMember, buf: ByteBuffer) {
         FfiConverterString.write(value.`accountAddress`, buf)
         FfiConverterSequenceByteArray.write(value.`installationIds`, buf)
+    }
+}
+
+
+
+
+data class FfiListConversationsOptions (
+    var `createdAfterNs`: Long?,
+    var `createdBeforeNs`: Long?,
+    var `limit`: Long?
+) {
+
+    companion object
+}
+
+public object FfiConverterTypeFfiListConversationsOptions: FfiConverterRustBuffer<FfiListConversationsOptions> {
+    override fun read(buf: ByteBuffer): FfiListConversationsOptions {
+        return FfiListConversationsOptions(
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiListConversationsOptions) = (
+            FfiConverterOptionalLong.allocationSize(value.`createdAfterNs`) +
+                    FfiConverterOptionalLong.allocationSize(value.`createdBeforeNs`) +
+                    FfiConverterOptionalLong.allocationSize(value.`limit`)
+            )
+
+    override fun write(value: FfiListConversationsOptions, buf: ByteBuffer) {
+        FfiConverterOptionalLong.write(value.`createdAfterNs`, buf)
+        FfiConverterOptionalLong.write(value.`createdBeforeNs`, buf)
+        FfiConverterOptionalLong.write(value.`limit`, buf)
     }
 }
 
