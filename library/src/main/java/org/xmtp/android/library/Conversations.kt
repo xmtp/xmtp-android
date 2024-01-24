@@ -38,7 +38,7 @@ import java.util.Date
 data class Conversations(
     var client: Client,
     var conversationsByTopic: MutableMap<String, Conversation> = mutableMapOf(),
-    val libXMTPConversations: FfiConversations? = null,
+    private val libXMTPConversations: FfiConversations? = null,
 ) {
 
     companion object {
@@ -83,15 +83,20 @@ data class Conversations(
         )
     }
 
-    suspend fun newGroup(accountAddress: String): Group {
-        val group = libXMTPConversations?.createGroup(accountAddress)
-            ?: throw XMTPException("Client does not support Groups")
+    fun newGroup(accountAddress: String): Group {
+        val group = runBlocking {
+            libXMTPConversations?.createGroup(accountAddress)
+                ?: throw XMTPException("Client does not support Groups")
+        }
         return Group(client, group)
     }
 
-    suspend fun listGroups(): List<Group> {
-        return libXMTPConversations?.list()?.map { Group(client, it) }
-            ?: throw XMTPException("Client does not support Groups")
+    fun listGroups(): List<Group> {
+        return runBlocking {
+            libXMTPConversations?.list()?.map {
+                Group(client, it)
+            }
+        } ?: throw XMTPException("Client does not support Groups")
     }
 
     /**

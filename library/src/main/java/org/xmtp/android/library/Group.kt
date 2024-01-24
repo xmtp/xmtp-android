@@ -6,7 +6,7 @@ import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiListMessagesOptions
 import java.util.Date
 
-class Group(val client: Client, val libXMTPGroup: FfiGroup) {
+class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     val id: ByteArray
         get() = libXMTPGroup.id()
 
@@ -20,6 +20,10 @@ class Group(val client: Client, val libXMTPGroup: FfiGroup) {
             )
         }
         return id.toString()
+    }
+
+    suspend fun sync() {
+        libXMTPGroup.sync()
     }
 
     fun messages(): List<DecodedMessage> {

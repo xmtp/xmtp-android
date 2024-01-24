@@ -149,7 +149,7 @@ class Client() {
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
         this.contacts = Contacts(client = this)
-        this.conversations = Conversations(client = this)
+        this.conversations = Conversations(client = this, libXMTPConversations = libXmtpClient?.conversations())
         this.libXMTPClient = libXmtpClient
     }
 
@@ -189,7 +189,7 @@ class Client() {
                             logger = logger,
                             ffiInboxOwner = account,
                             host = "http://${XMTPEnvironment.LOCAL}:5556",
-                            isSecure = true,
+                            isSecure = false,
                             db = null,
                             encryptionKey = null
                         )
