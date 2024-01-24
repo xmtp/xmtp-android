@@ -39,4 +39,14 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
             }
         }
     }
+
+    fun addMembers(addresses: List<String>) {
+        runBlocking { libXMTPGroup.addMembers(addresses) }
+    }
+
+    fun memberAddresses(): List<String> {
+        return runBlocking {
+            libXMTPGroup.listMembers().map { it.accountAddress }
+        }
+    }
 }
