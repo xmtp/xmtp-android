@@ -82,4 +82,13 @@ class GroupTest {
         val convos = boClient.conversations.list(includeGroups = true)
         assertEquals(convos.size, 3)
     }
+
+    @Test
+    fun testCanSendMessageToGroup() {
+        val group = boClient.conversations.newGroup(alix.walletAddress)
+        group.send("howdy")
+        group.send("gm")
+        runBlocking { group.sync() }
+        assertEquals(group.messages().size, 2)
+    }
 }
