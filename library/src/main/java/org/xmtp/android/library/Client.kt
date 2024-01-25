@@ -37,6 +37,7 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import uniffi.xmtpv3.FfiXmtpClient
+import uniffi.xmtpv3.LegacyIdentitySource
 import uniffi.xmtpv3.createClient
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -189,7 +190,7 @@ class Client() {
             try {
                 val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient, options)
                 val libXMTPClient: FfiXmtpClient? =
-                    ffiXmtpClient(options, account, options?.appContext)
+                    ffiXmtpClient(options, account, options?.appContext, privateKeyBundleV1)
                 val client =
                     Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
@@ -204,6 +205,7 @@ class Client() {
         options: ClientOptions?,
         account: SigningKey,
         appContext: Context?,
+        privateKeyBundleV1: PrivateKeyBundleV1,
     ): FfiXmtpClient? {
         val libXMTPClient: FfiXmtpClient? =
             if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
@@ -229,16 +231,27 @@ class Client() {
 
                 createClient(
                     logger = logger,
-                    ffiInboxOwner = account,
                     host = "http://10.0.2.2:5556",
                     isSecure = false,
                     db = dbPath,
-                    encryptionKey = retrievedKey
+                    encryptionKey = retrievedKey,
+                    accountAddress = account.getAddress(),
+                    // Figure out where the keys came from
+                    //    NONE,
+                    //    STATIC, // someone passed in a bundle
+                    //    NETWORK, // v2 keys already on the network
+                    //    KEY_GENERATOR; // I created them
+                    legacyIdentitySource = LegacyIdentitySource.NETWORK,
+                    legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().toByteArray()
                 )
             } else {
                 null
             }
-        libXMTPClient?.registerIdentity()
+
+        libXMTPClient?.textToSign()?.let {
+            libXMTPClient.registerIdentity(account.sign(it))
+        }
+
         return libXMTPClient
     }
 
