@@ -47,6 +47,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 typealias PreEventCallback = suspend () -> Unit
@@ -188,22 +189,7 @@ class Client() {
             try {
                 val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient, options)
                 val libXMTPClient: FfiXmtpClient? =
-                    if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
-                        val dbDir = File(options.appContext.filesDir.absolutePath, "xmtp_db")
-                        dbDir.mkdir()
-                        val dbPath: String = dbDir.absolutePath + "/xmtp-${account.getAddress()}.db3"
-                        createClient(
-                            logger = logger,
-                            ffiInboxOwner = account,
-                            host = "http://10.0.2.2:5556",
-                            isSecure = false,
-                            db = dbPath,
-                            encryptionKey = null
-                        )
-                    } else {
-                        null
-                    }
-                libXMTPClient?.registerIdentity()
+                    ffiXmtpClient(options, account, options?.appContext)
                 val client =
                     Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
@@ -212,6 +198,48 @@ class Client() {
                 throw XMTPException("Error creating client", e)
             }
         }
+    }
+
+    private suspend fun ffiXmtpClient(
+        options: ClientOptions?,
+        account: SigningKey,
+        appContext: Context?,
+    ): FfiXmtpClient? {
+        val libXMTPClient: FfiXmtpClient? =
+            if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
+                val alias = "xmtp-${options.api.env}-${account.getAddress()}"
+
+                val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
+                dbDir.mkdir()
+                val dbPath: String = dbDir.absolutePath + "/$alias.db3"
+
+                val sharedPreferences =
+                    options.appContext.getSharedPreferences("XMTPPreferences", Context.MODE_PRIVATE)
+                val dbEncryptionKey = sharedPreferences.getString(alias, null)
+
+                val retrievedKey = if (dbEncryptionKey != null) {
+                    Base64.decode(dbEncryptionKey)
+                } else {
+                    val editor = sharedPreferences.edit()
+                    val key: ByteArray = SecureRandom().generateSeed(32)
+                    editor.putString(alias, Base64.encode(key))
+                    editor.apply()
+                    key
+                }
+
+                createClient(
+                    logger = logger,
+                    ffiInboxOwner = account,
+                    host = "http://10.0.2.2:5556",
+                    isSecure = false,
+                    db = dbPath,
+                    encryptionKey = retrievedKey
+                )
+            } else {
+                null
+            }
+        libXMTPClient?.registerIdentity()
+        return libXMTPClient
     }
 
     fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null): Client =
