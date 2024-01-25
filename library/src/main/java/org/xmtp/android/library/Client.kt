@@ -219,19 +219,17 @@ class Client() {
                 dbDir.mkdir()
                 val dbPath: String = dbDir.absolutePath + "/$alias.db3"
 
-                val keyStore = KeyStore.getInstance("AndroidKeyStore")
-                withContext(Dispatchers.IO) {
-                    keyStore.load(null)
-                }
-                val entry = keyStore.getEntry(alias, null)
-                val retrievedKey = if (entry is KeyStore.SecretKeyEntry) {
-                    entry.secretKey
+                val sharedPreferences =
+                    options.appContext.getSharedPreferences("XMTPPreferences", Context.MODE_PRIVATE)
+                val dbEncryptionKey = sharedPreferences.getString(alias, null)
+
+                val retrievedKey = if (dbEncryptionKey != null) {
+                    Base64.decode(dbEncryptionKey)
                 } else {
-                    val keyGenerator = KeyGenerator.getInstance("AES")
-                    keyGenerator.init(256)
-                    val key: SecretKey = keyGenerator.generateKey()
-                    val secretKeyEntry = KeyStore.SecretKeyEntry(key)
-                    keyStore.setEntry(alias, secretKeyEntry, null)
+                    val editor = sharedPreferences.edit()
+                    val key: ByteArray = SecureRandom().generateSeed(32)
+                    editor.putString(alias, Base64.encode(key))
+                    editor.apply()
                     key
                 }
 
@@ -241,7 +239,7 @@ class Client() {
                     host = "http://10.0.2.2:5556",
                     isSecure = false,
                     db = dbPath,
-                    encryptionKey = retrievedKey.encoded
+                    encryptionKey = retrievedKey
                 )
             } else {
                 null
