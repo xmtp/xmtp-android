@@ -47,15 +47,14 @@ class GroupTest {
 
     @Test
     fun testCanCreateAGroup() {
-        val group = boClient.conversations.newGroup(alix.walletAddress)
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
         assert(group.id.isNotEmpty())
     }
 
     @Test
     fun testCanListGroupMembers() {
-        val group = boClient.conversations.newGroup(alix.walletAddress)
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
         group.addMembers(listOf(caro.walletAddress))
-        group.send("Howdy")
         assertSame(
             group.memberAddresses(),
             listOf(
@@ -68,16 +67,16 @@ class GroupTest {
 
     @Test
     fun testCanListGroups() {
-        boClient.conversations.newGroup(alix.walletAddress)
-        boClient.conversations.newGroup(caro.walletAddress)
+        boClient.conversations.newGroup(listOf(alix.walletAddress))
+        boClient.conversations.newGroup(listOf(caro.walletAddress))
         val groups = boClient.conversations.listGroups()
         assertEquals(groups.size, 2)
     }
 
     @Test
     fun testCanListGroupsAndConversations() {
-        boClient.conversations.newGroup(alix.walletAddress)
-        boClient.conversations.newGroup(caro.walletAddress)
+        boClient.conversations.newGroup(listOf(alix.walletAddress))
+        boClient.conversations.newGroup(listOf(caro.walletAddress))
         boClient.conversations.newConversation(alix.walletAddress)
         val convos = boClient.conversations.list(includeGroups = true)
         assertEquals(convos.size, 3)
@@ -85,7 +84,7 @@ class GroupTest {
 
     @Test
     fun testCanSendMessageToGroup() {
-        val group = boClient.conversations.newGroup(alix.walletAddress)
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
         group.send("howdy")
         group.send("gm")
         runBlocking { group.sync() }

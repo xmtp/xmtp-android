@@ -7,7 +7,7 @@ import org.xmtp.android.library.codecs.EncodedContent
 import uniffi.xmtpv3.FfiMessage
 import java.util.Date
 
-data class Message(val client: Client, val libXMTPMessage: FfiMessage) {
+data class Message(val client: Client, private val libXMTPMessage: FfiMessage) {
     val id: ByteArray
         get() = libXMTPMessage.id
 
