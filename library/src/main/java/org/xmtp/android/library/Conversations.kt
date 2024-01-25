@@ -33,6 +33,7 @@ import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.android.library.messages.DecryptedMessage
 import uniffi.xmtpv3.FfiConversations
+import uniffi.xmtpv3.FfiListConversationsOptions
 import java.util.Date
 
 data class Conversations(
@@ -85,7 +86,7 @@ data class Conversations(
 
     fun newGroup(accountAddress: String): Group {
         val group = runBlocking {
-            libXMTPConversations?.createGroup(accountAddress)
+            libXMTPConversations?.createGroup(listOf(accountAddress))
                 ?: throw XMTPException("Client does not support Groups")
         }
         return Group(client, group)
@@ -93,7 +94,7 @@ data class Conversations(
 
     fun listGroups(): List<Group> {
         return runBlocking {
-            libXMTPConversations?.list()?.map {
+            libXMTPConversations?.list(FfiListConversationsOptions(createdAfterNs = null, createdBeforeNs = null, limit = null))?.map {
                 Group(client, it)
             }
         } ?: throw XMTPException("Client does not support Groups")
