@@ -2,11 +2,14 @@ package org.xmtp.android.library
 
 import android.content.Context
 import android.os.Build
+import android.security.keystore.KeyProperties
 import android.util.Log
 import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Keys.toChecksumAddress
 import org.xmtp.android.library.codecs.ContentCodec
@@ -40,12 +43,16 @@ import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.createClient
 import java.io.File
 import java.nio.charset.StandardCharsets
+import java.security.KeyStore
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
@@ -188,22 +195,7 @@ class Client() {
             try {
                 val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient, options)
                 val libXMTPClient: FfiXmtpClient? =
-                    if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
-                        val dbDir = File(options.appContext.filesDir.absolutePath, "xmtp_db")
-                        dbDir.mkdir()
-                        val dbPath: String = dbDir.absolutePath + "/xmtp-${account.getAddress()}.db3"
-                        createClient(
-                            logger = logger,
-                            ffiInboxOwner = account,
-                            host = "http://10.0.2.2:5556",
-                            isSecure = false,
-                            db = dbPath,
-                            encryptionKey = null
-                        )
-                    } else {
-                        null
-                    }
-                libXMTPClient?.registerIdentity()
+                    ffiXmtpClient(options, account, options?.appContext)
                 val client =
                     Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
@@ -212,6 +204,50 @@ class Client() {
                 throw XMTPException("Error creating client", e)
             }
         }
+    }
+
+    private suspend fun ffiXmtpClient(
+        options: ClientOptions?,
+        account: SigningKey,
+        appContext: Context?,
+    ): FfiXmtpClient? {
+        val libXMTPClient: FfiXmtpClient? =
+            if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
+                val alias = "xmtp-${options.api.env}-${account.getAddress()}"
+
+                val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
+                dbDir.mkdir()
+                val dbPath: String = dbDir.absolutePath + "/$alias.db3"
+
+                val keyStore = KeyStore.getInstance("AndroidKeyStore")
+                withContext(Dispatchers.IO) {
+                    keyStore.load(null)
+                }
+                val entry = keyStore.getEntry(alias, null)
+                val retrievedKey = if (entry is KeyStore.SecretKeyEntry) {
+                    entry.secretKey
+                } else {
+                    val keyGenerator = KeyGenerator.getInstance("AES")
+                    keyGenerator.init(256)
+                    val key: SecretKey = keyGenerator.generateKey()
+                    val secretKeyEntry = KeyStore.SecretKeyEntry(key)
+                    keyStore.setEntry(alias, secretKeyEntry, null)
+                    key
+                }
+
+                createClient(
+                    logger = logger,
+                    ffiInboxOwner = account,
+                    host = "http://10.0.2.2:5556",
+                    isSecure = false,
+                    db = dbPath,
+                    encryptionKey = retrievedKey.encoded
+                )
+            } else {
+                null
+            }
+        libXMTPClient?.registerIdentity()
+        return libXMTPClient
     }
 
     fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null): Client =
