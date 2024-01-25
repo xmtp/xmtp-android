@@ -2,14 +2,11 @@ package org.xmtp.android.library
 
 import android.content.Context
 import android.os.Build
-import android.security.keystore.KeyProperties
 import android.util.Log
 import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Keys.toChecksumAddress
 import org.xmtp.android.library.codecs.ContentCodec
@@ -43,15 +40,12 @@ import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.createClient
 import java.io.File
 import java.nio.charset.StandardCharsets
-import java.security.KeyStore
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
 
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
