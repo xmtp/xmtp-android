@@ -22,6 +22,7 @@ import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1ContextBuilder
 import org.xmtp.android.library.messages.Pagination
+import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundle
 import org.xmtp.android.library.messages.PrivateKeyBundleBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1
@@ -170,16 +171,18 @@ class Client() {
         val clientOptions = options ?: ClientOptions()
         val apiClient =
             GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
-        val v3Client: FfiXmtpClient? = runBlocking {
-            ffiXmtpClient(
-                options,
-                null,
-                address,
-                options?.appContext,
-                bundle,
-                LegacyIdentitySource.STATIC
-            )
-        }
+        val v3Client: FfiXmtpClient? = if (isAlphaMlsEnabled(options)) {
+            runBlocking {
+                ffiXmtpClient(
+                    options,
+                    PrivateKeyBuilder(bundle.identityKey),
+                    options?.appContext,
+                    bundle,
+                    LegacyIdentitySource.STATIC
+                )
+            }
+        } else null
+
         return Client(
             address = address,
             privateKeyBundleV1 = bundle,
@@ -218,7 +221,6 @@ class Client() {
                     ffiXmtpClient(
                         options,
                         account,
-                        account.getAddress(),
                         options?.appContext,
                         privateKeyBundleV1,
                         legacyIdentityKey
@@ -233,17 +235,47 @@ class Client() {
         }
     }
 
+    fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null): Client =
+        buildFromV1Bundle(v1Bundle = bundle.v1, options = options)
+
+    fun buildFromV1Bundle(v1Bundle: PrivateKeyBundleV1, options: ClientOptions? = null): Client {
+        val address = v1Bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
+        val newOptions = options ?: ClientOptions()
+        val apiClient =
+            GRPCApiClient(environment = newOptions.api.env, secure = newOptions.api.isSecure)
+        val v3Client: FfiXmtpClient? = if (isAlphaMlsEnabled(options)) {
+            runBlocking {
+                ffiXmtpClient(
+                    options,
+                    PrivateKeyBuilder(v1Bundle.identityKey),
+                    options?.appContext,
+                    v1Bundle,
+                    LegacyIdentitySource.STATIC
+                )
+            }
+        } else null
+        return Client(
+            address = address,
+            privateKeyBundleV1 = v1Bundle,
+            apiClient = apiClient,
+            libXMTPClient = v3Client
+        )
+    }
+
+    private fun isAlphaMlsEnabled(options: ClientOptions?): Boolean {
+        return (options != null && options.enableAlphaMls && options.api.env == XMTPEnvironment.LOCAL && options.appContext != null)
+    }
+
     private suspend fun ffiXmtpClient(
         options: ClientOptions?,
-        account: SigningKey?,
-        accountAddress: String,
+        account: SigningKey,
         appContext: Context?,
         privateKeyBundleV1: PrivateKeyBundleV1,
         legacyIdentitySource: LegacyIdentitySource,
     ): FfiXmtpClient? {
         val v3Client: FfiXmtpClient? =
-            if (options != null && options.enableAlphaMls && options.api.env == XMTPEnvironment.LOCAL && options.appContext != null) {
-                val alias = "xmtp-${options.api.env}-${accountAddress.lowercase()}"
+            if (isAlphaMlsEnabled(options)) {
+                val alias = "xmtp-${options!!.api.env}-${account.getAddress().lowercase()}"
 
                 val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
                 dbDir.mkdir()
@@ -280,7 +312,7 @@ class Client() {
                     isSecure = false,
                     db = dbPath,
                     encryptionKey = retrievedKey.encoded,
-                    accountAddress = accountAddress.lowercase(),
+                    accountAddress = account.getAddress().lowercase(),
                     legacyIdentitySource = legacyIdentitySource,
                     legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
                 )
@@ -292,38 +324,13 @@ class Client() {
             v3Client?.registerIdentity(null)
         } else {
             v3Client.textToSign()?.let {
-                v3Client.registerIdentity(account?.sign(it))
+                v3Client.registerIdentity(account.sign(it))
             }
         }
 
         return v3Client
     }
 
-    fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null): Client =
-        buildFromV1Bundle(v1Bundle = bundle.v1, options = options)
-
-    fun buildFromV1Bundle(v1Bundle: PrivateKeyBundleV1, options: ClientOptions? = null): Client {
-        val address = v1Bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
-        val newOptions = options ?: ClientOptions()
-        val apiClient =
-            GRPCApiClient(environment = newOptions.api.env, secure = newOptions.api.isSecure)
-        val v3Client: FfiXmtpClient? = runBlocking {
-            ffiXmtpClient(
-                options,
-                null,
-                address,
-                options?.appContext,
-                v1Bundle,
-                LegacyIdentitySource.STATIC
-            )
-        }
-        return Client(
-            address = address,
-            privateKeyBundleV1 = v1Bundle,
-            apiClient = apiClient,
-            libXMTPClient = v3Client
-        )
-    }
 
     /**
      * This authenticates using [account] acquired from network storage

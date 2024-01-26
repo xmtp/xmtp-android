@@ -84,7 +84,11 @@ class ClientTest {
     fun testV3CanBeCreatedWithBundle() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fakeWallet = PrivateKeyBuilder()
-        val options = ClientOptions(enableAlphaMls = true, appContext = context)
+        val options = ClientOptions(
+            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+            enableAlphaMls = true,
+            appContext = context
+        )
         val client =
             Client().create(account = fakeWallet, options = options)
         assertEquals(
@@ -112,7 +116,11 @@ class ClientTest {
         val client =
             Client().create(
                 account = fakeWallet,
-                options = ClientOptions(enableAlphaMls = true, appContext = context)
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableAlphaMls = true,
+                    appContext = context
+                )
             )
         val v3Client = client.libXMTPClient
         assertEquals(client.address.lowercase(), v3Client?.accountAddress()?.lowercase())
