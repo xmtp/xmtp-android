@@ -225,6 +225,7 @@ class LocalInstrumentedTest {
         // When Alice's device wakes up, it uses her saved credentials
         val alice2 = Client().buildFromBundle(
             PrivateKeyBundle.parseFrom(keyBundle),
+            null,
             options
         )
         // And it uses the saved topic data for the conversation

@@ -97,7 +97,7 @@ class ClientTest {
         )
 
         val bundle = client.privateKeyBundle
-        val clientFromV1Bundle = Client().buildFromBundle(bundle, options = options)
+        val clientFromV1Bundle = Client().buildFromBundle(bundle, account = fakeWallet, options = options)
         assertEquals(client.address, clientFromV1Bundle.address)
         assertEquals(
             client.privateKeyBundleV1.identityKey,

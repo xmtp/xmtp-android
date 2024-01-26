@@ -166,16 +166,17 @@ class Client() {
         this.conversations = Conversations(client = this)
     }
 
-    fun buildFrom(bundle: PrivateKeyBundleV1, options: ClientOptions? = null): Client {
+    fun buildFrom(bundle: PrivateKeyBundleV1, account: SigningKey? = null, options: ClientOptions? = null): Client {
         val address = bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
         val clientOptions = options ?: ClientOptions()
         val apiClient =
             GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
         val v3Client: FfiXmtpClient? = if (isAlphaMlsEnabled(options)) {
+            if (account == null) throw XMTPException("Signing Key required to use groups.")
             runBlocking {
                 ffiXmtpClient(
                     options,
-                    PrivateKeyBuilder(bundle.identityKey),
+                    account,
                     options?.appContext,
                     bundle,
                     LegacyIdentitySource.STATIC
@@ -235,25 +236,27 @@ class Client() {
         }
     }
 
-    fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null): Client =
-        buildFromV1Bundle(v1Bundle = bundle.v1, options = options)
+    fun buildFromBundle(bundle: PrivateKeyBundle, account: SigningKey? = null, options: ClientOptions? = null): Client =
+        buildFromV1Bundle(v1Bundle = bundle.v1, account= account, options = options)
 
-    fun buildFromV1Bundle(v1Bundle: PrivateKeyBundleV1, options: ClientOptions? = null): Client {
+    fun buildFromV1Bundle(v1Bundle: PrivateKeyBundleV1, account: SigningKey? = null, options: ClientOptions? = null): Client {
         val address = v1Bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
         val newOptions = options ?: ClientOptions()
         val apiClient =
             GRPCApiClient(environment = newOptions.api.env, secure = newOptions.api.isSecure)
         val v3Client: FfiXmtpClient? = if (isAlphaMlsEnabled(options)) {
+            if (account == null) throw XMTPException("Signing Key required to use groups.")
             runBlocking {
                 ffiXmtpClient(
                     options,
-                    PrivateKeyBuilder(v1Bundle.identityKey),
+                    account,
                     options?.appContext,
                     v1Bundle,
                     LegacyIdentitySource.STATIC
                 )
             }
         } else null
+
         return Client(
             address = address,
             privateKeyBundleV1 = v1Bundle,
