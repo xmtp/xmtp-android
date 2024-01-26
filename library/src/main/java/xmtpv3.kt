@@ -3131,7 +3131,7 @@ public object FfiConverterSequenceBoolean: FfiConverterRustBuffer<List<Boolean>>
 
     override fun write(value: List<Boolean>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.forEach {
+        value.iterator().forEach {
             FfiConverterBoolean.write(it, buf)
         }
     }
@@ -3156,7 +3156,7 @@ public object FfiConverterSequenceString: FfiConverterRustBuffer<List<String>> {
 
     override fun write(value: List<String>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.forEach {
+        value.iterator().forEach {
             FfiConverterString.write(it, buf)
         }
     }
@@ -3181,7 +3181,7 @@ public object FfiConverterSequenceByteArray: FfiConverterRustBuffer<List<ByteArr
 
     override fun write(value: List<ByteArray>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.forEach {
+        value.iterator().forEach {
             FfiConverterByteArray.write(it, buf)
         }
     }
@@ -3206,7 +3206,7 @@ public object FfiConverterSequenceTypeFfiGroup: FfiConverterRustBuffer<List<FfiG
 
     override fun write(value: List<FfiGroup>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.forEach {
+        value.iterator().forEach {
             FfiConverterTypeFfiGroup.write(it, buf)
         }
     }
@@ -3231,7 +3231,7 @@ public object FfiConverterSequenceTypeFfiEnvelope: FfiConverterRustBuffer<List<F
 
     override fun write(value: List<FfiEnvelope>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.forEach {
+        value.iterator().forEach {
             FfiConverterTypeFfiEnvelope.write(it, buf)
         }
     }
@@ -3256,7 +3256,7 @@ public object FfiConverterSequenceTypeFfiGroupMember: FfiConverterRustBuffer<Lis
 
     override fun write(value: List<FfiGroupMember>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.forEach {
+        value.iterator().forEach {
             FfiConverterTypeFfiGroupMember.write(it, buf)
         }
     }
@@ -3281,7 +3281,7 @@ public object FfiConverterSequenceTypeFfiMessage: FfiConverterRustBuffer<List<Ff
 
     override fun write(value: List<FfiMessage>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.forEach {
+        value.iterator().forEach {
             FfiConverterTypeFfiMessage.write(it, buf)
         }
     }
@@ -3306,7 +3306,7 @@ public object FfiConverterSequenceTypeFfiV2QueryRequest: FfiConverterRustBuffer<
 
     override fun write(value: List<FfiV2QueryRequest>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.forEach {
+        value.iterator().forEach {
             FfiConverterTypeFfiV2QueryRequest.write(it, buf)
         }
     }
@@ -3331,7 +3331,7 @@ public object FfiConverterSequenceTypeFfiV2QueryResponse: FfiConverterRustBuffer
 
     override fun write(value: List<FfiV2QueryResponse>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.forEach {
+        value.iterator().forEach {
             FfiConverterTypeFfiV2QueryResponse.write(it, buf)
         }
     }
