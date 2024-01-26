@@ -22,7 +22,6 @@ import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1ContextBuilder
 import org.xmtp.android.library.messages.Pagination
-import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundle
 import org.xmtp.android.library.messages.PrivateKeyBundleBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1
@@ -54,7 +53,6 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
-
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
@@ -303,7 +301,6 @@ class Client() {
 
                 val entry = keyStore.getEntry(alias, null)
 
-
                 val retrievedKey: SecretKey = if (entry is KeyStore.SecretKeyEntry) {
                     entry.secretKey
                 } else {
@@ -345,7 +342,6 @@ class Client() {
 
         return v3Client
     }
-
 
     /**
      * This authenticates using [account] acquired from network storage
