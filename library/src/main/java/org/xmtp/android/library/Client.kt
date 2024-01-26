@@ -2,8 +2,8 @@ package org.xmtp.android.library
 
 import android.content.Context
 import android.os.Build
+import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.security.keystore.KeyProtection
 import android.util.Log
 import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
@@ -46,13 +46,13 @@ import uniffi.xmtpv3.createClient
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore
-import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import javax.crypto.spec.SecretKeySpec
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
 
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
@@ -253,19 +253,25 @@ class Client() {
                 withContext(Dispatchers.IO) {
                     keyStore.load(null)
                 }
-                val keyProtection = KeyProtection.Builder(KeyProperties.PURPOSE_SIGN).build()
-                val entry = keyStore.getEntry(alias, keyProtection)
-                val retrievedKey = if (entry is KeyStore.SecretKeyEntry) {
+
+                val entry = keyStore.getEntry(alias, null)
+
+
+                val retrievedKey: SecretKey = if (entry is KeyStore.SecretKeyEntry) {
                     entry.secretKey
                 } else {
-                    val keyBytes = SecureRandom().generateSeed(32)
-                    val signingKey = SecretKeySpec(keyBytes, "HmacSHA256")
-                    val secretKeyEntry = KeyStore.SecretKeyEntry(signingKey)
-                    keyStore.setEntry(
-                        alias, secretKeyEntry,
-                        KeyProtection.Builder(KeyProperties.PURPOSE_SIGN).build()
-                    )
-                    secretKeyEntry.secretKey
+                    val keyGenerator =
+                        KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
+                    val keyGenParameterSpec = KeyGenParameterSpec.Builder(
+                        alias,
+                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                    ).setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                        .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                        .setKeySize(256)
+                        .build()
+
+                    keyGenerator.init(keyGenParameterSpec)
+                    keyGenerator.generateKey()
                 }
 
                 createClient(
