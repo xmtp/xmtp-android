@@ -34,7 +34,7 @@ object ClientManager {
             try {
                 val v1Bundle =
                     PrivateKeyBundleV1Builder.fromEncodedData(data = encodedPrivateKeyData)
-                _client = Client().buildFrom(v1Bundle, options = CLIENT_OPTIONS)
+                _client = Client().buildFrom(v1Bundle, CLIENT_OPTIONS)
                 _clientState.value = ClientState.Ready
             } catch (e: Exception) {
                 _clientState.value = ClientState.Error(e.localizedMessage.orEmpty())
