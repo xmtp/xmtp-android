@@ -41,7 +41,6 @@ import uniffi.xmtpv3.LegacyIdentitySource
 import uniffi.xmtpv3.createClient
 import java.io.File
 import java.nio.charset.StandardCharsets
-import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
@@ -188,9 +187,19 @@ class Client() {
     ): Client {
         return runBlocking {
             try {
-                val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient, options)
+                val (privateKeyBundleV1, legacyIdentityKey) = loadOrCreateKeys(
+                    account,
+                    apiClient,
+                    options
+                )
                 val libXMTPClient: FfiXmtpClient? =
-                    ffiXmtpClient(options, account, options?.appContext, privateKeyBundleV1)
+                    ffiXmtpClient(
+                        options,
+                        account,
+                        options?.appContext,
+                        privateKeyBundleV1,
+                        legacyIdentityKey
+                    )
                 val client =
                     Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
@@ -206,50 +215,36 @@ class Client() {
         account: SigningKey,
         appContext: Context?,
         privateKeyBundleV1: PrivateKeyBundleV1,
+        legacyIdentitySource: LegacyIdentitySource,
     ): FfiXmtpClient? {
         val libXMTPClient: FfiXmtpClient? =
             if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
-                val alias = "xmtp-${options.api.env}-${account.getAddress()}"
+                val alias = "xmtp-${options.api.env}-${account.getAddress().lowercase()}"
 
                 val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
                 dbDir.mkdir()
                 val dbPath: String = dbDir.absolutePath + "/$alias.db3"
-
-                val sharedPreferences =
-                    options.appContext.getSharedPreferences("XMTPPreferences", Context.MODE_PRIVATE)
-                val dbEncryptionKey = sharedPreferences.getString(alias, null)
-
-                val retrievedKey = if (dbEncryptionKey != null) {
-                    Base64.decode(dbEncryptionKey)
-                } else {
-                    val editor = sharedPreferences.edit()
-                    val key: ByteArray = SecureRandom().generateSeed(32)
-                    editor.putString(alias, Base64.encode(key))
-                    editor.apply()
-                    key
-                }
 
                 createClient(
                     logger = logger,
                     host = "http://10.0.2.2:5556",
                     isSecure = false,
                     db = dbPath,
-                    encryptionKey = retrievedKey,
-                    accountAddress = account.getAddress(),
-                    // Figure out where the keys came from
-                    //    NONE,
-                    //    STATIC, // someone passed in a bundle
-                    //    NETWORK, // v2 keys already on the network
-                    //    KEY_GENERATOR; // I created them
-                    legacyIdentitySource = LegacyIdentitySource.NETWORK,
-                    legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().toByteArray()
+                    encryptionKey = null,
+                    accountAddress = account.getAddress().lowercase(),
+                    legacyIdentitySource = legacyIdentitySource,
+                    legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
                 )
             } else {
                 null
             }
 
-        libXMTPClient?.textToSign()?.let {
-            libXMTPClient.registerIdentity(account.sign(it))
+        if (libXMTPClient?.textToSign() == null) {
+            libXMTPClient?.registerIdentity(null)
+        } else {
+            libXMTPClient.textToSign()?.let {
+                libXMTPClient.registerIdentity(account.sign(it))
+            }
         }
 
         return libXMTPClient
@@ -284,16 +279,16 @@ class Client() {
         account: SigningKey,
         apiClient: ApiClient,
         options: ClientOptions? = null,
-    ): PrivateKeyBundleV1 {
+    ): Pair<PrivateKeyBundleV1, LegacyIdentitySource> {
         val keys = loadPrivateKeys(account, apiClient, options)
         return if (keys != null) {
-            keys
+            Pair(keys, LegacyIdentitySource.NETWORK)
         } else {
             val v1Keys = PrivateKeyBundleV1.newBuilder().build().generate(account, options)
             val keyBundle = PrivateKeyBundleBuilder.buildFromV1Key(v1Keys)
             val encryptedKeys = keyBundle.encrypted(account, options?.preEnableIdentityCallback)
             authSave(apiClient, keyBundle.v1, encryptedKeys)
-            v1Keys
+            Pair(v1Keys, LegacyIdentitySource.KEY_GENERATOR)
         }
     }
 
