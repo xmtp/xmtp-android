@@ -3,6 +3,7 @@ package org.xmtp.android.example.conversation
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
@@ -14,12 +15,14 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.R
 import org.xmtp.android.example.databinding.BottomSheetNewConversationBinding
+import org.xmtp.android.example.databinding.BottomSheetNewGroupBinding
 import java.util.regex.Pattern
 
 class NewGroupBottomSheet : BottomSheetDialogFragment() {
 
     private val viewModel: NewConversationViewModel by viewModels()
-    private var _binding: BottomSheetNewConversationBinding? = null
+    private var _binding: BottomSheetNewGroupBinding? = null
+    private val addresses: MutableList<String> = mutableListOf()
     private val binding get() = _binding!!
 
     companion object {
@@ -37,7 +40,7 @@ class NewGroupBottomSheet : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = BottomSheetNewConversationBinding.inflate(inflater, container, false)
+        _binding = BottomSheetNewGroupBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -50,12 +53,23 @@ class NewGroupBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-        binding.addressInput.addTextChangedListener {
+        binding.addressInput1.addTextChangedListener {
             if (viewModel.uiState.value is NewConversationViewModel.UiState.Loading) return@addTextChangedListener
-            val input = binding.addressInput.text.trim()
+            val input = binding.addressInput1.text.trim()
             val matcher = ADDRESS_PATTERN.matcher(input)
             if (matcher.matches()) {
-                viewModel.createGroup(listOf(input.toString()))
+                addresses.add(input.toString())
+                binding.addressInput2.visibility = VISIBLE
+            }
+        }
+
+        binding.addressInput2.addTextChangedListener {
+            if (viewModel.uiState.value is NewConversationViewModel.UiState.Loading) return@addTextChangedListener
+            val input = binding.addressInput1.text.trim()
+            val matcher = ADDRESS_PATTERN.matcher(input)
+            if (matcher.matches()) {
+                addresses.add(input.toString())
+                viewModel.createGroup(addresses)
             }
         }
     }
@@ -68,12 +82,14 @@ class NewGroupBottomSheet : BottomSheetDialogFragment() {
     private fun ensureUiState(uiState: NewConversationViewModel.UiState) {
         when (uiState) {
             is NewConversationViewModel.UiState.Error -> {
-                binding.addressInput.isEnabled = true
+                binding.addressInput1.isEnabled = true
+                binding.addressInput2.isEnabled = true
                 binding.progress.visibility = View.GONE
                 showError(uiState.message)
             }
             NewConversationViewModel.UiState.Loading -> {
-                binding.addressInput.isEnabled = false
+                binding.addressInput1.isEnabled = false
+                binding.addressInput2.isEnabled = false
                 binding.progress.visibility = View.VISIBLE
             }
             is NewConversationViewModel.UiState.Success -> {
