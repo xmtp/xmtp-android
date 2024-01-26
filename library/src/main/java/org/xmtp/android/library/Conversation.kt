@@ -54,7 +54,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.peerAddress
                 is V2 -> conversationV2.peerAddress
-                is Group -> TODO()
+                is Group -> group.memberAddresses().toString()
             }
         }
 

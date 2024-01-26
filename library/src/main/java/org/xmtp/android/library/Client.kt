@@ -161,8 +161,9 @@ class Client() {
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
         this.contacts = Contacts(client = this)
-        this.conversations = Conversations(client = this, libXMTPConversations = libXmtpClient?.conversations())
         this.libXMTPClient = libXmtpClient
+        this.conversations =
+            Conversations(client = this, libXMTPConversations = libXmtpClient?.conversations())
     }
 
     fun buildFrom(bundle: PrivateKeyBundleV1, options: ClientOptions? = null): Client {
@@ -170,7 +171,24 @@ class Client() {
         val clientOptions = options ?: ClientOptions()
         val apiClient =
             GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
-        return Client(address = address, privateKeyBundleV1 = bundle, apiClient = apiClient)
+
+        val v3Client: FfiXmtpClient? = runBlocking {
+            ffiXmtpClient(
+                options,
+                null,
+                address,
+                options?.appContext,
+                bundle,
+                LegacyIdentitySource.STATIC
+            )
+        }
+
+        return Client(
+            address = address,
+            privateKeyBundleV1 = bundle,
+            apiClient = apiClient,
+            libXmtpClient = v3Client
+        )
     }
 
     fun create(
@@ -199,16 +217,17 @@ class Client() {
                     apiClient,
                     options
                 )
-                val libXMTPClient: FfiXmtpClient? =
+                val v3Client: FfiXmtpClient? =
                     ffiXmtpClient(
                         options,
                         account,
+                        account.getAddress(),
                         options?.appContext,
                         privateKeyBundleV1,
                         legacyIdentityKey
                     )
                 val client =
-                    Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
+                    Client(account.getAddress(), privateKeyBundleV1, apiClient, v3Client)
                 client.ensureUserContactPublished()
                 client
             } catch (e: java.lang.Exception) {
@@ -219,45 +238,46 @@ class Client() {
 
     private suspend fun ffiXmtpClient(
         options: ClientOptions?,
-        account: SigningKey,
+        account: SigningKey?,
+        accountAddress: String,
         appContext: Context?,
         privateKeyBundleV1: PrivateKeyBundleV1,
         legacyIdentitySource: LegacyIdentitySource,
     ): FfiXmtpClient? {
-        val libXMTPClient: FfiXmtpClient? =
+        val v3Client: FfiXmtpClient? =
             if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
-                val alias = "xmtp-${options.api.env}-${account.getAddress().lowercase()}"
+                val alias = "xmtp-${options.api.env}-${accountAddress.lowercase()}"
 
                 val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
                 dbDir.mkdir()
                 val dbPath: String = dbDir.absolutePath + "/$alias.db3"
 
-                val keyStore = KeyStore.getInstance("AndroidKeyStore")
-                withContext(Dispatchers.IO) {
-                    keyStore.load(null)
-                }
-                val keyProtection = KeyProtection.Builder(KeyProperties.PURPOSE_SIGN).build()
-                val entry = keyStore.getEntry(alias, keyProtection)
-                val retrievedKey = if (entry is KeyStore.SecretKeyEntry) {
-                    entry.secretKey
-                } else {
-                    val keyBytes = SecureRandom().generateSeed(32)
-                    val signingKey = SecretKeySpec(keyBytes, "HmacSHA256")
-                    val secretKeyEntry = KeyStore.SecretKeyEntry(signingKey)
-                    keyStore.setEntry(
-                        alias, secretKeyEntry,
-                        KeyProtection.Builder(KeyProperties.PURPOSE_SIGN).build()
-                    )
-                    secretKeyEntry.secretKey
-                }
+//                val keyStore = KeyStore.getInstance("AndroidKeyStore")
+//                withContext(Dispatchers.IO) {
+//                    keyStore.load(null)
+//                }
+//                val keyProtection = KeyProtection.Builder(KeyProperties.PURPOSE_SIGN).build()
+//                val entry = keyStore.getEntry(alias, keyProtection)
+//                val retrievedKey = if (entry is KeyStore.SecretKeyEntry) {
+//                    entry.secretKey
+//                } else {
+//                    val keyBytes = SecureRandom().generateSeed(32)
+//                    val signingKey = SecretKeySpec(keyBytes, "HmacSHA256")
+//                    val secretKeyEntry = KeyStore.SecretKeyEntry(signingKey)
+//                    keyStore.setEntry(
+//                        alias, secretKeyEntry,
+//                        KeyProtection.Builder(KeyProperties.PURPOSE_SIGN).build()
+//                    )
+//                    secretKeyEntry.secretKey
+//                }
 
                 createClient(
                     logger = logger,
                     host = "http://10.0.2.2:5556",
                     isSecure = false,
                     db = dbPath,
-                    encryptionKey = retrievedKey.encoded,
-                    accountAddress = account.getAddress().lowercase(),
+                    encryptionKey = null,
+                    accountAddress = accountAddress.lowercase(),
                     legacyIdentitySource = legacyIdentitySource,
                     legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
                 )
@@ -265,15 +285,14 @@ class Client() {
                 null
             }
 
-        if (libXMTPClient?.textToSign() == null) {
-            libXMTPClient?.registerIdentity(null)
+        if (v3Client?.textToSign() == null) {
+            v3Client?.registerIdentity(null)
         } else {
-            libXMTPClient.textToSign()?.let {
-                libXMTPClient.registerIdentity(account.sign(it))
+            v3Client.textToSign()?.let {
+                v3Client.registerIdentity(account?.sign(it))
             }
         }
-
-        return libXMTPClient
+        return v3Client
     }
 
     fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null): Client =

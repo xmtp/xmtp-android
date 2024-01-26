@@ -1,7 +1,10 @@
 package org.xmtp.android.example.connect
 
+import android.app.Application
+import android.content.Context
 import android.net.Uri
 import androidx.annotation.UiThread
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walletconnect.wcmodal.client.Modal
@@ -21,7 +24,7 @@ import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
 
-class ConnectWalletViewModel : ViewModel() {
+class ConnectWalletViewModel(application: Application) : AndroidViewModel(application) {
 
     private val chains: List<ChainSelectionUi> =
         Chains.values().map { it.toChainUiState() }
@@ -84,7 +87,7 @@ class ConnectWalletViewModel : ViewModel() {
             _uiState.value = ConnectUiState.Loading
             try {
                 val wallet = PrivateKeyBuilder()
-                val client = Client().create(wallet, ClientManager.CLIENT_OPTIONS)
+                val client = Client().create(wallet, ClientManager.clientOptions(getApplication()))
                 _uiState.value = ConnectUiState.Success(
                     wallet.getAddress(),
                     PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)
@@ -108,7 +111,7 @@ class ConnectWalletViewModel : ViewModel() {
                         it.copy(showWallet = true, uri = uri)
                     }
                 }
-                val client = Client().create(wallet, ClientManager.CLIENT_OPTIONS)
+                val client = Client().create(wallet, ClientManager.clientOptions(getApplication()))
                 _uiState.value = ConnectUiState.Success(
                     wallet.getAddress(),
                     PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)

@@ -101,7 +101,7 @@ data class Conversations(
             libXMTPConversations?.list(opts = FfiListConversationsOptions(null, null, null))?.map {
                 Group(client, it)
             }
-        } ?: throw XMTPException("Client does not support Groups")
+        } ?: emptyList()
     }
 
     /**
