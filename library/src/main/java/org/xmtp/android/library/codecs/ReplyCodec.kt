@@ -49,6 +49,8 @@ data class ReplyCodec(override var contentType: ContentTypeId = ContentTypeReply
         return "Replied with “${content.content}” to an earlier message"
     }
 
+    override fun shouldPush(): Boolean = true
+
     private fun <Codec : ContentCodec<T>, T> encodeReply(
         codec: Codec,
         content: Any,

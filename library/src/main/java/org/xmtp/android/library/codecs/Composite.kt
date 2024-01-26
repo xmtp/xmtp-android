@@ -52,6 +52,8 @@ class CompositeCodec : ContentCodec<DecodedComposite> {
         return null
     }
 
+    override fun shouldPush(): Boolean = false
+
     private fun toComposite(decodedComposite: DecodedComposite): Composite {
         return Composite.newBuilder().also {
             val content = decodedComposite.encodedContent

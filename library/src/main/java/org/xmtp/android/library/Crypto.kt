@@ -77,26 +77,35 @@ class Crypto {
                 null
             }
         }
-    }
 
-    fun calculateMac(secret: ByteArray, message: ByteArray): ByteArray {
-        val sha256HMAC: Mac = Mac.getInstance("HmacSHA256")
-        val secretKey = SecretKeySpec(secret, "HmacSHA256")
-        sha256HMAC.init(secretKey)
-        return sha256HMAC.doFinal(message)
-    }
+        fun calculateMac(secret: ByteArray, message: ByteArray): ByteArray {
+            val sha256HMAC: Mac = Mac.getInstance("HmacSHA256")
+            val secretKey = SecretKeySpec(secret, "HmacSHA256")
+            sha256HMAC.init(secretKey)
+            return sha256HMAC.doFinal(message)
+        }
 
-    fun deriveKey(
-        secret: ByteArray,
-        salt: ByteArray,
-        info: ByteArray,
-    ): ByteArray {
-        val derivationParameters = HKDFParameters(secret, salt, info)
-        val digest = SHA256Digest()
-        val hkdfGenerator = HKDFBytesGenerator(digest)
-        hkdfGenerator.init(derivationParameters)
-        val hkdf = ByteArray(32)
-        hkdfGenerator.generateBytes(hkdf, 0, hkdf.size)
-        return hkdf
+        fun deriveKey(
+            secret: ByteArray,
+            salt: ByteArray,
+            info: ByteArray,
+        ): ByteArray {
+            val derivationParameters = HKDFParameters(secret, salt, info)
+            val digest = SHA256Digest()
+            val hkdfGenerator = HKDFBytesGenerator(digest)
+            hkdfGenerator.init(derivationParameters)
+            val hkdf = ByteArray(32)
+            hkdfGenerator.generateBytes(hkdf, 0, hkdf.size)
+            return hkdf
+        }
+
+        fun generateHmacSignature(
+            secret: ByteArray,
+            info: ByteArray,
+            message: ByteArray,
+        ): ByteArray {
+            val hkdfKey = deriveKey(secret, message, info)
+            return calculateMac(secret, hkdfKey)
+        }
     }
 }

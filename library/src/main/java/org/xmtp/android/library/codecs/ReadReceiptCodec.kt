@@ -28,4 +28,6 @@ data class ReadReceiptCodec(override var contentType: ContentTypeId = ContentTyp
     override fun fallback(content: ReadReceipt): String? {
         return null
     }
+
+    override fun shouldPush(): Boolean = false
 }
