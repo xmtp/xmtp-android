@@ -452,15 +452,17 @@ internal interface _UniFFILib : Library {
     ): Pointer
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_conversations(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
     ): Pointer
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_register_identity(`ptr`: Pointer,
+    fun uniffi_xmtpv3_fn_method_ffixmtpclient_register_identity(`ptr`: Pointer,`recoverableWalletSignature`: RustBuffer.ByValue,
     ): Pointer
+    fun uniffi_xmtpv3_fn_method_ffixmtpclient_text_to_sign(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
+    ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_init_callback_ffiinboxowner(`callbackStub`: ForeignCallback,_uniffi_out_err: RustCallStatus,
     ): Unit
     fun uniffi_xmtpv3_fn_init_callback_ffilogger(`callbackStub`: ForeignCallback,_uniffi_out_err: RustCallStatus,
     ): Unit
     fun uniffi_xmtpv3_fn_init_callback_ffimessagecallback(`callbackStub`: ForeignCallback,_uniffi_out_err: RustCallStatus,
     ): Unit
-    fun uniffi_xmtpv3_fn_func_create_client(`logger`: Long,`ffiInboxOwner`: Long,`host`: RustBuffer.ByValue,`isSecure`: Byte,`db`: RustBuffer.ByValue,`encryptionKey`: RustBuffer.ByValue,
+    fun uniffi_xmtpv3_fn_func_create_client(`logger`: Long,`host`: RustBuffer.ByValue,`isSecure`: Byte,`db`: RustBuffer.ByValue,`encryptionKey`: RustBuffer.ByValue,`accountAddress`: RustBuffer.ByValue,`legacyIdentitySource`: RustBuffer.ByValue,`legacySignedPrivateKeyProto`: RustBuffer.ByValue,
     ): Pointer
     fun uniffi_xmtpv3_fn_func_create_v2_client(`host`: RustBuffer.ByValue,`isSecure`: Byte,
     ): Pointer
@@ -676,6 +678,8 @@ internal interface _UniFFILib : Library {
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_register_identity(
     ): Short
+    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_text_to_sign(
+    ): Short
     fun uniffi_xmtpv3_checksum_method_ffiinboxowner_get_address(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffiinboxowner_sign(
@@ -701,7 +705,7 @@ private fun uniffiCheckContractApiVersion(lib: _UniFFILib) {
 
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
-    if (lib.uniffi_xmtpv3_checksum_func_create_client() != 23882.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_func_create_client() != 20422.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_func_create_v2_client() != 49516.toShort()) {
@@ -812,7 +816,10 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_conversations() != 31628.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_register_identity() != 18577.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_register_identity() != 64634.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_text_to_sign() != 25727.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffiinboxowner_get_address() != 2205.toShort()) {
@@ -1885,7 +1892,8 @@ public interface FfiXmtpClientInterface {
     fun `accountAddress`(): String@Throws(GenericException::class)
     suspend fun `canMessage`(`accountAddresses`: List<String>): List<Boolean>
     fun `conversations`(): FfiConversations@Throws(GenericException::class)
-    suspend fun `registerIdentity`()
+    suspend fun `registerIdentity`(`recoverableWalletSignature`: ByteArray?)
+    fun `textToSign`(): String?
     companion object
 }
 
@@ -1952,13 +1960,13 @@ class FfiXmtpClient(
 
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `registerIdentity`() {
+    override suspend fun `registerIdentity`(`recoverableWalletSignature`: ByteArray?) {
         return uniffiRustCallAsync(
             callWithPointer { thisPtr ->
                 _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_register_identity(
                     thisPtr,
-
-                    )
+                    FfiConverterOptionalByteArray.lower(`recoverableWalletSignature`),
+                )
             },
             { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, continuation) },
             { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
@@ -1970,6 +1978,17 @@ class FfiXmtpClient(
             GenericException.ErrorHandler,
         )
     }
+    override fun `textToSign`(): String? =
+        callWithPointer {
+            rustCall() { _status ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_text_to_sign(it,
+
+                    _status)
+            }
+        }.let {
+            FfiConverterOptionalString.lift(it)
+        }
+
 
 
 
@@ -2508,6 +2527,30 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
     }
 
 }
+
+
+
+
+enum class LegacyIdentitySource {
+    NONE,STATIC,NETWORK,KEY_GENERATOR;
+    companion object
+}
+
+public object FfiConverterTypeLegacyIdentitySource: FfiConverterRustBuffer<LegacyIdentitySource> {
+    override fun read(buf: ByteBuffer) = try {
+        LegacyIdentitySource.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: LegacyIdentitySource) = 4
+
+    override fun write(value: LegacyIdentitySource, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
 
 
 
@@ -3300,9 +3343,9 @@ public object FfiConverterSequenceTypeFfiV2QueryResponse: FfiConverterRustBuffer
 @Throws(GenericException::class)
 
 @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-suspend fun `createClient`(`logger`: FfiLogger, `ffiInboxOwner`: FfiInboxOwner, `host`: String, `isSecure`: Boolean, `db`: String?, `encryptionKey`: ByteArray?) : FfiXmtpClient {
+suspend fun `createClient`(`logger`: FfiLogger, `host`: String, `isSecure`: Boolean, `db`: String?, `encryptionKey`: ByteArray?, `accountAddress`: String, `legacyIdentitySource`: LegacyIdentitySource, `legacySignedPrivateKeyProto`: ByteArray?) : FfiXmtpClient {
     return uniffiRustCallAsync(
-        _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_func_create_client(FfiConverterTypeFfiLogger.lower(`logger`),FfiConverterTypeFfiInboxOwner.lower(`ffiInboxOwner`),FfiConverterString.lower(`host`),FfiConverterBoolean.lower(`isSecure`),FfiConverterOptionalString.lower(`db`),FfiConverterOptionalByteArray.lower(`encryptionKey`),),
+        _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_func_create_client(FfiConverterTypeFfiLogger.lower(`logger`),FfiConverterString.lower(`host`),FfiConverterBoolean.lower(`isSecure`),FfiConverterOptionalString.lower(`db`),FfiConverterOptionalByteArray.lower(`encryptionKey`),FfiConverterString.lower(`accountAddress`),FfiConverterTypeLegacyIdentitySource.lower(`legacyIdentitySource`),FfiConverterOptionalByteArray.lower(`legacySignedPrivateKeyProto`),),
         { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, continuation) },
         { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
         { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },

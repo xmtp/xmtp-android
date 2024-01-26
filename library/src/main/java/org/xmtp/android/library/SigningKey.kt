@@ -13,16 +13,18 @@ import org.xmtp.android.library.messages.rawData
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
-import uniffi.xmtpv3.FfiInboxOwner
 import java.math.BigInteger
 import java.util.Date
 
-interface SigningKey: FfiInboxOwner {
+interface SigningKey {
+
+    fun getAddress(): String
+
     suspend fun sign(data: ByteArray): SignatureOuterClass.Signature?
 
     suspend fun signLegacy(message: String): SignatureOuterClass.Signature?
 
-    override fun sign(text: String): ByteArray
+    fun sign(text: String): ByteArray
 }
 
 /**

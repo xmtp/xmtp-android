@@ -2,11 +2,15 @@ package org.xmtp.android.library
 
 import android.content.Context
 import android.os.Build
+import android.security.keystore.KeyProperties
+import android.security.keystore.KeyProtection
 import android.util.Log
 import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Keys.toChecksumAddress
 import org.xmtp.android.library.codecs.ContentCodec
@@ -37,15 +41,18 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import uniffi.xmtpv3.FfiXmtpClient
+import uniffi.xmtpv3.LegacyIdentitySource
 import uniffi.xmtpv3.createClient
 import java.io.File
 import java.nio.charset.StandardCharsets
+import java.security.KeyStore
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import javax.crypto.spec.SecretKeySpec
 
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
@@ -187,9 +194,19 @@ class Client() {
     ): Client {
         return runBlocking {
             try {
-                val privateKeyBundleV1 = loadOrCreateKeys(account, apiClient, options)
+                val (privateKeyBundleV1, legacyIdentityKey) = loadOrCreateKeys(
+                    account,
+                    apiClient,
+                    options
+                )
                 val libXMTPClient: FfiXmtpClient? =
-                    ffiXmtpClient(options, account, options?.appContext)
+                    ffiXmtpClient(
+                        options,
+                        account,
+                        options?.appContext,
+                        privateKeyBundleV1,
+                        legacyIdentityKey
+                    )
                 val client =
                     Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
@@ -204,41 +221,58 @@ class Client() {
         options: ClientOptions?,
         account: SigningKey,
         appContext: Context?,
+        privateKeyBundleV1: PrivateKeyBundleV1,
+        legacyIdentitySource: LegacyIdentitySource,
     ): FfiXmtpClient? {
         val libXMTPClient: FfiXmtpClient? =
             if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
-                val alias = "xmtp-${options.api.env}-${account.getAddress()}"
+                val alias = "xmtp-${options.api.env}-${account.getAddress().lowercase()}"
 
                 val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
                 dbDir.mkdir()
                 val dbPath: String = dbDir.absolutePath + "/$alias.db3"
 
-                val sharedPreferences =
-                    options.appContext.getSharedPreferences("XMTPPreferences", Context.MODE_PRIVATE)
-                val dbEncryptionKey = sharedPreferences.getString(alias, null)
-
-                val retrievedKey = if (dbEncryptionKey != null) {
-                    Base64.decode(dbEncryptionKey)
+                val keyStore = KeyStore.getInstance("AndroidKeyStore")
+                withContext(Dispatchers.IO) {
+                    keyStore.load(null)
+                }
+                val keyProtection = KeyProtection.Builder(KeyProperties.PURPOSE_SIGN).build()
+                val entry = keyStore.getEntry(alias, keyProtection)
+                val retrievedKey = if (entry is KeyStore.SecretKeyEntry) {
+                    entry.secretKey
                 } else {
-                    val editor = sharedPreferences.edit()
-                    val key: ByteArray = SecureRandom().generateSeed(32)
-                    editor.putString(alias, Base64.encode(key))
-                    editor.apply()
-                    key
+                    val keyBytes = SecureRandom().generateSeed(32)
+                    val signingKey = SecretKeySpec(keyBytes, "HmacSHA256")
+                    val secretKeyEntry = KeyStore.SecretKeyEntry(signingKey)
+                    keyStore.setEntry(
+                        alias, secretKeyEntry,
+                        KeyProtection.Builder(KeyProperties.PURPOSE_SIGN).build()
+                    )
+                    secretKeyEntry.secretKey
                 }
 
                 createClient(
                     logger = logger,
-                    ffiInboxOwner = account,
                     host = "http://10.0.2.2:5556",
                     isSecure = false,
                     db = dbPath,
-                    encryptionKey = retrievedKey
+                    encryptionKey = retrievedKey.encoded,
+                    accountAddress = account.getAddress().lowercase(),
+                    legacyIdentitySource = legacyIdentitySource,
+                    legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
                 )
             } else {
                 null
             }
-        libXMTPClient?.registerIdentity()
+
+        if (libXMTPClient?.textToSign() == null) {
+            libXMTPClient?.registerIdentity(null)
+        } else {
+            libXMTPClient.textToSign()?.let {
+                libXMTPClient.registerIdentity(account.sign(it))
+            }
+        }
+
         return libXMTPClient
     }
 
@@ -271,16 +305,16 @@ class Client() {
         account: SigningKey,
         apiClient: ApiClient,
         options: ClientOptions? = null,
-    ): PrivateKeyBundleV1 {
+    ): Pair<PrivateKeyBundleV1, LegacyIdentitySource> {
         val keys = loadPrivateKeys(account, apiClient, options)
         return if (keys != null) {
-            keys
+            Pair(keys, LegacyIdentitySource.NETWORK)
         } else {
             val v1Keys = PrivateKeyBundleV1.newBuilder().build().generate(account, options)
             val keyBundle = PrivateKeyBundleBuilder.buildFromV1Key(v1Keys)
             val encryptedKeys = keyBundle.encrypted(account, options?.preEnableIdentityCallback)
             authSave(apiClient, keyBundle.v1, encryptedKeys)
-            v1Keys
+            Pair(v1Keys, LegacyIdentitySource.KEY_GENERATOR)
         }
     }
 
