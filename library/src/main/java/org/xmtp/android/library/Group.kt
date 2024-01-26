@@ -60,6 +60,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
 
     fun messages(): List<DecodedMessage> {
         return runBlocking {
+            libXMTPGroup.sync()
             libXMTPGroup.findMessages(
                 opts = FfiListMessagesOptions(
                     sentBeforeNs = null,
@@ -68,7 +69,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
                 )
             ).map {
                 Message(client, it).decode()
-            }
+            }.drop(1).reversed()// The first message is something I can't decode because it's about adding members
         }
     }
 

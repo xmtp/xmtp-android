@@ -56,7 +56,7 @@ class PushNotificationsService : FirebaseMessagingService() {
         GlobalScope.launch(Dispatchers.Main) {
             ClientManager.createClient(keysData, applicationContext)
         }
-        val conversation = ClientManager.client.fetchConversation(topic)
+        val conversation = ClientManager.client.fetchConversation(topic, includeGroups = true)
         if (conversation == null) {
             Log.e(TAG, "No keys or conversation persisted")
             return

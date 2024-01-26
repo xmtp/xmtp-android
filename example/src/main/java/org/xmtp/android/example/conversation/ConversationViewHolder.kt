@@ -25,7 +25,14 @@ class ConversationViewHolder(
 
     fun bind(item: MainViewModel.MainListItem.ConversationItem) {
         conversation = item.conversation
-        binding.peerAddress.text = item.conversation.peerAddress.truncatedAddress()
+        binding.peerAddress.text = if (item.conversation.peerAddress.contains(",")) {
+            val addresses = item.conversation.peerAddress.split(",")
+            addresses.joinToString(" -- ") {
+                it.truncatedAddress()
+            }
+        } else {
+            item.conversation.peerAddress.truncatedAddress()
+        }
         val messageBody = item.mostRecentMessage?.body.orEmpty()
         val isMe = item.mostRecentMessage?.senderAddress == ClientManager.client.address
         if (messageBody.isNotBlank()) {

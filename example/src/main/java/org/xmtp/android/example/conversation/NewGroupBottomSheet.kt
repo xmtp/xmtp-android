@@ -65,7 +65,7 @@ class NewGroupBottomSheet : BottomSheetDialogFragment() {
 
         binding.addressInput2.addTextChangedListener {
             if (viewModel.uiState.value is NewConversationViewModel.UiState.Loading) return@addTextChangedListener
-            val input = binding.addressInput1.text.trim()
+            val input = binding.addressInput2.text.trim()
             val matcher = ADDRESS_PATTERN.matcher(input)
             if (matcher.matches()) {
                 addresses.add(input.toString())

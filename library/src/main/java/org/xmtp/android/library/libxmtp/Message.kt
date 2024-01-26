@@ -4,6 +4,7 @@ import org.xmtp.android.library.Client
 import org.xmtp.android.library.DecodedMessage
 import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.codecs.EncodedContent
+import org.xmtp.android.library.toHex
 import uniffi.xmtpv3.FfiMessage
 import java.util.Date
 
@@ -17,16 +18,12 @@ data class Message(val client: Client, private val libXMTPMessage: FfiMessage) {
     val sentAt: Date
         get() = Date(libXMTPMessage.sentAtNs / 1_000_000)
 
-    fun text(): String {
-        return libXMTPMessage.content.decodeToString()
-    }
-
     fun decode(): DecodedMessage {
         try {
             return DecodedMessage(
-                id = id.decodeToString(),
+                id = id.toHex(),
                 client = client,
-                topic = id.decodeToString(),
+                topic = id.toHex(),
                 encodedContent = EncodedContent.parseFrom(libXMTPMessage.content),
                 senderAddress = senderAddress,
                 sent = sentAt

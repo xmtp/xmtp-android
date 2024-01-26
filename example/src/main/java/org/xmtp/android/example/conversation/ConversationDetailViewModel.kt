@@ -49,7 +49,10 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
             val listItems = mutableListOf<MessageListItem>()
             try {
                 if (conversation == null) {
-                    conversation = ClientManager.client.fetchConversation(conversationTopic)
+                    conversation = ClientManager.client.fetchConversation(
+                        conversationTopic,
+                        includeGroups = true
+                    )
                 }
                 conversation?.let {
                     listItems.addAll(
@@ -69,7 +72,8 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
     val streamMessages: StateFlow<MessageListItem?> =
         stateFlow(viewModelScope, null) { subscriptionCount ->
             if (conversation == null) {
-                conversation = ClientManager.client.fetchConversation(conversationTopic)
+                conversation =
+                    ClientManager.client.fetchConversation(conversationTopic, includeGroups = false)
             }
             if (conversation != null) {
                 conversation!!.streamMessages()

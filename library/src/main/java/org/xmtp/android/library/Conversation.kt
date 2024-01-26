@@ -3,6 +3,7 @@ package org.xmtp.android.library
 import android.util.Log
 import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.PagingInfoSortDirection
@@ -54,7 +55,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.peerAddress
                 is V2 -> conversationV2.peerAddress
-                is Group -> group.memberAddresses().toString()
+                is Group -> group.memberAddresses().joinToString(",")
             }
         }
 
@@ -107,6 +108,7 @@ sealed class Conversation {
                             .setKeyMaterial(conversationV2.keyMaterial.toByteString()),
                     ),
             ).build()
+
             is Group -> TODO()
         }
     }
@@ -202,7 +204,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.topic.description
                 is V2 -> conversationV2.topic
-                is Group -> group.id.toString()
+                is Group -> group.id.toHex()
             }
         }
 
@@ -241,7 +243,9 @@ sealed class Conversation {
                     direction = direction,
                 )
 
-            is Group -> group.messages()
+            is Group -> {
+                group.messages()
+            }
         }
     }
 
@@ -286,7 +290,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.streamMessages()
             is V2 -> conversationV2.streamMessages()
-            is Group -> TODO()
+            is Group -> flowOf(group.messages().last()) // TODO fix this
         }
     }
 

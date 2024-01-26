@@ -423,9 +423,11 @@ class Client() {
         return subscribe(topics.map { it.description })
     }
 
-    fun fetchConversation(topic: String?): Conversation? {
+    fun fetchConversation(topic: String?, includeGroups: Boolean = false): Conversation? {
         if (topic.isNullOrBlank()) return null
-        return conversations.list().firstOrNull { it.topic == topic }
+        return conversations.list(includeGroups = includeGroups).firstOrNull {
+            it.topic == topic
+        }
     }
 
     fun publish(envelopes: List<Envelope>): PublishResponse {
