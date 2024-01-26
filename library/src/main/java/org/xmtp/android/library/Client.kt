@@ -64,7 +64,7 @@ data class ClientOptions(
     val preCreateIdentityCallback: PreEventCallback? = null,
     val preEnableIdentityCallback: PreEventCallback? = null,
     val appContext: Context? = null,
-    val enableLibXmtpV3: Boolean = false,
+    val enableAlphaMls: Boolean = false,
 ) {
     data class Api(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
@@ -242,7 +242,7 @@ class Client() {
         legacyIdentitySource: LegacyIdentitySource,
     ): FfiXmtpClient? {
         val v3Client: FfiXmtpClient? =
-            if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
+            if (options != null && options.enableAlphaMls && options.api.env == XMTPEnvironment.LOCAL && options.appContext != null) {
                 val alias = "xmtp-${options.api.env}-${accountAddress.lowercase()}"
 
                 val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
