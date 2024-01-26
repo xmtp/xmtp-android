@@ -81,6 +81,31 @@ class ClientTest {
     }
 
     @Test
+    fun testV3CanBeCreatedWithBundle() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val options = ClientOptions(enableLibXmtpV3 = true, appContext = context)
+        val client =
+            Client().create(account = fakeWallet, options = options)
+        assertEquals(
+            client.address.lowercase(),
+            client.libXMTPClient?.accountAddress()?.lowercase()
+        )
+
+        val bundle = client.privateKeyBundle
+        val clientFromV1Bundle = Client().buildFromBundle(bundle, options = options)
+        assertEquals(client.address, clientFromV1Bundle.address)
+        assertEquals(
+            client.privateKeyBundleV1.identityKey,
+            clientFromV1Bundle.privateKeyBundleV1.identityKey,
+        )
+        assertEquals(
+            client.libXMTPClient?.accountAddress(),
+            clientFromV1Bundle.libXMTPClient?.accountAddress()
+        )
+    }
+
+    @Test
     fun testCreatesAV3Client() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fakeWallet = PrivateKeyBuilder()

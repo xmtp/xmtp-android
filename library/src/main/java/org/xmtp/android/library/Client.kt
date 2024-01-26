@@ -155,14 +155,14 @@ class Client() {
         address: String,
         privateKeyBundleV1: PrivateKeyBundleV1,
         apiClient: ApiClient,
-        libXmtpClient: FfiXmtpClient? = null,
+        libXMTPClient: FfiXmtpClient? = null,
     ) : this() {
-        this.address = libXMTPClient?.accountAddress() ?: address
+        this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
         this.contacts = Contacts(client = this)
+        this.libXMTPClient = libXMTPClient
         this.conversations = Conversations(client = this)
-        this.libXMTPClient = libXmtpClient
     }
 
     fun buildFrom(bundle: PrivateKeyBundleV1, options: ClientOptions? = null): Client {
@@ -170,7 +170,22 @@ class Client() {
         val clientOptions = options ?: ClientOptions()
         val apiClient =
             GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
-        return Client(address = address, privateKeyBundleV1 = bundle, apiClient = apiClient)
+        val v3Client: FfiXmtpClient? = runBlocking {
+            ffiXmtpClient(
+                options,
+                null,
+                address,
+                options?.appContext,
+                bundle,
+                LegacyIdentitySource.STATIC
+            )
+        }
+        return Client(
+            address = address,
+            privateKeyBundleV1 = bundle,
+            apiClient = apiClient,
+            libXMTPClient = v3Client
+        )
     }
 
     fun create(
@@ -203,6 +218,7 @@ class Client() {
                     ffiXmtpClient(
                         options,
                         account,
+                        account.getAddress(),
                         options?.appContext,
                         privateKeyBundleV1,
                         legacyIdentityKey
@@ -219,14 +235,15 @@ class Client() {
 
     private suspend fun ffiXmtpClient(
         options: ClientOptions?,
-        account: SigningKey,
+        account: SigningKey?,
+        accountAddress: String,
         appContext: Context?,
         privateKeyBundleV1: PrivateKeyBundleV1,
         legacyIdentitySource: LegacyIdentitySource,
     ): FfiXmtpClient? {
-        val libXMTPClient: FfiXmtpClient? =
+        val v3Client: FfiXmtpClient? =
             if (options != null && options.enableLibXmtpV3 && options.appContext != null) {
-                val alias = "xmtp-${options.api.env}-${account.getAddress().lowercase()}"
+                val alias = "xmtp-${options.api.env}-${accountAddress.lowercase()}"
 
                 val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
                 dbDir.mkdir()
@@ -257,7 +274,7 @@ class Client() {
                     isSecure = false,
                     db = dbPath,
                     encryptionKey = retrievedKey.encoded,
-                    accountAddress = account.getAddress().lowercase(),
+                    accountAddress = accountAddress.lowercase(),
                     legacyIdentitySource = legacyIdentitySource,
                     legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
                 )
@@ -265,15 +282,15 @@ class Client() {
                 null
             }
 
-        if (libXMTPClient?.textToSign() == null) {
-            libXMTPClient?.registerIdentity(null)
+        if (v3Client?.textToSign() == null) {
+            v3Client?.registerIdentity(null)
         } else {
-            libXMTPClient.textToSign()?.let {
-                libXMTPClient.registerIdentity(account.sign(it))
+            v3Client.textToSign()?.let {
+                v3Client.registerIdentity(account?.sign(it))
             }
         }
 
-        return libXMTPClient
+        return v3Client
     }
 
     fun buildFromBundle(bundle: PrivateKeyBundle, options: ClientOptions? = null): Client =
@@ -284,7 +301,22 @@ class Client() {
         val newOptions = options ?: ClientOptions()
         val apiClient =
             GRPCApiClient(environment = newOptions.api.env, secure = newOptions.api.isSecure)
-        return Client(address = address, privateKeyBundleV1 = v1Bundle, apiClient = apiClient)
+        val v3Client: FfiXmtpClient? = runBlocking {
+            ffiXmtpClient(
+                options,
+                null,
+                address,
+                options?.appContext,
+                v1Bundle,
+                LegacyIdentitySource.STATIC
+            )
+        }
+        return Client(
+            address = address,
+            privateKeyBundleV1 = v1Bundle,
+            apiClient = apiClient,
+            libXMTPClient = v3Client
+        )
     }
 
     /**
