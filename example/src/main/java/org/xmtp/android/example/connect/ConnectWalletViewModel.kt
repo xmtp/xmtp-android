@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.web3j.utils.Numeric
 import org.xmtp.android.example.ClientManager
 import org.xmtp.android.example.account.WalletConnectV2Account
 import org.xmtp.android.library.Client
@@ -87,6 +88,26 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
             _uiState.value = ConnectUiState.Loading
             try {
                 val wallet = PrivateKeyBuilder()
+                val client = Client().create(wallet, ClientManager.clientOptions(getApplication()))
+                _uiState.value = ConnectUiState.Success(
+                    wallet.getAddress(),
+                    PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)
+                )
+            } catch (e: XMTPException) {
+                _uiState.value = ConnectUiState.Error(e.message.orEmpty())
+            }
+        }
+    }
+
+    @UiThread
+    fun savedWallet() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.value = ConnectUiState.Loading
+            try {
+                val privateKeyData = Numeric.hexStringToByteArray("0x2429cd5b39334e854cb26dfe2037293cd1ccc980e366a35fa6a09cdbef070bda")
+                // Use hardcoded privateKey
+                val privateKey = PrivateKeyBuilder.buildFromPrivateKeyData(privateKeyData)
+                val wallet = PrivateKeyBuilder(privateKey)
                 val client = Client().create(wallet, ClientManager.clientOptions(getApplication()))
                 _uiState.value = ConnectUiState.Success(
                     wallet.getAddress(),

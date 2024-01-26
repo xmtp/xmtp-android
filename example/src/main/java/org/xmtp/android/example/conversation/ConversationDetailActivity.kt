@@ -55,8 +55,8 @@ class ConversationDetailActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.subtitle = if (peerAddress != null && peerAddress!!.contains(",")) {
-            val addresses = peerAddress?.split(",")?.toMutableList()
-            addresses?.joinToString(" -- ") {
+            val addresses = peerAddress?.split(",")?.toMutableList()?.drop(1)
+            addresses?.joinToString(" & ") {
                 it.truncatedAddress()
             }
         } else {

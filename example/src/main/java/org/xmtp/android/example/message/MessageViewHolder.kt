@@ -22,7 +22,7 @@ class MessageViewHolder(
         binding.root.resources.getColor(R.color.teal_700, binding.root.context.theme)
 
     fun bind(item: ConversationDetailViewModel.MessageListItem.Message) {
-        val isFromMe = ClientManager.client.address == item.message.senderAddress
+        val isFromMe = ClientManager.client.address.lowercase() == item.message.senderAddress.lowercase()
         val params = binding.messageContainer.layoutParams as ConstraintLayout.LayoutParams
         if (isFromMe) {
             params.rightToRight = PARENT_ID

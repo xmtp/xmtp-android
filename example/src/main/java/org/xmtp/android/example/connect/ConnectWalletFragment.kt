@@ -60,6 +60,10 @@ class ConnectWalletFragment : Fragment() {
             viewModel.generateWallet()
         }
 
+        binding.savedWalletButton.setOnClickListener {
+            viewModel.savedWallet()
+        }
+
         val isConnectWalletAvailable = isConnectAvailable()
         binding.connectButton.isEnabled = isConnectWalletAvailable
         binding.connectError.isVisible = !isConnectWalletAvailable
@@ -115,6 +119,7 @@ class ConnectWalletFragment : Fragment() {
     private fun showError(message: String) {
         binding.progress.visibility = View.GONE
         binding.generateButton.visibility = View.VISIBLE
+        binding.savedWalletButton.visibility = View.VISIBLE
         binding.connectButton.visibility = View.VISIBLE
         binding.connectError.isVisible = !isConnectAvailable()
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
@@ -125,6 +130,8 @@ class ConnectWalletFragment : Fragment() {
         binding.generateButton.visibility = View.GONE
         binding.connectButton.visibility = View.GONE
         binding.connectError.visibility = View.GONE
+        binding.savedWalletButton.visibility = View.GONE
+
     }
 
     override fun onDestroyView() {
