@@ -70,11 +70,11 @@ data class WalletConnectV2Account(
         return null
     }
 
-    override fun getAddress(): String {
-        return Keys.toChecksumAddress(
+
+    override val address: String
+        get() = Keys.toChecksumAddress(
             session.namespaces.getValue(chain).accounts[0].substringAfterLast(
                 ":"
             )
         )
-    }
 }

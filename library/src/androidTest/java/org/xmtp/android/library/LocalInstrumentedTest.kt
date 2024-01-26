@@ -103,7 +103,7 @@ class LocalInstrumentedTest {
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val client = Client().create(account = aliceWallet, options = clientOptions)
         assertEquals(XMTPEnvironment.LOCAL, client.apiClient.environment)
-        val contact = client.getUserContact(peerAddress = aliceWallet.getAddress())
+        val contact = client.getUserContact(peerAddress = aliceWallet.address)
         assertEquals(
             contact?.v2?.keyBundle?.identityKey?.secp256K1Uncompressed,
             client.privateKeyBundleV1?.identityKey?.publicKey?.secp256K1Uncompressed
@@ -122,7 +122,7 @@ class LocalInstrumentedTest {
         // Publish alice's contact
         Client().create(account = alice, clientOptions)
         val convo = bobClient.conversations.newConversation(
-            alice.getAddress(),
+            alice.address,
             context = InvitationV1ContextBuilder.buildFromConversation("hi")
         )
         // Say this message is sent in the past
@@ -225,7 +225,6 @@ class LocalInstrumentedTest {
         // When Alice's device wakes up, it uses her saved credentials
         val alice2 = Client().buildFromBundle(
             PrivateKeyBundle.parseFrom(keyBundle),
-            null,
             options
         )
         // And it uses the saved topic data for the conversation
@@ -249,7 +248,7 @@ class LocalInstrumentedTest {
         val bobClient = Client().create(bob, clientOptions)
         // Publish alice's contact
         Client().create(account = alice, clientOptions)
-        val convo = ConversationV1(client = bobClient, peerAddress = alice.getAddress(), sentAt = Date())
+        val convo = ConversationV1(client = bobClient, peerAddress = alice.address, sentAt = Date())
         // Say this message is sent in the past
         convo.send(text = "10 seconds ago")
         Thread.sleep(10000)
@@ -363,7 +362,7 @@ class LocalInstrumentedTest {
         val aliceClient = Client().create(account = alice, options = clientOptions)
         aliceClient.publishUserContact(legacy = true)
         bobClient.publishUserContact(legacy = true)
-        val convo = ConversationV1(client = bobClient, peerAddress = alice.getAddress(), sentAt = Date())
+        val convo = ConversationV1(client = bobClient, peerAddress = alice.address, sentAt = Date())
         convo.streamEphemeral().mapLatest {
             assertEquals("hi", it.message.toStringUtf8())
         }
@@ -381,11 +380,11 @@ class LocalInstrumentedTest {
         val bobClient = Client().create(bob, clientOptions)
         val aliceClient = Client().create(account = alice, options = clientOptions)
         val aliceConversation = aliceClient.conversations.newConversation(
-            bob.getAddress(),
+            bob.address,
             context = InvitationV1ContextBuilder.buildFromConversation("https://example.com/3")
         )
         val bobConversation = bobClient.conversations.newConversation(
-            alice.getAddress(),
+            alice.address,
             context = InvitationV1ContextBuilder.buildFromConversation("https://example.com/3")
         )
 

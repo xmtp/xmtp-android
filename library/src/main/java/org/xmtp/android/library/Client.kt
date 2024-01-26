@@ -166,7 +166,11 @@ class Client() {
         this.conversations = Conversations(client = this)
     }
 
-    fun buildFrom(bundle: PrivateKeyBundleV1, account: SigningKey? = null, options: ClientOptions? = null): Client {
+    fun buildFrom(
+        bundle: PrivateKeyBundleV1,
+        options: ClientOptions? = null,
+        account: SigningKey? = null,
+    ): Client {
         val address = bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
         val clientOptions = options ?: ClientOptions()
         val apiClient =
@@ -227,7 +231,7 @@ class Client() {
                         legacyIdentityKey
                     )
                 val client =
-                    Client(account.getAddress(), privateKeyBundleV1, apiClient, libXMTPClient)
+                    Client(account.address, privateKeyBundleV1, apiClient, libXMTPClient)
                 client.ensureUserContactPublished()
                 client
             } catch (e: java.lang.Exception) {
@@ -236,10 +240,18 @@ class Client() {
         }
     }
 
-    fun buildFromBundle(bundle: PrivateKeyBundle, account: SigningKey? = null, options: ClientOptions? = null): Client =
-        buildFromV1Bundle(v1Bundle = bundle.v1, account= account, options = options)
+    fun buildFromBundle(
+        bundle: PrivateKeyBundle,
+        options: ClientOptions? = null,
+        account: SigningKey? = null,
+    ): Client =
+        buildFromV1Bundle(v1Bundle = bundle.v1, account = account, options = options)
 
-    fun buildFromV1Bundle(v1Bundle: PrivateKeyBundleV1, account: SigningKey? = null, options: ClientOptions? = null): Client {
+    fun buildFromV1Bundle(
+        v1Bundle: PrivateKeyBundleV1,
+        options: ClientOptions? = null,
+        account: SigningKey? = null,
+    ): Client {
         val address = v1Bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
         val newOptions = options ?: ClientOptions()
         val apiClient =
@@ -278,7 +290,7 @@ class Client() {
     ): FfiXmtpClient? {
         val v3Client: FfiXmtpClient? =
             if (isAlphaMlsEnabled(options)) {
-                val alias = "xmtp-${options!!.api.env}-${account.getAddress().lowercase()}"
+                val alias = "xmtp-${options!!.api.env}-${account.address.lowercase()}"
 
                 val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
                 dbDir.mkdir()
@@ -315,7 +327,7 @@ class Client() {
                     isSecure = false,
                     db = dbPath,
                     encryptionKey = retrievedKey.encoded,
-                    accountAddress = account.getAddress().lowercase(),
+                    accountAddress = account.address.lowercase(),
                     legacyIdentitySource = legacyIdentitySource,
                     legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
                 )
@@ -376,7 +388,7 @@ class Client() {
         apiClient: ApiClient,
         options: ClientOptions? = null,
     ): PrivateKeyBundleV1? {
-        val encryptedBundles = authCheck(apiClient, account.getAddress())
+        val encryptedBundles = authCheck(apiClient, account.address)
         for (encryptedBundle in encryptedBundles) {
             try {
                 val bundle = encryptedBundle.decrypted(account, options?.preEnableIdentityCallback)

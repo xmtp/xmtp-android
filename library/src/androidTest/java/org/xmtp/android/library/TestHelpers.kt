@@ -56,9 +56,8 @@ class FakeWallet : SigningKey {
         return signature
     }
 
-    override fun getAddress(): String {
-        return privateKey.walletAddress
-    }
+    override val address: String
+        get() = privateKey.walletAddress
 }
 
 class FakeStreamHolder {

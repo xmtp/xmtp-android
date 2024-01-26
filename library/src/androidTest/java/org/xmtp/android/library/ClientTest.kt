@@ -41,7 +41,7 @@ class ClientTest {
         val v1Copy = PrivateKeyBundleV1Builder.fromEncodedData(encodedData)
         val client = Client().buildFrom(v1Copy)
         assertEquals(
-            wallet.getAddress(),
+            wallet.address,
             client.address,
         )
     }
@@ -139,7 +139,7 @@ class ClientTest {
         val fixtures = fixtures()
         val notOnNetwork = PrivateKeyBuilder()
         val canMessage = fixtures.aliceClient.canMessage(fixtures.bobClient.address)
-        val cannotMessage = fixtures.aliceClient.canMessage(notOnNetwork.getAddress())
+        val cannotMessage = fixtures.aliceClient.canMessage(notOnNetwork.address)
         assert(canMessage)
         assert(!cannotMessage)
     }
@@ -153,8 +153,8 @@ class ClientTest {
         val aliceClient = Client().create(aliceWallet, opts)
         aliceClient.ensureUserContactPublished()
 
-        val canMessage = Client.canMessage(aliceWallet.getAddress(), opts)
-        val cannotMessage = Client.canMessage(notOnNetwork.getAddress(), opts)
+        val canMessage = Client.canMessage(aliceWallet.address, opts)
+        val cannotMessage = Client.canMessage(notOnNetwork.address, opts)
 
         assert(canMessage)
         assert(!cannotMessage)

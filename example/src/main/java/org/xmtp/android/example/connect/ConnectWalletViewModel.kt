@@ -86,7 +86,7 @@ class ConnectWalletViewModel : ViewModel() {
                 val wallet = PrivateKeyBuilder()
                 val client = Client().create(wallet, ClientManager.CLIENT_OPTIONS)
                 _uiState.value = ConnectUiState.Success(
-                    wallet.getAddress(),
+                    wallet.address,
                     PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)
                 )
             } catch (e: XMTPException) {
@@ -110,7 +110,7 @@ class ConnectWalletViewModel : ViewModel() {
                 }
                 val client = Client().create(wallet, ClientManager.CLIENT_OPTIONS)
                 _uiState.value = ConnectUiState.Success(
-                    wallet.getAddress(),
+                    wallet.address,
                     PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)
                 )
             } catch (e: Exception) {
