@@ -290,7 +290,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.streamMessages()
             is V2 -> conversationV2.streamMessages()
-            is Group -> flowOf(group.messages().last()) // TODO fix this
+            is Group -> group.streamMessages()
         }
     }
 

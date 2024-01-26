@@ -88,7 +88,11 @@ class GroupTest {
         group.send("howdy")
         group.send("gm")
         runBlocking { group.sync() }
-        assertEquals(group.messages().last().body, "gm")
+        assertEquals(group.messages().last().body, "howdy")
         assertEquals(group.messages().size, 2)
+
+        val sameGroup = alixClient.conversations.listGroups().last()
+        assertEquals(sameGroup.messages().size, 2)
+        assertEquals(sameGroup.messages().last().body, "howdy")
     }
 }
