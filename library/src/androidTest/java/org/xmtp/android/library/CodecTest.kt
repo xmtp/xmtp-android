@@ -19,8 +19,8 @@ data class NumberCodec(
         authorityId = "example.com",
         typeId = "number",
         versionMajor = 1,
-        versionMinor = 1
-    )
+        versionMinor = 1,
+    ),
 ) : ContentCodec<Double> {
     override fun encode(content: Double): EncodedContent {
         return EncodedContent.newBuilder().also {
@@ -28,7 +28,7 @@ data class NumberCodec(
                 authorityId = "example.com",
                 typeId = "number",
                 versionMajor = 1,
-                versionMinor = 1
+                versionMinor = 1,
             )
             it.content = mapOf(Pair("number", content)).toString().toByteStringUtf8()
         }.build()
@@ -37,10 +37,13 @@ data class NumberCodec(
     override fun decode(content: EncodedContent): Double =
         content.content.toStringUtf8().filter { it.isDigit() || it == '.' }.toDouble()
 
+    override fun shouldPush(): Boolean = false
+
     override fun fallback(content: Double): String? {
         return "Error: This app does not support numbers."
     }
 }
+
 @RunWith(AndroidJUnit4::class)
 class CodecTest {
 
@@ -53,7 +56,7 @@ class CodecTest {
             aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
         aliceConversation.send(
             content = 3.14,
-            options = SendOptions(contentType = NumberCodec().contentType)
+            options = SendOptions(contentType = NumberCodec().contentType),
         )
         val messages = aliceConversation.messages()
         assertEquals(messages.size, 1)
@@ -75,7 +78,7 @@ class CodecTest {
         val source = DecodedComposite(encodedContent = textContent)
         aliceConversation.send(
             content = source,
-            options = SendOptions(contentType = CompositeCodec().contentType)
+            options = SendOptions(contentType = CompositeCodec().contentType),
         )
         val messages = aliceConversation.messages()
         val decoded: DecodedComposite? = messages[0].content()
@@ -95,12 +98,12 @@ class CodecTest {
         val source = DecodedComposite(
             parts = listOf(
                 DecodedComposite(encodedContent = textContent),
-                DecodedComposite(parts = listOf(DecodedComposite(encodedContent = numberContent)))
-            )
+                DecodedComposite(parts = listOf(DecodedComposite(encodedContent = numberContent))),
+            ),
         )
         aliceConversation.send(
             content = source,
-            options = SendOptions(contentType = CompositeCodec().contentType)
+            options = SendOptions(contentType = CompositeCodec().contentType),
         )
         val messages = aliceConversation.messages()
         val decoded: DecodedComposite? = messages[0].content()
