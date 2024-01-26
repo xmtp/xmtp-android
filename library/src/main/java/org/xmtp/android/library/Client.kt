@@ -2,11 +2,15 @@ package org.xmtp.android.library
 
 import android.content.Context
 import android.os.Build
+import android.security.keystore.KeyProperties
+import android.security.keystore.KeyProtection
 import android.util.Log
 import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Keys.toChecksumAddress
 import org.xmtp.android.library.codecs.ContentCodec
@@ -41,11 +45,14 @@ import uniffi.xmtpv3.LegacyIdentitySource
 import uniffi.xmtpv3.createClient
 import java.io.File
 import java.nio.charset.StandardCharsets
+import java.security.KeyStore
+import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import javax.crypto.spec.SecretKeySpec
 
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
@@ -225,12 +232,31 @@ class Client() {
                 dbDir.mkdir()
                 val dbPath: String = dbDir.absolutePath + "/$alias.db3"
 
+                val keyStore = KeyStore.getInstance("AndroidKeyStore")
+                withContext(Dispatchers.IO) {
+                    keyStore.load(null)
+                }
+                val keyProtection = KeyProtection.Builder(KeyProperties.PURPOSE_SIGN).build()
+                val entry = keyStore.getEntry(alias, keyProtection)
+                val retrievedKey = if (entry is KeyStore.SecretKeyEntry) {
+                    entry.secretKey
+                } else {
+                    val keyBytes = SecureRandom().generateSeed(32)
+                    val signingKey = SecretKeySpec(keyBytes, "HmacSHA256")
+                    val secretKeyEntry = KeyStore.SecretKeyEntry(signingKey)
+                    keyStore.setEntry(
+                        alias, secretKeyEntry,
+                        KeyProtection.Builder(KeyProperties.PURPOSE_SIGN).build()
+                    )
+                    secretKeyEntry.secretKey
+                }
+
                 createClient(
                     logger = logger,
                     host = "http://10.0.2.2:5556",
                     isSecure = false,
                     db = dbPath,
-                    encryptionKey = null,
+                    encryptionKey = retrievedKey.encoded,
                     accountAddress = account.getAddress().lowercase(),
                     legacyIdentitySource = legacyIdentitySource,
                     legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
