@@ -47,36 +47,36 @@ class GroupTest {
 
     @Test
     fun testCanCreateAGroup() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
         assert(group.id.isNotEmpty())
     }
 
     @Test
     fun testCanListGroupMembers() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
-        group.addMembers(listOf(caro.walletAddress))
-        assertSame(
-            group.memberAddresses(),
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        group.addMembers(listOf(caro.walletAddress.lowercase()))
+        assertEquals(
+            group.memberAddresses().sorted(),
             listOf(
                 caro.walletAddress.lowercase(),
                 alix.walletAddress.lowercase(),
                 bo.walletAddress.lowercase()
-            )
+            ).sorted()
         )
     }
 
     @Test
     fun testCanListGroups() {
-        boClient.conversations.newGroup(listOf(alix.walletAddress))
-        boClient.conversations.newGroup(listOf(caro.walletAddress))
+        boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        boClient.conversations.newGroup(listOf(caro.walletAddress.lowercase()))
         val groups = boClient.conversations.listGroups()
         assertEquals(groups.size, 2)
     }
 
     @Test
     fun testCanListGroupsAndConversations() {
-        boClient.conversations.newGroup(listOf(alix.walletAddress))
-        boClient.conversations.newGroup(listOf(caro.walletAddress))
+        boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        boClient.conversations.newGroup(listOf(caro.walletAddress.lowercase()))
         boClient.conversations.newConversation(alix.walletAddress)
         val convos = boClient.conversations.list(includeGroups = true)
         assertEquals(convos.size, 3)
@@ -84,10 +84,11 @@ class GroupTest {
 
     @Test
     fun testCanSendMessageToGroup() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
         group.send("howdy")
         group.send("gm")
         runBlocking { group.sync() }
+        assertEquals(group.messages().last().body, "gm")
         assertEquals(group.messages().size, 2)
     }
 }

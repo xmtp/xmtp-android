@@ -92,6 +92,10 @@ data class Conversations(
         return Group(client, group)
     }
 
+    suspend fun syncGroups() {
+        libXMTPConversations?.sync()
+    }
+
     fun listGroups(): List<Group> {
         return runBlocking {
             libXMTPConversations?.list(opts = FfiListConversationsOptions(null, null, null))?.map {
