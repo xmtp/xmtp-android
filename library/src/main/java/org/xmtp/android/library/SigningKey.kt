@@ -17,8 +17,7 @@ import java.math.BigInteger
 import java.util.Date
 
 interface SigningKey {
-
-    fun getAddress(): String
+    val address: String
 
     suspend fun sign(data: ByteArray): SignatureOuterClass.Signature?
 

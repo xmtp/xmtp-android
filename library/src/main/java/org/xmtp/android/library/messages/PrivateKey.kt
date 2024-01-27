@@ -107,9 +107,8 @@ class PrivateKeyBuilder : SigningKey {
         return sign(digest)
     }
 
-    override fun getAddress(): String {
-        return privateKey.walletAddress
-    }
+    override val address: String
+        get() = privateKey.walletAddress
 }
 
 fun PrivateKey.generate(): PrivateKey {
