@@ -3,12 +3,16 @@ package org.xmtp.android.library
 import android.util.Log
 import io.grpc.StatusException
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
+import org.xmtp.android.library.libxmtp.Message
+import org.xmtp.android.library.libxmtp.MessageEmitter
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1
@@ -34,6 +38,7 @@ import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.android.library.messages.DecryptedMessage
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiListConversationsOptions
+import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupEmitter
 import java.util.Date
 
 data class Conversations(
@@ -450,7 +455,21 @@ data class Conversations(
      * of the information of those conversations according to the topics
      * @return Stream of data information for the conversations
      */
-    fun stream(): Flow<Conversation> = flow {
+    fun stream(includeGroups: Boolean = false): Flow<Conversation> = flow {
+        if (includeGroups) {
+            val groupEmitter = GroupEmitter()
+
+            coroutineScope {
+                launch {
+                    groupEmitter.groups.collect { group ->
+                        emit(Conversation.Group(Group(client, group)))
+                    }
+                }
+            }
+
+            libXMTPConversations?.stream(groupEmitter.callback)
+        }
+
         val streamedConversationTopics: MutableSet<String> = mutableSetOf()
         client.subscribeTopic(
             listOf(Topic.userIntro(client.address), Topic.userInvite(client.address)),
@@ -472,6 +491,20 @@ data class Conversations(
                 }
             }
         }
+    }
+
+    fun streamGroups(): Flow<Group> = flow {
+        val groupEmitter = GroupEmitter()
+
+        coroutineScope {
+            launch {
+                groupEmitter.groups.collect { group ->
+                    emit(Group(client, group))
+                }
+            }
+        }
+
+        libXMTPConversations?.stream(groupEmitter.callback)
     }
 
     /**
