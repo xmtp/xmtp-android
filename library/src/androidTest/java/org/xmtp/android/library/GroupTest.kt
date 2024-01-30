@@ -126,7 +126,7 @@ class GroupTest {
         boClient.conversations.newGroup(listOf(caro.walletAddress.lowercase()))
         try {
             boClient.conversations.newConversation(alix.walletAddress)
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             boClient.conversations.newConversation(alix.walletAddress.lowercase())
         }
         val convos = boClient.conversations.list(includeGroups = true)
