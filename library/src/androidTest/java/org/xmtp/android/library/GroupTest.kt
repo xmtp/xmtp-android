@@ -1,18 +1,23 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import kotlinx.coroutines.runBlocking
-import org.junit.Assert
+import app.cash.turbine.test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.xmtp.android.library.codecs.ContentTypeReaction
+import org.xmtp.android.library.codecs.Reaction
+import org.xmtp.android.library.codecs.ReactionAction
+import org.xmtp.android.library.codecs.ReactionCodec
+import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
     lateinit var fakeApiClient: FakeApiClient
@@ -139,24 +144,61 @@ class GroupTest {
 
     @Test
     fun testCanSendContentTypesToGroup() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        Client.register(codec = ReactionCodec())
 
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        group.send("gm")
+        val messageToReact = group.messages()[0]
+
+        val reaction = Reaction(
+            reference = messageToReact.id,
+            action = ReactionAction.Added,
+            content = "U+1F603",
+            schema = ReactionSchema.Unicode
+        )
+
+        group.send(content = reaction, options = SendOptions(contentType = ContentTypeReaction))
+
+        val messages = group.messages()
+        assertEquals(messages.size, 3)
+        val content: Reaction? = messages.first().content()
+        assertEquals("U+1F603", content?.content)
+        assertEquals(messageToReact.id, content?.reference)
+        assertEquals(ReactionAction.Added, content?.action)
+        assertEquals(ReactionSchema.Unicode, content?.schema)
     }
 
     @Test
-    fun testCanStreamGroupMessages() {
+    fun testCanStreamGroupMessages() = kotlinx.coroutines.test.runTest {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+
+        group.streamMessages().test {
+            group.send("hi")
+            assertEquals("hi", awaitItem().body)
+            awaitComplete()
+        }
     }
 
     @Test
-    fun testCanStreamGroups() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
-
+    fun testCanStreamGroups() = kotlinx.coroutines.test.runTest {
+        boClient.conversations.streamGroups().test {
+            val conversation =
+                boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+            conversation.send(content = "hi")
+            assertEquals("hi", awaitItem().messages().first().body)
+            awaitComplete()
+        }
     }
 
     @Test
-    fun testCanStreamGroupsAndConversations() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
-
+    fun testCanStreamGroupsAndConversations() = kotlinx.coroutines.test.runTest {
+        boClient.conversations.stream(includeGroups = true).test {
+            val group =
+                boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+            val conversation =
+                boClient.conversations.newConversation(alix.walletAddress.lowercase())
+            assertEquals("hi", awaitItem().messages().first().body)
+            awaitComplete()
+        }
     }
 }

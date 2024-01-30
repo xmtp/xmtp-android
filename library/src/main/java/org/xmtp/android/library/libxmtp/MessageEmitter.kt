@@ -1,5 +1,6 @@
 package org.xmtp.android.library.libxmtp
 
+import android.util.Log
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import uniffi.xmtpv3.FfiMessage

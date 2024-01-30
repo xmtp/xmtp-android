@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -64,10 +65,10 @@ class GroupMembershipChangeTest {
         assertEquals(messages.size, 1)
         val content: GroupMembershipChanges? = messages.first().content()
         assertEquals(
-            listOf(bo.walletAddress, caro.walletAddress),
-            content?.membersAdded?.map { it.accountAddress }?.sorted()
+            listOf(bo.walletAddress.lowercase(), caro.walletAddress.lowercase()).sorted(),
+            content?.membersAddedList?.map { it.accountAddress.lowercase() }?.sorted()
         )
-        assert(content?.membersRemoved.isNullOrEmpty())
+        assert(content?.membersRemovedList.isNullOrEmpty())
     }
 
     @Test
@@ -82,13 +83,15 @@ class GroupMembershipChangeTest {
         )
         val messages = group.messages()
         assertEquals(messages.size, 1)
+        assertEquals(group.memberAddresses().size, 3)
         group.removeMembers(listOf(caro.walletAddress.lowercase()))
-        assertEquals(messages.size, 2)
+        assertEquals(group.messages().size, 2)
+        assertEquals(group.memberAddresses().size, 2)
         val content: GroupMembershipChanges? = messages.first().content()
         assertEquals(
-            listOf(caro.walletAddress),
-            content?.membersRemoved?.map { it.accountAddress }?.sorted()
+            listOf(caro.walletAddress.lowercase()),
+            content?.membersRemovedList?.map { it.accountAddress.lowercase() }?.sorted()
         )
-        assert(content?.membersAdded.isNullOrEmpty())
+        assert(content?.membersAddedList.isNullOrEmpty())
     }
 }
