@@ -55,7 +55,11 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.peerAddress
                 is V2 -> conversationV2.peerAddress
-                is Group -> group.memberAddresses().joinToString(",")
+                is Group -> {
+                    val addresses = group.memberAddresses().toMutableList()
+                    addresses.remove(clientAddress)
+                    addresses.joinToString(",")
+                }
             }
         }
 
@@ -64,7 +68,11 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> listOf(conversationV1.peerAddress)
                 is V2 -> listOf(conversationV2.peerAddress)
-                is Group -> group.memberAddresses()
+                is Group -> {
+                    val addresses = group.memberAddresses().toMutableList()
+                    addresses.remove(clientAddress)
+                    addresses
+                }
             }
         }
 

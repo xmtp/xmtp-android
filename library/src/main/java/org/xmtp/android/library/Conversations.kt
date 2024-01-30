@@ -90,6 +90,19 @@ data class Conversations(
     }
 
     fun newGroup(accountAddresses: List<String>): Group {
+        if (accountAddresses.isEmpty()) {
+            throw XMTPException("Cannot start an empty group chat.")
+        }
+        if (accountAddresses.size == 1 && accountAddresses.first()
+                .lowercase() == client.address.lowercase()
+        ) {
+            throw XMTPException("Recipient is sender")
+        }
+        val contacts = accountAddresses.map { client.contacts.find(it) }
+        if (contacts.size != accountAddresses.size) {
+            throw XMTPException("Recipient not on network")
+        }
+
         val group = runBlocking {
             libXMTPConversations?.createGroup(accountAddresses)
                 ?: throw XMTPException("Client does not support Groups")
