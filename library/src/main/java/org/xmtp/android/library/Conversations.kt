@@ -11,8 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
-import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.libxmtp.MessageEmitter
+import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1
@@ -35,7 +34,6 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
-import org.xmtp.android.library.messages.DecryptedMessage
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupEmitter

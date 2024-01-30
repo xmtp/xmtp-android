@@ -3,16 +3,15 @@ package org.xmtp.android.library
 import android.util.Log
 import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Message
+import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.proto.message.contents.Invitation.InvitationV1.Aes256gcmHkdfsha256
-import org.xmtp.android.library.messages.DecryptedMessage
 import java.util.Date
 
 /**
@@ -68,7 +67,6 @@ sealed class Conversation {
                 is Group -> group.memberAddresses()
             }
         }
-
 
     // This distinctly identifies between two addresses.
     // Note: this will be empty for older v1 conversations.

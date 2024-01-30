@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -12,16 +11,10 @@ import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.MessageEmitter
 import org.xmtp.android.library.messages.DecryptedMessage
-import org.xmtp.android.library.messages.EnvelopeBuilder
-import org.xmtp.android.library.messages.MessageBuilder
-import org.xmtp.android.library.messages.MessageV2Builder
-import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiListMessagesOptions
-import uniffi.xmtpv3.FfiMessage
-import java.security.SecureRandom
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit

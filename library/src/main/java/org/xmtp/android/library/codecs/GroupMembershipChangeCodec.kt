@@ -1,6 +1,5 @@
 package uniffi.xmtpv3.org.xmtp.android.library.codecs
 
-import com.google.gson.GsonBuilder
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.ContentTypeId
 import org.xmtp.android.library.codecs.ContentTypeIdBuilder

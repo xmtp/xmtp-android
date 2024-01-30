@@ -156,7 +156,7 @@ class Client() {
         apiClient: ApiClient,
         libXMTPClient: FfiXmtpClient? = null,
     ) : this() {
-        this.address = libXMTPClient?.accountAddress() ?: address
+        this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
         this.contacts = Contacts(client = this)
