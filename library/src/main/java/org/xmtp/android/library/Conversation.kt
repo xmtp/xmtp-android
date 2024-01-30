@@ -5,6 +5,7 @@ import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.xmtp.android.library.codecs.EncodedContent
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
@@ -59,6 +60,16 @@ sealed class Conversation {
             }
         }
 
+    val peerAddresses: List<String>
+        get() {
+            return when (this) {
+                is V1 -> listOf(conversationV1.peerAddress)
+                is V2 -> listOf(conversationV2.peerAddress)
+                is Group -> group.memberAddresses()
+            }
+        }
+
+
     // This distinctly identifies between two addresses.
     // Note: this will be empty for older v1 conversations.
     val conversationId: String?
@@ -80,12 +91,11 @@ sealed class Conversation {
         }
 
     fun consentState(): ConsentState {
-        val client: Client = when (this) {
-            is V1 -> conversationV1.client
-            is V2 -> conversationV2.client
-            is Group -> group.client
+        return when (this) {
+            is V1 -> conversationV1.client.contacts.consentList.state(address = peerAddress)
+            is V2 -> conversationV2.client.contacts.consentList.state(address = peerAddress)
+            is Group -> ConsentState.UNKNOWN // No such thing as consent for a group
         }
-        return client.contacts.consentList.state(address = peerAddress)
     }
 
     /**
@@ -109,15 +119,15 @@ sealed class Conversation {
                     ),
             ).build()
 
-            is Group -> TODO()
+            is Group -> throw XMTPException("Groups do not support topics")
         }
     }
 
-    fun decode(envelope: Envelope): DecodedMessage {
+    fun decode(envelope: Envelope, message: Message? = null): DecodedMessage {
         return when (this) {
             is V1 -> conversationV1.decode(envelope)
             is V2 -> conversationV2.decodeEnvelope(envelope)
-            is Group -> TODO()
+            is Group -> message?.decode() ?: throw XMTPException("Groups require message be passed")
         }
     }
 
@@ -140,7 +150,7 @@ sealed class Conversation {
                 conversationV2.prepareMessage(content = content, options = options)
             }
 
-            is Group -> TODO()
+            is Group -> throw XMTPException("Groups do not support prepared messages") // We return a encoded content not a preparedmessage which requires a envelope
         }
     }
 
@@ -157,7 +167,7 @@ sealed class Conversation {
                 conversationV2.prepareMessage(encodedContent = encodedContent, options = options)
             }
 
-            is Group -> TODO()
+            is Group -> throw XMTPException("Groups do not support prepared messages") // We return a encoded content not a preparedmessage which requires a envelope
         }
     }
 
@@ -165,7 +175,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.send(prepared = prepared)
             is V2 -> conversationV2.send(prepared = prepared)
-            is Group -> TODO()
+            is Group -> throw XMTPException("Groups do not support prepared messages") // We return a encoded content not a prepared Message which requires a envelope
         }
     }
 
@@ -173,7 +183,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.send(content = content, options = options)
             is V2 -> conversationV2.send(content = content, options = options)
-            is Group -> TODO()
+            is Group -> group.send(content = content, options = options)
         }
     }
 
@@ -189,7 +199,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.send(encodedContent = encodedContent, options = options)
             is V2 -> conversationV2.send(encodedContent = encodedContent, options = options)
-            is Group -> TODO()
+            is Group -> group.send(encodedContent = encodedContent)
         }
     }
 
@@ -258,17 +268,24 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.decryptedMessages(limit, before, after, direction)
             is V2 -> conversationV2.decryptedMessages(limit, before, after, direction)
-            is Group -> TODO()
+            is Group -> group.decryptedMessages(limit, before, after, direction)
         }
     }
 
     fun decrypt(
         envelope: Envelope,
+        message: Message? = null,
     ): DecryptedMessage {
         return when (this) {
             is V1 -> conversationV1.decrypt(envelope)
             is V2 -> conversationV2.decrypt(envelope)
-            is Group -> TODO()
+            is Group -> {
+                if (message == null) {
+                    throw XMTPException("Groups require message be passed")
+                } else {
+                    group.decrypt(message)
+                }
+            }
         }
     }
 
@@ -298,7 +315,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.streamDecryptedMessages()
             is V2 -> conversationV2.streamDecryptedMessages()
-            is Group -> TODO()
+            is Group -> group.streamDecryptedMessages()
         }
     }
 
@@ -306,7 +323,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> return conversationV1.streamEphemeral()
             is V2 -> return conversationV2.streamEphemeral()
-            is Group -> TODO()
+            is Group -> throw XMTPException("Groups do not support ephemeral messages")
         }
     }
 }

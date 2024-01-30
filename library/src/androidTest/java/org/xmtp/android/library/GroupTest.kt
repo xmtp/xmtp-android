@@ -31,7 +31,13 @@ class GroupTest {
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         fixtures =
-            fixtures(clientOptions = ClientOptions(enableAlphaMls = true, appContext = context))
+            fixtures(
+                clientOptions = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableAlphaMls = true,
+                    appContext = context
+                )
+            )
         alixWallet = fixtures.aliceAccount
         alix = fixtures.alice
         boWallet = fixtures.bobAccount
@@ -88,11 +94,11 @@ class GroupTest {
         group.send("howdy")
         group.send("gm")
         runBlocking { group.sync() }
-        assertEquals(group.messages().last().body, "howdy")
+        assertEquals(group.messages().first().body, "howdy")
         assertEquals(group.messages().size, 2)
 
         val sameGroup = alixClient.conversations.listGroups().last()
         assertEquals(sameGroup.messages().size, 2)
-        assertEquals(sameGroup.messages().last().body, "howdy")
+        assertEquals(sameGroup.messages().first().body, "howdy")
     }
 }

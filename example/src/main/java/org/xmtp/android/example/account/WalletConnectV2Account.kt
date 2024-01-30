@@ -18,6 +18,12 @@ data class WalletConnectV2Account(
     private val sendSessionRequestDeepLink: (Uri) -> Unit,
 ) :
     SigningKey {
+    override val address: String
+        get() = Keys.toChecksumAddress(
+            session.namespaces.getValue(chain).accounts[0].substringAfterLast(
+                ":"
+            )
+        )
 
     override suspend fun sign(data: ByteArray): SignatureOuterClass.Signature? {
         return signLegacy(String(data))
@@ -68,13 +74,5 @@ data class WalletConnectV2Account(
             .onFailure {}
 
         return null
-    }
-
-    override fun getAddress(): String {
-        return Keys.toChecksumAddress(
-            session.namespaces.getValue(chain).accounts[0].substringAfterLast(
-                ":"
-            )
-        )
     }
 }

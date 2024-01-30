@@ -90,7 +90,7 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
                 val wallet = PrivateKeyBuilder()
                 val client = Client().create(wallet, ClientManager.clientOptions(getApplication()))
                 _uiState.value = ConnectUiState.Success(
-                    wallet.getAddress(),
+                    wallet.address,
                     PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)
                 )
             } catch (e: XMTPException) {
@@ -110,7 +110,7 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
                 val wallet = PrivateKeyBuilder(privateKey)
                 val client = Client().create(wallet, ClientManager.clientOptions(getApplication()))
                 _uiState.value = ConnectUiState.Success(
-                    wallet.getAddress(),
+                    wallet.address,
                     PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)
                 )
             } catch (e: XMTPException) {
@@ -134,7 +134,7 @@ class ConnectWalletViewModel(application: Application) : AndroidViewModel(applic
                 }
                 val client = Client().create(wallet, ClientManager.clientOptions(getApplication()))
                 _uiState.value = ConnectUiState.Success(
-                    wallet.getAddress(),
+                    wallet.address,
                     PrivateKeyBundleV1Builder.encodeData(client.privateKeyBundleV1)
                 )
             } catch (e: Exception) {
