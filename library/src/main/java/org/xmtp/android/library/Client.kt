@@ -257,7 +257,6 @@ class Client() {
         val apiClient =
             GRPCApiClient(environment = newOptions.api.env, secure = newOptions.api.isSecure)
         val v3Client: FfiXmtpClient? = if (isAlphaMlsEnabled(options)) {
-            if (account == null) throw XMTPException("Signing Key required to use groups.")
             runBlocking {
                 ffiXmtpClient(
                     options,

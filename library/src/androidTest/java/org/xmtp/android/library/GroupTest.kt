@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -138,10 +139,13 @@ class GroupTest {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
         group.send("howdy")
         group.send("gm")
+        runBlocking { group.sync() }
         assertEquals(group.messages().first().body, "gm")
         assertEquals(group.messages().size, 3)
 
+        runBlocking { alixClient.conversations.syncGroups() }
         val sameGroup = alixClient.conversations.listGroups().last()
+        runBlocking { sameGroup.sync() }
         assertEquals(sameGroup.messages().size, 2)
         assertEquals(sameGroup.messages().first().body, "gm")
     }
@@ -152,6 +156,7 @@ class GroupTest {
 
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
         group.send("gm")
+        runBlocking { group.sync() }
         val messageToReact = group.messages()[0]
 
         val reaction = Reaction(
@@ -162,6 +167,7 @@ class GroupTest {
         )
 
         group.send(content = reaction, options = SendOptions(contentType = ContentTypeReaction))
+        runBlocking { group.sync() }
 
         val messages = group.messages()
         assertEquals(messages.size, 3)

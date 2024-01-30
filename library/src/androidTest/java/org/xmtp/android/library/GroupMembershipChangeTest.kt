@@ -93,4 +93,17 @@ class GroupMembershipChangeTest {
         )
         assert(content?.membersAddedList.isNullOrEmpty())
     }
+
+    @Test
+    fun testIfNotRegisteredReturnsFallback() {
+        val group = alixClient.conversations.newGroup(
+            listOf(
+                bo.walletAddress.lowercase(),
+                caro.walletAddress.lowercase()
+            )
+        )
+        val messages = group.messages()
+        assertEquals(messages.size, 1)
+        assert(messages.first().fallbackContent.isBlank())
+    }
 }

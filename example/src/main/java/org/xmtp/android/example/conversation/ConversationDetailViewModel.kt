@@ -20,6 +20,7 @@ import org.xmtp.android.example.extension.flowWhileShared
 import org.xmtp.android.example.extension.stateFlow
 import org.xmtp.android.library.Conversation
 import org.xmtp.android.library.DecodedMessage
+import org.xmtp.android.library.Group
 
 class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
@@ -55,6 +56,9 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
                     )
                 }
                 conversation?.let {
+                    if (conversation is Conversation.Group) {
+                        (conversation as Conversation.Group).group.sync()
+                    }
                     listItems.addAll(
                         it.messages().map { message ->
                             MessageListItem.Message(message.id, message)
