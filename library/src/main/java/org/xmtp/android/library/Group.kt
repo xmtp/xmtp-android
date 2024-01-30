@@ -79,18 +79,27 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         libXMTPGroup.sync()
     }
 
-    fun messages(): List<DecodedMessage> {
+    fun messages(
+        limit: Int? = null,
+        before: Date? = null,
+        after: Date? = null,
+        direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
+    ): List<DecodedMessage> {
         return runBlocking {
             libXMTPGroup.sync()
-            libXMTPGroup.findMessages(
+            val messages = libXMTPGroup.findMessages(
                 opts = FfiListMessagesOptions(
-                    sentBeforeNs = null,
-                    sentAfterNs = null,
-                    limit = null
+                    sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                    sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                    limit = limit?.toLong()
                 )
             ).map {
                 Message(client, it).decode()
-            }.reversed()
+            }
+            when (direction) {
+                MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
+                else -> messages.reversed()
+            }
         }
     }
 

@@ -254,7 +254,12 @@ sealed class Conversation {
                 )
 
             is Group -> {
-                group.messages()
+                group.messages(
+                    limit = limit,
+                    before = before,
+                    after = after,
+                    direction = direction,
+                )
             }
         }
     }
