@@ -1,10 +1,15 @@
 package org.xmtp.android.library
 
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.libxmtp.Message
+import org.xmtp.android.library.libxmtp.MessageEmitter
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
@@ -121,6 +126,34 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
             senderAddress = message.senderAddress,
             sentAt = Date()
         )
+    }
+
+    fun streamMessages(): Flow<DecodedMessage> = flow {
+        val messageEmitter = MessageEmitter()
+
+        coroutineScope {
+            launch {
+                messageEmitter.messages.collect { message ->
+                    emit(Message(client, message).decode())
+                }
+            }
+        }
+
+        libXMTPGroup.stream(messageEmitter.callback)
+    }
+
+    fun streamDecryptedMessages(): Flow<DecryptedMessage> = flow {
+        val messageEmitter = MessageEmitter()
+
+        coroutineScope {
+            launch {
+                messageEmitter.messages.collect { message ->
+                    emit(decrypt(Message(client, message)))
+                }
+            }
+        }
+
+        libXMTPGroup.stream(messageEmitter.callback)
     }
 
     fun addMembers(addresses: List<String>) {
