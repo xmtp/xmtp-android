@@ -38,6 +38,8 @@ import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupEmitter
 import java.util.Date
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.DurationUnit
 
 data class Conversations(
     var client: Client,
@@ -99,9 +101,15 @@ data class Conversations(
         libXMTPConversations?.sync()
     }
 
-    fun listGroups(): List<Group> {
+    fun listGroups(after: Date? = null, before: Date? = null, limit: Int? = null): List<Group> {
         return runBlocking {
-            libXMTPConversations?.list(opts = FfiListConversationsOptions(null, null, null))?.map {
+            libXMTPConversations?.list(
+                opts = FfiListConversationsOptions(
+                    after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                    before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                    limit?.toLong()
+                )
+            )?.map {
                 Group(client, it)
             }
         } ?: emptyList()
@@ -230,7 +238,10 @@ data class Conversations(
         }.map { Pair(it.topic, it) }
 
         if (includeGroups) {
-            val groups = runBlocking { listGroups() }
+            val groups = runBlocking {
+                syncGroups()
+                listGroups()
+            }
             conversationsByTopic += groups.map { Pair(it.id.toString(), Conversation.Group(it)) }
         }
         return conversationsByTopic.values.sortedByDescending { it.createdAt }
