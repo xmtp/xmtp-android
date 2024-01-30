@@ -124,7 +124,11 @@ class GroupTest {
     fun testCanListGroupsAndConversations() {
         boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
         boClient.conversations.newGroup(listOf(caro.walletAddress.lowercase()))
-        boClient.conversations.newConversation(alix.walletAddress.lowercase())
+        try {
+            boClient.conversations.newConversation(alix.walletAddress)
+        } catch(e: Exception) {
+            boClient.conversations.newConversation(alix.walletAddress.lowercase())
+        }
         val convos = boClient.conversations.list(includeGroups = true)
         assertEquals(convos.size, 3)
     }
