@@ -54,7 +54,12 @@ class GroupMembershipChangeTest {
     fun testCanAddMembers() {
         Client.register(codec = GroupMembershipChangeCodec())
 
-        val group = alixClient.conversations.newGroup(listOf(bo.walletAddress, caro.walletAddress))
+        val group = alixClient.conversations.newGroup(
+            listOf(
+                bo.walletAddress.lowercase(),
+                caro.walletAddress.lowercase()
+            )
+        )
         val messages = group.messages()
         assertEquals(messages.size, 1)
         val content: GroupMembershipChanges? = messages.first().content()
@@ -69,10 +74,15 @@ class GroupMembershipChangeTest {
     fun testCanRemoveMembers() {
         Client.register(codec = GroupMembershipChangeCodec())
 
-        val group = alixClient.conversations.newGroup(listOf(bo.walletAddress, caro.walletAddress))
+        val group = alixClient.conversations.newGroup(
+            listOf(
+                bo.walletAddress.lowercase(),
+                caro.walletAddress.lowercase()
+            )
+        )
         val messages = group.messages()
         assertEquals(messages.size, 1)
-        group.removeMembers(listOf(caro.walletAddress))
+        group.removeMembers(listOf(caro.walletAddress.lowercase()))
         assertEquals(messages.size, 2)
         val content: GroupMembershipChanges? = messages.first().content()
         assertEquals(

@@ -93,12 +93,11 @@ class GroupTest {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
         group.send("howdy")
         group.send("gm")
-        runBlocking { group.sync() }
-        assertEquals(group.messages().first().body, "howdy")
-        assertEquals(group.messages().size, 2)
+        assertEquals(group.messages().first().body, "gm")
+        assertEquals(group.messages().size, 3)
 
         val sameGroup = alixClient.conversations.listGroups().last()
         assertEquals(sameGroup.messages().size, 2)
-        assertEquals(sameGroup.messages().first().body, "howdy")
+        assertEquals(sameGroup.messages().first().body, "gm")
     }
 }
