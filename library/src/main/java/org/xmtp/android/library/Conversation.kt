@@ -318,7 +318,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.streamMessages()
             is V2 -> conversationV2.streamMessages()
-            is Group -> group.streamMessages()
+            is Group -> throw XMTPException("Coming follow up PR")
         }
     }
 
@@ -326,7 +326,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.streamDecryptedMessages()
             is V2 -> conversationV2.streamDecryptedMessages()
-            is Group -> group.streamDecryptedMessages()
+            is Group -> throw XMTPException("Coming follow up PR")
         }
     }
 
