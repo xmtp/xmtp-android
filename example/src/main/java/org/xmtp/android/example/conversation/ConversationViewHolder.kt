@@ -26,7 +26,7 @@ class ConversationViewHolder(
     fun bind(item: MainViewModel.MainListItem.ConversationItem) {
         conversation = item.conversation
         binding.peerAddress.text = if (item.conversation.peerAddress.contains(",")) {
-            val addresses = item.conversation.peerAddress.split(",").drop(1)
+            val addresses = item.conversation.peerAddress.split(",")
             addresses.joinToString(" & ") {
                 it.truncatedAddress()
             }

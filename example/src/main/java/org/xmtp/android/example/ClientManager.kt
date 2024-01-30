@@ -17,10 +17,10 @@ object ClientManager {
     fun clientOptions(appContext: Context?): ClientOptions {
         return ClientOptions(
             api = ClientOptions.Api(
-                XMTPEnvironment.DEV,
+                XMTPEnvironment.LOCAL,
                 appVersion = "XMTPAndroidExample/v1.0.0"
             ),
-            enableLibXmtpV3 = true,
+            enableAlphaMls = true,
             appContext = appContext
         )
     }
