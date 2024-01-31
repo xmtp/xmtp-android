@@ -7,7 +7,7 @@ val ContentTypeReply = ContentTypeIdBuilder.builderFromAuthorityId(
     "xmtp.org",
     "reply",
     versionMajor = 1,
-    versionMinor = 0
+    versionMinor = 0,
 )
 
 data class Reply(
@@ -41,7 +41,7 @@ data class ReplyCodec(override var contentType: ContentTypeId = ContentTypeReply
         return Reply(
             reference = reference,
             content = replyContent,
-            contentType = replyCodec.contentType
+            contentType = replyCodec.contentType,
         )
     }
 
@@ -49,7 +49,7 @@ data class ReplyCodec(override var contentType: ContentTypeId = ContentTypeReply
         return "Replied with “${content.content}” to an earlier message"
     }
 
-    override fun shouldPush(): Boolean = true
+    override fun shouldPush(content: Reply): Boolean = true
 
     private fun <Codec : ContentCodec<T>, T> encodeReply(
         codec: Codec,

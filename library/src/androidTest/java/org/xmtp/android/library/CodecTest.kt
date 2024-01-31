@@ -37,7 +37,7 @@ data class NumberCodec(
     override fun decode(content: EncodedContent): Double =
         content.content.toStringUtf8().filter { it.isDigit() || it == '.' }.toDouble()
 
-    override fun shouldPush(): Boolean = false
+    override fun shouldPush(content: Double): Boolean = false
 
     override fun fallback(content: Double): String? {
         return "Error: This app does not support numbers."

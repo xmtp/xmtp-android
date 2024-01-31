@@ -37,5 +37,5 @@ data class AttachmentCodec(override var contentType: ContentTypeId = ContentType
         return "Can’t display \"${content.filename}”. This app doesn’t support attachments."
     }
 
-    override fun shouldPush(): Boolean = true
+    override fun shouldPush(content: Attachment): Boolean = true
 }

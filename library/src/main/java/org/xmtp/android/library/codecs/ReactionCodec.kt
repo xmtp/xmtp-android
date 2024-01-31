@@ -14,7 +14,7 @@ val ContentTypeReaction = ContentTypeIdBuilder.builderFromAuthorityId(
     "xmtp.org",
     "reaction",
     versionMajor = 1,
-    versionMinor = 0
+    versionMinor = 0,
 )
 
 data class Reaction(
@@ -96,7 +96,11 @@ data class ReactionCodec(override var contentType: ContentTypeId = ContentTypeRe
         }
     }
 
-    override fun shouldPush(): Boolean = true
+    override fun shouldPush(content: Reaction): Boolean = when (content.action) {
+        ReactionAction.Added -> true
+        ReactionAction.Removed -> false
+        ReactionAction.Unknown -> false
+    }
 }
 
 private class ReactionSerializer : JsonSerializer<Reaction> {

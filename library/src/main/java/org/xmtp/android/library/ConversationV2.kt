@@ -84,7 +84,7 @@ data class ConversationV2(
         val result = runBlocking {
             client.apiClient.envelopes(
                 topic = topic,
-                pagination = pagination
+                pagination = pagination,
             )
         }
 
@@ -133,7 +133,7 @@ data class ConversationV2(
             topic,
             message.v2,
             keyMaterial,
-            client
+            client,
         )
     }
 
@@ -155,7 +155,7 @@ data class ConversationV2(
             topic = topic,
             message.v2,
             keyMaterial = keyMaterial,
-            client = client
+            client = client,
         )
     }
 
@@ -184,7 +184,12 @@ data class ConversationV2(
     }
 
     fun send(encodedContent: EncodedContent, options: SendOptions?): String {
-        val preparedMessage = prepareMessage(encodedContent = encodedContent, options = options)
+        val codec = Client.codecRegistry.find(options?.contentType)
+        val preparedMessage = prepareMessage(
+            encodedContent = encodedContent,
+            options = options,
+            shouldPush = shouldPush(codec, encodedContent.content),
+        )
         return send(preparedMessage)
     }
 
@@ -202,14 +207,24 @@ data class ConversationV2(
             client = client,
             encodedContent = encodedContent,
             topic = topic,
-            keyMaterial = keyMaterial
+            keyMaterial = keyMaterial,
+            shouldPush = shouldPush(codec, content),
         )
         val envelope = EnvelopeBuilder.buildFromString(
             topic = topic,
             timestamp = Date(),
-            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray()
+            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray(),
         )
         return envelope.toByteArray()
+    }
+
+    fun <Codec : ContentCodec<T>, T> shouldPush(codec: Codec, content: Any?): Boolean {
+        val contentType = content as? T
+        if (contentType != null) {
+            return codec.shouldPush(content = content)
+        } else {
+            throw XMTPException("Codec invalid content")
+        }
     }
 
     fun <T> prepareMessage(content: T, options: SendOptions?): PreparedMessage {
@@ -235,15 +250,20 @@ data class ConversationV2(
         if (compression != null) {
             encoded = encoded.compress(compression)
         }
-        return prepareMessage(encoded, options = options)
+        return prepareMessage(encoded, options = options, shouldPush = shouldPush(codec, content))
     }
 
-    fun prepareMessage(encodedContent: EncodedContent, options: SendOptions?): PreparedMessage {
+    fun prepareMessage(
+        encodedContent: EncodedContent,
+        options: SendOptions?,
+        shouldPush: Boolean,
+    ): PreparedMessage {
         val message = MessageV2Builder.buildEncode(
             client = client,
             encodedContent = encodedContent,
             topic = topic,
-            keyMaterial = keyMaterial
+            keyMaterial = keyMaterial,
+            shouldPush = shouldPush,
         )
 
         val newTopic = if (options?.ephemeral == true) ephemeralTopic else topic
@@ -251,7 +271,7 @@ data class ConversationV2(
         val envelope = EnvelopeBuilder.buildFromString(
             topic = newTopic,
             timestamp = Date(),
-            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray()
+            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray(),
         )
         return PreparedMessage(listOf(envelope))
     }
