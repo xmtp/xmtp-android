@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import android.util.Log
-import com.google.protobuf.ByteString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
