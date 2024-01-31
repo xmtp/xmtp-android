@@ -12,7 +12,7 @@ env:
 jobs:
   library-unit:
     name: Library (Unit Tests)
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-16x
     steps:
       - name: Checkout project sources
         uses: actions/checkout@v3
@@ -24,15 +24,13 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
-      - name: Start local test server
-        run: docker-compose -p xmtp -f dev/local/docker-compose.yml up -d
+      - name: Start Docker containers
+        run: dev/up
       - name: Gradle Run Unit Tests
         run: ./gradlew library:testDebug
-      - name: Stop local test server
-        run: docker-compose -p xmtp -f dev/local/docker-compose.yml down
   library-integration:
     name: Library (Integration Tests)
-    runs-on: macos-latest
+    runs-on: warp-macos-latest-arm64-6x
     steps:
       - name: Checkout project sources
         uses: actions/checkout@v3
@@ -48,13 +46,11 @@ jobs:
         run: brew install docker docker-compose
       - name: Start Colima
         run: colima start
-      - name: Start local test server
-        run: docker-compose -p xmtp -f dev/local/docker-compose.yml up -d
+      - name: Start Docker containers
+        run: dev/up
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
           script: ./gradlew connectedCheck
-      - name: Stop local test server
-        run: docker-compose -p xmtp -f dev/local/docker-compose.yml down
 
