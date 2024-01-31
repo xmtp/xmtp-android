@@ -19,12 +19,9 @@ services:
     depends_on:
       - db
 
-#  validation:
-#    image: xmtp/mls-validation-service:latest
-#    platform: linux/amd64
-#    build:
-#      context: ../..
-#      dockerfile: ./dev/validation_service/local.Dockerfile
+  validation:
+    image: xmtp/mls-validation-service:latest
+    platform: linux/amd64
 
   db:
     image: postgres:13
