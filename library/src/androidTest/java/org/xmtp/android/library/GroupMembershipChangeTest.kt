@@ -84,9 +84,11 @@ class GroupMembershipChangeTest {
         assertEquals(messages.size, 1)
         assertEquals(group.memberAddresses().size, 3)
         group.removeMembers(listOf(caro.walletAddress))
-        assertEquals(group.messages().size, 2)
+        val updatedMessages = group.messages()
+        assertEquals(updatedMessages.size, 2)
         assertEquals(group.memberAddresses().size, 2)
-        val content: GroupMembershipChanges? = messages.first().content()
+        val content: GroupMembershipChanges? = updatedMessages.first().content()
+
         assertEquals(
             listOf(caro.walletAddress.lowercase()),
             content?.membersRemovedList?.map { it.accountAddress.lowercase() }?.sorted()

@@ -327,7 +327,7 @@ class Client() {
                     isSecure = false,
                     db = dbPath,
                     encryptionKey = retrievedKey.encoded,
-                    accountAddress = accountAddress.lowercase(),
+                    accountAddress = accountAddress,
                     legacyIdentitySource = legacyIdentitySource,
                     legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
                 )
@@ -561,7 +561,7 @@ class Client() {
 
     fun canMessage(addresses: List<String>): Boolean {
         return runBlocking {
-            libXMTPClient != null && !libXMTPClient!!.canMessage(addresses.map { it.lowercase() })
+            libXMTPClient != null && !libXMTPClient!!.canMessage(addresses.map { it })
                 .contains(false)
         }
     }
