@@ -15,5 +15,5 @@ fi
 
 rustup update
 
-dev/build_validation_service_local
+#dev/build_validation_service_local
 dev/local/up
