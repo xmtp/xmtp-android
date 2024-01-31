@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -125,6 +126,32 @@ class GroupTest {
         boClient.conversations.newConversation(alix.walletAddress)
         val convos = boClient.conversations.list(includeGroups = true)
         assertEquals(convos.size, 3)
+    }
+
+    @Test
+    fun testCannotSendMessageToGroupMemberNotOnV3() {
+        var fakeApiClient = FakeApiClient()
+        val chuxAccount = PrivateKeyBuilder()
+        val chux: PrivateKey = chuxAccount.getPrivateKey()
+        val chuxClient: Client = Client().create(account = chuxAccount, apiClient = fakeApiClient)
+
+        assertThrows("Recipient not on network", XMTPException::class.java) {
+            boClient.conversations.newGroup(listOf(chux.walletAddress))
+        }
+    }
+
+    @Test
+    fun testCannotStartGroupWithSelf() {
+        assertThrows("Recipient is sender", XMTPException::class.java) {
+            boClient.conversations.newGroup(listOf(bo.walletAddress))
+        }
+    }
+
+    @Test
+    fun testCannotStartEmptyGroupChat() {
+        assertThrows("Cannot start an empty group chat.", XMTPException::class.java) {
+            boClient.conversations.newGroup(listOf())
+        }
     }
 
     @Test

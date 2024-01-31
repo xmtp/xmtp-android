@@ -95,8 +95,7 @@ data class Conversations(
         ) {
             throw XMTPException("Recipient is sender")
         }
-        val contacts = accountAddresses.map { client.contacts.find(it) }
-        if (contacts.size != accountAddresses.size) {
+        if (!client.canMessage(accountAddresses)) {
             throw XMTPException("Recipient not on network")
         }
 
