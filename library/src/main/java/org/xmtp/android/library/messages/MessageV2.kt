@@ -1,6 +1,7 @@
 package org.xmtp.android.library.messages
 
 import com.google.protobuf.kotlin.toByteString
+import com.google.protobuf.kotlin.toByteStringUtf8
 import org.web3j.crypto.ECDSASignature
 import org.web3j.crypto.Hash
 import org.web3j.crypto.Sign
@@ -18,7 +19,12 @@ typealias MessageV2 = org.xmtp.proto.message.contents.MessageOuterClass.MessageV
 
 class MessageV2Builder {
     companion object {
-        fun buildFromCipherText(headerBytes: ByteArray, ciphertext: CipherText?): MessageV2 {
+        fun buildFromCipherText(
+            headerBytes: ByteArray,
+            ciphertext: CipherText?,
+            senderHmac: ByteArray?,
+            shouldPush: Boolean,
+        ): MessageV2 {
             return MessageV2.newBuilder().also {
                 it.headerBytes = headerBytes.toByteString()
                 it.ciphertext = ciphertext
@@ -41,7 +47,7 @@ class MessageV2Builder {
                     topic = decryptedMessage.topic,
                     encodedContent = decryptedMessage.encodedContent,
                     senderAddress = decryptedMessage.senderAddress,
-                    sent = decryptedMessage.sentAt
+                    sent = decryptedMessage.sentAt,
                 )
             } catch (e: Exception) {
                 throw XMTPException("Error decoding message", e)
@@ -69,7 +75,7 @@ class MessageV2Builder {
 
             if (!senderPreKey.signature.verify(
                     senderIdentityKey,
-                    signed.sender.preKey.keyBytes.toByteArray()
+                    signed.sender.preKey.keyBytes.toByteArray(),
                 )
             ) {
                 throw XMTPException("pre-key not signed by identity key")
@@ -109,7 +115,7 @@ class MessageV2Builder {
                 encodedContent = encodedMessage,
                 senderAddress = signed.sender.walletAddress,
                 sentAt = Date(header.createdNs / 1_000_000),
-                topic = topic
+                topic = topic,
             )
         }
 
@@ -118,6 +124,7 @@ class MessageV2Builder {
             encodedContent: EncodedContent,
             topic: String,
             keyMaterial: ByteArray,
+            shouldPush: Boolean,
         ): MessageV2 {
             val payload = encodedContent.toByteArray()
             val date = Date()
@@ -130,7 +137,14 @@ class MessageV2Builder {
             val signedContent = SignedContentBuilder.builderFromPayload(payload, bundle, signature)
             val signedBytes = signedContent.toByteArray()
             val ciphertext = Crypto.encrypt(keyMaterial, signedBytes, additionalData = headerBytes)
-            return buildFromCipherText(headerBytes, ciphertext)
+
+            val thirtyDayPeriodsSinceEpoch =
+                (System.currentTimeMillis() / 60 / 60 / 24 / 30).toInt()
+            val info = "$thirtyDayPeriodsSinceEpoch-${client.address}"
+            val infoEncoded = info.toByteStringUtf8().toByteArray()
+            val senderHmac = Crypto.generateHmacSignature(keyMaterial, infoEncoded, headerBytes)
+
+            return buildFromCipherText(headerBytes, ciphertext, senderHmac, shouldPush)
         }
     }
 }

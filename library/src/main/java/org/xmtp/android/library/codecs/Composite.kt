@@ -52,7 +52,7 @@ class CompositeCodec : ContentCodec<DecodedComposite> {
         return null
     }
 
-    override fun shouldPush(): Boolean = false
+    override fun shouldPush(content: DecodedComposite): Boolean = false
 
     private fun toComposite(decodedComposite: DecodedComposite): Composite {
         return Composite.newBuilder().also {

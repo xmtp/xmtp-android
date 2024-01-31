@@ -229,7 +229,12 @@ class ConversationTest {
             additionalData = headerBytes,
         )
         val tamperedMessage =
-            MessageV2Builder.buildFromCipherText(headerBytes = headerBytes, ciphertext = ciphertext)
+            MessageV2Builder.buildFromCipherText(
+                headerBytes = headerBytes,
+                ciphertext = ciphertext,
+                senderHmac = null,
+                shouldPush = true,
+            )
         val tamperedEnvelope = EnvelopeBuilder.buildFromString(
             topic = aliceConversation.topic,
             timestamp = Date(),
@@ -585,6 +590,7 @@ class ConversationTest {
                             encodedContent,
                             topic = conversation.topic,
                             keyMaterial = conversation.keyMaterial!!,
+                            shouldPush = true,
                         ),
                     ).toByteArray(),
                 ),

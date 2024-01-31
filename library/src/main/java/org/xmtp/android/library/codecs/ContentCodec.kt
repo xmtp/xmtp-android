@@ -67,7 +67,7 @@ interface ContentCodec<T> {
     fun encode(content: T): EncodedContent
     fun decode(content: EncodedContent): T
     fun fallback(content: T): String?
-    fun shouldPush(): Boolean
+    fun shouldPush(content: T): Boolean
 }
 
 val id: String

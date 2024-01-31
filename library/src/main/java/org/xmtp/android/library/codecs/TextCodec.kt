@@ -37,5 +37,5 @@ data class TextCodec(override var contentType: ContentTypeId = ContentTypeText) 
         return null
     }
 
-    override fun shouldPush(): Boolean = true
+    override fun shouldPush(content: String): Boolean = true
 }
