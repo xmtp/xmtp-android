@@ -56,7 +56,7 @@ class GroupTest {
 
     @Test
     fun testCanCreateAGroup() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
         assert(group.id.isNotEmpty())
     }
 
@@ -64,8 +64,8 @@ class GroupTest {
     fun testCanListGroupMembers() {
         val group = boClient.conversations.newGroup(
             listOf(
-                alix.walletAddress.lowercase(),
-                caro.walletAddress.lowercase()
+                alix.walletAddress,
+                caro.walletAddress
             )
         )
         assertEquals(
@@ -80,8 +80,8 @@ class GroupTest {
 
     @Test
     fun testCanAddGroupMembers() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
-        group.addMembers(listOf(caro.walletAddress.lowercase()))
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
+        group.addMembers(listOf(caro.walletAddress))
         assertEquals(
             group.memberAddresses().sorted(),
             listOf(
@@ -96,11 +96,11 @@ class GroupTest {
     fun testCanRemoveGroupMembers() {
         val group = boClient.conversations.newGroup(
             listOf(
-                alix.walletAddress.lowercase(),
-                caro.walletAddress.lowercase()
+                alix.walletAddress,
+                caro.walletAddress
             )
         )
-        group.removeMembers(listOf(caro.walletAddress.lowercase()))
+        group.removeMembers(listOf(caro.walletAddress))
         assertEquals(
             group.memberAddresses().sorted(),
             listOf(
@@ -112,28 +112,24 @@ class GroupTest {
 
     @Test
     fun testCanListGroups() {
-        boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
-        boClient.conversations.newGroup(listOf(caro.walletAddress.lowercase()))
+        boClient.conversations.newGroup(listOf(alix.walletAddress))
+        boClient.conversations.newGroup(listOf(caro.walletAddress))
         val groups = boClient.conversations.listGroups()
         assertEquals(groups.size, 2)
     }
 
     @Test
     fun testCanListGroupsAndConversations() {
-        boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
-        boClient.conversations.newGroup(listOf(caro.walletAddress.lowercase()))
-        try {
-            boClient.conversations.newConversation(alix.walletAddress)
-        } catch (e: Exception) {
-            boClient.conversations.newConversation(alix.walletAddress.lowercase())
-        }
+        boClient.conversations.newGroup(listOf(alix.walletAddress))
+        boClient.conversations.newGroup(listOf(caro.walletAddress))
+        boClient.conversations.newConversation(alix.walletAddress)
         val convos = boClient.conversations.list(includeGroups = true)
         assertEquals(convos.size, 3)
     }
 
     @Test
     fun testCanSendMessageToGroup() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
         group.send("howdy")
         group.send("gm")
         runBlocking { group.sync() }
@@ -151,7 +147,7 @@ class GroupTest {
     fun testCanSendContentTypesToGroup() {
         Client.register(codec = ReactionCodec())
 
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
         group.send("gm")
         runBlocking { group.sync() }
         val messageToReact = group.messages()[0]

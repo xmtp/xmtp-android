@@ -56,8 +56,8 @@ class GroupMembershipChangeTest {
 
         val group = alixClient.conversations.newGroup(
             listOf(
-                bo.walletAddress.lowercase(),
-                caro.walletAddress.lowercase()
+                bo.walletAddress,
+                caro.walletAddress
             )
         )
         val messages = group.messages()
@@ -76,14 +76,14 @@ class GroupMembershipChangeTest {
 
         val group = alixClient.conversations.newGroup(
             listOf(
-                bo.walletAddress.lowercase(),
-                caro.walletAddress.lowercase()
+                bo.walletAddress,
+                caro.walletAddress
             )
         )
         val messages = group.messages()
         assertEquals(messages.size, 1)
         assertEquals(group.memberAddresses().size, 3)
-        group.removeMembers(listOf(caro.walletAddress.lowercase()))
+        group.removeMembers(listOf(caro.walletAddress))
         assertEquals(group.messages().size, 2)
         assertEquals(group.memberAddresses().size, 2)
         val content: GroupMembershipChanges? = messages.first().content()
@@ -98,8 +98,8 @@ class GroupMembershipChangeTest {
     fun testIfNotRegisteredReturnsFallback() {
         val group = alixClient.conversations.newGroup(
             listOf(
-                bo.walletAddress.lowercase(),
-                caro.walletAddress.lowercase()
+                bo.walletAddress,
+                caro.walletAddress
             )
         )
         val messages = group.messages()
