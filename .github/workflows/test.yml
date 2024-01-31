@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew library:testDebug
   library-integration:
     name: Library (Integration Tests)
-    runs-on: macos-latest
+    runs-on: warp-macos-13-arm64-6x
     steps:
       - name: Checkout project sources
         uses: actions/checkout@v3
@@ -43,7 +43,7 @@ jobs:
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
       - name: Set up Docker
-        run: brew install docker docker-compose
+        run: brew install docker docker-compose colima
       - name: Start Colima
         run: colima start
       - name: Start Docker containers
