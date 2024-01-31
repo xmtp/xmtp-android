@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew library:testDebug
   library-integration:
     name: Library (Integration Tests)
-    runs-on: warp-macos-latest-arm64-6x
+    runs-on: warp-macos-13-arm64-6x
     steps:
       - name: Checkout project sources
         uses: actions/checkout@v3
