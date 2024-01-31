@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import android.util.Log
+import com.google.protobuf.ByteString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
@@ -188,7 +189,7 @@ data class ConversationV2(
         val preparedMessage = prepareMessage(
             encodedContent = encodedContent,
             options = options,
-            shouldPush = shouldPush(codec, encodedContent.content),
+            shouldPush = shouldPush(codec, encodedContent.content.toStringUtf8()),
         )
         return send(preparedMessage)
     }
