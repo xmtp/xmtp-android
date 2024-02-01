@@ -213,7 +213,7 @@ data class ConversationV2(
         val envelope = EnvelopeBuilder.buildFromString(
             topic = topic,
             timestamp = Date(),
-            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray(),
+            message = MessageBuilder.buildFromMessageV2(v2 = message.messageV2).toByteArray(),
         )
         return envelope.toByteArray()
     }
@@ -271,7 +271,7 @@ data class ConversationV2(
         val envelope = EnvelopeBuilder.buildFromString(
             topic = newTopic,
             timestamp = Date(),
-            message = MessageBuilder.buildFromMessageV2(v2 = message).toByteArray(),
+            message = MessageBuilder.buildFromMessageV2(v2 = message.messageV2).toByteArray(),
         )
         return PreparedMessage(listOf(envelope))
     }

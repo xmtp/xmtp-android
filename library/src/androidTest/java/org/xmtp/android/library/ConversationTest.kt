@@ -238,7 +238,7 @@ class ConversationTest {
         val tamperedEnvelope = EnvelopeBuilder.buildFromString(
             topic = aliceConversation.topic,
             timestamp = Date(),
-            message = MessageBuilder.buildFromMessageV2(v2 = tamperedMessage).toByteArray(),
+            message = MessageBuilder.buildFromMessageV2(v2 = tamperedMessage.messageV2).toByteArray(),
         )
         aliceClient.publish(envelopes = listOf(tamperedEnvelope))
         val bobConversation = bobClient.conversations.newConversation(
@@ -591,7 +591,7 @@ class ConversationTest {
                             topic = conversation.topic,
                             keyMaterial = conversation.keyMaterial!!,
                             shouldPush = true,
-                        ),
+                        ).messageV2,
                     ).toByteArray(),
                 ),
             )
