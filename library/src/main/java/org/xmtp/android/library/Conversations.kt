@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.xmtp.android.library.Conversation.*
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
 import org.xmtp.android.library.messages.DecryptedMessage
@@ -60,7 +61,7 @@ data class Conversations(
     fun fromInvite(envelope: Envelope): Conversation {
         val sealedInvitation = Invitation.SealedInvitation.parseFrom(envelope.message)
         val unsealed = sealedInvitation.v1.getInvitation(viewer = client.keys)
-        return Conversation.V2(
+        return V2(
             ConversationV2.create(
                 client = client,
                 invitation = unsealed,
@@ -80,7 +81,7 @@ data class Conversations(
         val senderAddress = messageV1.header.sender.walletAddress
         val recipientAddress = messageV1.header.recipient.walletAddress
         val peerAddress = if (client.address == senderAddress) recipientAddress else senderAddress
-        return Conversation.V1(
+        return V1(
             ConversationV1(
                 client = client,
                 peerAddress = peerAddress,
@@ -88,18 +89,16 @@ data class Conversations(
             ),
         )
     }
-
     fun newGroup(accountAddresses: List<String>): Group {
         if (accountAddresses.isEmpty()) {
             throw XMTPException("Cannot start an empty group chat.")
         }
-        if (accountAddresses.size == 1 && accountAddresses.first()
-                .lowercase() == client.address.lowercase()
+        if (accountAddresses.size == 1 &&
+            accountAddresses.first().lowercase() == client.address.lowercase()
         ) {
             throw XMTPException("Recipient is sender")
         }
-        val contacts = accountAddresses.map { client.contacts.find(it) }
-        if (contacts.size != accountAddresses.size) {
+        if (!client.canMessage(accountAddresses)) {
             throw XMTPException("Recipient not on network")
         }
 
@@ -155,7 +154,7 @@ data class Conversations(
             val invitationPeers = listIntroductionPeers()
             val peerSeenAt = invitationPeers[peerAddress]
             if (peerSeenAt != null) {
-                val conversation = Conversation.V1(
+                val conversation = V1(
                     ConversationV1(
                         client = client,
                         peerAddress = peerAddress,
@@ -169,7 +168,7 @@ data class Conversations(
 
         // If the contact is v1, start a v1 conversation
         if (Contact.ContactBundle.VersionCase.V1 == contact.versionCase && context?.conversationId.isNullOrEmpty()) {
-            val conversation = Conversation.V1(
+            val conversation = V1(
                 ConversationV1(
                     client = client,
                     peerAddress = peerAddress,
@@ -186,7 +185,7 @@ data class Conversations(
             }
             val invite = sealedInvitation.v1.getInvitation(viewer = client.keys)
             if (invite.context.conversationId == context?.conversationId && invite.context.conversationId != "") {
-                val conversation = Conversation.V2(
+                val conversation = V2(
                     ConversationV2(
                         topic = invite.topic,
                         keyMaterial = invite.aes256GcmHkdfSha256.keyMaterial.toByteArray(),
@@ -212,7 +211,7 @@ data class Conversations(
             header = sealedInvitation.v1.header,
         )
         client.contacts.allow(addresses = listOf(peerAddress))
-        val conversation = Conversation.V2(conversationV2)
+        val conversation = V2(conversationV2)
         conversationsByTopic[conversation.topic] = conversation
         return conversation
     }
@@ -228,7 +227,7 @@ data class Conversations(
         val seenPeers = listIntroductionPeers(pagination = pagination)
         for ((peerAddress, sentAt) in seenPeers) {
             newConversations.add(
-                Conversation.V1(
+                V1(
                     ConversationV1(
                         client = client,
                         peerAddress = peerAddress,
@@ -240,7 +239,7 @@ data class Conversations(
         val invitations = listInvitations(pagination = pagination)
         for (sealedInvitation in invitations) {
             try {
-                newConversations.add(Conversation.V2(conversation(sealedInvitation)))
+                newConversations.add(V2(conversation(sealedInvitation)))
             } catch (e: Exception) {
                 Log.d(TAG, e.message.toString())
             }
@@ -255,7 +254,7 @@ data class Conversations(
                 syncGroups()
                 listGroups()
             }
-            conversationsByTopic += groups.map { Pair(it.id.toString(), Conversation.Group(it)) }
+            conversationsByTopic += groups.map { Pair(it.id.toString(), Group(it)) }
         }
         return conversationsByTopic.values.sortedByDescending { it.createdAt }
     }
@@ -264,7 +263,7 @@ data class Conversations(
         val conversation: Conversation
         if (!data.hasInvitation()) {
             val sentAt = Date(data.createdNs / 1_000_000)
-            conversation = Conversation.V1(
+            conversation = V1(
                 ConversationV1(
                     client,
                     data.peerAddress,
@@ -272,7 +271,7 @@ data class Conversations(
                 ),
             )
         } else {
-            conversation = Conversation.V2(
+            conversation = V2(
                 ConversationV2(
                     topic = data.invitation.topic,
                     keyMaterial = data.invitation.aes256GcmHkdfSha256.keyMaterial.toByteArray(),
@@ -483,7 +482,7 @@ data class Conversations(
             coroutineScope {
                 launch {
                     groupEmitter.groups.collect { group ->
-                        emit(Conversation.Group(Group(client, group)))
+                        emit(Group(Group(client, group)))
                     }
                 }
             }

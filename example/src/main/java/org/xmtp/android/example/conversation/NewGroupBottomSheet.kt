@@ -14,7 +14,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.R
-import org.xmtp.android.example.databinding.BottomSheetNewConversationBinding
 import org.xmtp.android.example.databinding.BottomSheetNewGroupBinding
 import java.util.regex.Pattern
 
@@ -58,7 +57,7 @@ class NewGroupBottomSheet : BottomSheetDialogFragment() {
             val input = binding.addressInput1.text.trim()
             val matcher = ADDRESS_PATTERN.matcher(input)
             if (matcher.matches()) {
-                addresses.add(input.toString().lowercase())
+                addresses.add(input.toString())
                 binding.addressInput2.visibility = VISIBLE
             }
         }
@@ -68,7 +67,7 @@ class NewGroupBottomSheet : BottomSheetDialogFragment() {
             val input = binding.addressInput2.text.trim()
             val matcher = ADDRESS_PATTERN.matcher(input)
             if (matcher.matches()) {
-                addresses.add(input.toString().lowercase())
+                addresses.add(input.toString())
                 viewModel.createGroup(addresses)
             }
         }

@@ -128,6 +128,20 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         )
     }
 
+    fun addMembers(addresses: List<String>) {
+        runBlocking { libXMTPGroup.addMembers(addresses) }
+    }
+
+    fun removeMembers(addresses: List<String>) {
+        runBlocking { libXMTPGroup.removeMembers(addresses) }
+    }
+
+    fun memberAddresses(): List<String> {
+        return runBlocking {
+            libXMTPGroup.listMembers().map { it.accountAddress }
+        }
+    }
+
     fun streamMessages(): Flow<DecodedMessage> = flow {
         val messageEmitter = MessageEmitter()
 
@@ -154,19 +168,5 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
 
         libXMTPGroup.stream(messageEmitter.callback)
-    }
-
-    fun addMembers(addresses: List<String>) {
-        runBlocking { libXMTPGroup.addMembers(addresses) }
-    }
-
-    fun removeMembers(addresses: List<String>) {
-        runBlocking { libXMTPGroup.removeMembers(addresses) }
-    }
-
-    fun memberAddresses(): List<String> {
-        return runBlocking {
-            libXMTPGroup.listMembers().map { it.accountAddress }
-        }
     }
 }

@@ -2,10 +2,9 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import app.cash.turbine.test
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,7 +17,6 @@ import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
     lateinit var fakeApiClient: FakeApiClient
@@ -59,7 +57,7 @@ class GroupTest {
 
     @Test
     fun testCanCreateAGroup() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
         assert(group.id.isNotEmpty())
     }
 
@@ -67,8 +65,8 @@ class GroupTest {
     fun testCanListGroupMembers() {
         val group = boClient.conversations.newGroup(
             listOf(
-                alix.walletAddress.lowercase(),
-                caro.walletAddress.lowercase()
+                alix.walletAddress,
+                caro.walletAddress
             )
         )
         assertEquals(
@@ -83,8 +81,8 @@ class GroupTest {
 
     @Test
     fun testCanAddGroupMembers() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
-        group.addMembers(listOf(caro.walletAddress.lowercase()))
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
+        group.addMembers(listOf(caro.walletAddress))
         assertEquals(
             group.memberAddresses().sorted(),
             listOf(
@@ -99,11 +97,11 @@ class GroupTest {
     fun testCanRemoveGroupMembers() {
         val group = boClient.conversations.newGroup(
             listOf(
-                alix.walletAddress.lowercase(),
-                caro.walletAddress.lowercase()
+                alix.walletAddress,
+                caro.walletAddress
             )
         )
-        group.removeMembers(listOf(caro.walletAddress.lowercase()))
+        group.removeMembers(listOf(caro.walletAddress))
         assertEquals(
             group.memberAddresses().sorted(),
             listOf(
@@ -115,28 +113,50 @@ class GroupTest {
 
     @Test
     fun testCanListGroups() {
-        boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
-        boClient.conversations.newGroup(listOf(caro.walletAddress.lowercase()))
+        boClient.conversations.newGroup(listOf(alix.walletAddress))
+        boClient.conversations.newGroup(listOf(caro.walletAddress))
         val groups = boClient.conversations.listGroups()
         assertEquals(groups.size, 2)
     }
 
     @Test
     fun testCanListGroupsAndConversations() {
-        boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
-        boClient.conversations.newGroup(listOf(caro.walletAddress.lowercase()))
-        try {
-            boClient.conversations.newConversation(alix.walletAddress)
-        } catch (e: Exception) {
-            boClient.conversations.newConversation(alix.walletAddress.lowercase())
-        }
+        boClient.conversations.newGroup(listOf(alix.walletAddress))
+        boClient.conversations.newGroup(listOf(caro.walletAddress))
+        boClient.conversations.newConversation(alix.walletAddress)
         val convos = boClient.conversations.list(includeGroups = true)
         assertEquals(convos.size, 3)
     }
 
     @Test
+    fun testCannotSendMessageToGroupMemberNotOnV3() {
+        var fakeApiClient = FakeApiClient()
+        val chuxAccount = PrivateKeyBuilder()
+        val chux: PrivateKey = chuxAccount.getPrivateKey()
+        val chuxClient: Client = Client().create(account = chuxAccount, apiClient = fakeApiClient)
+
+        assertThrows("Recipient not on network", XMTPException::class.java) {
+            boClient.conversations.newGroup(listOf(chux.walletAddress))
+        }
+    }
+
+    @Test
+    fun testCannotStartGroupWithSelf() {
+        assertThrows("Recipient is sender", XMTPException::class.java) {
+            boClient.conversations.newGroup(listOf(bo.walletAddress))
+        }
+    }
+
+    @Test
+    fun testCannotStartEmptyGroupChat() {
+        assertThrows("Cannot start an empty group chat.", XMTPException::class.java) {
+            boClient.conversations.newGroup(listOf())
+        }
+    }
+
+    @Test
     fun testCanSendMessageToGroup() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
         group.send("howdy")
         group.send("gm")
         runBlocking { group.sync() }
@@ -154,7 +174,7 @@ class GroupTest {
     fun testCanSendContentTypesToGroup() {
         Client.register(codec = ReactionCodec())
 
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
         group.send("gm")
         runBlocking { group.sync() }
         val messageToReact = group.messages()[0]

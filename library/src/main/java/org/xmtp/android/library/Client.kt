@@ -327,7 +327,7 @@ class Client() {
                     isSecure = false,
                     db = dbPath,
                     encryptionKey = retrievedKey.encoded,
-                    accountAddress = accountAddress.lowercase(),
+                    accountAddress = accountAddress,
                     legacyIdentitySource = legacyIdentitySource,
                     legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
                 )
@@ -557,6 +557,13 @@ class Client() {
      */
     fun canMessage(peerAddress: String): Boolean {
         return runBlocking { query(Topic.contact(peerAddress)).envelopesList.size > 0 }
+    }
+
+    fun canMessage(addresses: List<String>): Boolean {
+        return runBlocking {
+            libXMTPClient != null && !libXMTPClient!!.canMessage(addresses.map { it })
+                .contains(false)
+        }
     }
 
     val privateKeyBundle: PrivateKeyBundle
