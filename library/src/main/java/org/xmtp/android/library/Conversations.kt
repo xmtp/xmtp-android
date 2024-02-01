@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.xmtp.android.library.Conversation.*
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
 import org.xmtp.android.library.messages.DecryptedMessage
@@ -61,7 +60,7 @@ data class Conversations(
     fun fromInvite(envelope: Envelope): Conversation {
         val sealedInvitation = Invitation.SealedInvitation.parseFrom(envelope.message)
         val unsealed = sealedInvitation.v1.getInvitation(viewer = client.keys)
-        return V2(
+        return Conversation.V2(
             ConversationV2.create(
                 client = client,
                 invitation = unsealed,
@@ -81,7 +80,7 @@ data class Conversations(
         val senderAddress = messageV1.header.sender.walletAddress
         val recipientAddress = messageV1.header.recipient.walletAddress
         val peerAddress = if (client.address == senderAddress) recipientAddress else senderAddress
-        return V1(
+        return Conversation.V1(
             ConversationV1(
                 client = client,
                 peerAddress = peerAddress,
@@ -154,7 +153,7 @@ data class Conversations(
             val invitationPeers = listIntroductionPeers()
             val peerSeenAt = invitationPeers[peerAddress]
             if (peerSeenAt != null) {
-                val conversation = V1(
+                val conversation = Conversation.V1(
                     ConversationV1(
                         client = client,
                         peerAddress = peerAddress,
@@ -168,7 +167,7 @@ data class Conversations(
 
         // If the contact is v1, start a v1 conversation
         if (Contact.ContactBundle.VersionCase.V1 == contact.versionCase && context?.conversationId.isNullOrEmpty()) {
-            val conversation = V1(
+            val conversation = Conversation.V1(
                 ConversationV1(
                     client = client,
                     peerAddress = peerAddress,
@@ -185,7 +184,7 @@ data class Conversations(
             }
             val invite = sealedInvitation.v1.getInvitation(viewer = client.keys)
             if (invite.context.conversationId == context?.conversationId && invite.context.conversationId != "") {
-                val conversation = V2(
+                val conversation = Conversation.V2(
                     ConversationV2(
                         topic = invite.topic,
                         keyMaterial = invite.aes256GcmHkdfSha256.keyMaterial.toByteArray(),
@@ -211,7 +210,7 @@ data class Conversations(
             header = sealedInvitation.v1.header,
         )
         client.contacts.allow(addresses = listOf(peerAddress))
-        val conversation = V2(conversationV2)
+        val conversation = Conversation.V2(conversationV2)
         conversationsByTopic[conversation.topic] = conversation
         return conversation
     }
@@ -227,7 +226,7 @@ data class Conversations(
         val seenPeers = listIntroductionPeers(pagination = pagination)
         for ((peerAddress, sentAt) in seenPeers) {
             newConversations.add(
-                V1(
+                Conversation.V1(
                     ConversationV1(
                         client = client,
                         peerAddress = peerAddress,
@@ -239,7 +238,7 @@ data class Conversations(
         val invitations = listInvitations(pagination = pagination)
         for (sealedInvitation in invitations) {
             try {
-                newConversations.add(V2(conversation(sealedInvitation)))
+                newConversations.add(Conversation.V2(conversation(sealedInvitation)))
             } catch (e: Exception) {
                 Log.d(TAG, e.message.toString())
             }
@@ -254,7 +253,7 @@ data class Conversations(
                 syncGroups()
                 listGroups()
             }
-            conversationsByTopic += groups.map { Pair(it.id.toString(), Group(it)) }
+            conversationsByTopic += groups.map { Pair(it.id.toString(), Conversation.Group(it)) }
         }
         return conversationsByTopic.values.sortedByDescending { it.createdAt }
     }
@@ -263,7 +262,7 @@ data class Conversations(
         val conversation: Conversation
         if (!data.hasInvitation()) {
             val sentAt = Date(data.createdNs / 1_000_000)
-            conversation = V1(
+            conversation = Conversation.V1(
                 ConversationV1(
                     client,
                     data.peerAddress,
@@ -271,7 +270,7 @@ data class Conversations(
                 ),
             )
         } else {
-            conversation = V2(
+            conversation = Conversation.V2(
                 ConversationV2(
                     topic = data.invitation.topic,
                     keyMaterial = data.invitation.aes256GcmHkdfSha256.keyMaterial.toByteArray(),
@@ -482,7 +481,7 @@ data class Conversations(
             coroutineScope {
                 launch {
                     groupEmitter.groups.collect { group ->
-                        emit(Group(Group(client, group)))
+                        emit(Conversation.Group(Group(client, group)))
                     }
                 }
             }
