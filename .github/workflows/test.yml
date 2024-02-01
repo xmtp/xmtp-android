@@ -12,7 +12,7 @@ env:
 jobs:
   library-unit:
     name: Library (Unit Tests)
-    runs-on: warp-ubuntu-latest-x64-16x
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout project sources
         uses: actions/checkout@v3
@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew library:testDebug
   library-integration:
     name: Library (Integration Tests)
-    runs-on: warp-ubuntu-latest-arm64-16x
+    runs-on: warp-ubuntu-latest-x64-16x
     steps:
       - name: Checkout
         uses: actions/checkout@v4
