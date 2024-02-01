@@ -17,18 +17,22 @@ import java.util.Date
 
 typealias MessageV2 = org.xmtp.proto.message.contents.MessageOuterClass.MessageV2
 
-class MessageV2Builder {
+class MessageV2Builder(val senderHmac: ByteArray? = null, val shouldPush: Boolean = false) {
+    lateinit var messageV2: MessageV2
+
     companion object {
         fun buildFromCipherText(
             headerBytes: ByteArray,
             ciphertext: CipherText?,
             senderHmac: ByteArray?,
             shouldPush: Boolean,
-        ): MessageV2 {
-            return MessageV2.newBuilder().also {
+        ): MessageV2Builder {
+            val messageBuilder = MessageV2Builder(senderHmac = senderHmac, shouldPush = shouldPush)
+            messageBuilder.messageV2 = MessageV2.newBuilder().also {
                 it.headerBytes = headerBytes.toByteString()
                 it.ciphertext = ciphertext
             }.build()
+            return messageBuilder
         }
 
         fun buildDecode(
@@ -125,7 +129,7 @@ class MessageV2Builder {
             topic: String,
             keyMaterial: ByteArray,
             shouldPush: Boolean,
-        ): MessageV2 {
+        ): MessageV2Builder {
             val payload = encodedContent.toByteArray()
             val date = Date()
             val header = MessageHeaderV2Builder.buildFromTopic(topic, date)
@@ -142,9 +146,10 @@ class MessageV2Builder {
                 (System.currentTimeMillis() / 60 / 60 / 24 / 30).toInt()
             val info = "$thirtyDayPeriodsSinceEpoch-${client.address}"
             val infoEncoded = info.toByteStringUtf8().toByteArray()
-            val senderHmac = Crypto.generateHmacSignature(keyMaterial, infoEncoded, headerBytes)
+            val senderHmacGenerated =
+                Crypto.generateHmacSignature(keyMaterial, infoEncoded, headerBytes)
 
-            return buildFromCipherText(headerBytes, ciphertext, senderHmac, shouldPush)
+            return buildFromCipherText(headerBytes, ciphertext, senderHmacGenerated, shouldPush)
         }
     }
 }
