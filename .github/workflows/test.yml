@@ -53,6 +53,6 @@ jobs:
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 29
+          api-level: 27
           script: ./gradlew connectedCheck
 
