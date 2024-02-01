@@ -2,6 +2,8 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import app.cash.turbine.test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -198,6 +200,7 @@ class GroupTest {
         assertEquals(ReactionSchema.Unicode, content?.schema)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testCanStreamGroupMessages() = kotlinx.coroutines.test.runTest {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
