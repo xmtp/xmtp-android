@@ -1,20 +1,21 @@
 package org.xmtp.android.library
 
-import kotlinx.coroutines.coroutineScope
+import android.util.Log
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.libxmtp.MessageEmitter
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiListMessagesOptions
+import uniffi.xmtpv3.FfiMessage
+import uniffi.xmtpv3.FfiMessageCallback
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -142,31 +143,33 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
     }
 
-    fun streamMessages(): Flow<DecodedMessage> = flow {
-        val messageEmitter = MessageEmitter()
-
-        coroutineScope {
-            launch {
-                messageEmitter.messages.collect { message ->
-                    emit(Message(client, message).decode())
-                }
+    fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
+        val messageCallback = object : FfiMessageCallback {
+            override fun onMessage(message: FfiMessage) {
+                Log.e(
+                    "LOPI",
+                    "INFO Callback - Message callback with ID: " + message.id.toHex() + ", members: " + message.addrFrom
+                )
+                trySend(Message(client, message).decode())
             }
         }
 
-        libXMTPGroup.stream(messageEmitter.callback)
+        val stream = libXMTPGroup.stream(messageCallback)
+        awaitClose { stream.end() }
     }
 
-    fun streamDecryptedMessages(): Flow<DecryptedMessage> = flow {
-        val messageEmitter = MessageEmitter()
-
-        coroutineScope {
-            launch {
-                messageEmitter.messages.collect { message ->
-                    emit(decrypt(Message(client, message)))
-                }
+    fun streamDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
+        val messageCallback = object : FfiMessageCallback {
+            override fun onMessage(message: FfiMessage) {
+                Log.e(
+                    "LOPI",
+                    "INFO Callback - Message callback with ID: " + message.id.toHex() + ", members: " + message.addrFrom
+                )
+                trySend(decrypt(Message(client, message)))
             }
         }
 
-        libXMTPGroup.stream(messageEmitter.callback)
+        val stream = libXMTPGroup.stream(messageCallback)
+        awaitClose { stream.end() }
     }
 }

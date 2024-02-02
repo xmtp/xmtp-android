@@ -23,6 +23,11 @@ services:
     image: xmtp/mls-validation-service:latest
     platform: linux/amd64
 
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_PASSWORD: xmtp
+
   mlsdb:
     image: postgres:13
     environment:
