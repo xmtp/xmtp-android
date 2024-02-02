@@ -511,7 +511,8 @@ data class Conversations(
             }
         }
         val stream = libXMTPConversations?.stream(groupCallback)
-        awaitClose { stream?.end() }
+            ?: throw XMTPException("Client does not support Groups")
+        awaitClose { stream.end() }
     }
 
     /**
