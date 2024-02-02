@@ -517,12 +517,10 @@ data class Conversations(
     fun streamGroups(): Flow<Group> = callbackFlow {
         val groupCallback = object : FfiConversationCallback {
             override fun onConversation(conversation: FfiGroup) {
-                Log.e("LOPI", "callback called")
                 trySend(Group(client, conversation))
             }
         }
 
-        Log.e("LOPI", "starting stream ${libXMTPConversations.toString()}")
         val stream = libXMTPConversations?.stream(groupCallback)
         awaitClose { stream?.end() }
     }

@@ -231,9 +231,11 @@ class GroupTest {
     fun testCanStreamGroups() = kotlinx.coroutines.test.runTest {
         boClient.conversations.streamGroups().test {
             val group =
-                boClient.conversations.newGroup(listOf(alix.walletAddress))
-            group.send("hi")
-            assertEquals("hi", awaitItem().messages().first().body)
+                alixClient.conversations.newGroup(listOf(bo.walletAddress))
+            assertEquals(group.id.toHex(), awaitItem().id.toHex())
+            val group2 =
+                caroClient.conversations.newGroup(listOf(bo.walletAddress))
+            assertEquals(group2.id.toHex(), awaitItem().id.toHex())
         }
     }
 
@@ -242,10 +244,10 @@ class GroupTest {
     fun testCanStreamGroupsAndConversations() = kotlinx.coroutines.test.runTest {
         boClient.conversations.stream(includeGroups = true).test {
             val conversation =
-                boClient.conversations.newConversation(alix.walletAddress)
+                alixClient.conversations.newConversation(bo.walletAddress)
             assertEquals(conversation.topic, awaitItem().topic)
             val group =
-                boClient.conversations.newGroup(listOf(alix.walletAddress))
+                caroClient.conversations.newGroup(listOf(bo.walletAddress))
             assertEquals(group.id.toHex(), awaitItem().topic)
         }
     }
