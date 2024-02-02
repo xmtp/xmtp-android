@@ -7,14 +7,8 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.zip
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
@@ -45,7 +39,6 @@ import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiListConversationsOptions
-import uniffi.xmtpv3.FfiStreamCloser
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
