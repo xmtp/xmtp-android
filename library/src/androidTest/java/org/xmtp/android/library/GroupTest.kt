@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
@@ -232,23 +233,23 @@ class GroupTest {
         boClient.conversations.streamGroups().test {
             val group =
                 alixClient.conversations.newGroup(listOf(bo.walletAddress))
-            assertEquals(group.id.toHex(), awaitItem().id.toHex())
+            assertEquals(group.id.toHex(), awaitItem().topic)
             val group2 =
                 caroClient.conversations.newGroup(listOf(bo.walletAddress))
-            assertEquals(group2.id.toHex(), awaitItem().id.toHex())
+            assertEquals(group2.id.toHex(), awaitItem().topic)
         }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testCanStreamGroupsAndConversations() = kotlinx.coroutines.test.runTest {
-        boClient.conversations.stream(includeGroups = true).test {
-            val conversation =
-                alixClient.conversations.newConversation(bo.walletAddress)
-            assertEquals(conversation.topic, awaitItem().topic)
+        boClient.conversations.streamAll().test {
             val group =
                 caroClient.conversations.newGroup(listOf(bo.walletAddress))
             assertEquals(group.id.toHex(), awaitItem().topic)
+            val conversation =
+                boClient.conversations.newConversation(alix.walletAddress)
+            assertEquals(conversation.topic, awaitItem().topic)
         }
     }
 }

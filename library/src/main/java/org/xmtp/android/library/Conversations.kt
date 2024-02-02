@@ -7,7 +7,14 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.zip
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
@@ -477,20 +484,7 @@ data class Conversations(
      * of the information of those conversations according to the topics
      * @return Stream of data information for the conversations
      */
-    fun stream(includeGroups: Boolean = false): Flow<Conversation> = callbackFlow {
-        var stream: FfiStreamCloser? = null
-        if (includeGroups) {
-            val groupCallback = object : FfiConversationCallback {
-                override fun onConversation(conversation: FfiGroup) {
-                    Log.e("LOPI", "callback called")
-                    trySend(Conversation.Group(Group(client, conversation)))
-                }
-            }
-
-            Log.e("LOPI", "starting stream ${libXMTPConversations.toString()}")
-            stream = libXMTPConversations?.stream(groupCallback)
-        }
-
+    fun stream(): Flow<Conversation> = flow {
         val streamedConversationTopics: MutableSet<String> = mutableSetOf()
         client.subscribeTopic(
             listOf(Topic.userIntro(client.address), Topic.userInvite(client.address)),
@@ -499,7 +493,7 @@ data class Conversations(
                 val conversationV1 = fromIntro(envelope = envelope)
                 if (!streamedConversationTopics.contains(conversationV1.topic)) {
                     streamedConversationTopics.add(conversationV1.topic)
-                    send(conversationV1)
+                    emit(conversationV1)
                 }
             }
 
@@ -507,20 +501,22 @@ data class Conversations(
                 val conversationV2 = fromInvite(envelope = envelope)
                 if (!streamedConversationTopics.contains(conversationV2.topic)) {
                     streamedConversationTopics.add(conversationV2.topic)
-                    send(conversationV2)
+                    emit(conversationV2)
                 }
             }
         }
-        awaitClose { stream?.end() }
     }
 
-    fun streamGroups(): Flow<Group> = callbackFlow {
+    fun streamAll(): Flow<Conversation> {
+        return merge(streamGroups(), stream())
+    }
+
+    fun streamGroups(): Flow<Conversation> = callbackFlow {
         val groupCallback = object : FfiConversationCallback {
             override fun onConversation(conversation: FfiGroup) {
-                trySend(Group(client, conversation))
+                trySend(Conversation.Group(Group(client, conversation)))
             }
         }
-
         val stream = libXMTPConversations?.stream(groupCallback)
         awaitClose { stream?.end() }
     }
