@@ -908,8 +908,10 @@ $dokka.location:org.xmtp.android.library/Conversations/newConversation/#kotlin.S
 $dokka.location:org.xmtp.android.library/Conversations/newGroup/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-conversations/new-group.html
 $dokka.location:org.xmtp.android.library/Conversations/sendInvitation/#org.xmtp.proto.message.contents.PublicKeyOuterClass.SignedPublicKeyBundle#org.xmtp.proto.message.contents.Invitation.InvitationV1#java.util.Date/PointingToDeclaration/library/org.xmtp.android.library/-conversations/send-invitation.html
 $dokka.location:org.xmtp.android.library/Conversations/stream/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream.html
+$dokka.location:org.xmtp.android.library/Conversations/streamAll/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream-all.html
 $dokka.location:org.xmtp.android.library/Conversations/streamAllDecryptedMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream-all-decrypted-messages.html
 $dokka.location:org.xmtp.android.library/Conversations/streamAllMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream-all-messages.html
+$dokka.location:org.xmtp.android.library/Conversations/streamGroups/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream-groups.html
 $dokka.location:org.xmtp.android.library/Conversations/syncGroups/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/sync-groups.html
 $dokka.location:org.xmtp.android.library/Crypto.Companion///PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/index.html
 $dokka.location:org.xmtp.android.library/Crypto.Companion/decrypt/#kotlin.ByteArray#org.xmtp.proto.message.contents.CiphertextOuterClass.Ciphertext#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/decrypt.html
@@ -973,6 +975,8 @@ $dokka.location:org.xmtp.android.library/Group/removeMembers/#kotlin.collections
 $dokka.location:org.xmtp.android.library/Group/send/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-group/send.html
 $dokka.location:org.xmtp.android.library/Group/send/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-group/send.html
 $dokka.location:org.xmtp.android.library/Group/send/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library/-group/send.html
+$dokka.location:org.xmtp.android.library/Group/streamDecryptedMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-group/stream-decrypted-messages.html
+$dokka.location:org.xmtp.android.library/Group/streamMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-group/stream-messages.html
 $dokka.location:org.xmtp.android.library/Group/sync/#/PointingToDeclaration/library/org.xmtp.android.library/-group/sync.html
 $dokka.location:org.xmtp.android.library/KeyUtil///PointingToDeclaration/library/org.xmtp.android.library/-key-util/index.html
 $dokka.location:org.xmtp.android.library/KeyUtil/addUncompressedByte/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-key-util/add-uncompressed-byte.html
