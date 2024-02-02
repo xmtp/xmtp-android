@@ -3,14 +3,17 @@ package org.xmtp.android.library
 import android.util.Log
 import io.grpc.StatusException
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
@@ -41,6 +44,9 @@ import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiListConversationsOptions
+import uniffi.xmtpv3.FfiMessage
+import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiStreamCloser
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupEmitter
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
@@ -93,6 +99,7 @@ data class Conversations(
             ),
         )
     }
+
     fun newGroup(accountAddresses: List<String>): Group {
         if (accountAddresses.isEmpty()) {
             throw XMTPException("Cannot start an empty group chat.")
@@ -479,31 +486,29 @@ data class Conversations(
      * of the information of those conversations according to the topics
      * @return Stream of data information for the conversations
      */
-    fun stream(includeGroups: Boolean = false): Flow<Conversation> = flow {
+    fun stream(includeGroups: Boolean = false): Flow<Conversation> = callbackFlow {
+        var stream: FfiStreamCloser? = null
         if (includeGroups) {
-            val groupEmitter = GroupEmitter()
-
-            coroutineScope {
-                launch {
-                    groupEmitter.groups.collect { group ->
-                        emit(Conversation.Group(Group(client, group)))
-                    }
+            val groupCallback = object : FfiConversationCallback {
+                override fun onConversation(conversation: FfiGroup) {
+                    Log.e("LOPI", "callback called")
+                    trySend(Conversation.Group(Group(client, conversation)))
                 }
             }
 
-            libXMTPConversations?.stream(groupEmitter.callback)
+            Log.e("LOPI", "starting stream ${libXMTPConversations.toString()}")
+            stream = libXMTPConversations?.stream(groupCallback)
         }
 
         val streamedConversationTopics: MutableSet<String> = mutableSetOf()
         client.subscribeTopic(
             listOf(Topic.userIntro(client.address), Topic.userInvite(client.address)),
         ).collect { envelope ->
-
             if (envelope.contentTopic == Topic.userIntro(client.address).description) {
                 val conversationV1 = fromIntro(envelope = envelope)
                 if (!streamedConversationTopics.contains(conversationV1.topic)) {
                     streamedConversationTopics.add(conversationV1.topic)
-                    emit(conversationV1)
+                    send(conversationV1)
                 }
             }
 
@@ -511,24 +516,24 @@ data class Conversations(
                 val conversationV2 = fromInvite(envelope = envelope)
                 if (!streamedConversationTopics.contains(conversationV2.topic)) {
                     streamedConversationTopics.add(conversationV2.topic)
-                    emit(conversationV2)
+                    send(conversationV2)
                 }
             }
         }
+        awaitClose { stream?.end() }
     }
 
-    fun streamGroups(): Flow<Group> = flow {
-        val groupEmitter = GroupEmitter()
-
-        coroutineScope {
-            launch {
-                groupEmitter.groups.collect { group ->
-                    emit(Group(client, group))
-                }
+    fun streamGroups(): Flow<Group> = callbackFlow {
+        val groupCallback = object : FfiConversationCallback {
+            override fun onConversation(conversation: FfiGroup) {
+                Log.e("LOPI", "callback called")
+                trySend(Group(client, conversation))
             }
         }
 
-        libXMTPConversations?.stream(groupEmitter.callback)
+        Log.e("LOPI", "starting stream ${libXMTPConversations.toString()}")
+        val stream = libXMTPConversations?.stream(groupCallback)
+        awaitClose { stream?.end() }
     }
 
     /**

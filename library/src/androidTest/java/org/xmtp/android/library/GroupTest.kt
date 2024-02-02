@@ -1,10 +1,14 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -20,6 +24,8 @@ import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
+import java.lang.Thread.sleep
+import java.util.Date
 import kotlin.time.Duration
 
 @RunWith(AndroidJUnit4::class)
@@ -211,7 +217,21 @@ class GroupTest {
         group.streamMessages().test {
             group.send("hi")
             assertEquals("hi", awaitItem().body)
-            awaitComplete()
+            group.send("hi again")
+            assertEquals("hi again", awaitItem().body)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testCanStreamDecryptedGroupMessages() = kotlinx.coroutines.test.runTest {
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
+
+        group.streamDecryptedMessages().test {
+            group.send("hi")
+            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
+            group.send("hi again")
+            assertEquals("hi again", awaitItem().encodedContent.content.toStringUtf8())
         }
     }
 
@@ -219,23 +239,23 @@ class GroupTest {
     @Test
     fun testCanStreamGroups() = kotlinx.coroutines.test.runTest {
         boClient.conversations.streamGroups().test {
-            val conversation =
-                boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
-            conversation.send(content = "hi")
+            val group =
+                boClient.conversations.newGroup(listOf(alix.walletAddress))
+            group.send("hi")
             assertEquals("hi", awaitItem().messages().first().body)
-            awaitComplete()
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testCanStreamGroupsAndConversations() = kotlinx.coroutines.test.runTest {
         boClient.conversations.stream(includeGroups = true).test {
-            val group =
-                boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
             val conversation =
-                boClient.conversations.newConversation(alix.walletAddress.lowercase())
-            assertEquals("hi", awaitItem().messages().first().body)
-            awaitComplete()
+                boClient.conversations.newConversation(alix.walletAddress)
+            assertEquals(conversation.topic, awaitItem().topic)
+            val group =
+                boClient.conversations.newGroup(listOf(alix.walletAddress))
+            assertEquals(group.id.toHex(), awaitItem().topic)
         }
     }
 }
