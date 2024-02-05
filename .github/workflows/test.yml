@@ -40,7 +40,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: 11
+          java-version: 17
       - name: Enable KVM group perms
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -53,12 +53,10 @@ jobs:
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 31
-          profile: Nexus 6
-          arch: arm64-v8a
-          force-avd-creation: false
-          avd-name: macOS-avd-arm64-v8a-31
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          api-level: 30
+          arch: x86_64
           disable-animations: true
-          script: ./gradlew connectedCheck
+          disk-size: 6000M
+          heap-size: 600M
+          script: ./gradlew connectedDemoDebugAndroidTest --daemon
 
