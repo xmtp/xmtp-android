@@ -2,7 +2,6 @@ package org.xmtp.android.library
 
 import android.content.Context
 import android.os.Build
-import android.os.Environment
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Log
