@@ -54,9 +54,9 @@ class PushNotificationsService : FirebaseMessagingService() {
         }
 
         GlobalScope.launch(Dispatchers.Main) {
-            ClientManager.createClient(keysData)
+            ClientManager.createClient(keysData, applicationContext)
         }
-        val conversation = ClientManager.client.fetchConversation(topic)
+        val conversation = ClientManager.client.fetchConversation(topic, includeGroups = true)
         if (conversation == null) {
             Log.e(TAG, "No keys or conversation persisted")
             return
@@ -90,9 +90,9 @@ class PushNotificationsService : FirebaseMessagingService() {
             .setContentIntent(pendingIntent)
 
         // Use the URL as the ID for now until one is passed back from the server.
-        NotificationManagerCompat.from(this).also {
+        NotificationManagerCompat.from(this).apply {
             if (ActivityCompat.checkSelfPermission(
-                    this,
+                    applicationContext,
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
@@ -105,7 +105,7 @@ class PushNotificationsService : FirebaseMessagingService() {
                 // for ActivityCompat#requestPermissions for more details.
                 return
             }
-            it.notify(topic.hashCode(), builder.build())
+            notify(topic.hashCode(), builder.build())
         }
     }
 }
