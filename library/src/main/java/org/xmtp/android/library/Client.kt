@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import android.content.Context
 import android.os.Build
+import android.os.Environment
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Log
@@ -66,7 +67,7 @@ data class ClientOptions(
     val enableAlphaMls: Boolean = false,
 ) {
     data class Api(
-        val env: XMTPEnvironment = XMTPEnvironment.DEV,
+        val env: XMTPEnvironment = XMTPEnvironment.LOCAL,
         val isSecure: Boolean = true,
         val appVersion: String? = null,
     )
@@ -323,7 +324,7 @@ class Client() {
 
                 createClient(
                     logger = logger,
-                    host = "http://10.0.2.2:5556",
+                    host = "http://${options.api.env.getValue()}:5556",
                     isSecure = false,
                     db = dbPath,
                     encryptionKey = retrievedKey.encoded,
