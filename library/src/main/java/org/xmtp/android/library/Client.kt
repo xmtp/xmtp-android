@@ -336,14 +336,16 @@ class Client() {
                 null
             }
 
-        if (v3Client?.textToSign() == null) {
-            v3Client?.registerIdentity(null)
-        } else if (account != null) {
-            v3Client.textToSign()?.let {
-                v3Client.registerIdentity(account.sign(it)?.rawData)
+        if (v3Client != null) {
+            if (v3Client.textToSign() == null) {
+                v3Client.registerIdentity(null)
+            } else if (account != null) {
+                v3Client.textToSign()?.let {
+                    v3Client.registerIdentity(account.sign(it)?.rawData)
+                }
+            } else {
+                throw XMTPException("No signer passed but signer was required.")
             }
-        } else {
-            Log.i(TAG, "No signer passed but signer was required.")
         }
 
         return v3Client
