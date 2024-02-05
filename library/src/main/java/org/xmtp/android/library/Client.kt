@@ -33,6 +33,7 @@ import org.xmtp.android.library.messages.encrypted
 import org.xmtp.android.library.messages.ensureWalletSignature
 import org.xmtp.android.library.messages.generate
 import org.xmtp.android.library.messages.getPublicKeyBundle
+import org.xmtp.android.library.messages.rawData
 import org.xmtp.android.library.messages.recoverWalletSignerPublicKey
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.toV2
@@ -339,7 +340,7 @@ class Client() {
             v3Client?.registerIdentity(null)
         } else if (account != null) {
             v3Client.textToSign()?.let {
-                v3Client.registerIdentity(account.sign(it))
+                v3Client.registerIdentity(account.sign(it)?.rawData)
             }
         } else {
             Log.i(TAG, "No signer passed but signer was required.")
