@@ -9,7 +9,6 @@ import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.SigningKey
 import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
-import java.nio.charset.StandardCharsets
 import java.security.SecureRandom
 import java.util.Date
 
