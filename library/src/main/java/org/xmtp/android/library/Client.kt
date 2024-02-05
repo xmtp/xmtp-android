@@ -67,7 +67,7 @@ data class ClientOptions(
     val enableAlphaMls: Boolean = false,
 ) {
     data class Api(
-        val env: XMTPEnvironment = XMTPEnvironment.LOCAL,
+        val env: XMTPEnvironment = XMTPEnvironment.DEV,
         val isSecure: Boolean = true,
         val appVersion: String? = null,
     )
