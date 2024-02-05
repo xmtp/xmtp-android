@@ -1007,11 +1007,14 @@ $dokka.location:org.xmtp.android.library/XMTPEnvironment.Companion///PointingToD
 $dokka.location:org.xmtp.android.library/XMTPEnvironment.Companion/invoke/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/-companion/invoke.html
 $dokka.location:org.xmtp.android.library/XMTPEnvironment.DEV///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-x-m-t-p-environment/-d-e-v/index.html
 $dokka.location:org.xmtp.android.library/XMTPEnvironment.LOCAL///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-x-m-t-p-environment/-l-o-c-a-l/index.html
+$dokka.location:org.xmtp.android.library/XMTPEnvironment.LOCAL/withValue/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/-l-o-c-a-l/with-value.html
 $dokka.location:org.xmtp.android.library/XMTPEnvironment.PRODUCTION///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-x-m-t-p-environment/-p-r-o-d-u-c-t-i-o-n/index.html
 $dokka.location:org.xmtp.android.library/XMTPEnvironment///PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/index.html
+$dokka.location:org.xmtp.android.library/XMTPEnvironment/getValue/#/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/get-value.html
 $dokka.location:org.xmtp.android.library/XMTPEnvironment/rawValue/#/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/raw-value.html
 $dokka.location:org.xmtp.android.library/XMTPEnvironment/valueOf/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/value-of.html
 $dokka.location:org.xmtp.android.library/XMTPEnvironment/values/#/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/values.html
+$dokka.location:org.xmtp.android.library/XMTPEnvironment/withValue/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/with-value.html
 $dokka.location:org.xmtp.android.library/XMTPException///PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/index.html
 $dokka.location:org.xmtp.android.library/XMTPException/XMTPException/#kotlin.String#java.lang.Exception?/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/-x-m-t-p-exception.html
 $dokka.location:uniffi.xmtpv3.org.xmtp.android.library.codecs////PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.codecs/index.html
