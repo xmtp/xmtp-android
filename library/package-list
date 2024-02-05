@@ -276,7 +276,6 @@ $dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder/address/#/Po
 $dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder/getPrivateKey/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-builder/get-private-key.html
 $dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder/sign/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-builder/sign.html
 $dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder/sign/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-builder/sign.html
-$dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder/signLegacy/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-builder/sign-legacy.html
 $dokka.location:org.xmtp.android.library.messages/PrivateKeyBundleBuilder.Companion///PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-bundle-builder/-companion/index.html
 $dokka.location:org.xmtp.android.library.messages/PrivateKeyBundleBuilder.Companion/buildFromV1Key/#org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV1/PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-bundle-builder/-companion/build-from-v1-key.html
 $dokka.location:org.xmtp.android.library.messages/PrivateKeyBundleBuilder///PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-bundle-builder/index.html
@@ -1000,7 +999,6 @@ $dokka.location:org.xmtp.android.library/SigningKey///PointingToDeclaration/lib
 $dokka.location:org.xmtp.android.library/SigningKey/address/#/PointingToDeclaration/library/org.xmtp.android.library/-signing-key/address.html
 $dokka.location:org.xmtp.android.library/SigningKey/sign/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-signing-key/sign.html
 $dokka.location:org.xmtp.android.library/SigningKey/sign/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-signing-key/sign.html
-$dokka.location:org.xmtp.android.library/SigningKey/signLegacy/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-signing-key/sign-legacy.html
 $dokka.location:org.xmtp.android.library/Util.Companion///PointingToDeclaration/library/org.xmtp.android.library/-util/-companion/index.html
 $dokka.location:org.xmtp.android.library/Util.Companion/keccak256/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-util/-companion/keccak256.html
 $dokka.location:org.xmtp.android.library/Util///PointingToDeclaration/library/org.xmtp.android.library/-util/index.html
