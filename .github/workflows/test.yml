@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew library:testDebug
   library-integration:
     name: Library (Integration Tests)
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-16x
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,6 +53,6 @@ jobs:
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 29
+          api-level: 27
           script: ./gradlew connectedCheck
 
