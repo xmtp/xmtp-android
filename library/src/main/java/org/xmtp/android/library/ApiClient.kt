@@ -91,7 +91,7 @@ data class GRPCApiClient(
     private val channel: ManagedChannel =
         Grpc.newChannelBuilderForAddress(
             environment.rawValue,
-            5556,
+            5557,
             if (secure) {
                 TlsChannelCredentials.create()
             } else {
