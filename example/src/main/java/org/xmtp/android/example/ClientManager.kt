@@ -18,7 +18,7 @@ object ClientManager {
     fun clientOptions(appContext: Context?): ClientOptions {
         return ClientOptions(
             api = ClientOptions.Api(
-                XMTPEnvironment.LOCAL,
+                XMTPEnvironment.DEV,
                 appVersion = "XMTPAndroidExample/v1.0.0",
                 isSecure = false
             ),
