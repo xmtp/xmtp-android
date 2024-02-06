@@ -1,8 +1,8 @@
 package org.xmtp.android.library
 
 enum class XMTPEnvironment(val rawValue: String) {
-    DEV("dev.xmtp.network"),
-    PRODUCTION("production.xmtp.network"),
+    DEV("grpc.dev.xmtp.network:443"),
+    PRODUCTION("grpc.production.xmtp.network:443"),
     LOCAL("10.0.2.2") {
         override fun withValue(value: String): XMTPEnvironment {
             return LOCAL.apply { customValue = value }
