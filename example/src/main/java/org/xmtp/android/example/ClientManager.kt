@@ -20,7 +20,7 @@ object ClientManager {
             api = ClientOptions.Api(
                 XMTPEnvironment.DEV,
                 appVersion = "XMTPAndroidExample/v1.0.0",
-                isSecure = false
+                isSecure = true
             ),
             enableAlphaMls = true,
             appContext = appContext
