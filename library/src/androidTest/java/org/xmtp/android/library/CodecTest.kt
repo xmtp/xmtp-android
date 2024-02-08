@@ -12,6 +12,7 @@ import org.xmtp.android.library.codecs.ContentTypeIdBuilder
 import org.xmtp.android.library.codecs.DecodedComposite
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
+import org.xmtp.android.library.messages.MessageV2Builder
 import org.xmtp.android.library.messages.walletAddress
 
 data class NumberCodec(
@@ -111,5 +112,32 @@ class CodecTest {
         val part2 = decoded.parts[1].parts[0]
         assertEquals("sup", part1.content())
         assertEquals(3.14, part2.content())
+    }
+
+    @Test
+    fun testCanGetPushInfoBeforeDecoded() {
+        val codec = NumberCodec()
+        Client.register(codec = codec)
+        val fixtures = fixtures()
+        val aliceClient = fixtures.aliceClient!!
+        val aliceConversation =
+            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        aliceConversation.send(
+            content = 3.14,
+            options = SendOptions(contentType = codec.contentType),
+        )
+        val messages = aliceConversation.messages()
+        assert(messages.isNotEmpty())
+
+        val message = MessageV2Builder.buildEncode(
+            client = aliceClient,
+            encodedContent = messages[0].encodedContent,
+            topic = aliceConversation.topic,
+            keyMaterial = aliceConversation.keyMaterial!!,
+            codec = codec,
+        )
+
+        assertEquals(false, message.shouldPush)
+        assertEquals(true, message.senderHmac?.isNotEmpty())
     }
 }

@@ -140,11 +140,7 @@ sealed class Conversation {
             }
 
             is V2 -> {
-                conversationV2.prepareMessage(
-                    encodedContent = encodedContent,
-                    options = options,
-                    false,
-                )
+                conversationV2.prepareMessage(encodedContent = encodedContent, options = options)
             }
         }
     }
