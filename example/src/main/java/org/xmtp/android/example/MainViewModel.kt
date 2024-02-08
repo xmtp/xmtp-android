@@ -42,7 +42,7 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val listItems = mutableListOf<MainListItem>()
             try {
-                val conversations = ClientManager.client.conversations.list()
+                val conversations = ClientManager.client.conversations.list(includeGroups = true)
                 PushNotificationTokenManager.xmtpPush.subscribe(conversations.map { it.topic })
                 listItems.addAll(
                     conversations.map { conversation ->
@@ -77,7 +77,7 @@ class MainViewModel : ViewModel() {
     val stream: StateFlow<MainListItem?> =
         stateFlow(viewModelScope, null) { subscriptionCount ->
             if (ClientManager.clientState.value is ClientManager.ClientState.Ready) {
-                ClientManager.client.conversations.stream()
+                ClientManager.client.conversations.streamAll()
                     .flowWhileShared(
                         subscriptionCount,
                         SharingStarted.WhileSubscribed(1000L)

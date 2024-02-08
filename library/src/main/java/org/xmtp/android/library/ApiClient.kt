@@ -90,8 +90,8 @@ data class GRPCApiClient(
 
     private val channel: ManagedChannel =
         Grpc.newChannelBuilderForAddress(
-            environment.rawValue,
-            5556,
+            environment.getValue(),
+            if (environment == XMTPEnvironment.LOCAL) 5556 else 443,
             if (secure) {
                 TlsChannelCredentials.create()
             } else {
