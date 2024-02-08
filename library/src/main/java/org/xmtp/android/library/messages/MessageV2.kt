@@ -11,6 +11,7 @@ import org.xmtp.android.library.Crypto
 import org.xmtp.android.library.DecodedMessage
 import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.XMTPException
+import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import java.math.BigInteger
 import java.util.Date
@@ -123,12 +124,20 @@ class MessageV2Builder(val senderHmac: ByteArray? = null, val shouldPush: Boolea
             )
         }
 
-        fun buildEncode(
+        private fun <Codec : ContentCodec<T>, T> shouldPush(codec: Codec, content: T?): Boolean {
+            if (content != null) {
+                return codec.shouldPush(content = content)
+            } else {
+                throw XMTPException("Codec invalid content")
+            }
+        }
+
+        fun <Codec : ContentCodec<T>, T> buildEncode(
             client: Client,
             encodedContent: EncodedContent,
             topic: String,
             keyMaterial: ByteArray,
-            shouldPush: Boolean,
+            codec: Codec,
         ): MessageV2Builder {
             val payload = encodedContent.toByteArray()
             val date = Date()
@@ -143,13 +152,18 @@ class MessageV2Builder(val senderHmac: ByteArray? = null, val shouldPush: Boolea
             val ciphertext = Crypto.encrypt(keyMaterial, signedBytes, additionalData = headerBytes)
 
             val thirtyDayPeriodsSinceEpoch =
-                (System.currentTimeMillis() / 60 / 60 / 24 / 30).toInt()
+                (Date().time / 1000 / 60 / 60 / 24 / 30).toInt()
             val info = "$thirtyDayPeriodsSinceEpoch-${client.address}"
             val infoEncoded = info.toByteStringUtf8().toByteArray()
             val senderHmacGenerated =
                 Crypto.generateHmacSignature(keyMaterial, infoEncoded, headerBytes)
 
-            return buildFromCipherText(headerBytes, ciphertext, senderHmacGenerated, shouldPush)
+            return buildFromCipherText(
+                headerBytes,
+                ciphertext,
+                senderHmacGenerated,
+                shouldPush(codec = codec, content = codec.decode(encodedContent)),
+            )
         }
     }
 }

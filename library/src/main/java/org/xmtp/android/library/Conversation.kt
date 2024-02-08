@@ -162,11 +162,7 @@ sealed class Conversation {
             }
 
             is V2 -> {
-                conversationV2.prepareMessage(
-                    encodedContent = encodedContent,
-                    options = options,
-                    false,
-                )
+                conversationV2.prepareMessage(encodedContent = encodedContent, options = options)
             }
 
             is Group -> throw XMTPException("Groups do not support prepared messages") // We return a encoded content not a preparedmessage which requires a envelope

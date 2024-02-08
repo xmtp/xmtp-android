@@ -590,7 +590,7 @@ class ConversationTest {
                             encodedContent,
                             topic = conversation.topic,
                             keyMaterial = conversation.keyMaterial!!,
-                            shouldPush = true,
+                            codec = encoder,
                         ).messageV2,
                     ).toByteArray(),
                 ),
@@ -854,7 +854,6 @@ class ConversationTest {
         val directMessageV1 = Topic.directMessageV1(invalidId, "sd").description
         val directMessageV2 = Topic.directMessageV2(invalidId).description
         val preferenceList = Topic.preferenceList(invalidId).description
-        val conversations = bobClient.conversations
 
         // check if validation of topics no accept all types with invalid topic
         assertFalse(Topic.isValidTopic(privateStore))

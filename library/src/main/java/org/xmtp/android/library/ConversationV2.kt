@@ -184,12 +184,7 @@ data class ConversationV2(
     }
 
     fun send(encodedContent: EncodedContent, options: SendOptions?): String {
-        val codec = Client.codecRegistry.find(options?.contentType)
-        val preparedMessage = prepareMessage(
-            encodedContent = encodedContent,
-            options = options,
-            shouldPush = shouldPush(codec, encodedContent.content.toStringUtf8()),
-        )
+        val preparedMessage = prepareMessage(encodedContent = encodedContent, options = options)
         return send(preparedMessage)
     }
 
@@ -208,7 +203,7 @@ data class ConversationV2(
             encodedContent = encodedContent,
             topic = topic,
             keyMaterial = keyMaterial,
-            shouldPush = shouldPush(codec, content),
+            codec = codec,
         )
         val envelope = EnvelopeBuilder.buildFromString(
             topic = topic,
@@ -216,15 +211,6 @@ data class ConversationV2(
             message = MessageBuilder.buildFromMessageV2(v2 = message.messageV2).toByteArray(),
         )
         return envelope.toByteArray()
-    }
-
-    fun <Codec : ContentCodec<T>, T> shouldPush(codec: Codec, content: Any?): Boolean {
-        val contentType = content as? T
-        if (contentType != null) {
-            return codec.shouldPush(content = content)
-        } else {
-            throw XMTPException("Codec invalid content")
-        }
     }
 
     fun <T> prepareMessage(content: T, options: SendOptions?): PreparedMessage {
@@ -250,20 +236,20 @@ data class ConversationV2(
         if (compression != null) {
             encoded = encoded.compress(compression)
         }
-        return prepareMessage(encoded, options = options, shouldPush = shouldPush(codec, content))
+        return prepareMessage(encoded, options = options)
     }
 
     fun prepareMessage(
         encodedContent: EncodedContent,
         options: SendOptions?,
-        shouldPush: Boolean,
     ): PreparedMessage {
+        val codec = Client.codecRegistry.find(options?.contentType)
         val message = MessageV2Builder.buildEncode(
             client = client,
             encodedContent = encodedContent,
             topic = topic,
             keyMaterial = keyMaterial,
-            shouldPush = shouldPush,
+            codec = codec,
         )
 
         val newTopic = if (options?.ephemeral == true) ephemeralTopic else topic
