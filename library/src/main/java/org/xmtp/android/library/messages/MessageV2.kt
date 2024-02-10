@@ -167,3 +167,5 @@ class MessageV2Builder(val senderHmac: ByteArray? = null, val shouldPush: Boolea
         }
     }
 }
+
+data class HmacKeyValue(val thirtyDayPeriodsSinceEpoch: Int, val hmacKey: ByteArray)
