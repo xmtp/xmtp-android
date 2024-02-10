@@ -87,7 +87,6 @@ class Crypto {
 
         fun deriveKey(
             secret: ByteArray,
-            salt: ByteArray,
             info: ByteArray,
         ): ByteArray {
             val derivationParameters = HKDFParameters(secret, ByteArray(0), info)
