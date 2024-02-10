@@ -2,6 +2,7 @@ package org.xmtp.android.example.message
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.text.format.DateFormat
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
@@ -11,8 +12,8 @@ import org.xmtp.android.example.R
 import org.xmtp.android.example.conversation.ConversationDetailViewModel
 import org.xmtp.android.example.databinding.ListItemMessageBinding
 import org.xmtp.android.example.extension.margins
-import org.xmtp.proto.mls.message.contents.TranscriptMessages
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
+import java.text.SimpleDateFormat
 
 class MessageViewHolder(
     private val binding: ListItemMessageBinding,
@@ -52,5 +53,7 @@ class MessageViewHolder(
                     changes?.membersAddedList?.mapNotNull { it.accountAddress }.toString()
                 }"
         }
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        binding.messageTimestamp.text = dateFormat.format(item.message.sent)
     }
 }
