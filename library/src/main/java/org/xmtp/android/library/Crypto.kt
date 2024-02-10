@@ -90,7 +90,7 @@ class Crypto {
             salt: ByteArray,
             info: ByteArray,
         ): ByteArray {
-            val derivationParameters = HKDFParameters(secret, salt, info)
+            val derivationParameters = HKDFParameters(secret, ByteArray(0), info)
             val digest = SHA256Digest()
             val hkdfGenerator = HKDFBytesGenerator(digest)
             hkdfGenerator.init(derivationParameters)
