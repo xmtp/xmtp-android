@@ -87,9 +87,10 @@ class Crypto {
 
         fun deriveKey(
             secret: ByteArray,
+            salt: ByteArray,
             info: ByteArray,
         ): ByteArray {
-            val derivationParameters = HKDFParameters(secret, ByteArray(0), info)
+            val derivationParameters = HKDFParameters(secret, salt, info)
             val digest = SHA256Digest()
             val hkdfGenerator = HKDFBytesGenerator(digest)
             hkdfGenerator.init(derivationParameters)
@@ -103,8 +104,13 @@ class Crypto {
             info: ByteArray,
             message: ByteArray,
         ): ByteArray {
-            val hkdfKey = deriveKey(secret, info)
-            return calculateMac(hkdfKey, message)
+            val derivationParameters = HKDFParameters(secret, ByteArray(0), info)
+            val digest = SHA256Digest()
+            val hkdfGenerator = HKDFBytesGenerator(digest)
+            hkdfGenerator.init(derivationParameters)
+            val hkdf = ByteArray(32)
+            hkdfGenerator.generateBytes(hkdf, 0, hkdf.size)
+            return calculateMac(hkdf, message)
         }
     }
 }
