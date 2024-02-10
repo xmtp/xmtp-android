@@ -103,8 +103,8 @@ class Crypto {
             info: ByteArray,
             message: ByteArray,
         ): ByteArray {
-            val hkdfKey = deriveKey(secret, message, info)
-            return calculateMac(secret, hkdfKey)
+            val hkdfKey = deriveKey(secret, info)
+            return calculateMac(hkdfKey, message)
         }
     }
 }
