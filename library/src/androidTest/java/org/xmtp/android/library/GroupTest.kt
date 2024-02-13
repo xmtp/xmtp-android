@@ -3,7 +3,6 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -217,11 +216,9 @@ class GroupTest {
         assertEquals(ReactionSchema.Unicode, content?.schema)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testCanStreamGroupMessages() = kotlinx.coroutines.test.runTest {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
-
         group.streamMessages().test {
             group.send("hi")
             assertEquals("hi", awaitItem().body)
@@ -230,7 +227,6 @@ class GroupTest {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testCanStreamDecryptedGroupMessages() = kotlinx.coroutines.test.runTest {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
@@ -243,7 +239,6 @@ class GroupTest {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testCanStreamGroups() = kotlinx.coroutines.test.runTest {
         boClient.conversations.streamGroups().test {
@@ -256,7 +251,6 @@ class GroupTest {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testCanStreamGroupsAndConversations() = kotlinx.coroutines.test.runTest {
         boClient.conversations.streamAll().test {
