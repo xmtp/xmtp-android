@@ -129,6 +129,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     fun isActive(): Boolean {
+        runBlocking { libXMTPGroup.sync() }
         return libXMTPGroup.isActive()
     }
 

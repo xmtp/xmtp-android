@@ -121,9 +121,13 @@ class GroupTest {
                 caro.walletAddress
             )
         )
+        runBlocking { caroClient.conversations.syncGroups() }
+        val caroGroup = caroClient.conversations.listGroups().first()
+        assert(caroGroup.isActive())
         assert(group.isActive())
-        group.removeMembers(listOf(bo.walletAddress))
-        assert(!group.isActive())
+        group.removeMembers(listOf(caro.walletAddress))
+        assert(group.isActive())
+        assert(!caroGroup.isActive())
     }
 
     @Test
