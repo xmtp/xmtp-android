@@ -98,19 +98,5 @@ class Crypto {
             hkdfGenerator.generateBytes(hkdf, 0, hkdf.size)
             return hkdf
         }
-
-        fun generateHmacSignature(
-            secret: ByteArray,
-            info: ByteArray,
-            message: ByteArray,
-        ): ByteArray {
-            val derivationParameters = HKDFParameters(secret, ByteArray(0), info)
-            val digest = SHA256Digest()
-            val hkdfGenerator = HKDFBytesGenerator(digest)
-            hkdfGenerator.init(derivationParameters)
-            val hkdf = ByteArray(32)
-            hkdfGenerator.generateBytes(hkdf, 0, hkdf.size)
-            return calculateMac(hkdf, message)
-        }
     }
 }
