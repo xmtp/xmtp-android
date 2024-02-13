@@ -156,7 +156,10 @@ class MessageV2Builder(val senderHmac: ByteArray? = null, val shouldPush: Boolea
             val info = "$thirtyDayPeriodsSinceEpoch-${client.address}"
             val infoEncoded = info.toByteStringUtf8().toByteArray()
             val senderHmacGenerated =
-                Crypto.generateHmacSignature(keyMaterial, infoEncoded, headerBytes)
+                Crypto.calculateMac(
+                    Crypto.deriveKey(keyMaterial, ByteArray(0), infoEncoded),
+                    headerBytes
+                )
 
             return buildFromCipherText(
                 headerBytes,
