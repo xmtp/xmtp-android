@@ -8,6 +8,7 @@ import org.bouncycastle.crypto.generators.HKDFBytesGenerator
 import org.bouncycastle.crypto.params.HKDFParameters
 import org.xmtp.proto.message.contents.CiphertextOuterClass
 import java.security.GeneralSecurityException
+import java.security.Key
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.Mac
@@ -97,6 +98,21 @@ class Crypto {
             val hkdf = ByteArray(32)
             hkdfGenerator.generateBytes(hkdf, 0, hkdf.size)
             return hkdf
+        }
+
+        fun verifyHmacSignature(
+            key: ByteArray,
+            signature: ByteArray,
+            message: ByteArray
+        ): Boolean {
+            return try {
+                val mac = Mac.getInstance("HmacSHA256")
+                mac.init(SecretKeySpec(key, "HmacSHA256"))
+                val computedSignature = mac.doFinal(message)
+                java.util.Arrays.equals(signature, computedSignature)
+            } catch (e: Exception) {
+                false
+            }
         }
     }
 }

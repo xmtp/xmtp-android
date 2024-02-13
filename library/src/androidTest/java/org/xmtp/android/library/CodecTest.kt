@@ -3,8 +3,11 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.protobuf.kotlin.toByteStringUtf8
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.xmtp.android.library.Crypto.Companion.calculateMac
+import org.xmtp.android.library.Crypto.Companion.verifyHmacSignature
 import org.xmtp.android.library.codecs.CompositeCodec
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.ContentTypeId
@@ -12,8 +15,19 @@ import org.xmtp.android.library.codecs.ContentTypeIdBuilder
 import org.xmtp.android.library.codecs.DecodedComposite
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
+import org.xmtp.android.library.messages.InvitationV1
 import org.xmtp.android.library.messages.MessageV2Builder
+import org.xmtp.android.library.messages.PrivateKeyBuilder
+import org.xmtp.android.library.messages.PrivateKeyBundleV1
+import org.xmtp.android.library.messages.SealedInvitationBuilder
+import org.xmtp.android.library.messages.createDeterministic
+import org.xmtp.android.library.messages.generate
+import org.xmtp.android.library.messages.getPublicKeyBundle
+import org.xmtp.android.library.messages.toV2
 import org.xmtp.android.library.messages.walletAddress
+import java.security.Key
+import java.time.Instant
+import java.util.Date
 
 data class NumberCodec(
     override var contentType: ContentTypeId = ContentTypeIdBuilder.builderFromAuthorityId(
@@ -140,5 +154,74 @@ class CodecTest {
         assertEquals(false, message.shouldPush)
         assertEquals(true, message.senderHmac?.isNotEmpty())
         val keys = aliceClient.conversations.getHmacKeys()
+    }
+
+    @Test
+    fun testReturnsAllHMACKeys() {
+        val baseTime = Instant.now()
+        val timestamps = List(5) { i -> baseTime.plusSeconds(i.toLong()) }
+        val fixtures = fixtures()
+
+        val invites = timestamps.map { createdAt ->
+            val fakeWallet = FakeWallet.generate()
+            val recipient = PrivateKeyBundleV1.newBuilder().build().generate(wallet = fakeWallet)
+            InvitationV1.newBuilder().build().createDeterministic(
+                sender = fixtures.aliceClient.privateKeyBundleV1.toV2(),
+                recipient = recipient.toV2().getPublicKeyBundle()
+            )
+        }
+
+        val thirtyDayPeriodsSinceEpoch = Instant.now().epochSecond / 60 / 60 / 24 / 30
+
+        val periods = listOf(
+            thirtyDayPeriodsSinceEpoch - 1,
+            thirtyDayPeriodsSinceEpoch,
+            thirtyDayPeriodsSinceEpoch + 1
+        )
+
+        val hmacKeys = fixtures.aliceClient.conversations.getHmacKeys()
+
+        val topics = hmacKeys.hmacKeysMap.keys
+        invites.forEach { invite ->
+            assertTrue(topics.contains(invite.topic))
+        }
+
+        val topicHmacs = mutableMapOf<String, ByteArray>()
+        val headerBytes = ByteArray(10)
+
+        invites.map { invite ->
+            val topic = invite.topic
+            val payload = TextCodec().encode(content = "Hello, world!")
+
+            val message = MessageV2Builder.buildEncode(
+                client = fixtures.aliceClient,
+                encodedContent = payload,
+                topic = topic,
+                keyMaterial = headerBytes,
+                codec = TextCodec()
+            )
+
+            val conversation = fixtures.aliceClient.fetchConversation(topic)
+            val keyMaterial = conversation?.keyMaterial
+            val info = "$thirtyDayPeriodsSinceEpoch-${fixtures.aliceClient.address}"
+            val hmac = Crypto.calculateMac(
+                Crypto.deriveKey(keyMaterial!!, ByteArray(0), info.toByteArray()),
+                headerBytes
+            )
+
+            topicHmacs[topic] = hmac
+        }
+
+        hmacKeys.hmacKeysMap.forEach { (topic, hmacData) ->
+            hmacData.valuesList.forEachIndexed { idx, hmacKeyThirtyDayPeriod ->
+                val valid = verifyHmacSignature(
+                    hmacKeyThirtyDayPeriod.hmacKey.toByteArray(),
+                    topicHmacs[topic]!!,
+                    headerBytes
+                )
+                assertTrue(valid == (idx == 1))
+            }
+        }
+
     }
 }
