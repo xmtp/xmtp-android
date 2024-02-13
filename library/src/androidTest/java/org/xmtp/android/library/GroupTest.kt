@@ -114,6 +114,19 @@ class GroupTest {
     }
 
     @Test
+    fun testIsActiveReturnsCorrectly() {
+        val group = boClient.conversations.newGroup(
+            listOf(
+                alix.walletAddress,
+                caro.walletAddress
+            )
+        )
+        assert(group.isActive())
+        group.removeMembers(listOf(bo.walletAddress))
+        assert(!group.isActive())
+    }
+
+    @Test
     fun testCanListGroups() {
         boClient.conversations.newGroup(listOf(alix.walletAddress))
         boClient.conversations.newGroup(listOf(caro.walletAddress))
