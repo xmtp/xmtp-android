@@ -139,5 +139,6 @@ class CodecTest {
 
         assertEquals(false, message.shouldPush)
         assertEquals(true, message.senderHmac?.isNotEmpty())
+        val keys = aliceClient.conversations.getHmacKeys()
     }
 }
