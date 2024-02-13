@@ -349,7 +349,7 @@ class Client() {
                 throw XMTPException("No signer passed but signer was required.")
             }
         }
-        Log.i(TAG, "The libxmtp version is: $libXMTPVersion")
+        Log.i(TAG, "LibXMTP $libXMTPVersion")
         return v3Client
     }
 
