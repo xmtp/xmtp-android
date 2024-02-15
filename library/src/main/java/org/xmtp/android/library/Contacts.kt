@@ -87,11 +87,11 @@ class ConsentList(val client: Client) {
         val payload = PrivatePreferencesAction.newBuilder().also {
             when (entry.consentType) {
                 ConsentState.ALLOWED -> it.setAllow(
-                    PrivatePreferencesAction.Allow.newBuilder().addWalletAddresses(entry.value)
+                    PrivatePreferencesAction.AllowDM.newBuilder().addWalletAddresses(entry.value)
                 )
 
-                ConsentState.DENIED -> it.setBlock(
-                    PrivatePreferencesAction.Block.newBuilder().addWalletAddresses(entry.value)
+                ConsentState.DENIED -> it.setDeny(
+                    PrivatePreferencesAction.DenyDM.newBuilder().addWalletAddresses(entry.value)
                 )
 
                 ConsentState.UNKNOWN -> it.clearMessageType()

@@ -54,7 +54,7 @@ class ContactsTest {
     }
 
     @Test
-    fun testBlockAddress() {
+    fun testDenyAddress() {
         val fixtures = fixtures()
 
         val contacts = fixtures.bobClient.contacts
