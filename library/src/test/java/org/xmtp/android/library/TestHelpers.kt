@@ -234,3 +234,23 @@ data class Fixtures(val aliceAccount: PrivateKeyBuilder, val bobAccount: Private
 
 fun fixtures(): Fixtures =
     Fixtures()
+
+data class GroupFixtures()  {
+    var fakeApiClient: FakeApiClient = FakeApiClient()
+    var alice: PrivateKey = aliceAccount.getPrivateKey()
+    var aliceClient: Client = Client().create(account = aliceAccount, apiClient = fakeApiClient)
+    var bob: PrivateKey = bobAccount.getPrivateKey()
+    var bobClient: Client = Client().create(account = bobAccount, apiClient = fakeApiClient)
+    var charlie: PrivateKey = bobAccount.getPrivateKey()
+    var charlieClient: Client = Client().create(account = charlieAccount, apiClient = fakeApiClient)
+
+    constructor() : this(aliceAccount = PrivateKeyBuilder(), bobAccount = PrivateKeyBuilder(), charlieAccount = PrivateKeyBuilder())
+
+    // TODO: Insert necessary group creation/publish functions
+  
+}
+
+fun groupFixtures(): GroupFixtures =
+    GroupFixtures()
+
+

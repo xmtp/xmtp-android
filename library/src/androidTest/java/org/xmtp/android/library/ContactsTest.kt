@@ -67,4 +67,34 @@ class ContactsTest {
         result = contacts.isDenied(fixtures.alice.walletAddress)
         assert(result)
     }
+    
+    @Test
+    fun testAllowGroup() {
+        val groupFixtures = groupFixtures()
+
+        val groups = groupFixtures.bobClient.groups
+        var result = contacts.isGroupAllowed(groupFixtures.<GROUP_ID_HERE>)
+
+        assert(!result)
+
+        contacts.allowGroup(listOf(groupFixtures.<GROUP_ID_HERE>))
+
+        result = contacts.isGroupAllowed(groupFixtures.<GROUP_ID_HERE>)
+        assert(result)
+    }
+
+    @Test
+    fun testDenyGroup() {
+        val groupFixtures = groupFixtures()
+
+        val groups = groupFixtures.bobClient.groups
+        var result = contacts.isGroupAllowed(groupFixtures.<GROUP_ID_HERE>)
+
+        assert(!result)
+
+        contacts.denyGroup(listOf(groupFixtures.<GROUP_ID_HERE>))
+
+        result = contacts.isGroupDenied(groupFixtures.<GROUP_ID_HERE>)
+        assert(result)
+    }
 }

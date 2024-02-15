@@ -23,7 +23,8 @@ data class ConsentListEntry(
     val consentType: ConsentState,
 ) {
     enum class EntryType {
-        ADDRESS
+        ADDRESS,
+        GROUP_ID
     }
 
     companion object {
@@ -32,6 +33,13 @@ data class ConsentListEntry(
             type: ConsentState = ConsentState.UNKNOWN,
         ): ConsentListEntry {
             return ConsentListEntry(address, EntryType.ADDRESS, type)
+        }
+
+        fun groupId(
+            groupId: ByteArray,
+            type: ConsentState = ConsentState.UNKNOWN,
+        ): ConsentListEntry {
+            return ConsentListEntry(groupId, EntryType.GROUP_ID, type)
         }
     }
 
@@ -72,11 +80,17 @@ class ConsentList(val client: Client) {
         }
 
         preferences.iterator().forEach { preference ->
-            preference.allow?.walletAddressesList?.forEach { address ->
+            preference.allowDM?.walletAddressesList?.forEach { address ->
                 consentList.allow(address)
             }
-            preference.block?.walletAddressesList?.forEach { address ->
+            preference.denyDM?.walletAddressesList?.forEach { address ->
                 consentList.deny(address)
+            }
+            preference.allowGroup?.groupIdsList?.forEach { groupId ->
+                consentList.allowGroup(groupId)
+            }
+            preference.denyGroup?.groupIdsList?.forEach { groupId ->
+                consentList.denyGroup(groupId)
             }
         }
 
@@ -85,13 +99,25 @@ class ConsentList(val client: Client) {
 
     fun publish(entry: ConsentListEntry) {
         val payload = PrivatePreferencesAction.newBuilder().also {
-            when (entry.consentType) {
+            when (entry.consentType && entry.entryType == ADDRESS) {
                 ConsentState.ALLOWED -> it.setAllow(
                     PrivatePreferencesAction.AllowDM.newBuilder().addWalletAddresses(entry.value)
                 )
 
                 ConsentState.DENIED -> it.setDeny(
                     PrivatePreferencesAction.DenyDM.newBuilder().addWalletAddresses(entry.value)
+                )
+
+                ConsentState.UNKNOWN -> it.clearMessageType()
+            }
+            
+           when (entry.consentType && entry.entryType == GROUP_ID) {
+                ConsentState.ALLOWED -> it.setAllow(
+                    PrivatePreferencesAction.AllowGroup.newBuilder().addGroupIds(entry.value)
+                )
+
+                ConsentState.DENIED -> it.setDeny(
+                    PrivatePreferencesAction.DenyGroup.newBuilder().addGroupIds(entry.value)
                 )
 
                 ConsentState.UNKNOWN -> it.clearMessageType()
@@ -127,8 +153,28 @@ class ConsentList(val client: Client) {
         return entry
     }
 
+    fun allowGroup(groupId: ByteArray): ConsentListEntry {
+        val entry = ConsentListEntry.groupId(groupId, ConsentState.ALLOWED)
+        entries[ConsentListEntry.groupId(groupId).key] = entry
+
+        return entry
+    }
+
+    fun denyGroup(groupId: ByteArray): ConsentListEntry {
+        val entry = ConsentListEntry.groupId(groupId, ConsentState.DENIED)
+        entries[ConsentListEntry.groupId(groupId).key] = entry
+
+        return entry
+    }
+
     fun state(address: String): ConsentState {
         val entry = entries[ConsentListEntry.address(address).key]
+
+        return entry?.consentType ?: ConsentState.UNKNOWN
+    }
+    
+    fun groupState(groupId: ByteArray): ConsentState {
+        val entry = entries[ConsentListEntry.groupId(groupId).key]
 
         return entry?.consentType ?: ConsentState.UNKNOWN
     }
@@ -166,6 +212,26 @@ data class Contacts(
     fun deny(addresses: List<String>) {
         for (address in addresses) {
             ConsentList(client).publish(consentList.deny(address))
+        }
+    }
+
+    fun isGroupAllowed(groupId: ByteArray): Boolean {
+        return consentList.groupState(groupId) == ConsentState.ALLOWED
+    }
+
+    fun isGroupDenied(groupId: ByteArray): Boolean {
+        return consentList.groupState(groupId) == ConsentState.DENIED
+    }
+
+    fun allowGroup(groupIds: List<ByteArray>) {
+        for (id in groupIds) {
+            ConsentList(client).publish(consentList.allowGroup(id))
+        }
+    }
+
+    fun denyGroup(groupIds: List<ByteArray>) {
+        for (id in groupIds) {
+            ConsentList(client).publish(consentList.denyGroup(id))
         }
     }
 
