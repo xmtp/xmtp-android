@@ -15,7 +15,7 @@ import java.util.Date
 enum class ConsentState {
     ALLOWED,
     DENIED,
-    UNKNOWN
+    UNKNOWN,
 }
 
 data class ConsentListEntry(
@@ -25,7 +25,7 @@ data class ConsentListEntry(
 ) {
     enum class EntryType {
         ADDRESS,
-        GROUP_ID
+        GROUP_ID,
     }
 
     companion object {
@@ -54,29 +54,32 @@ class ConsentList(val client: Client) {
         client.privateKeyBundleV1.identityKey.publicKey.secp256K1Uncompressed.bytes
     private val privateKey = client.privateKeyBundleV1.identityKey.secp256K1.bytes
 
-    private val identifier: String = uniffi.xmtpv3.generatePrivatePreferencesTopicIdentifier(
-        privateKey.toByteArray()
-    )
+    private val identifier: String =
+        uniffi.xmtpv3.generatePrivatePreferencesTopicIdentifier(
+            privateKey.toByteArray(),
+        )
 
     @OptIn(ExperimentalUnsignedTypes::class)
     suspend fun load(): ConsentList {
-        val envelopes = client.apiClient.envelopes(
-            Topic.preferenceList(identifier).description,
-            Pagination(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING)
-        )
+        val envelopes =
+            client.apiClient.envelopes(
+                Topic.preferenceList(identifier).description,
+                Pagination(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING),
+            )
         val consentList = ConsentList(client)
         val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
         for (envelope in envelopes) {
-            val payload = uniffi.xmtpv3.userPreferencesDecrypt(
-                publicKey.toByteArray(),
-                privateKey.toByteArray(),
-                envelope.message.toByteArray()
-            )
+            val payload =
+                uniffi.xmtpv3.userPreferencesDecrypt(
+                    publicKey.toByteArray(),
+                    privateKey.toByteArray(),
+                    envelope.message.toByteArray(),
+                )
 
             preferences.add(
                 PrivatePreferencesAction.parseFrom(
-                    payload.toUByteArray().toByteArray()
-                )
+                    payload.toUByteArray().toByteArray(),
+                ),
             )
         }
 
@@ -99,48 +102,55 @@ class ConsentList(val client: Client) {
     }
 
     fun publish(entry: ConsentListEntry) {
-        val payload = PrivatePreferencesAction.newBuilder().also {
-            when (entry.entryType) {
-                ConsentListEntry.EntryType.ADDRESS -> {
-                    when (entry.consentType) {
-                        ConsentState.ALLOWED -> it.setAllowDm(
-                            PrivatePreferencesAction.AllowDM.newBuilder().addWalletAddresses(entry.value)
-                        )
+        val payload =
+            PrivatePreferencesAction.newBuilder().also {
+                when (entry.entryType) {
+                    ConsentListEntry.EntryType.ADDRESS -> {
+                        when (entry.consentType) {
+                            ConsentState.ALLOWED ->
+                                it.setAllowDm(
+                                    PrivatePreferencesAction.AllowDM.newBuilder().addWalletAddresses(entry.value),
+                                )
 
-                        ConsentState.DENIED -> it.setDenyDm(
-                            PrivatePreferencesAction.DenyDM.newBuilder().addWalletAddresses(entry.value)
-                        )
+                            ConsentState.DENIED ->
+                                it.setDenyDm(
+                                    PrivatePreferencesAction.DenyDM.newBuilder().addWalletAddresses(entry.value),
+                                )
 
-                        ConsentState.UNKNOWN -> it.clearMessageType()
+                            ConsentState.UNKNOWN -> it.clearMessageType()
+                        }
+                    }
+                    ConsentListEntry.EntryType.GROUP_ID -> {
+                        when (entry.consentType) {
+                            ConsentState.ALLOWED ->
+                                it.setAllowGroup(
+                                    PrivatePreferencesAction.AllowGroup.newBuilder().addGroupIds(entry.value.toByteStringUtf8()),
+                                )
+
+                            ConsentState.DENIED ->
+                                it.setDenyGroup(
+                                    PrivatePreferencesAction.DenyGroup.newBuilder().addGroupIds(entry.value.toByteStringUtf8()),
+                                )
+
+                            ConsentState.UNKNOWN -> it.clearMessageType()
+                        }
                     }
                 }
-                ConsentListEntry.EntryType.GROUP_ID -> {
-                    when (entry.consentType) {
-                        ConsentState.ALLOWED -> it.setAllowGroup(
-                            PrivatePreferencesAction.AllowGroup.newBuilder().addGroupIds(entry.value.toByteStringUtf8())
-                        )
+            }.build()
 
-                        ConsentState.DENIED -> it.setDenyGroup(
-                            PrivatePreferencesAction.DenyGroup.newBuilder().addGroupIds(entry.value.toByteStringUtf8())
-                        )
+        val message =
+            uniffi.xmtpv3.userPreferencesEncrypt(
+                publicKey.toByteArray(),
+                privateKey.toByteArray(),
+                payload.toByteArray(),
+            )
 
-                        ConsentState.UNKNOWN -> it.clearMessageType()
-                    }
-                }
-            }
-        }.build()
-
-        val message = uniffi.xmtpv3.userPreferencesEncrypt(
-            publicKey.toByteArray(),
-            privateKey.toByteArray(),
-            payload.toByteArray()
-        )
-
-        val envelope = EnvelopeBuilder.buildFromTopic(
-            Topic.preferenceList(identifier),
-            Date(),
-            ByteArray(message.size) { message[it].toByte() }
-        )
+        val envelope =
+            EnvelopeBuilder.buildFromTopic(
+                Topic.preferenceList(identifier),
+                Date(),
+                ByteArray(message.size) { message[it].toByte() },
+            )
 
         client.publish(listOf(envelope))
     }
@@ -178,7 +188,7 @@ class ConsentList(val client: Client) {
 
         return entry?.consentType ?: ConsentState.UNKNOWN
     }
-  
+
     fun groupState(groupId: ByteArray): ConsentState {
         val entry = entries[ConsentListEntry.groupId(groupId).key]
 
@@ -191,7 +201,6 @@ data class Contacts(
     val knownBundles: MutableMap<String, ContactBundle> = mutableMapOf(),
     val hasIntroduced: MutableMap<String, Boolean> = mutableMapOf(),
 ) {
-
     var consentList: ConsentList = ConsentList(client)
 
     fun refreshConsentList(): ConsentList {
@@ -241,11 +250,9 @@ data class Contacts(
         return consentList.groupState(groupId) == ConsentState.DENIED
     }
 
-    fun has(peerAddress: String): Boolean =
-        knownBundles[peerAddress] != null
+    fun has(peerAddress: String): Boolean = knownBundles[peerAddress] != null
 
-    fun needsIntroduction(peerAddress: String): Boolean =
-        hasIntroduced[peerAddress] != true
+    fun needsIntroduction(peerAddress: String): Boolean = hasIntroduced[peerAddress] != true
 
     fun find(peerAddress: String): ContactBundle? {
         val knownBundle = knownBundles[peerAddress]
