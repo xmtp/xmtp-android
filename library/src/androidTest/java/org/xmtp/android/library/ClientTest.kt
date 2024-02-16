@@ -117,7 +117,7 @@ class ClientTest {
             Client().create(
                 account = fakeWallet,
                 options = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    ClientOptions.Api(XMTPEnvironment.DEV, true),
                     enableAlphaMls = true,
                     appContext = context
                 )
