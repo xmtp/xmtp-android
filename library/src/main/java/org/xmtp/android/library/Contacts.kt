@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import com.google.protobuf.ByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
@@ -11,7 +10,6 @@ import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesAction
-import java.security.KeyStore.Entry
 import java.util.Date
 
 enum class ConsentState {
@@ -203,14 +201,6 @@ data class Contacts(
         return consentList
     }
 
-    fun isAllowed(address: String): Boolean {
-        return consentList.state(address) == ConsentState.ALLOWED
-    }
-
-    fun isDenied(address: String): Boolean {
-        return consentList.state(address) == ConsentState.DENIED
-    }
-
     fun allow(addresses: List<String>) {
         for (address in addresses) {
             ConsentList(client).publish(consentList.allow(address))
@@ -223,14 +213,6 @@ data class Contacts(
         }
     }
 
-    fun isGroupAllowed(groupId: ByteArray): Boolean {
-        return consentList.groupState(groupId) == ConsentState.ALLOWED
-    }
-
-    fun isGroupDenied(groupId: ByteArray): Boolean {
-        return consentList.groupState(groupId) == ConsentState.DENIED
-    }
-
     fun allowGroup(groupIds: List<ByteArray>) {
         for (id in groupIds) {
             ConsentList(client).publish(consentList.allowGroup(id))
@@ -241,6 +223,22 @@ data class Contacts(
         for (id in groupIds) {
             ConsentList(client).publish(consentList.denyGroup(id))
         }
+    }
+
+    fun isAllowed(address: String): Boolean {
+        return consentList.state(address) == ConsentState.ALLOWED
+    }
+
+    fun isDenied(address: String): Boolean {
+        return consentList.state(address) == ConsentState.DENIED
+    }
+
+    fun isGroupAllowed(groupId: ByteArray): Boolean {
+        return consentList.groupState(groupId) == ConsentState.ALLOWED
+    }
+
+    fun isGroupDenied(groupId: ByteArray): Boolean {
+        return consentList.groupState(groupId) == ConsentState.DENIED
     }
 
     fun has(peerAddress: String): Boolean =

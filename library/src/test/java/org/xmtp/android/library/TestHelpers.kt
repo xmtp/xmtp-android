@@ -43,13 +43,11 @@ class FakeWallet : SigningKey {
     }
 
     override suspend fun sign(data: ByteArray): Signature {
-        val signature = privateKeyBuilder.sign(data)
-        return signature
+        return privateKeyBuilder.sign(data)
     }
 
     override suspend fun sign(message: String): Signature {
-        val signature = privateKeyBuilder.sign(message)
-        return signature
+        return privateKeyBuilder.sign(message)
     }
 
     override val address: String
@@ -66,8 +64,8 @@ class FakeApiClient : ApiClient {
     override val environment: XMTPEnvironment = XMTPEnvironment.LOCAL
     private var authToken: String? = null
     private val responses: MutableMap<String, List<Envelope>> = mutableMapOf()
-    val published: MutableList<Envelope> = mutableListOf()
-    var forbiddingQueries = false
+    private val published: MutableList<Envelope> = mutableListOf()
+    private var forbiddingQueries = false
     private var stream = FakeStreamHolder()
 
     fun assertNoPublish(callback: () -> Unit) {
@@ -234,23 +232,3 @@ data class Fixtures(val aliceAccount: PrivateKeyBuilder, val bobAccount: Private
 
 fun fixtures(): Fixtures =
     Fixtures()
-
-data class GroupFixtures()  {
-    var fakeApiClient: FakeApiClient = FakeApiClient()
-    var alice: PrivateKey = aliceAccount.getPrivateKey()
-    var aliceClient: Client = Client().create(account = aliceAccount, apiClient = fakeApiClient)
-    var bob: PrivateKey = bobAccount.getPrivateKey()
-    var bobClient: Client = Client().create(account = bobAccount, apiClient = fakeApiClient)
-    var charlie: PrivateKey = bobAccount.getPrivateKey()
-    var charlieClient: Client = Client().create(account = charlieAccount, apiClient = fakeApiClient)
-
-    constructor() : this(aliceAccount = PrivateKeyBuilder(), bobAccount = PrivateKeyBuilder(), charlieAccount = PrivateKeyBuilder())
-
-    // TODO: Insert necessary group creation/publish functions
-  
-}
-
-fun groupFixtures(): GroupFixtures =
-    GroupFixtures()
-
-

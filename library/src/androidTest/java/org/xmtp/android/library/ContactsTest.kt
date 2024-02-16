@@ -12,8 +12,8 @@ class ContactsTest {
     fun testNormalizesAddresses() {
         val fixtures = fixtures()
         fixtures.bobClient.ensureUserContactPublished()
-        val bobAddressLowercased = fixtures.bobClient.address?.lowercase()
-        val bobContact = fixtures.aliceClient.getUserContact(peerAddress = bobAddressLowercased!!)
+        val bobAddressLowerCased = fixtures.bobClient.address.lowercase()
+        val bobContact = fixtures.aliceClient.getUserContact(peerAddress = bobAddressLowerCased)
         assert(bobContact != null)
     }
 
@@ -65,36 +65,6 @@ class ContactsTest {
         contacts.deny(listOf(fixtures.alice.walletAddress))
 
         result = contacts.isDenied(fixtures.alice.walletAddress)
-        assert(result)
-    }
-    
-    @Test
-    fun testAllowGroup() {
-        val groupFixtures = groupFixtures()
-
-        val groups = groupFixtures.bobClient.groups
-        var result = contacts.isGroupAllowed(groupFixtures.<GROUP_ID_HERE>)
-
-        assert(!result)
-
-        contacts.allowGroup(listOf(groupFixtures.<GROUP_ID_HERE>))
-
-        result = contacts.isGroupAllowed(groupFixtures.<GROUP_ID_HERE>)
-        assert(result)
-    }
-
-    @Test
-    fun testDenyGroup() {
-        val groupFixtures = groupFixtures()
-
-        val groups = groupFixtures.bobClient.groups
-        var result = contacts.isGroupAllowed(groupFixtures.<GROUP_ID_HERE>)
-
-        assert(!result)
-
-        contacts.denyGroup(listOf(groupFixtures.<GROUP_ID_HERE>))
-
-        result = contacts.isGroupDenied(groupFixtures.<GROUP_ID_HERE>)
         assert(result)
     }
 }

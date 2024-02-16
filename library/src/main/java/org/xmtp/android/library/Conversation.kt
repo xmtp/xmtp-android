@@ -214,7 +214,7 @@ sealed class Conversation {
             return client.address
         }
 
-    // Is the topic of the conversation depending of the version
+    // Is the topic of the conversation depending on the version
     val topic: String
         get() {
             return when (this) {
