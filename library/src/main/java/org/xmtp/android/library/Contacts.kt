@@ -1,5 +1,7 @@
 package org.xmtp.android.library
 
+import com.google.protobuf.ByteString
+import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.ContactBundleBuilder
@@ -9,6 +11,7 @@ import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesAction
+import java.security.KeyStore.Entry
 import java.util.Date
 
 enum class ConsentState {
@@ -39,7 +42,7 @@ data class ConsentListEntry(
             groupId: ByteArray,
             type: ConsentState = ConsentState.UNKNOWN,
         ): ConsentListEntry {
-            return ConsentListEntry(groupId, EntryType.GROUP_ID, type)
+            return ConsentListEntry(String(groupId), EntryType.GROUP_ID, type)
         }
     }
 
@@ -80,17 +83,17 @@ class ConsentList(val client: Client) {
         }
 
         preferences.iterator().forEach { preference ->
-            preference.allowDM?.walletAddressesList?.forEach { address ->
+            preference.allowDm?.walletAddressesList?.forEach { address ->
                 consentList.allow(address)
             }
-            preference.denyDM?.walletAddressesList?.forEach { address ->
+            preference.denyDm?.walletAddressesList?.forEach { address ->
                 consentList.deny(address)
             }
             preference.allowGroup?.groupIdsList?.forEach { groupId ->
-                consentList.allowGroup(groupId)
+                consentList.allowGroup(groupId.toByteArray())
             }
             preference.denyGroup?.groupIdsList?.forEach { groupId ->
-                consentList.denyGroup(groupId)
+                consentList.denyGroup(groupId.toByteArray())
             }
         }
 
@@ -99,28 +102,33 @@ class ConsentList(val client: Client) {
 
     fun publish(entry: ConsentListEntry) {
         val payload = PrivatePreferencesAction.newBuilder().also {
-            when (entry.consentType && entry.entryType == ADDRESS) {
-                ConsentState.ALLOWED -> it.setAllow(
-                    PrivatePreferencesAction.AllowDM.newBuilder().addWalletAddresses(entry.value)
-                )
+            when (entry.entryType) {
+                ConsentListEntry.EntryType.ADDRESS -> {
+                    when (entry.consentType) {
+                        ConsentState.ALLOWED -> it.setAllowDm(
+                            PrivatePreferencesAction.AllowDM.newBuilder().addWalletAddresses(entry.value)
+                        )
 
-                ConsentState.DENIED -> it.setDeny(
-                    PrivatePreferencesAction.DenyDM.newBuilder().addWalletAddresses(entry.value)
-                )
+                        ConsentState.DENIED -> it.setDenyDm(
+                            PrivatePreferencesAction.DenyDM.newBuilder().addWalletAddresses(entry.value)
+                        )
 
-                ConsentState.UNKNOWN -> it.clearMessageType()
-            }
-            
-           when (entry.consentType && entry.entryType == GROUP_ID) {
-                ConsentState.ALLOWED -> it.setAllow(
-                    PrivatePreferencesAction.AllowGroup.newBuilder().addGroupIds(entry.value)
-                )
+                        ConsentState.UNKNOWN -> it.clearMessageType()
+                    }
+                }
+                ConsentListEntry.EntryType.GROUP_ID -> {
+                    when (entry.consentType) {
+                        ConsentState.ALLOWED -> it.setAllowGroup(
+                            PrivatePreferencesAction.AllowGroup.newBuilder().addGroupIds(entry.value.toByteStringUtf8())
+                        )
 
-                ConsentState.DENIED -> it.setDeny(
-                    PrivatePreferencesAction.DenyGroup.newBuilder().addGroupIds(entry.value)
-                )
+                        ConsentState.DENIED -> it.setDenyGroup(
+                            PrivatePreferencesAction.DenyGroup.newBuilder().addGroupIds(entry.value.toByteStringUtf8())
+                        )
 
-                ConsentState.UNKNOWN -> it.clearMessageType()
+                        ConsentState.UNKNOWN -> it.clearMessageType()
+                    }
+                }
             }
         }.build()
 
