@@ -117,6 +117,23 @@ class ClientTest {
             Client().create(
                 account = fakeWallet,
                 options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableAlphaMls = true,
+                    appContext = context
+                )
+            )
+        val v3Client = client.libXMTPClient
+        assertEquals(client.address.lowercase(), v3Client?.accountAddress()?.lowercase())
+    }
+
+    @Test
+    fun testCreatesAV3DevClient() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val client =
+            Client().create(
+                account = fakeWallet,
+                options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.DEV, true),
                     enableAlphaMls = true,
                     appContext = context
