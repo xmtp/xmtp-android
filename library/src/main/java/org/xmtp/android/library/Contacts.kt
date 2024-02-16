@@ -178,7 +178,7 @@ class ConsentList(val client: Client) {
 
         return entry?.consentType ?: ConsentState.UNKNOWN
     }
-    
+  
     fun groupState(groupId: ByteArray): ConsentState {
         val entry = entries[ConsentListEntry.groupId(groupId).key]
 
