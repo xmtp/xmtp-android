@@ -251,10 +251,12 @@ class GroupTest {
     @Test
     fun testCanStreamGroupMessages() = kotlinx.coroutines.test.runTest {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
+        alixClient.conversations.syncGroups()
+        val alixGroup = alixClient.conversations.listGroups().first()
         group.streamMessages().test {
-            group.send("hi")
+            alixGroup.send("hi")
             assertEquals("hi", awaitItem().body)
-            group.send("hi again")
+            alixGroup.send("hi again")
             assertEquals("hi again", awaitItem().body)
         }
     }
@@ -262,11 +264,12 @@ class GroupTest {
     @Test
     fun testCanStreamDecryptedGroupMessages() = kotlinx.coroutines.test.runTest {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
-
+        alixClient.conversations.syncGroups()
+        val alixGroup = alixClient.conversations.listGroups().first()
         group.streamDecryptedMessages().test {
-            group.send("hi")
+            alixGroup.send("hi")
             assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
-            group.send("hi again")
+            alixGroup.send("hi again")
             assertEquals("hi again", awaitItem().encodedContent.content.toStringUtf8())
         }
     }
