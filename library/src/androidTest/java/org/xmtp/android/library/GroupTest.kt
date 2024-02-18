@@ -58,18 +58,63 @@ class GroupTest {
     }
 
     @Test
-    fun testCanCreateAGroup() {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
-        assert(group.id.isNotEmpty())
+    fun testCanCreateAGroupWithDefaultPermissions() {
+        val boGroup = boClient.conversations.newGroup(listOf(alix.walletAddress))
+        runBlocking { alixClient.conversations.syncGroups() }
+        val alixGroup = alixClient.conversations.listGroups().first()
+        assert(boGroup.id.isNotEmpty())
+        assert(alixGroup.id.isNotEmpty())
+
+        alixGroup.addMembers(listOf(caro.walletAddress))
+        runBlocking { boGroup.sync() }
+        assertEquals(alixGroup.memberAddresses().size, 3)
+        assertEquals(boGroup.memberAddresses().size, 3)
+
+        alixGroup.removeMembers(listOf(caro.walletAddress))
+        runBlocking { boGroup.sync() }
+        assertEquals(alixGroup.memberAddresses().size, 2)
+        assertEquals(boGroup.memberAddresses().size, 2)
+
+        boGroup.addMembers(listOf(caro.walletAddress))
+        runBlocking { alixGroup.sync() }
+        assertEquals(alixGroup.memberAddresses().size, 3)
+        assertEquals(boGroup.memberAddresses().size, 3)
     }
 
     @Test
     fun testCanCreateAGroupWithAdminPermissions() {
-        val group = boClient.conversations.newGroup(
+        val boGroup = boClient.conversations.newGroup(
             listOf(alix.walletAddress),
             permissions = GroupPermissions.GROUP_CREATOR_IS_ADMIN
         )
-        assert(group.id.isNotEmpty())
+        runBlocking { alixClient.conversations.syncGroups() }
+        val alixGroup = alixClient.conversations.listGroups().first()
+        assert(boGroup.id.isNotEmpty())
+        assert(alixGroup.id.isNotEmpty())
+
+        boGroup.addMembers(listOf(caro.walletAddress))
+        runBlocking { alixGroup.sync() }
+        assertEquals(alixGroup.memberAddresses().size, 3)
+        assertEquals(boGroup.memberAddresses().size, 3)
+
+        assertThrows(XMTPException::class.java) {
+            alixGroup.removeMembers(listOf(caro.walletAddress))
+        }
+        runBlocking { boGroup.sync() }
+        assertEquals(alixGroup.memberAddresses().size, 3)
+        assertEquals(boGroup.memberAddresses().size, 3)
+
+        boGroup.removeMembers(listOf(caro.walletAddress))
+        runBlocking { alixGroup.sync() }
+        assertEquals(alixGroup.memberAddresses().size, 2)
+        assertEquals(boGroup.memberAddresses().size, 2)
+
+        assertThrows(XMTPException::class.java) {
+            alixGroup.addMembers(listOf(caro.walletAddress))
+        }
+        runBlocking { boGroup.sync() }
+        assertEquals(alixGroup.memberAddresses().size, 2)
+        assertEquals(boGroup.memberAddresses().size, 2)
     }
 
     @Test
