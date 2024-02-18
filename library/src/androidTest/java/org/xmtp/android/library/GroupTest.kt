@@ -17,6 +17,7 @@ import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
+import uniffi.xmtpv3.GroupPermissions
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
@@ -59,6 +60,15 @@ class GroupTest {
     @Test
     fun testCanCreateAGroup() {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
+        assert(group.id.isNotEmpty())
+    }
+
+    @Test
+    fun testCanCreateAGroupWithAdminPermissions() {
+        val group = boClient.conversations.newGroup(
+            listOf(alix.walletAddress),
+            permissions = GroupPermissions.GROUP_CREATOR_IS_ADMIN
+        )
         assert(group.id.isNotEmpty())
     }
 
