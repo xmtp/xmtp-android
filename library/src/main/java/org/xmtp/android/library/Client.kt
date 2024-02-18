@@ -578,11 +578,12 @@ class Client() {
         return runBlocking { query(Topic.contact(peerAddress)).envelopesList.size > 0 }
     }
 
-    fun canMessage(addresses: List<String>): Boolean {
-        return runBlocking {
-            libXMTPClient != null && !libXMTPClient!!.canMessage(addresses.map { it })
-                .contains(false)
+    fun canMessageV3(addresses: List<String>): Boolean {
+        if (libXMTPClient == null) return false
+        val statuses = runBlocking {
+            libXMTPClient!!.canMessage(addresses)
         }
+        return !statuses.contains(false)
     }
 
     val privateKeyBundle: PrivateKeyBundle
