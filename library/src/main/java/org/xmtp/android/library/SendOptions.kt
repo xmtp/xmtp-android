@@ -5,5 +5,6 @@ import org.xmtp.proto.message.contents.Content
 data class SendOptions(
     var compression: EncodedContentCompression? = null,
     var contentType: Content.ContentTypeId? = null,
-    var ephemeral: Boolean = false
+    var ephemeral: Boolean = false,
+    var shouldPush: Boolean? = null
 )
