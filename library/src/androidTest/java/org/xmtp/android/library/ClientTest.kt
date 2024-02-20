@@ -3,7 +3,6 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.fail
 import org.junit.Ignore
 import org.junit.Test
