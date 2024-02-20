@@ -14,7 +14,6 @@ import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChangeCodec
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
 
-@Ignore("CI Issues")
 @RunWith(AndroidJUnit4::class)
 class GroupMembershipChangeTest {
     lateinit var fakeApiClient: FakeApiClient
@@ -53,6 +52,7 @@ class GroupMembershipChangeTest {
     }
 
     @Test
+    @Ignore("CI Issues")
     fun testCanAddMembers() {
         Client.register(codec = GroupMembershipChangeCodec())
 
@@ -73,6 +73,7 @@ class GroupMembershipChangeTest {
     }
 
     @Test
+    @Ignore("CI Issues")
     fun testCanRemoveMembers() {
         Client.register(codec = GroupMembershipChangeCodec())
 
@@ -99,6 +100,7 @@ class GroupMembershipChangeTest {
     }
 
     @Test
+    @Ignore("CI Issues")
     fun testIfNotRegisteredReturnsFallback() {
         val group = alixClient.conversations.newGroup(
             listOf(
