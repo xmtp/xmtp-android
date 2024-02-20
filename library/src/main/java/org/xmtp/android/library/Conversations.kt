@@ -39,6 +39,7 @@ import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiListConversationsOptions
+import uniffi.xmtpv3.GroupPermissions
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -91,7 +92,10 @@ data class Conversations(
         )
     }
 
-    fun newGroup(accountAddresses: List<String>): Group {
+    fun newGroup(
+        accountAddresses: List<String>,
+        permissions: GroupPermissions = GroupPermissions.EVERYONE_IS_ADMIN,
+    ): Group {
         if (accountAddresses.isEmpty()) {
             throw XMTPException("Cannot start an empty group chat.")
         }
@@ -100,12 +104,12 @@ data class Conversations(
         ) {
             throw XMTPException("Recipient is sender")
         }
-        if (!client.canMessage(accountAddresses)) {
+        if (!client.canMessageV3(accountAddresses)) {
             throw XMTPException("Recipient not on network")
         }
 
         val group = runBlocking {
-            libXMTPConversations?.createGroup(accountAddresses, permissions = null)
+            libXMTPConversations?.createGroup(accountAddresses, permissions = permissions)
                 ?: throw XMTPException("Client does not support Groups")
         }
         client.contacts.allowGroup(groupIds = listOf(group.id()))
