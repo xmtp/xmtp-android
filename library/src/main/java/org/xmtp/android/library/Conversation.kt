@@ -100,7 +100,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.client.contacts.consentList.state(address = peerAddress)
             is V2 -> conversationV2.client.contacts.consentList.state(address = peerAddress)
-            is Group -> ConsentState.UNKNOWN // No such thing as consent for a group
+            is Group -> group.client.contacts.consentList.groupState(groupId = group.id)
         }
     }
 

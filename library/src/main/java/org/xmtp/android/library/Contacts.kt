@@ -84,10 +84,10 @@ class ConsentList(val client: Client) {
         }
 
         preferences.iterator().forEach { preference ->
-            preference.allowDm?.walletAddressesList?.forEach { address ->
+            preference.allowAddress?.walletAddressesList?.forEach { address ->
                 consentList.allow(address)
             }
-            preference.denyDm?.walletAddressesList?.forEach { address ->
+            preference.denyAddress?.walletAddressesList?.forEach { address ->
                 consentList.deny(address)
             }
             preference.allowGroup?.groupIdsList?.forEach { groupId ->
@@ -108,13 +108,13 @@ class ConsentList(val client: Client) {
                     ConsentListEntry.EntryType.ADDRESS -> {
                         when (entry.consentType) {
                             ConsentState.ALLOWED ->
-                                it.setAllowDm(
-                                    PrivatePreferencesAction.AllowDM.newBuilder().addWalletAddresses(entry.value),
+                                it.setAllowAddress(
+                                    PrivatePreferencesAction.AllowAddress.newBuilder().addWalletAddresses(entry.value),
                                 )
 
                             ConsentState.DENIED ->
-                                it.setDenyDm(
-                                    PrivatePreferencesAction.DenyDM.newBuilder().addWalletAddresses(entry.value),
+                                it.setDenyAddress(
+                                    PrivatePreferencesAction.DenyAddress.newBuilder().addWalletAddresses(entry.value),
                                 )
 
                             ConsentState.UNKNOWN -> it.clearMessageType()
