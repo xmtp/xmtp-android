@@ -14,7 +14,7 @@ import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChangeCodec
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
 
-@Ignore
+@Ignore("CI Issues")
 @RunWith(AndroidJUnit4::class)
 class GroupMembershipChangeTest {
     lateinit var fakeApiClient: FakeApiClient

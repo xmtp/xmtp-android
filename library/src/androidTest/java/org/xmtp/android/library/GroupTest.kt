@@ -20,7 +20,7 @@ import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.GroupPermissions
 
-@Ignore
+@Ignore("CI Issues")
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
     private lateinit var fakeApiClient: FakeApiClient

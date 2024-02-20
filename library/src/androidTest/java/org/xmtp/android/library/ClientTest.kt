@@ -63,7 +63,7 @@ class ClientTest {
         )
     }
 
-    @Ignore
+    @Ignore("CI Issues")
     @Test
     fun testCanBeCreatedWithV1Bundle() {
         val fakeWallet = PrivateKeyBuilder()
@@ -81,7 +81,7 @@ class ClientTest {
         )
     }
 
-    @Ignore
+    @Ignore("CI Issues")
     @Test
     fun testV3CanBeCreatedWithBundle() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -111,7 +111,7 @@ class ClientTest {
         )
     }
 
-    @Ignore
+    @Ignore("CI Issues")
     @Test
     fun testCreatesAV3Client() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext

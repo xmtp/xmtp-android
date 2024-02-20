@@ -250,7 +250,7 @@ data class ConversationV2(
             topic = topic,
             keyMaterial = keyMaterial,
             codec = codec,
-            shouldPush = options?.shouldPush
+            shouldPush = options?.__shouldPush
         )
 
         val newTopic = if (options?.ephemeral == true) ephemeralTopic else topic

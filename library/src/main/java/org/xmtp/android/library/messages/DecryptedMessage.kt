@@ -9,5 +9,5 @@ data class DecryptedMessage(
     var senderAddress: String,
     var sentAt: Date,
     var topic: String = "",
-    var shouldPush: Boolean?
+    var shouldPush: Boolean? = null,
 )

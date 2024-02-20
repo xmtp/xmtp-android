@@ -6,5 +6,5 @@ data class SendOptions(
     var compression: EncodedContentCompression? = null,
     var contentType: Content.ContentTypeId? = null,
     var ephemeral: Boolean = false,
-    var shouldPush: Boolean? = null
+    var __shouldPush: Boolean? = null
 )

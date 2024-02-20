@@ -148,7 +148,7 @@ class CodecTest {
         val keys = aliceClient.conversations.getHmacKeys()
     }
 
-    @Ignore
+    @Ignore("CI Issues")
     @Test
     fun testReturnsAllHMACKeys() {
         val alix = PrivateKeyBuilder()
