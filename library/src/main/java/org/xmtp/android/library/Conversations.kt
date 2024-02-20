@@ -108,6 +108,8 @@ data class Conversations(
             libXMTPConversations?.createGroup(accountAddresses, permissions = null)
                 ?: throw XMTPException("Client does not support Groups")
         }
+        client.contacts.allowGroup(groupIds = listOf(group.id()))
+
         return Group(client, group)
     }
 
