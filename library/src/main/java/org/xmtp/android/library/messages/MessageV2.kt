@@ -32,6 +32,7 @@ class MessageV2Builder(val senderHmac: ByteArray? = null, val shouldPush: Boolea
             messageBuilder.messageV2 = MessageV2.newBuilder().also {
                 it.headerBytes = headerBytes.toByteString()
                 it.ciphertext = ciphertext
+                it.shouldPush = shouldPush
             }.build()
             return messageBuilder
         }
