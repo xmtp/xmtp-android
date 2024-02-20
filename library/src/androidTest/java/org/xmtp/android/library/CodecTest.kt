@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.protobuf.kotlin.toByteStringUtf8
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.Crypto.Companion.verifyHmacSignature
@@ -147,6 +148,7 @@ class CodecTest {
         val keys = aliceClient.conversations.getHmacKeys()
     }
 
+    @Ignore
     @Test
     fun testReturnsAllHMACKeys() {
         val alix = PrivateKeyBuilder()

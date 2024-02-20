@@ -127,6 +127,7 @@ data class ConversationV1(
                 encodedContent = encodedMessage,
                 senderAddress = header.sender.walletAddress,
                 sentAt = message.v1.sentAt,
+                shouldPush = false,
             )
         } catch (e: Exception) {
             throw XMTPException("Error decrypting message", e)

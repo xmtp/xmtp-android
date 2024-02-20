@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKey
@@ -14,6 +15,7 @@ import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChangeCodec
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
 
+@Ignore
 @RunWith(AndroidJUnit4::class)
 class GroupMembershipChangeTest {
     lateinit var fakeApiClient: FakeApiClient

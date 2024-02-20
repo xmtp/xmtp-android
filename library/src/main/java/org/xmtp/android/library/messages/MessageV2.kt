@@ -121,6 +121,7 @@ class MessageV2Builder(val senderHmac: ByteArray? = null, val shouldPush: Boolea
                 senderAddress = signed.sender.walletAddress,
                 sentAt = Date(header.createdNs / 1_000_000),
                 topic = topic,
+                shouldPush = false,
             )
         }
 
