@@ -6,7 +6,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.Crypto.Companion.calculateMac
 import org.xmtp.android.library.Crypto.Companion.verifyHmacSignature
 import org.xmtp.android.library.codecs.CompositeCodec
 import org.xmtp.android.library.codecs.ContentCodec
@@ -15,19 +14,11 @@ import org.xmtp.android.library.codecs.ContentTypeIdBuilder
 import org.xmtp.android.library.codecs.DecodedComposite
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.TextCodec
-import org.xmtp.android.library.messages.InvitationV1
+import org.xmtp.android.library.messages.InvitationV1ContextBuilder
 import org.xmtp.android.library.messages.MessageV2Builder
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.PrivateKeyBundleV1
-import org.xmtp.android.library.messages.SealedInvitationBuilder
-import org.xmtp.android.library.messages.createDeterministic
-import org.xmtp.android.library.messages.generate
-import org.xmtp.android.library.messages.getPublicKeyBundle
-import org.xmtp.android.library.messages.toV2
 import org.xmtp.android.library.messages.walletAddress
-import java.security.Key
 import java.time.Instant
-import java.util.Date
 
 data class NumberCodec(
     override var contentType: ContentTypeId = ContentTypeIdBuilder.builderFromAuthorityId(
@@ -158,52 +149,48 @@ class CodecTest {
 
     @Test
     fun testReturnsAllHMACKeys() {
-        val baseTime = Instant.now()
-        val timestamps = List(5) { i -> baseTime.plusSeconds(i.toLong()) }
-        val fixtures = fixtures()
-
-        val invites = timestamps.map { createdAt ->
-            val fakeWallet = FakeWallet.generate()
-            val recipient = PrivateKeyBundleV1.newBuilder().build().generate(wallet = fakeWallet)
-            InvitationV1.newBuilder().build().createDeterministic(
-                sender = fixtures.aliceClient.privateKeyBundleV1.toV2(),
-                recipient = recipient.toV2().getPublicKeyBundle()
+        val alix = PrivateKeyBuilder()
+        val clientOptions =
+            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
+        val alixClient = Client().create(alix, clientOptions)
+        val conversations = mutableListOf<Conversation>()
+        repeat(5) {
+            val account = PrivateKeyBuilder()
+            val client = Client().create(account, clientOptions)
+            conversations.add(
+                alixClient.conversations.newConversation(
+                    client.address,
+                    context = InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi")
+                )
             )
         }
 
         val thirtyDayPeriodsSinceEpoch = Instant.now().epochSecond / 60 / 60 / 24 / 30
 
-        val periods = listOf(
-            thirtyDayPeriodsSinceEpoch - 1,
-            thirtyDayPeriodsSinceEpoch,
-            thirtyDayPeriodsSinceEpoch + 1
-        )
-
-        val hmacKeys = fixtures.aliceClient.conversations.getHmacKeys()
+        val hmacKeys = alixClient.conversations.getHmacKeys()
 
         val topics = hmacKeys.hmacKeysMap.keys
-        invites.forEach { invite ->
-            assertTrue(topics.contains(invite.topic))
+        conversations.forEach { convo ->
+            assertTrue(topics.contains(convo.topic))
         }
 
         val topicHmacs = mutableMapOf<String, ByteArray>()
         val headerBytes = ByteArray(10)
 
-        invites.map { invite ->
-            val topic = invite.topic
+        conversations.map { conversation ->
+            val topic = conversation.topic
             val payload = TextCodec().encode(content = "Hello, world!")
 
             val message = MessageV2Builder.buildEncode(
-                client = fixtures.aliceClient,
+                client = alixClient,
                 encodedContent = payload,
                 topic = topic,
                 keyMaterial = headerBytes,
                 codec = TextCodec()
             )
 
-            val conversation = fixtures.aliceClient.fetchConversation(topic)
-            val keyMaterial = conversation?.keyMaterial
-            val info = "$thirtyDayPeriodsSinceEpoch-${fixtures.aliceClient.address}"
+            val keyMaterial = conversation.keyMaterial
+            val info = "$thirtyDayPeriodsSinceEpoch-${alixClient.address}"
             val hmac = Crypto.calculateMac(
                 Crypto.deriveKey(keyMaterial!!, ByteArray(0), info.toByteArray()),
                 headerBytes
@@ -222,6 +209,5 @@ class CodecTest {
                 assertTrue(valid == (idx == 1))
             }
         }
-
     }
 }

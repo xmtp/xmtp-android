@@ -52,7 +52,6 @@ import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
 
-
 data class Conversations(
     var client: Client,
     var conversationsByTopic: MutableMap<String, Conversation> = mutableMapOf(),
@@ -320,21 +319,23 @@ data class Conversations(
 
         topics.forEach {
             val conversation = it.value
+            if (conversation.keyMaterial != null) {
+                (thirtyDayPeriodsSinceEpoch - 1..thirtyDayPeriodsSinceEpoch + 1).map { value ->
+                    val info = "$value-${client.address}"
+                    val hmacKey =
+                        Crypto.calculateMac(
+                            conversation.keyMaterial!!,
+                            info.toByteStringUtf8().toByteArray()
+                        )
 
-            (thirtyDayPeriodsSinceEpoch - 1..thirtyDayPeriodsSinceEpoch + 1).map { value ->
-                val info = "$value-${client.address}"
-                val hmacKey =
-                    Crypto.calculateMac(
-                        conversation.keyMaterial!!,
-                        info.toByteStringUtf8().toByteArray()
+                    hmacKeys.putHmacKeys(
+                        conversation.topic,
+                        HmacKeys.newBuilder().addValues(
+                            HmacKeyData.newBuilder().setHmacKey(hmacKey.toByteString())
+                                .setThirtyDayPeriodsSinceEpoch(value).build()
+                        ).build()
                     )
-
-                hmacKeys.putHmacKeys(
-                    conversation.topic, HmacKeys.newBuilder().addValues(
-                        HmacKeyData.newBuilder().setHmacKey(hmacKey.toByteString())
-                            .setThirtyDayPeriodsSinceEpoch(value).build()
-                    ).build()
-                )
+                }
             }
         }
 

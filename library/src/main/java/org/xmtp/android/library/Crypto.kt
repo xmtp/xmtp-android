@@ -8,7 +8,6 @@ import org.bouncycastle.crypto.generators.HKDFBytesGenerator
 import org.bouncycastle.crypto.params.HKDFParameters
 import org.xmtp.proto.message.contents.CiphertextOuterClass
 import java.security.GeneralSecurityException
-import java.security.Key
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.Mac
