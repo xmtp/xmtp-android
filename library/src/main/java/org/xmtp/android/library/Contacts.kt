@@ -149,7 +149,7 @@ class ConsentList(val client: Client) {
             EnvelopeBuilder.buildFromTopic(
                 Topic.preferenceList(identifier),
                 Date(),
-                ByteArray(message.size) { message[it].toByte() },
+                ByteArray(message.size) { message[it] },
             )
 
         client.publish(listOf(envelope))
