@@ -99,6 +99,9 @@ class GroupTest {
         assert(boGroup.id.isNotEmpty())
         assert(alixGroup.id.isNotEmpty())
 
+        assertEquals(boClient.contacts.consentList.groupState(boGroup.id), ConsentState.ALLOWED)
+        assertEquals(alixClient.contacts.consentList.groupState(alixGroup.id), ConsentState.UNKNOWN)
+
         boGroup.addMembers(listOf(caro.walletAddress))
         runBlocking { alixGroup.sync() }
         assertEquals(alixGroup.memberAddresses().size, 3)
@@ -261,6 +264,16 @@ class GroupTest {
         assertThrows("Cannot start an empty group chat.", XMTPException::class.java) {
             boClient.conversations.newGroup(listOf())
         }
+    }
+
+    @Test
+    fun testGroupStartsWithAllowedState() {
+        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
+        group.send("howdy")
+        group.send("gm")
+        runBlocking { group.sync() }
+        assert(boClient.contacts.isGroupAllowed(group.id))
+        assertEquals(boClient.contacts.consentList.groupState(group.id), ConsentState.ALLOWED)
     }
 
     @Test
