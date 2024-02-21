@@ -337,7 +337,7 @@ class GroupTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         val conversation = boClient.conversations.newConversation(alix.walletAddress)
         alixClient.conversations.syncGroups()
-        alixClient.conversations.streamAllMessages().test {
+        alixClient.conversations.streamAllMessages(includeGroups = true).test {
             group.send("hi")
             assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
             conversation.send("hi again")
@@ -375,7 +375,7 @@ class GroupTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         val conversation = boClient.conversations.newConversation(alix.walletAddress)
         alixClient.conversations.syncGroups()
-        alixClient.conversations.streamAllDecryptedMessages().test {
+        alixClient.conversations.streamAllDecryptedMessages(includeGroups = true).test {
             group.send("hi")
             assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
             conversation.send("hi again")
