@@ -401,6 +401,8 @@ internal interface _UniFFILib : Library {
     ): Pointer
     fun uniffi_xmtpv3_fn_method_fficonversations_stream(`ptr`: Pointer,`callback`: Long,
     ): Pointer
+    fun uniffi_xmtpv3_fn_method_fficonversations_stream_all_messages(`ptr`: Pointer,`messageCallback`: Long,
+    ): Pointer
     fun uniffi_xmtpv3_fn_method_fficonversations_sync(`ptr`: Pointer,
     ): Pointer
     fun uniffi_xmtpv3_fn_free_ffigroup(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
@@ -657,6 +659,8 @@ internal interface _UniFFILib : Library {
     ): Short
     fun uniffi_xmtpv3_checksum_method_fficonversations_stream(
     ): Short
+    fun uniffi_xmtpv3_checksum_method_fficonversations_stream_all_messages(
+    ): Short
     fun uniffi_xmtpv3_checksum_method_fficonversations_sync(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_add_members(
@@ -793,6 +797,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_stream() != 60583.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_stream_all_messages() != 65211.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_sync() != 62598.toShort()) {
@@ -1289,6 +1296,7 @@ public interface FfiConversationsInterface {
     suspend fun `createGroup`(`accountAddresses`: List<String>, `permissions`: GroupPermissions?): FfiGroup@Throws(GenericException::class)
     suspend fun `list`(`opts`: FfiListConversationsOptions): List<FfiGroup>@Throws(GenericException::class)
     suspend fun `stream`(`callback`: FfiConversationCallback): FfiStreamCloser@Throws(GenericException::class)
+    suspend fun `streamAllMessages`(`messageCallback`: FfiMessageCallback): FfiStreamCloser@Throws(GenericException::class)
     suspend fun `sync`()
     companion object
 }
@@ -1360,6 +1368,26 @@ class FfiConversations(
                 _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream(
                     thisPtr,
                     FfiConverterTypeFfiConversationCallback.lower(`callback`),
+                )
+            },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, continuation) },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+            // lift function
+            { FfiConverterTypeFfiStreamCloser.lift(it) },
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `streamAllMessages`(`messageCallback`: FfiMessageCallback) : FfiStreamCloser {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_all_messages(
+                    thisPtr,
+                    FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
                 )
             },
             { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, continuation) },
