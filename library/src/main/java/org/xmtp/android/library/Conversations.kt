@@ -320,7 +320,7 @@ data class Conversations(
         topics.forEach {
             val conversation = it.value
             if (conversation.keyMaterial != null) {
-                (thirtyDayPeriodsSinceEpoch - 1..thirtyDayPeriodsSinceEpoch + 1).map { value ->
+                (thirtyDayPeriodsSinceEpoch - 1..thirtyDayPeriodsSinceEpoch + 1).forEach { value ->
                     val info = "$value-${client.address}"
                     val hmacKey =
                         Crypto.calculateMac(

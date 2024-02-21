@@ -257,7 +257,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCannotSendMessageToGroupMemberNotOnV3() {
         val fakeApiClient = FakeApiClient()
         val chuxAccount = PrivateKeyBuilder()

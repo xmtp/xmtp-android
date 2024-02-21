@@ -5,7 +5,6 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKey
@@ -52,7 +51,6 @@ class GroupMembershipChangeTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanAddMembers() {
         Client.register(codec = GroupMembershipChangeCodec())
 
@@ -73,7 +71,6 @@ class GroupMembershipChangeTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanRemoveMembers() {
         Client.register(codec = GroupMembershipChangeCodec())
 
@@ -100,7 +97,6 @@ class GroupMembershipChangeTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testIfNotRegisteredReturnsFallback() {
         val group = alixClient.conversations.newGroup(
             listOf(

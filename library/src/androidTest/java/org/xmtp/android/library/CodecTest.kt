@@ -145,11 +145,9 @@ class CodecTest {
 
         assertEquals(false, message.shouldPush)
         assertEquals(true, message.senderHmac?.isNotEmpty())
-        val keys = aliceClient.conversations.getHmacKeys()
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testReturnsAllHMACKeys() {
         val alix = PrivateKeyBuilder()
         val clientOptions =
@@ -179,7 +177,7 @@ class CodecTest {
         val topicHmacs = mutableMapOf<String, ByteArray>()
         val headerBytes = ByteArray(10)
 
-        conversations.map { conversation ->
+        conversations.forEach { conversation ->
             val topic = conversation.topic
             val payload = TextCodec().encode(content = "Hello, world!")
 

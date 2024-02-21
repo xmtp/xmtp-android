@@ -64,7 +64,6 @@ class ClientTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanBeCreatedWithV1Bundle() {
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
@@ -82,7 +81,6 @@ class ClientTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testV3CanBeCreatedWithBundle() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fakeWallet = PrivateKeyBuilder()
@@ -112,7 +110,6 @@ class ClientTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCreatesAV3Client() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fakeWallet = PrivateKeyBuilder()
@@ -205,7 +202,6 @@ class ClientTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testPublicCanMessage() {
         val aliceWallet = PrivateKeyBuilder()
         val notOnNetwork = PrivateKeyBuilder()
@@ -221,7 +217,6 @@ class ClientTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testPreEnableIdentityCallback() {
         val fakeWallet = PrivateKeyBuilder()
         val expectation = CompletableFuture<Unit>()
@@ -244,7 +239,6 @@ class ClientTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testPreCreateIdentityCallback() {
         val fakeWallet = PrivateKeyBuilder()
         val expectation = CompletableFuture<Unit>()
