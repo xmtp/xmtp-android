@@ -12,9 +12,11 @@ import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import uniffi.xmtpv3.FfiGroup
+import uniffi.xmtpv3.FfiGroupMetadata
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.GroupPermissions
 import java.lang.Exception
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
@@ -26,6 +28,9 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
 
     val createdAt: Date
         get() = Date(libXMTPGroup.createdAtNs() / 1_000_000)
+
+    private val metadata: FfiGroupMetadata
+        get() = libXMTPGroup.groupMetadata()
 
     fun send(text: String): String {
         return send(prepareMessage(content = text, options = null))
@@ -113,7 +118,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
                     limit = limit?.toLong()
                 )
             ).map {
-                decrypt(Message(client, it))
+                Message(client, it).decrypt()
             }
             when (direction) {
                 MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
@@ -122,18 +127,20 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
     }
 
-    fun decrypt(message: Message): DecryptedMessage {
-        return DecryptedMessage(
-            id = message.id.toHex(),
-            topic = message.convoId.toHex(),
-            encodedContent = message.decode().encodedContent,
-            senderAddress = message.senderAddress,
-            sentAt = Date()
-        )
-    }
-
     fun isActive(): Boolean {
         return libXMTPGroup.isActive()
+    }
+
+    fun permissionLevel(): GroupPermissions {
+        return metadata.policyType()
+    }
+
+    fun isAdmin(): Boolean {
+        return metadata.creatorAccountAddress().lowercase() == client.address.lowercase()
+    }
+
+    fun adminAddress(): String {
+        return metadata.creatorAccountAddress()
     }
 
     fun addMembers(addresses: List<String>) {
@@ -172,7 +179,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     fun streamDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                trySend(decrypt(Message(client, message)))
+                trySend(Message(client, message).decrypt())
             }
         }
 
