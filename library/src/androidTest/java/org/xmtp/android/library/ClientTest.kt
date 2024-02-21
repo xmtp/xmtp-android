@@ -5,7 +5,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKeyBuilder
