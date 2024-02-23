@@ -82,10 +82,10 @@ class Client() {
     lateinit var apiClient: ApiClient
     lateinit var contacts: Contacts
     lateinit var conversations: Conversations
-    var dbPath: String = ""
     var logger: XMTPLogger = XMTPLogger()
     val libXMTPVersion: String = getVersionInfo()
     private var libXMTPClient: FfiXmtpClient? = null
+    private var dbPath: String = ""
 
     companion object {
         private const val TAG = "Client"
@@ -161,7 +161,7 @@ class Client() {
         privateKeyBundleV1: PrivateKeyBundleV1,
         apiClient: ApiClient,
         libXMTPClient: FfiXmtpClient? = null,
-        dbPath: String = ""
+        dbPath: String = "",
     ) : this() {
         this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
@@ -182,7 +182,7 @@ class Client() {
         val clientOptions = options ?: ClientOptions()
         val apiClient =
             GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
-        val (v3Client, dbPath) =  if (isAlphaMlsEnabled(options)) {
+        val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
             runBlocking {
                 ffiXmtpClient(
                     options,
