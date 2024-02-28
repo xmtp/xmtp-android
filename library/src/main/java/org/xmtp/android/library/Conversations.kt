@@ -307,7 +307,7 @@ data class Conversations(
         request: Keystore.GetConversationHmacKeysRequest? = null,
     ): Keystore.GetConversationHmacKeysResponse {
         val thirtyDayPeriodsSinceEpoch = (Date().time / 1000 / 60 / 60 / 24 / 30).toInt()
-        val hmacKeys = Keystore.GetConversationHmacKeysResponse.newBuilder()
+        val hmacKeysResponse = Keystore.GetConversationHmacKeysResponse.newBuilder()
 
         var topics = conversationsByTopic
 
@@ -319,6 +319,7 @@ data class Conversations(
 
         topics.forEach {
             val conversation = it.value
+            val hmacKeys = HmacKeys.newBuilder()
             if (conversation.keyMaterial != null) {
                 (thirtyDayPeriodsSinceEpoch - 1..thirtyDayPeriodsSinceEpoch + 1).forEach { value ->
                     val info = "$value-${client.address}"
@@ -327,19 +328,15 @@ data class Conversations(
                             conversation.keyMaterial!!,
                             info.toByteStringUtf8().toByteArray()
                         )
-
-                    hmacKeys.putHmacKeys(
-                        conversation.topic,
-                        HmacKeys.newBuilder().addValues(
-                            HmacKeyData.newBuilder().setHmacKey(hmacKey.toByteString())
-                                .setThirtyDayPeriodsSinceEpoch(value).build()
-                        ).build()
-                    )
+                    val hmacKeyData = HmacKeyData.newBuilder()
+                    hmacKeyData.hmacKey = hmacKey.toByteString()
+                    hmacKeyData.thirtyDayPeriodsSinceEpoch = value
+                    hmacKeys.addValues(hmacKeyData)
                 }
+                hmacKeysResponse.putHmacKeys(conversation.topic, hmacKeys.build())
             }
         }
-
-        return hmacKeys.build()
+        return hmacKeysResponse.build()
     }
 
     private fun listIntroductionPeers(pagination: Pagination? = null): Map<String, Date> {
