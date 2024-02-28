@@ -8,6 +8,5 @@ data class DecryptedMessage(
     var encodedContent: EncodedContent,
     var senderAddress: String,
     var sentAt: Date,
-    var topic: String = "",
-    var shouldPush: Boolean? = null,
+    var topic: String = ""
 )

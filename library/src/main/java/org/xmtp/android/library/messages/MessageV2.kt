@@ -140,7 +140,6 @@ class MessageV2Builder(val senderHmac: ByteArray? = null, val shouldPush: Boolea
             topic: String,
             keyMaterial: ByteArray,
             codec: Codec,
-            shouldPush: Boolean? = null
         ): MessageV2Builder {
             val payload = encodedContent.toByteArray()
             val date = Date()
@@ -163,13 +162,12 @@ class MessageV2Builder(val senderHmac: ByteArray? = null, val shouldPush: Boolea
                     Crypto.deriveKey(keyMaterial, ByteArray(0), infoEncoded),
                     headerBytes
                 )
-            val calculatedShouldPush = shouldPush ?: shouldPush(codec = codec, content = codec.decode(encodedContent))
 
             return buildFromCipherText(
                 headerBytes,
                 ciphertext,
                 senderHmacGenerated,
-                calculatedShouldPush,
+                shouldPush(codec = codec, content = codec.decode(encodedContent)),
             )
         }
     }
