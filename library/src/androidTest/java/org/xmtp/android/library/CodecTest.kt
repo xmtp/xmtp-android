@@ -190,10 +190,8 @@ class CodecTest {
 
             val keyMaterial = conversation.keyMaterial
             val info = "$thirtyDayPeriodsSinceEpoch-${alixClient.address}"
-            val hmac = Crypto.calculateMac(
-                Crypto.deriveKey(keyMaterial!!, ByteArray(0), info.toByteArray()),
-                headerBytes
-            )
+            val key = Crypto.deriveKey(keyMaterial!!, ByteArray(0), info.toByteArray())
+            val hmac = Crypto.calculateMac(key, headerBytes)
 
             topicHmacs[topic] = hmac
         }
