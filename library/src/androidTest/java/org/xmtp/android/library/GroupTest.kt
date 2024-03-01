@@ -7,7 +7,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.ContentTypeReaction
@@ -136,7 +135,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanListGroupMembers() {
         val group = boClient.conversations.newGroup(
             listOf(
@@ -163,7 +161,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanAddGroupMembers() {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
         group.addMembers(listOf(caro.walletAddress))
@@ -178,7 +175,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanRemoveGroupMembers() {
         val group = boClient.conversations.newGroup(
             listOf(
@@ -197,7 +193,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanRemoveGroupMembersWhenNotCreator() {
         boClient.conversations.newGroup(
             listOf(
@@ -218,7 +213,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testIsActiveReturnsCorrectly() {
         val group = boClient.conversations.newGroup(
             listOf(
@@ -238,7 +232,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanListGroups() {
         boClient.conversations.newGroup(listOf(alix.walletAddress))
         boClient.conversations.newGroup(listOf(caro.walletAddress))
@@ -247,7 +240,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanListGroupsAndConversations() {
         boClient.conversations.newGroup(listOf(alix.walletAddress))
         boClient.conversations.newGroup(listOf(caro.walletAddress))
@@ -269,7 +261,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCannotStartGroupWithSelf() {
         assertThrows("Recipient is sender", XMTPException::class.java) {
             boClient.conversations.newGroup(listOf(bo.walletAddress))
@@ -277,7 +268,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCannotStartEmptyGroupChat() {
         assertThrows("Cannot start an empty group chat.", XMTPException::class.java) {
             boClient.conversations.newGroup(listOf())
@@ -311,7 +301,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanSendContentTypesToGroup() {
         Client.register(codec = ReactionCodec())
 
@@ -340,7 +329,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanStreamGroupMessages() = kotlinx.coroutines.test.runTest {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
         alixClient.conversations.syncGroups()
@@ -429,7 +417,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testCanStreamGroupsAndConversations() = kotlinx.coroutines.test.runTest {
         boClient.conversations.streamAll().test {
             val group =
