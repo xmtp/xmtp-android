@@ -41,9 +41,11 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
+import uniffi.xmtpv3.FfiV2ApiClient
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.LegacyIdentitySource
 import uniffi.xmtpv3.createClient
+import uniffi.xmtpv3.createV2Client
 import uniffi.xmtpv3.getVersionInfo
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -86,6 +88,7 @@ class Client() {
     val libXMTPVersion: String = getVersionInfo()
     private var libXMTPClient: FfiXmtpClient? = null
     private var dbPath: String = ""
+    private lateinit var v2RustClient: FfiV2ApiClient
 
     companion object {
         private const val TAG = "Client"
@@ -160,12 +163,14 @@ class Client() {
         address: String,
         privateKeyBundleV1: PrivateKeyBundleV1,
         apiClient: ApiClient,
+        v2Client: FfiV2ApiClient,
         libXMTPClient: FfiXmtpClient? = null,
         dbPath: String = "",
     ) : this() {
         this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
+        this.v2RustClient = v2Client
         this.contacts = Contacts(client = this)
         this.libXMTPClient = libXMTPClient
         this.conversations =
@@ -180,6 +185,12 @@ class Client() {
     ): Client {
         val address = bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
         val clientOptions = options ?: ClientOptions()
+        val v2Client = runBlocking {
+            createV2Client(
+                host = "http://${clientOptions.api.env.getValue()}:5556",
+                isSecure = clientOptions.api.isSecure
+            )
+        }
         val apiClient =
             GRPCApiClient(environment = clientOptions.api.env, secure = clientOptions.api.isSecure)
         val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
@@ -199,6 +210,7 @@ class Client() {
             address = address,
             privateKeyBundleV1 = bundle,
             apiClient = apiClient,
+            v2Client = v2Client,
             libXMTPClient = v3Client,
             dbPath = dbPath
         )
@@ -223,24 +235,36 @@ class Client() {
         apiClient: ApiClient,
         options: ClientOptions? = null,
     ): Client {
+        val clientOptions = options ?: ClientOptions()
         return runBlocking {
             try {
                 val (privateKeyBundleV1, legacyIdentityKey) = loadOrCreateKeys(
                     account,
                     apiClient,
-                    options
+                    clientOptions
                 )
                 val (libXMTPClient, dbPath) =
                     ffiXmtpClient(
                         options,
                         account,
-                        options?.appContext,
+                        clientOptions.appContext,
                         privateKeyBundleV1,
                         legacyIdentityKey,
                         account.address
                     )
+                val v2Client = createV2Client(
+                    host = "http://${clientOptions.api.env.getValue()}:5556",
+                    isSecure = clientOptions.api.isSecure
+                )
                 val client =
-                    Client(account.address, privateKeyBundleV1, apiClient, libXMTPClient, dbPath)
+                    Client(
+                        account.address,
+                        privateKeyBundleV1,
+                        apiClient,
+                        v2Client,
+                        libXMTPClient,
+                        dbPath
+                    )
                 client.ensureUserContactPublished()
                 client
             } catch (e: java.lang.Exception) {
@@ -263,6 +287,12 @@ class Client() {
     ): Client {
         val address = v1Bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
         val newOptions = options ?: ClientOptions()
+        val v2Client = runBlocking {
+            createV2Client(
+                host = "http://${newOptions.api.env.getValue()}:5556",
+                isSecure = newOptions.api.isSecure
+            )
+        }
         val apiClient =
             GRPCApiClient(environment = newOptions.api.env, secure = newOptions.api.isSecure)
         val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
@@ -282,6 +312,7 @@ class Client() {
             address = address,
             privateKeyBundleV1 = v1Bundle,
             apiClient = apiClient,
+            v2Client = v2Client,
             libXMTPClient = v3Client,
             dbPath = dbPath
         )
