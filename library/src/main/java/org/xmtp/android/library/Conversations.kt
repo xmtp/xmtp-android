@@ -48,6 +48,8 @@ import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.GroupPermissions
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -306,7 +308,7 @@ data class Conversations(
     fun getHmacKeys(
         request: Keystore.GetConversationHmacKeysRequest? = null,
     ): Keystore.GetConversationHmacKeysResponse {
-        val thirtyDayPeriodsSinceEpoch = (Date().time / 1000 / 60 / 60 / 24 / 30).toInt()
+        val thirtyDayPeriodsSinceEpoch = Instant.now().until(Instant.EPOCH, ChronoUnit.DAYS) / 30
         val hmacKeysResponse = Keystore.GetConversationHmacKeysResponse.newBuilder()
 
         var topics = conversationsByTopic
