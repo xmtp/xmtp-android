@@ -14,6 +14,8 @@ import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import java.math.BigInteger
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.Date
 
 typealias MessageV2 = org.xmtp.proto.message.contents.MessageOuterClass.MessageV2
@@ -152,8 +154,7 @@ class MessageV2Builder(val senderHmac: ByteArray? = null, val shouldPush: Boolea
             val signedBytes = signedContent.toByteArray()
             val ciphertext = Crypto.encrypt(keyMaterial, signedBytes, additionalData = headerBytes)
 
-            val thirtyDayPeriodsSinceEpoch =
-                (Date().time / 1000 / 60 / 60 / 24 / 30).toInt()
+            val thirtyDayPeriodsSinceEpoch = (Instant.now().until(Instant.EPOCH, ChronoUnit.DAYS) / 30).toInt()
             val info = "$thirtyDayPeriodsSinceEpoch-${client.address}"
             val infoEncoded = info.toByteStringUtf8().toByteArray()
             val senderHmacGenerated =

@@ -308,7 +308,7 @@ data class Conversations(
     fun getHmacKeys(
         request: Keystore.GetConversationHmacKeysRequest? = null,
     ): Keystore.GetConversationHmacKeysResponse {
-        val thirtyDayPeriodsSinceEpoch = Instant.now().until(Instant.EPOCH, ChronoUnit.DAYS) / 30
+        val thirtyDayPeriodsSinceEpoch = (Instant.now().until(Instant.EPOCH, ChronoUnit.DAYS) / 30).toInt()
         val hmacKeysResponse = Keystore.GetConversationHmacKeysResponse.newBuilder()
 
         var topics = conversationsByTopic
