@@ -3,6 +3,9 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -383,12 +386,23 @@ class GroupTest {
     fun testCanStreamAllDecryptedGroupMessages() = kotlinx.coroutines.test.runTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         alixClient.conversations.syncGroups()
-        alixClient.conversations.streamAllGroupDecryptedMessages().test {
-            group.send("hi")
-            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
-            group.send("hi again")
-            assertEquals("hi again", awaitItem().encodedContent.content.toStringUtf8())
+
+        val flow = alixClient.conversations.streamAllGroupDecryptedMessages()
+        var counter = 0
+        val job = launch {
+            flow.catch { e ->
+                throw Exception("Error collecting flow: $e")
+            }.collect { message ->
+                counter++
+                assertEquals("hi $counter", message.encodedContent.content.toStringUtf8())
+                if (counter == 2) this.cancel()
+            }
         }
+
+        group.send("hi 1")
+        group.send("hi 2")
+
+        job.join()
     }
 
     @Test
