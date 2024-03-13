@@ -5,6 +5,7 @@ import app.cash.turbine.test
 import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -173,8 +174,8 @@ class ConversationTest {
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
         val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
 
-        bobConversation.send(content = "hey alice")
-        bobConversation.send(content = "hey alice again")
+        runBlocking { bobConversation.send(content = "hey alice") }
+        runBlocking { bobConversation.send(content = "hey alice again") }
         val messages = aliceConversation.messages()
         assertEquals(2, messages.size)
         assertEquals("hey alice", messages[1].body)
@@ -192,7 +193,7 @@ class ConversationTest {
             bobWallet.address,
             InvitationV1ContextBuilder.buildFromConversation("hi"),
         )
-        bobConversation.send(content = "hey alice")
+        runBlocking { bobConversation.send(content = "hey alice") }
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
         assertEquals("hey alice", messages[0].body)
@@ -268,10 +269,10 @@ class ConversationTest {
         fixtures.publishLegacyContact(client = aliceClient)
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
         val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
-        bobConversation.send(
+        runBlocking { bobConversation.send(
             text = MutableList(1000) { "A" }.toString(),
             sendOptions = SendOptions(compression = EncodedContentCompression.GZIP),
-        )
+        ) }
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
         assertEquals(MutableList(1000) { "A" }.toString(), messages[0].content())
@@ -283,10 +284,10 @@ class ConversationTest {
         fixtures.publishLegacyContact(client = aliceClient)
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
         val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
-        bobConversation.send(
+        runBlocking { bobConversation.send(
             content = MutableList(1000) { "A" }.toString(),
             options = SendOptions(compression = EncodedContentCompression.DEFLATE),
-        )
+        )}
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
         assertEquals(MutableList(1000) { "A" }.toString(), messages[0].content())
@@ -302,10 +303,10 @@ class ConversationTest {
             bobWallet.address,
             InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
         )
-        bobConversation.send(
+        runBlocking { bobConversation.send(
             text = MutableList(1000) { "A" }.toString(),
             sendOptions = SendOptions(compression = EncodedContentCompression.GZIP),
-        )
+        )}
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
         assertEquals(MutableList(1000) { "A" }.toString(), messages[0].body)
@@ -322,10 +323,10 @@ class ConversationTest {
             bobWallet.address,
             InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
         )
-        bobConversation.send(
+        runBlocking { bobConversation.send(
             content = MutableList(1000) { "A" }.toString(),
             options = SendOptions(compression = EncodedContentCompression.DEFLATE),
-        )
+        )}
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
         assertEquals(MutableList(1000) { "A" }.toString(), messages[0].body)
@@ -401,9 +402,9 @@ class ConversationTest {
 
         val date = Date()
         date.time = date.time - 1000000
-        bobConversation.send(text = "hey alice 1", sentAt = date)
-        bobConversation.send(text = "hey alice 2")
-        bobConversation.send(text = "hey alice 3")
+        runBlocking { bobConversation.send(text = "hey alice 1", sentAt = date) }
+        runBlocking { bobConversation.send(text = "hey alice 2") }
+        runBlocking {bobConversation.send(text = "hey alice 3") }
         val messages = aliceConversation.messages(limit = 1)
         assertEquals(1, messages.size)
         assertEquals("hey alice 3", messages[0].body)
@@ -422,9 +423,9 @@ class ConversationTest {
         )
         val date = Date()
         date.time = date.time - 1000000
-        bobConversation.send(text = "hey alice 1", sentAt = date)
-        bobConversation.send(text = "hey alice 2")
-        bobConversation.send(text = "hey alice 3")
+        runBlocking { bobConversation.send(text = "hey alice 1", sentAt = date) }
+        runBlocking { bobConversation.send(text = "hey alice 2") }
+        runBlocking { bobConversation.send(text = "hey alice 3") }
         val messages = aliceConversation.messages(limit = 1)
         assertEquals(1, messages.size)
         assertEquals("hey alice 3", messages[0].body)
@@ -445,9 +446,9 @@ class ConversationTest {
         val steveConversation =
             aliceClient.conversations.newConversation(fixtures.caro.walletAddress)
 
-        bobConversation.send(text = "hey alice 1")
-        bobConversation.send(text = "hey alice 2")
-        steveConversation.send(text = "hey alice 3")
+        runBlocking { bobConversation.send(text = "hey alice 1") }
+        runBlocking { bobConversation.send(text = "hey alice 2") }
+        runBlocking { steveConversation.send(text = "hey alice 3") }
         val messages = aliceClient.conversations.listBatchMessages(
             listOf(
                 Pair(steveConversation.topic, null),
@@ -469,9 +470,9 @@ class ConversationTest {
         val steveConversation =
             aliceClient.conversations.newConversation(fixtures.caro.walletAddress)
 
-        bobConversation.send(text = "hey alice 1")
-        bobConversation.send(text = "hey alice 2")
-        steveConversation.send(text = "hey alice 3")
+        runBlocking { bobConversation.send(text = "hey alice 1") }
+        runBlocking { bobConversation.send(text = "hey alice 2") }
+        runBlocking { steveConversation.send(text = "hey alice 3") }
         val messages = aliceClient.conversations.listBatchDecryptedMessages(
             listOf(
                 Pair(steveConversation.topic, null),
@@ -493,16 +494,16 @@ class ConversationTest {
         val steveConversation =
             aliceClient.conversations.newConversation(fixtures.caro.walletAddress)
 
-        bobConversation.send(text = "hey alice 1 bob")
-        steveConversation.send(text = "hey alice 1 steve")
+        runBlocking { bobConversation.send(text = "hey alice 1 bob") }
+        runBlocking { steveConversation.send(text = "hey alice 1 steve") }
 
         Thread.sleep(100)
         val date = Date()
 
-        bobConversation.send(text = "hey alice 2 bob")
-        bobConversation.send(text = "hey alice 3 bob")
-        steveConversation.send(text = "hey alice 2 steve")
-        steveConversation.send(text = "hey alice 3 steve")
+        runBlocking { bobConversation.send(text = "hey alice 2 bob") }
+        runBlocking { bobConversation.send(text = "hey alice 3 bob") }
+        runBlocking { steveConversation.send(text = "hey alice 2 steve") }
+        runBlocking { steveConversation.send(text = "hey alice 3 steve") }
 
         val messages = aliceClient.conversations.listBatchMessages(
             listOf(
@@ -753,7 +754,7 @@ class ConversationTest {
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
         val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
         val encodedContent = TextCodec().encode(content = "hi")
-        bobConversation.send(encodedContent = encodedContent)
+        runBlocking { bobConversation.send(encodedContent = encodedContent) }
         val messages = aliceConversation.messages()
         assertEquals(1, messages.size)
         assertEquals("hi", messages[0].content())
@@ -763,7 +764,7 @@ class ConversationTest {
     fun testCanSendEncodedContentV2Message() {
         val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
         val encodedContent = TextCodec().encode(content = "hi")
-        bobConversation.send(encodedContent = encodedContent)
+        runBlocking { bobConversation.send(encodedContent = encodedContent) }
         val messages = bobConversation.messages()
         assertEquals(1, messages.size)
         assertEquals("hi", messages[0].content())
@@ -821,7 +822,7 @@ class ConversationTest {
         // Conversations you receive should start as unknown
         assertTrue(isUnknown)
 
-        aliceConversation.send(content = "hey bob")
+        runBlocking { aliceConversation.send(content = "hey bob") }
         aliceClient.contacts.refreshConsentList()
         val isNowAllowed = aliceConversation.consentState() == ConsentState.ALLOWED
 
