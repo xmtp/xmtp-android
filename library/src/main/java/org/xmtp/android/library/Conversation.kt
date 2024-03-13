@@ -169,7 +169,7 @@ sealed class Conversation {
         }
     }
 
-    fun send(prepared: PreparedMessage): String {
+    suspend fun send(prepared: PreparedMessage): String {
         return when (this) {
             is V1 -> conversationV1.send(prepared = prepared)
             is V2 -> conversationV2.send(prepared = prepared)

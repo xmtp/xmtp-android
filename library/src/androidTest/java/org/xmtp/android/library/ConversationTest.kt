@@ -109,28 +109,30 @@ class ConversationTest {
         // Overwrite contact as legacy
         bobClient.publishUserContact(legacy = true)
         aliceClient.publishUserContact(legacy = true)
-        bobClient.publish(
-            envelopes = listOf(
-                EnvelopeBuilder.buildFromTopic(
-                    topic = Topic.userIntro(bob.walletAddress),
-                    timestamp = someTimeAgo,
-                    message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
-                ),
-                EnvelopeBuilder.buildFromTopic(
-                    topic = Topic.userIntro(alice.walletAddress),
-                    timestamp = someTimeAgo,
-                    message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
-                ),
-                EnvelopeBuilder.buildFromTopic(
-                    topic = Topic.directMessageV1(
-                        bob.walletAddress,
-                        alice.walletAddress,
+        runBlocking {
+            bobClient.publish(
+                envelopes = listOf(
+                    EnvelopeBuilder.buildFromTopic(
+                        topic = Topic.userIntro(bob.walletAddress),
+                        timestamp = someTimeAgo,
+                        message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
                     ),
-                    timestamp = someTimeAgo,
-                    message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
+                    EnvelopeBuilder.buildFromTopic(
+                        topic = Topic.userIntro(alice.walletAddress),
+                        timestamp = someTimeAgo,
+                        message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
+                    ),
+                    EnvelopeBuilder.buildFromTopic(
+                        topic = Topic.directMessageV1(
+                            bob.walletAddress,
+                            alice.walletAddress,
+                        ),
+                        timestamp = someTimeAgo,
+                        message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
+                    ),
                 ),
-            ),
-        )
+            )
+        }
         var conversation = aliceClient.conversations.newConversation(bob.walletAddress)
         assertEquals(conversation.peerAddress, bob.walletAddress)
         assertEquals(conversation.createdAt, someTimeAgo)
@@ -251,7 +253,7 @@ class ConversationTest {
             timestamp = Date(),
             message = MessageBuilder.buildFromMessageV2(v2 = tamperedMessage.messageV2).toByteArray(),
         )
-        aliceClient.publish(envelopes = listOf(tamperedEnvelope))
+        runBlocking { aliceClient.publish(envelopes = listOf(tamperedEnvelope)) }
         val bobConversation = bobClient.conversations.newConversation(
             aliceWallet.address,
             InvitationV1ContextBuilder.buildFromConversation("hi"),
@@ -370,7 +372,7 @@ class ConversationTest {
             ConversationV2.create(client = client, invitation = invitationv1, header = header)
         assertEquals(fakeContactWallet.address, conversation.peerAddress)
 
-        conversation.send(content = "hello world")
+        runBlocking { conversation.send(content = "hello world") }
 
         val conversationList = client.conversations.list()
         val recipientConversation = conversationList.lastOrNull()
@@ -646,7 +648,7 @@ class ConversationTest {
         assertEquals(conversation.version, Conversation.Version.V1)
         val preparedMessage = conversation.prepareMessage(content = "hi")
         val messageID = preparedMessage.messageId
-        conversation.send(prepared = preparedMessage)
+        runBlocking { conversation.send(prepared = preparedMessage) }
         val messages = conversation.messages()
         val message = messages[0]
         assertEquals("hi", message.body)
@@ -658,7 +660,7 @@ class ConversationTest {
         val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
         val preparedMessage = conversation.prepareMessage(content = "hi")
         val messageID = preparedMessage.messageId
-        conversation.send(prepared = preparedMessage)
+        runBlocking { conversation.send(prepared = preparedMessage) }
         val messages = conversation.messages()
         val message = messages[0]
         assertEquals("hi", message.body)
@@ -673,7 +675,7 @@ class ConversationTest {
 
         // This does not need the `conversation` to `.publish` the message.
         // This simulates a background task publishing all pending messages upon connection.
-        aliceClient.publish(envelopes = preparedMessage.envelopes)
+        runBlocking { aliceClient.publish(envelopes = preparedMessage.envelopes) }
 
         val messages = conversation.messages()
         val message = messages[0]

@@ -319,7 +319,12 @@ class GroupTest {
             schema = ReactionSchema.Unicode
         )
 
-        runBlocking { group.send(content = reaction, options = SendOptions(contentType = ContentTypeReaction)) }
+        runBlocking {
+            group.send(
+                content = reaction,
+                options = SendOptions(contentType = ContentTypeReaction)
+            )
+        }
         runBlocking { group.sync() }
 
         val messages = group.messages()
@@ -348,12 +353,22 @@ class GroupTest {
     fun testCanStreamAllGroupMessages() = kotlinx.coroutines.test.runTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         alixClient.conversations.syncGroups()
-        alixClient.conversations.streamAllGroupMessages().test {
-            group.send("hi")
-            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
-            group.send("hi again")
-            assertEquals("hi again", awaitItem().encodedContent.content.toStringUtf8())
+        val flow = alixClient.conversations.streamAllGroupMessages()
+        var counter = 0
+        val job = launch {
+            flow.catch { e ->
+                throw Exception("Error collecting flow: $e")
+            }.collect { message ->
+                counter++
+                assertEquals("hi $counter", message.encodedContent.content.toStringUtf8())
+                if (counter == 2) this.cancel()
+            }
         }
+
+        group.send("hi 1")
+        group.send("hi 2")
+
+        job.join()
     }
 
     @Test
@@ -361,12 +376,24 @@ class GroupTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         val conversation = boClient.conversations.newConversation(alix.walletAddress)
         alixClient.conversations.syncGroups()
-        alixClient.conversations.streamAllMessages(includeGroups = true).test {
-            group.send("hi")
-            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
-            conversation.send("hi again")
-            assertEquals("hi again", awaitItem().encodedContent.content.toStringUtf8())
+
+        val flow = alixClient.conversations.streamAllMessages(includeGroups = true)
+        var counter = 0
+        val job = launch {
+            flow.catch { e ->
+                throw Exception("Error collecting flow: $e")
+            }.collect { message ->
+                counter++
+                assertEquals("hi $counter", message.encodedContent.content.toStringUtf8())
+                if (counter == 2) this.cancel()
+            }
         }
+
+        group.send("hi 1")
+        Thread.sleep(1000)
+        conversation.send("hi 2")
+
+        job.join()
     }
 
     @Test
@@ -410,12 +437,24 @@ class GroupTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         val conversation = boClient.conversations.newConversation(alix.walletAddress)
         alixClient.conversations.syncGroups()
-        alixClient.conversations.streamAllDecryptedMessages(includeGroups = true).test {
-            group.send("hi")
-            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
-            conversation.send("hi again")
-            assertEquals("hi again", awaitItem().encodedContent.content.toStringUtf8())
+
+        val flow = alixClient.conversations.streamAllDecryptedMessages(includeGroups = true)
+        var counter = 0
+        val job = launch {
+            flow.catch { e ->
+                throw Exception("Error collecting flow: $e")
+            }.collect { message ->
+                counter++
+                assertEquals("hi $counter", message.encodedContent.content.toStringUtf8())
+                if (counter == 2) this.cancel()
+            }
         }
+
+        group.send("hi 1")
+        Thread.sleep(1000)
+        conversation.send("hi 2")
+
+        job.join()
     }
 
     @Test

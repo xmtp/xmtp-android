@@ -245,7 +245,7 @@ class MessageTest {
             peerAddress = "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
             sentAt = Date(),
         )
-        convo.send(text = "hello from kotlin")
+        runBlocking { convo.send(text = "hello from kotlin") }
         val messages = convo.messages()
         assertEquals(1, messages.size)
         assertEquals("hello from kotlin", messages[0].body)
