@@ -390,7 +390,7 @@ class GroupTest {
         }
 
         group.send("hi 1")
-        Thread.sleep(1000)
+        Thread.sleep(2000)
         conversation.send("hi 2")
 
         job.join()
@@ -451,7 +451,7 @@ class GroupTest {
         }
 
         group.send("hi 1")
-        Thread.sleep(1000)
+        Thread.sleep(2000)
         conversation.send("hi 2")
 
         job.join()
