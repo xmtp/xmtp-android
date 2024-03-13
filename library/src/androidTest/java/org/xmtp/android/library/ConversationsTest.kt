@@ -4,7 +4,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Ignore
 import org.junit.Test
@@ -102,7 +101,7 @@ class ConversationsTest {
         sleep(2500)
 
         for (i in 0 until 5) {
-            runBlocking { boConversation.send(text = "Message $i") }
+            boConversation.send(text = "Message $i")
             sleep(1000)
         }
         assertEquals(allMessages.size, 5)
@@ -113,7 +112,7 @@ class ConversationsTest {
         sleep(2500)
 
         for (i in 0 until 5) {
-            runBlocking { caroConversation.send(text = "Message $i") }
+            caroConversation.send(text = "Message $i")
             sleep(1000)
         }
 
@@ -132,7 +131,7 @@ class ConversationsTest {
         sleep(2500)
 
         for (i in 0 until 5) {
-            runBlocking { boConversation.send(text = "Message $i") }
+            boConversation.send(text = "Message $i")
             sleep(1000)
         }
 

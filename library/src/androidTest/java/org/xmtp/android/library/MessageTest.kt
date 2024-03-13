@@ -3,7 +3,6 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
-import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Ignore
@@ -197,12 +196,10 @@ class MessageTest {
         val client = Client().create(account = PrivateKeyBuilder(key))
         assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
         val convo = client.conversations.list()[0]
-        runBlocking {
-            convo.send(
-                text = "hello deflate from kotlin again",
-                SendOptions(compression = EncodedContentCompression.DEFLATE),
-            )
-        }
+        convo.send(
+            text = "hello deflate from kotlin again",
+            SendOptions(compression = EncodedContentCompression.DEFLATE),
+        )
         val message = convo.messages().lastOrNull()!!
         assertEquals("hello deflate from kotlin again", message.content())
     }
@@ -261,7 +258,7 @@ class MessageTest {
             InvitationV1ContextBuilder.buildFromConversation("https://example.com/4"),
         )
 
-        runBlocking { convo.send(content = "hello from kotlin") }
+        convo.send(content = "hello from kotlin")
         val messages = convo.messages()
         assertEquals(1, messages.size)
         assertEquals("hello from kotlin", messages[0].body)
@@ -273,7 +270,7 @@ class MessageTest {
         val fixtures = fixtures()
         val conversation =
             fixtures.aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
-        runBlocking { conversation.send(text = "hi") }
+        conversation.send(text = "hi")
         val envelope = fixtures.fakeApiClient.published.lastOrNull()!!
         val decodedMessage = conversation.decode(envelope)
         assertEquals(Hash.sha256(envelope.message.toByteArray()).toHex(), decodedMessage.id)

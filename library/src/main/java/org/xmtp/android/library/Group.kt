@@ -31,20 +31,22 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     private val metadata: FfiGroupMetadata
         get() = libXMTPGroup.groupMetadata()
 
-    suspend fun send(text: String): String {
+    fun send(text: String): String {
         return send(prepareMessage(content = text, options = null))
     }
 
-    suspend fun <T> send(content: T, options: SendOptions? = null): String {
+    fun <T> send(content: T, options: SendOptions? = null): String {
         val preparedMessage = prepareMessage(content = content, options = options)
         return send(preparedMessage)
     }
 
-    suspend fun send(encodedContent: EncodedContent): String {
+    fun send(encodedContent: EncodedContent): String {
         if (client.contacts.consentList.groupState(groupId = id) == ConsentState.UNKNOWN) {
             client.contacts.allowGroup(groupIds = listOf(id))
         }
-        libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
+        runBlocking {
+            libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
+        }
         return id.toHex()
     }
 

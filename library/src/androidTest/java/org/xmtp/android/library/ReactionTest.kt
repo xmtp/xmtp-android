@@ -2,7 +2,6 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.protobuf.kotlin.toByteStringUtf8
-import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -71,7 +70,7 @@ class ReactionTest {
         val aliceConversation =
             aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
 
-        runBlocking { aliceConversation.send(text = "hey alice 2 bob") }
+        aliceConversation.send(text = "hey alice 2 bob")
 
         val messageToReact = aliceConversation.messages()[0]
 
@@ -82,12 +81,10 @@ class ReactionTest {
             schema = ReactionSchema.Unicode,
         )
 
-        runBlocking {
-            aliceConversation.send(
-                content = attachment,
-                options = SendOptions(contentType = ContentTypeReaction),
-            )
-        }
+        aliceConversation.send(
+            content = attachment,
+            options = SendOptions(contentType = ContentTypeReaction),
+        )
         val messages = aliceConversation.messages()
         assertEquals(messages.size, 2)
         if (messages.size == 2) {
@@ -108,7 +105,7 @@ class ReactionTest {
         val aliceConversation =
             aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
 
-        runBlocking { aliceConversation.send(text = "hey alice 2 bob") }
+        aliceConversation.send(text = "hey alice 2 bob")
 
         val messageToReact = aliceConversation.messages()[0]
 
@@ -119,12 +116,10 @@ class ReactionTest {
             schema = ReactionSchema.Unicode,
         )
 
-        runBlocking {
-            aliceConversation.send(
-                content = attachment,
-                options = SendOptions(contentType = ContentTypeReaction),
-            )
-        }
+        aliceConversation.send(
+            content = attachment,
+            options = SendOptions(contentType = ContentTypeReaction),
+        )
         val messages = aliceConversation.messages()
         assertEquals(messages.size, 2)
 
