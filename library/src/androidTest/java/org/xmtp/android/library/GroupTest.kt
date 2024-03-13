@@ -277,8 +277,8 @@ class GroupTest {
     @Test
     fun testGroupStartsWithAllowedState() {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
-        group.send("howdy")
-        group.send("gm")
+        runBlocking { group.send("howdy") }
+        runBlocking { group.send("gm") }
         runBlocking { group.sync() }
         assert(boClient.contacts.isGroupAllowed(group.id))
         assertEquals(boClient.contacts.consentList.groupState(group.id), ConsentState.ALLOWED)
@@ -287,8 +287,8 @@ class GroupTest {
     @Test
     fun testCanSendMessageToGroup() {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
-        group.send("howdy")
-        group.send("gm")
+        runBlocking { group.send("howdy") }
+        runBlocking { group.send("gm") }
         runBlocking { group.sync() }
         assertEquals(group.messages().first().body, "gm")
         assertEquals(group.messages().size, 3)
@@ -305,7 +305,7 @@ class GroupTest {
         Client.register(codec = ReactionCodec())
 
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
-        group.send("gm")
+        runBlocking { group.send("gm") }
         runBlocking { group.sync() }
         val messageToReact = group.messages()[0]
 
@@ -316,7 +316,7 @@ class GroupTest {
             schema = ReactionSchema.Unicode
         )
 
-        group.send(content = reaction, options = SendOptions(contentType = ContentTypeReaction))
+        runBlocking { group.send(content = reaction, options = SendOptions(contentType = ContentTypeReaction)) }
         runBlocking { group.sync() }
 
         val messages = group.messages()
