@@ -528,7 +528,7 @@ class Client() {
         }
     }
 
-    fun publish(envelopes: List<Envelope>): PublishResponse {
+    suspend fun publish(envelopes: List<Envelope>): PublishResponse {
         val authorized = AuthorizedIdentity(
             address = address,
             authorized = privateKeyBundleV1.identityKey.publicKey,
@@ -537,7 +537,7 @@ class Client() {
         val authToken = authorized.createAuthToken()
         apiClient.setAuthToken(authToken)
 
-        return runBlocking { apiClient.publish(envelopes = envelopes) }
+        return apiClient.publish(envelopes = envelopes)
     }
 
     fun ensureUserContactPublished() {

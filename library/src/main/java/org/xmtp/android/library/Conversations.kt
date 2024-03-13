@@ -2,7 +2,6 @@ package org.xmtp.android.library
 
 import android.util.Log
 import com.google.protobuf.kotlin.toByteString
-import com.google.protobuf.kotlin.toByteStringUtf8
 import io.grpc.StatusException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
@@ -324,9 +323,10 @@ data class Conversations(
                 (thirtyDayPeriodsSinceEpoch - 1..thirtyDayPeriodsSinceEpoch + 1).forEach { value ->
                     val info = "$value-${client.address}"
                     val hmacKey =
-                        Crypto.calculateMac(
+                        Crypto.deriveKey(
                             conversation.keyMaterial!!,
-                            info.toByteStringUtf8().toByteArray()
+                            ByteArray(0),
+                            info.toByteArray(Charsets.UTF_8),
                         )
                     val hmacKeyData = HmacKeyData.newBuilder()
                     hmacKeyData.hmacKey = hmacKey.toByteString()
