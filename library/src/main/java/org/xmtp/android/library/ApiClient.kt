@@ -6,6 +6,8 @@ import io.grpc.ManagedChannel
 import io.grpc.Metadata
 import io.grpc.TlsChannelCredentials
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
@@ -18,6 +20,8 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SubscribeRequest
+import uniffi.xmtpv3.FfiV2ApiClient
+import uniffi.xmtpv3.FfiV2SubscribeRequest
 import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
@@ -42,6 +46,7 @@ data class GRPCApiClient(
     override val environment: XMTPEnvironment,
     val secure: Boolean = true,
     val appVersion: String? = null,
+    val rustV2Client: FfiV2ApiClient,
 ) :
     ApiClient, Closeable {
     companion object {
@@ -182,19 +187,6 @@ data class GRPCApiClient(
 
         return client.publish(request, headers)
     }
-
-    override suspend fun subscribe(topics: List<String>): Flow<Envelope> {
-        val request = makeSubscribeRequest(topics)
-        val headers = Metadata()
-
-        headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
-        if (appVersion != null) {
-            headers.put(APP_VERSION_HEADER_KEY, appVersion)
-        }
-
-        return client.subscribe(request, headers)
-    }
-
     override suspend fun subscribe2(request: Flow<SubscribeRequest>): Flow<Envelope> {
         val headers = Metadata()
 
@@ -204,6 +196,29 @@ data class GRPCApiClient(
         }
 
         return client.subscribe2(request, headers)
+    }
+
+    override suspend fun subscribe(topics: List<String>) = flow {
+        val request = FfiV2SubscribeRequest(topics)
+
+        try {
+            val subscription = rustV2Client.subscribe(request)
+            try {
+                while (true) {
+                    val nextEnvelope = subscription.next()
+                    val envelope = EnvelopeBuilder.buildFromString(
+                        nextEnvelope.contentTopic,
+                        java.util.Date(nextEnvelope.timestampNs.toLong()),
+                        nextEnvelope.message
+                    )
+                    emit(envelope)
+                }
+            } finally {
+                subscription.end()
+            }
+        } catch (e: Exception) {
+            throw XMTPException("Subscription error", e)
+        }
     }
 
     override fun close() {
