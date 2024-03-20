@@ -147,7 +147,7 @@ class ClientTest {
                     appContext = context
                 )
             )
-        client.conversations.newGroup(listOf(client2.address,))
+        runBlocking { client.conversations.newGroup(listOf(client2.address,)) }
         runBlocking { client.conversations.syncGroups() }
         assertEquals(client.conversations.listGroups().size, 1)
 

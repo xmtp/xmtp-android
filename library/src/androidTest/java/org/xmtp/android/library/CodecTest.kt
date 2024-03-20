@@ -59,8 +59,8 @@ class CodecTest {
         Client.register(codec = NumberCodec())
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
-        val aliceConversation =
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        val aliceConversation = runBlocking {
+            aliceClient.conversations.newConversation(fixtures.bob.walletAddress) }
         runBlocking {
             aliceConversation.send(
                 content = 3.14,
@@ -81,8 +81,8 @@ class CodecTest {
         Client.register(codec = CompositeCodec())
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
-        val aliceConversation =
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        val aliceConversation = runBlocking {
+            aliceClient.conversations.newConversation(fixtures.bob.walletAddress) }
         val textContent = TextCodec().encode(content = "hiya")
         val source = DecodedComposite(encodedContent = textContent)
         runBlocking {
@@ -102,8 +102,8 @@ class CodecTest {
         Client.register(codec = NumberCodec())
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient!!
-        val aliceConversation =
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        val aliceConversation = runBlocking {
+            aliceClient.conversations.newConversation(fixtures.bob.walletAddress) }
         val textContent = TextCodec().encode(content = "sup")
         val numberContent = NumberCodec().encode(content = 3.14)
         val source = DecodedComposite(
@@ -132,8 +132,8 @@ class CodecTest {
         Client.register(codec = codec)
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient!!
-        val aliceConversation =
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        val aliceConversation = runBlocking {
+            aliceClient.conversations.newConversation(fixtures.bob.walletAddress) }
         runBlocking {
             aliceConversation.send(
                 content = 3.14,
@@ -165,12 +165,14 @@ class CodecTest {
         repeat(5) {
             val account = PrivateKeyBuilder()
             val client = Client().create(account, clientOptions)
-            conversations.add(
-                alixClient.conversations.newConversation(
-                    client.address,
-                    context = InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi")
+            runBlocking {
+                conversations.add(
+                    alixClient.conversations.newConversation(
+                        client.address,
+                        context = InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi")
+                    )
                 )
-            )
+            }
         }
 
         val thirtyDayPeriodsSinceEpoch = Instant.now().epochSecond / 60 / 60 / 24 / 30

@@ -256,10 +256,12 @@ class MessageTest {
     fun canReceiveV2MessagesFromJS() {
         val wallet = PrivateKeyBuilder()
         val client = Client().create(account = wallet)
-        val convo = client.conversations.newConversation(
-            "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
-            InvitationV1ContextBuilder.buildFromConversation("https://example.com/4"),
-        )
+        val convo = runBlocking {
+            client.conversations.newConversation(
+                "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
+                InvitationV1ContextBuilder.buildFromConversation("https://example.com/4"),
+            )
+        }
 
         runBlocking { convo.send(content = "hello from kotlin") }
         val messages = convo.messages()
@@ -271,8 +273,9 @@ class MessageTest {
     @Test
     fun testGetsV1ID() {
         val fixtures = fixtures()
-        val conversation =
+        val conversation = runBlocking {
             fixtures.aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        }
         runBlocking { conversation.send(text = "hi") }
         val envelope = fixtures.fakeApiClient.published.lastOrNull()!!
         val decodedMessage = conversation.decode(envelope)

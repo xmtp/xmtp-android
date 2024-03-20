@@ -3,6 +3,7 @@ package org.xmtp.android.library
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -54,12 +55,14 @@ class GroupMembershipChangeTest {
     fun testCanAddMembers() {
         Client.register(codec = GroupMembershipChangeCodec())
 
-        val group = alixClient.conversations.newGroup(
-            listOf(
-                bo.walletAddress,
-                caro.walletAddress
+        val group = runBlocking {
+            alixClient.conversations.newGroup(
+                listOf(
+                    bo.walletAddress,
+                    caro.walletAddress
+                )
             )
-        )
+        }
         val messages = group.messages()
         assertEquals(messages.size, 1)
         val content: GroupMembershipChanges? = messages.first().content()
@@ -74,12 +77,14 @@ class GroupMembershipChangeTest {
     fun testCanRemoveMembers() {
         Client.register(codec = GroupMembershipChangeCodec())
 
-        val group = alixClient.conversations.newGroup(
-            listOf(
-                bo.walletAddress,
-                caro.walletAddress
+        val group = runBlocking {
+            alixClient.conversations.newGroup(
+                listOf(
+                    bo.walletAddress,
+                    caro.walletAddress
+                )
             )
-        )
+        }
         val messages = group.messages()
         assertEquals(messages.size, 1)
         assertEquals(group.memberAddresses().size, 3)
@@ -98,12 +103,14 @@ class GroupMembershipChangeTest {
 
     @Test
     fun testIfNotRegisteredReturnsFallback() {
-        val group = alixClient.conversations.newGroup(
-            listOf(
-                bo.walletAddress,
-                caro.walletAddress
+        val group = runBlocking {
+            alixClient.conversations.newGroup(
+                listOf(
+                    bo.walletAddress,
+                    caro.walletAddress
+                )
             )
-        )
+        }
         val messages = group.messages()
         assertEquals(messages.size, 1)
         assert(messages.first().fallbackContent.isBlank())
