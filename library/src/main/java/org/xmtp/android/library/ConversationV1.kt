@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import android.util.Log
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Hash
@@ -41,7 +42,13 @@ data class ConversationV1(
      * @see Conversations.streamAllMessages
      */
     fun streamMessages(): Flow<DecodedMessage> = flow {
-        client.subscribe(listOf(topic.description)).collect {
+        client.subscribe2(
+            MutableStateFlow(
+                GRPCApiClient.makeSubscribeRequest(
+                    listOf(topic.description)
+                )
+            )
+        ).collect {
             emit(decode(envelope = it))
         }
     }
@@ -272,13 +279,25 @@ data class ConversationV1(
         get() = topic.description.replace("/xmtp/0/dm-", "/xmtp/0/dmE-")
 
     fun streamEphemeral(): Flow<Envelope> = flow {
-        client.subscribe(topics = listOf(ephemeralTopic)).collect {
+        client.subscribe2(
+            MutableStateFlow(
+                GRPCApiClient.makeSubscribeRequest(
+                    listOf(ephemeralTopic)
+                )
+            )
+        ).collect {
             emit(it)
         }
     }
 
     fun streamDecryptedMessages(): Flow<DecryptedMessage> = flow {
-        client.subscribe(listOf(topic.description)).collect {
+        client.subscribe2(
+            MutableStateFlow(
+                GRPCApiClient.makeSubscribeRequest(
+                    listOf(topic.description)
+                )
+            )
+        ).collect {
             emit(decrypt(envelope = it))
         }
     }

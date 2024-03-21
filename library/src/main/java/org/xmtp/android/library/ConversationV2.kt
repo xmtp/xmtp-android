@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import android.util.Log
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.runBlocking
@@ -138,7 +139,13 @@ data class ConversationV2(
     }
 
     fun streamMessages(): Flow<DecodedMessage> = flow {
-        client.subscribe(listOf(topic)).mapNotNull { decodeEnvelopeOrNull(envelope = it) }.collect {
+        client.subscribe2(
+            MutableStateFlow(
+                GRPCApiClient.makeSubscribeRequest(
+                    listOf(topic)
+                )
+            )
+        ).mapNotNull { decodeEnvelopeOrNull(envelope = it) }.collect {
             emit(it)
         }
     }
@@ -269,13 +276,25 @@ data class ConversationV2(
         get() = topic.replace("/xmtp/0/m", "/xmtp/0/mE")
 
     fun streamEphemeral(): Flow<Envelope> = flow {
-        client.subscribe(topics = listOf(ephemeralTopic)).collect {
+        client.subscribe2(
+            MutableStateFlow(
+                GRPCApiClient.makeSubscribeRequest(
+                    listOf(ephemeralTopic)
+                )
+            )
+        ).collect {
             emit(it)
         }
     }
 
     fun streamDecryptedMessages(): Flow<DecryptedMessage> = flow {
-        client.subscribe(listOf(topic)).collect {
+        client.subscribe2(
+            MutableStateFlow(
+                GRPCApiClient.makeSubscribeRequest(
+                    listOf(topic)
+                )
+            )
+        ).collect {
             emit(decrypt(envelope = it))
         }
     }

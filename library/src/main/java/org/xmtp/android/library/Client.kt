@@ -148,12 +148,6 @@ class Client() {
 
         fun canMessage(peerAddress: String, options: ClientOptions? = null): Boolean {
             val clientOptions = options ?: ClientOptions()
-            val v2Client = runBlocking {
-                createV2Client(
-                    host = clientOptions.api.env.getUrl(),
-                    isSecure = clientOptions.api.isSecure
-                )
-            }
             val api = GRPCApiClient(
                 environment = clientOptions.api.env,
                 secure = clientOptions.api.isSecure,
@@ -189,12 +183,6 @@ class Client() {
     ): Client {
         val address = bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
         val clientOptions = options ?: ClientOptions()
-        val v2Client = runBlocking {
-            createV2Client(
-                host = clientOptions.api.env.getUrl(),
-                isSecure = clientOptions.api.isSecure
-            )
-        }
         val apiClient =
             GRPCApiClient(
                 environment = clientOptions.api.env,
@@ -227,12 +215,6 @@ class Client() {
         options: ClientOptions? = null,
     ): Client {
         val clientOptions = options ?: ClientOptions()
-        val v2Client = runBlocking {
-            createV2Client(
-                host = clientOptions.api.env.getUrl(),
-                isSecure = clientOptions.api.isSecure
-            )
-        }
         val apiClient =
             GRPCApiClient(
                 environment = clientOptions.api.env,
@@ -298,12 +280,6 @@ class Client() {
     ): Client {
         val address = v1Bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
         val newOptions = options ?: ClientOptions()
-        val v2Client = runBlocking {
-            createV2Client(
-                host = newOptions.api.env.getUrl(),
-                isSecure = newOptions.api.isSecure
-            )
-        }
         val apiClient =
             GRPCApiClient(
                 environment = newOptions.api.env,
