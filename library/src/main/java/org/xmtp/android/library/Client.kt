@@ -9,10 +9,12 @@ import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Keys.toChecksumAddress
+import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.XMTPLogger
@@ -497,7 +499,10 @@ class Client() {
         return apiClient.batchQuery(requests)
     }
 
-    suspend fun subscribe(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<Envelope> {
+    suspend fun subscribe(topics: List<String>): Flow<Envelope> {
+        return subscribe2(flowOf(makeSubscribeRequest(topics)))
+    }
+    suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<Envelope> {
         return apiClient.subscribe(request = request)
     }
 

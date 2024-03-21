@@ -2,7 +2,6 @@ package org.xmtp.android.library
 
 import android.util.Log
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.runBlocking
@@ -10,6 +9,7 @@ import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
+import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Message
@@ -22,7 +22,6 @@ import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
-import org.xmtp.android.library.messages.DecryptedMessage
 import java.util.Date
 
 data class ConversationV2(
@@ -139,13 +138,7 @@ data class ConversationV2(
     }
 
     fun streamMessages(): Flow<DecodedMessage> = flow {
-        client.subscribe(
-            MutableStateFlow(
-                GRPCApiClient.makeSubscribeRequest(
-                    listOf(topic)
-                )
-            )
-        ).mapNotNull { decodeEnvelopeOrNull(envelope = it) }.collect {
+        client.subscribe(listOf(topic)).mapNotNull { decodeEnvelopeOrNull(envelope = it) }.collect {
             emit(it)
         }
     }
@@ -276,25 +269,13 @@ data class ConversationV2(
         get() = topic.replace("/xmtp/0/m", "/xmtp/0/mE")
 
     fun streamEphemeral(): Flow<Envelope> = flow {
-        client.subscribe(
-            MutableStateFlow(
-                GRPCApiClient.makeSubscribeRequest(
-                    listOf(ephemeralTopic)
-                )
-            )
-        ).collect {
+        client.subscribe(listOf(ephemeralTopic)).collect {
             emit(it)
         }
     }
 
     fun streamDecryptedMessages(): Flow<DecryptedMessage> = flow {
-        client.subscribe(
-            MutableStateFlow(
-                GRPCApiClient.makeSubscribeRequest(
-                    listOf(topic)
-                )
-            )
-        ).collect {
+        client.subscribe(listOf(topic)).collect {
             emit(decrypt(envelope = it))
         }
     }
