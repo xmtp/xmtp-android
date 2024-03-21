@@ -7,6 +7,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
@@ -526,8 +527,15 @@ data class Conversations(
      */
     fun stream(): Flow<Conversation> = flow {
         val streamedConversationTopics: MutableSet<String> = mutableSetOf()
-        client.subscribeTopic(
-            listOf(Topic.userIntro(client.address), Topic.userInvite(client.address)),
+        client.subscribe2(
+            MutableStateFlow(
+                makeSubscribeRequest(
+                    listOf(
+                        Topic.userIntro(client.address).description,
+                        Topic.userInvite(client.address).description
+                    )
+                )
+            ),
         ).collect { envelope ->
             if (envelope.contentTopic == Topic.userIntro(client.address).description) {
                 val conversationV1 = fromIntro(envelope = envelope)
