@@ -157,7 +157,6 @@ class Client() {
             val api = GRPCApiClient(
                 environment = clientOptions.api.env,
                 secure = clientOptions.api.isSecure,
-                rustV2Client = v2Client
             )
             return runBlocking {
                 val topics = api.queryTopic(Topic.contact(peerAddress)).envelopesList
@@ -200,7 +199,6 @@ class Client() {
             GRPCApiClient(
                 environment = clientOptions.api.env,
                 secure = clientOptions.api.isSecure,
-                rustV2Client = v2Client
             )
         val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
             runBlocking {
@@ -239,7 +237,6 @@ class Client() {
             GRPCApiClient(
                 environment = clientOptions.api.env,
                 secure = clientOptions.api.isSecure,
-                rustV2Client = v2Client
             )
         return create(
             account = account,
@@ -311,7 +308,6 @@ class Client() {
             GRPCApiClient(
                 environment = newOptions.api.env,
                 secure = newOptions.api.isSecure,
-                rustV2Client = v2Client
             )
         val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
             runBlocking {
@@ -526,16 +522,8 @@ class Client() {
         return apiClient.batchQuery(requests)
     }
 
-    suspend fun subscribe(topics: List<String>): Flow<Envelope> {
-        return apiClient.subscribe(topics = topics)
-    }
-
     suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<Envelope> {
         return apiClient.subscribe2(request = request)
-    }
-
-    suspend fun subscribeTopic(topics: List<Topic>): Flow<Envelope> {
-        return subscribe(topics.map { it.description })
     }
 
     fun fetchConversation(topic: String?, includeGroups: Boolean = false): Conversation? {
