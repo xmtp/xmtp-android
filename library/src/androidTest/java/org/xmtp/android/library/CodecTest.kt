@@ -60,7 +60,8 @@ class CodecTest {
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress) }
+            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        }
         runBlocking {
             aliceConversation.send(
                 content = 3.14,
@@ -82,7 +83,8 @@ class CodecTest {
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress) }
+            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        }
         val textContent = TextCodec().encode(content = "hiya")
         val source = DecodedComposite(encodedContent = textContent)
         runBlocking {
@@ -103,7 +105,8 @@ class CodecTest {
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient!!
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress) }
+            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        }
         val textContent = TextCodec().encode(content = "sup")
         val numberContent = NumberCodec().encode(content = 3.14)
         val source = DecodedComposite(
@@ -131,9 +134,10 @@ class CodecTest {
         val codec = NumberCodec()
         Client.register(codec = codec)
         val fixtures = fixtures()
-        val aliceClient = fixtures.aliceClient!!
+        val aliceClient = fixtures.aliceClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress) }
+            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        }
         runBlocking {
             aliceConversation.send(
                 content = 3.14,
