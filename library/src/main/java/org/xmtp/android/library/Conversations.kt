@@ -526,7 +526,7 @@ data class Conversations(
      */
     fun stream(): Flow<Conversation> = flow {
         val streamedConversationTopics: MutableSet<String> = mutableSetOf()
-        client.subscribe2(
+        client.subscribe(
             MutableStateFlow(
                 makeSubscribeRequest(
                     listOf(
@@ -621,7 +621,7 @@ data class Conversations(
 
         while (true) {
             try {
-                client.subscribe2(request = subscribeFlow).collect { envelope ->
+                client.subscribe(request = subscribeFlow).collect { envelope ->
                     when {
                         conversationsByTopic.containsKey(envelope.contentTopic) -> {
                             val conversation = conversationsByTopic[envelope.contentTopic]
@@ -692,7 +692,7 @@ data class Conversations(
 
         while (true) {
             try {
-                client.subscribe2(request = subscribeFlow).collect { envelope ->
+                client.subscribe(request = subscribeFlow).collect { envelope ->
                     when {
                         conversationsByTopic.containsKey(envelope.contentTopic) -> {
                             val conversation = conversationsByTopic[envelope.contentTopic]

@@ -497,8 +497,8 @@ class Client() {
         return apiClient.batchQuery(requests)
     }
 
-    suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<Envelope> {
-        return apiClient.subscribe2(request = request)
+    suspend fun subscribe(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<Envelope> {
+        return apiClient.subscribe(request = request)
     }
 
     fun fetchConversation(topic: String?, includeGroups: Boolean = false): Conversation? {

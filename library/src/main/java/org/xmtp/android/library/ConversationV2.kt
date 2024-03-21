@@ -139,7 +139,7 @@ data class ConversationV2(
     }
 
     fun streamMessages(): Flow<DecodedMessage> = flow {
-        client.subscribe2(
+        client.subscribe(
             MutableStateFlow(
                 GRPCApiClient.makeSubscribeRequest(
                     listOf(topic)
@@ -276,7 +276,7 @@ data class ConversationV2(
         get() = topic.replace("/xmtp/0/m", "/xmtp/0/mE")
 
     fun streamEphemeral(): Flow<Envelope> = flow {
-        client.subscribe2(
+        client.subscribe(
             MutableStateFlow(
                 GRPCApiClient.makeSubscribeRequest(
                     listOf(ephemeralTopic)
@@ -288,7 +288,7 @@ data class ConversationV2(
     }
 
     fun streamDecryptedMessages(): Flow<DecryptedMessage> = flow {
-        client.subscribe2(
+        client.subscribe(
             MutableStateFlow(
                 GRPCApiClient.makeSubscribeRequest(
                     listOf(topic)
