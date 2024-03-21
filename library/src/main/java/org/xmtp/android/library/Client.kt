@@ -45,7 +45,6 @@ import uniffi.xmtpv3.FfiV2ApiClient
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.LegacyIdentitySource
 import uniffi.xmtpv3.createClient
-import uniffi.xmtpv3.createV2Client
 import uniffi.xmtpv3.getVersionInfo
 import java.io.File
 import java.nio.charset.StandardCharsets

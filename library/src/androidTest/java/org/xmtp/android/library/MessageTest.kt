@@ -9,7 +9,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.web3j.crypto.Hash
 import org.web3j.utils.Numeric
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.messages.InvitationV1
@@ -269,6 +268,7 @@ class MessageTest {
         assertEquals("hello from kotlin", messages[0].body)
         assertEquals(convo.topic, messages[0].topic)
     }
+
     @Test
     fun testGetsV2ID() {
         val envelopeMessageData =

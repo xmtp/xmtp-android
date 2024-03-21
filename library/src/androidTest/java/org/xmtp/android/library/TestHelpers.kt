@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.xmtp.android.library.codecs.Fetcher
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.Envelope
@@ -44,11 +44,13 @@ class FakeWallet : SigningKey {
     }
 
     override suspend fun sign(data: ByteArray): Signature {
-        return privateKeyBuilder.sign(data)
+        val signature = privateKeyBuilder.sign(data)
+        return signature
     }
 
     override suspend fun sign(message: String): Signature {
-        return privateKeyBuilder.sign(message)
+        val signature = privateKeyBuilder.sign(message)
+        return signature
     }
 
     override val address: String
@@ -66,13 +68,13 @@ class FakeApiClient : ApiClient {
     private var authToken: String? = null
     private val responses: MutableMap<String, List<Envelope>> = mutableMapOf()
     val published: MutableList<Envelope> = mutableListOf()
-    private var forbiddingQueries = false
+    var forbiddingQueries = false
     private var stream = FakeStreamHolder()
 
     fun assertNoPublish(callback: () -> Unit) {
         val oldCount = published.size
         callback()
-        Assert.assertEquals(oldCount, published.size)
+        assertEquals(oldCount, published.size)
     }
 
     fun assertNoQuery(callback: () -> Unit) {
@@ -104,14 +106,6 @@ class FakeApiClient : ApiClient {
         return query(topic = topic.description, pagination)
     }
 
-    override suspend fun batchQuery(requests: List<MessageApiOuterClass.QueryRequest>): MessageApiOuterClass.BatchQueryResponse {
-        val response = query(requests.first().getContentTopics(0))
-
-        return MessageApiOuterClass.BatchQueryResponse.newBuilder().also {
-            it.addResponses(response)
-        }.build()
-    }
-
     suspend fun send(envelope: Envelope) {
         stream.emit(envelope)
     }
@@ -121,6 +115,16 @@ class FakeApiClient : ApiClient {
         pagination: Pagination?,
     ): List<MessageApiOuterClass.Envelope> {
         return query(topic = topic, pagination = pagination).envelopesList
+    }
+
+    override suspend fun batchQuery(requests: List<MessageApiOuterClass.QueryRequest>): MessageApiOuterClass.BatchQueryResponse {
+        val responses = requests.map {
+            query(it.getContentTopics(0), Pagination(after = Date(it.startTimeNs)))
+        }
+
+        return MessageApiOuterClass.BatchQueryResponse.newBuilder().also {
+            it.addAllResponses(responses)
+        }.build()
     }
 
     override suspend fun query(
@@ -141,12 +145,14 @@ class FakeApiClient : ApiClient {
 
         val startAt = pagination?.before
         if (startAt != null) {
-            result = result.filter { it.timestampNs < startAt.time * 1_000_000 }
+            result = result.filter { it.timestampNs < startAt.time }
                 .sortedBy { it.timestampNs }.toMutableList()
         }
         val endAt = pagination?.after
         if (endAt != null) {
-            result = result.filter { it.timestampNs > endAt.time * 1_000_000 }
+            result = result.filter {
+                it.timestampNs > endAt.time
+            }
                 .sortedBy { it.timestampNs }.toMutableList()
         }
         val limit = pagination?.limit
@@ -169,7 +175,6 @@ class FakeApiClient : ApiClient {
                 MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> {
                     result = result.reversed().toMutableList()
                 }
-
                 else -> Unit
             }
         }
@@ -186,7 +191,6 @@ class FakeApiClient : ApiClient {
         published.addAll(envelopes)
         return PublishResponse.newBuilder().build()
     }
-
     override suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<MessageApiOuterClass.Envelope> {
         val env = stream.counts().first()
 
