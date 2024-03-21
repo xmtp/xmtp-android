@@ -4,11 +4,11 @@ import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
+import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Message
@@ -21,7 +21,6 @@ import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
-import org.xmtp.android.library.messages.DecryptedMessage
 import java.util.Date
 
 data class ConversationV2(
@@ -73,7 +72,7 @@ data class ConversationV2(
      * If [direction] is specified then that will control the sort order of te messages.
      * @see Conversation.messages
      */
-    fun messages(
+    suspend fun messages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
@@ -81,12 +80,11 @@ data class ConversationV2(
     ): List<DecodedMessage> {
         val pagination =
             Pagination(limit = limit, before = before, after = after, direction = direction)
-        val result = runBlocking {
+        val result =
             client.apiClient.envelopes(
                 topic = topic,
                 pagination = pagination,
             )
-        }
 
         return result.mapNotNull { envelope ->
             decodeEnvelopeOrNull(envelope)
@@ -106,7 +104,7 @@ data class ConversationV2(
      * If [limit] is specified then results are pulled in pages of that size.
      * If [direction] is specified then that will control the sort order of te messages.
      */
-    fun decryptedMessages(
+    suspend fun decryptedMessages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
@@ -114,7 +112,7 @@ data class ConversationV2(
     ): List<DecryptedMessage> {
         val pagination =
             Pagination(limit = limit, before = before, after = after, direction = direction)
-        val envelopes = runBlocking { client.apiClient.envelopes(topic, pagination) }
+        val envelopes = client.apiClient.envelopes(topic, pagination)
 
         return envelopes.map { envelope ->
             decrypt(envelope)
@@ -173,22 +171,22 @@ data class ConversationV2(
         }
     }
 
-    fun <T> send(content: T, options: SendOptions? = null): String {
+    suspend fun <T> send(content: T, options: SendOptions? = null): String {
         val preparedMessage = prepareMessage(content = content, options = options)
         return send(preparedMessage)
     }
 
-    fun send(text: String, options: SendOptions? = null, sentAt: Date? = null): String {
+    suspend fun send(text: String, options: SendOptions? = null, sentAt: Date? = null): String {
         val preparedMessage = prepareMessage(content = text, options = options)
         return send(preparedMessage)
     }
 
-    fun send(encodedContent: EncodedContent, options: SendOptions?): String {
+    suspend fun send(encodedContent: EncodedContent, options: SendOptions?): String {
         val preparedMessage = prepareMessage(encodedContent = encodedContent, options = options)
         return send(preparedMessage)
     }
 
-    fun send(prepared: PreparedMessage): String {
+    suspend fun send(prepared: PreparedMessage): String {
         client.publish(envelopes = prepared.envelopes)
         if (client.contacts.consentList.state(address = peerAddress) == ConsentState.UNKNOWN) {
             client.contacts.allow(addresses = listOf(peerAddress))
@@ -269,7 +267,7 @@ data class ConversationV2(
         get() = topic.replace("/xmtp/0/m", "/xmtp/0/mE")
 
     fun streamEphemeral(): Flow<Envelope> = flow {
-        client.subscribe(topics = listOf(ephemeralTopic)).collect {
+        client.subscribe(listOf(ephemeralTopic)).collect {
             emit(it)
         }
     }

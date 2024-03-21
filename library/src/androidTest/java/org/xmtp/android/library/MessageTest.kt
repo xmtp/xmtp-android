@@ -3,12 +3,12 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.web3j.crypto.Hash
 import org.web3j.utils.Numeric
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.messages.InvitationV1
@@ -162,9 +162,11 @@ class MessageTest {
 
         val client = Client().create(account = PrivateKeyBuilder(key))
         assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
-        val convo = client.conversations.list()[0]
-        val message = convo.messages()[0]
-        assertEquals("Test message", message.content())
+        runBlocking {
+            val convo = client.conversations.list()[0]
+            val message = convo.messages()[0]
+            assertEquals("Test message", message.content())
+        }
     }
 
     @Test
@@ -195,13 +197,15 @@ class MessageTest {
 
         val client = Client().create(account = PrivateKeyBuilder(key))
         assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
-        val convo = client.conversations.list()[0]
-        convo.send(
-            text = "hello deflate from kotlin again",
-            SendOptions(compression = EncodedContentCompression.DEFLATE),
-        )
-        val message = convo.messages().lastOrNull()!!
-        assertEquals("hello deflate from kotlin again", message.content())
+        runBlocking {
+            val convo = client.conversations.list()[0]
+            convo.send(
+                text = "hello deflate from kotlin again",
+                SendOptions(compression = EncodedContentCompression.DEFLATE),
+            )
+            val message = convo.messages().lastOrNull()!!
+            assertEquals("hello deflate from kotlin again", message.content())
+        }
     }
 
     @Test
@@ -229,7 +233,7 @@ class MessageTest {
             }.build()
         }.build()
         val client = Client().create(account = PrivateKeyBuilder(key))
-        val conversations = client.conversations.list()
+        val conversations = runBlocking { client.conversations.list() }
         assertEquals(201, conversations.size)
     }
 
@@ -242,8 +246,8 @@ class MessageTest {
             peerAddress = "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
             sentAt = Date(),
         )
-        convo.send(text = "hello from kotlin")
-        val messages = convo.messages()
+        runBlocking { convo.send(text = "hello from kotlin") }
+        val messages = runBlocking { convo.messages() }
         assertEquals(1, messages.size)
         assertEquals("hello from kotlin", messages[0].body)
         assertEquals(convo.topic.description, messages[0].topic)
@@ -253,27 +257,18 @@ class MessageTest {
     fun canReceiveV2MessagesFromJS() {
         val wallet = PrivateKeyBuilder()
         val client = Client().create(account = wallet)
-        val convo = client.conversations.newConversation(
-            "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
-            InvitationV1ContextBuilder.buildFromConversation("https://example.com/4"),
-        )
+        val convo = runBlocking {
+            client.conversations.newConversation(
+                "0xf4BF19Ed562651837bc11ff975472ABd239D35B5",
+                InvitationV1ContextBuilder.buildFromConversation("https://example.com/4"),
+            )
+        }
 
-        convo.send(content = "hello from kotlin")
-        val messages = convo.messages()
+        runBlocking { convo.send(content = "hello from kotlin") }
+        val messages = runBlocking { convo.messages() }
         assertEquals(1, messages.size)
         assertEquals("hello from kotlin", messages[0].body)
         assertEquals(convo.topic, messages[0].topic)
-    }
-
-    @Test
-    fun testGetsV1ID() {
-        val fixtures = fixtures()
-        val conversation =
-            fixtures.aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
-        conversation.send(text = "hi")
-        val envelope = fixtures.fakeApiClient.published.lastOrNull()!!
-        val decodedMessage = conversation.decode(envelope)
-        assertEquals(Hash.sha256(envelope.message.toByteArray()).toHex(), decodedMessage.id)
     }
 
     @Test

@@ -3,7 +3,6 @@ package org.xmtp.android.library
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
@@ -17,7 +16,6 @@ import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.GroupPermissions
-import java.lang.Exception
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -32,22 +30,20 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     private val metadata: FfiGroupMetadata
         get() = libXMTPGroup.groupMetadata()
 
-    fun send(text: String): String {
+    suspend fun send(text: String): String {
         return send(prepareMessage(content = text, options = null))
     }
 
-    fun <T> send(content: T, options: SendOptions? = null): String {
+    suspend fun <T> send(content: T, options: SendOptions? = null): String {
         val preparedMessage = prepareMessage(content = content, options = options)
         return send(preparedMessage)
     }
 
-    fun send(encodedContent: EncodedContent): String {
+    suspend fun send(encodedContent: EncodedContent): String {
         if (client.contacts.consentList.groupState(groupId = id) == ConsentState.UNKNOWN) {
             client.contacts.allowGroup(groupIds = listOf(id))
         }
-        runBlocking {
-            libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
-        }
+        libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
         return id.toHex()
     }
 
@@ -87,20 +83,18 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         after: Date? = null,
         direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
     ): List<DecodedMessage> {
-        return runBlocking {
-            val messages = libXMTPGroup.findMessages(
-                opts = FfiListMessagesOptions(
-                    sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                    sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                    limit = limit?.toLong()
-                )
-            ).map {
-                Message(client, it).decode()
-            }
-            when (direction) {
-                MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
-                else -> messages.reversed()
-            }
+        val messages = libXMTPGroup.findMessages(
+            opts = FfiListMessagesOptions(
+                sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                limit = limit?.toLong()
+            )
+        ).map {
+            Message(client, it).decode()
+        }
+        return when (direction) {
+            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
+            else -> messages.reversed()
         }
     }
 
@@ -110,20 +104,18 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         after: Date? = null,
         direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
     ): List<DecryptedMessage> {
-        return runBlocking {
-            val messages = libXMTPGroup.findMessages(
-                opts = FfiListMessagesOptions(
-                    sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                    sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                    limit = limit?.toLong()
-                )
-            ).map {
-                Message(client, it).decrypt()
-            }
-            when (direction) {
-                MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
-                else -> messages.reversed()
-            }
+        val messages = libXMTPGroup.findMessages(
+            opts = FfiListMessagesOptions(
+                sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                limit = limit?.toLong()
+            )
+        ).map {
+            Message(client, it).decrypt()
+        }
+        return when (direction) {
+            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
+            else -> messages.reversed()
         }
     }
 
@@ -143,26 +135,24 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         return metadata.creatorAccountAddress()
     }
 
-    fun addMembers(addresses: List<String>) {
+    suspend fun addMembers(addresses: List<String>) {
         try {
-            runBlocking { libXMTPGroup.addMembers(addresses) }
+            libXMTPGroup.addMembers(addresses)
         } catch (e: Exception) {
             throw XMTPException("User does not have permissions", e)
         }
     }
 
-    fun removeMembers(addresses: List<String>) {
+    suspend fun removeMembers(addresses: List<String>) {
         try {
-            runBlocking { libXMTPGroup.removeMembers(addresses) }
+            libXMTPGroup.removeMembers(addresses)
         } catch (e: Exception) {
             throw XMTPException("User does not have permissions", e)
         }
     }
 
     fun memberAddresses(): List<String> {
-        return runBlocking {
-            libXMTPGroup.listMembers().map { it.accountAddress }
-        }
+        return libXMTPGroup.listMembers().map { it.accountAddress }
     }
 
     fun peerAddresses(): List<String> {

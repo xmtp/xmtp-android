@@ -68,15 +68,18 @@ class RemoteAttachmentTest {
 
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
-        val aliceConversation =
+        val aliceConversation = runBlocking {
             aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        }
 
-        aliceConversation.send(
-            content = remoteAttachment,
-            options = SendOptions(contentType = ContentTypeRemoteAttachment),
-        )
+        runBlocking {
+            aliceConversation.send(
+                content = remoteAttachment,
+                options = SendOptions(contentType = ContentTypeRemoteAttachment),
+            )
+        }
 
-        val messages = aliceConversation.messages()
+        val messages = runBlocking { aliceConversation.messages() }
         Assert.assertEquals(messages.size, 1)
 
         if (messages.size == 1) {
@@ -147,15 +150,18 @@ class RemoteAttachmentTest {
 
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
-        val aliceConversation =
+        val aliceConversation = runBlocking {
             aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        }
 
-        aliceConversation.send(
-            content = remoteAttachment,
-            options = SendOptions(contentType = ContentTypeRemoteAttachment),
-        )
+        runBlocking {
+            aliceConversation.send(
+                content = remoteAttachment,
+                options = SendOptions(contentType = ContentTypeRemoteAttachment),
+            )
+        }
 
-        val messages = aliceConversation.messages()
+        val messages = runBlocking { aliceConversation.messages() }
         Assert.assertEquals(messages.size, 1)
 
         // Tamper with the payload

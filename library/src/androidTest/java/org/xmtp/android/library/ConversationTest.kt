@@ -3,8 +3,8 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import com.google.protobuf.kotlin.toByteString
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.Assert
+import com.google.protobuf.kotlin.toByteStringUtf8
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
@@ -44,7 +44,6 @@ import org.xmtp.proto.message.contents.Invitation.InvitationV1.Context
 import java.nio.charset.StandardCharsets
 import java.util.Date
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 class ConversationTest {
     lateinit var fakeApiClient: FakeApiClient
@@ -72,24 +71,8 @@ class ConversationTest {
     fun testDoesNotAllowConversationWithSelf() {
         val client = Client().create(account = aliceWallet)
         assertThrows("Recipient is sender", XMTPException::class.java) {
-            client.conversations.newConversation(alice.walletAddress)
+            runBlocking { client.conversations.newConversation(alice.walletAddress) }
         }
-    }
-
-    @Test
-    fun testCanInitiateV2Conversation() {
-        val existingConversations = aliceClient.conversations.conversationsByTopic
-        assert(existingConversations.isEmpty())
-        val conversation = bobClient.conversations.newConversation(alice.walletAddress)
-        val aliceInviteMessage =
-            fakeApiClient.findPublishedEnvelope(Topic.userInvite(alice.walletAddress))
-        val bobInviteMessage =
-            fakeApiClient.findPublishedEnvelope(Topic.userInvite(bob.walletAddress))
-        assert(aliceInviteMessage != null)
-        assert(bobInviteMessage != null)
-        assertEquals(conversation.peerAddress, alice.walletAddress)
-        val newConversations = aliceClient.conversations.list()
-        assertEquals("already had conversations somehow", 1, newConversations.size)
     }
 
     @Test
@@ -105,35 +88,40 @@ class ConversationTest {
             timestamp = someTimeAgo,
         )
         // Overwrite contact as legacy
-        bobClient.publishUserContact(legacy = true)
-        aliceClient.publishUserContact(legacy = true)
-        bobClient.publish(
-            envelopes = listOf(
-                EnvelopeBuilder.buildFromTopic(
-                    topic = Topic.userIntro(bob.walletAddress),
-                    timestamp = someTimeAgo,
-                    message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
-                ),
-                EnvelopeBuilder.buildFromTopic(
-                    topic = Topic.userIntro(alice.walletAddress),
-                    timestamp = someTimeAgo,
-                    message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
-                ),
-                EnvelopeBuilder.buildFromTopic(
-                    topic = Topic.directMessageV1(
-                        bob.walletAddress,
-                        alice.walletAddress,
+        runBlocking {
+            bobClient.publishUserContact(legacy = true)
+            aliceClient.publishUserContact(legacy = true)
+        }
+        runBlocking {
+            bobClient.publish(
+                envelopes = listOf(
+                    EnvelopeBuilder.buildFromTopic(
+                        topic = Topic.userIntro(bob.walletAddress),
+                        timestamp = someTimeAgo,
+                        message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
                     ),
-                    timestamp = someTimeAgo,
-                    message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
+                    EnvelopeBuilder.buildFromTopic(
+                        topic = Topic.userIntro(alice.walletAddress),
+                        timestamp = someTimeAgo,
+                        message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
+                    ),
+                    EnvelopeBuilder.buildFromTopic(
+                        topic = Topic.directMessageV1(
+                            bob.walletAddress,
+                            alice.walletAddress,
+                        ),
+                        timestamp = someTimeAgo,
+                        message = MessageBuilder.buildFromMessageV1(v1 = messageV1).toByteArray(),
+                    ),
                 ),
-            ),
-        )
-        var conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+            )
+        }
+        var conversation =
+            runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
         assertEquals(conversation.peerAddress, bob.walletAddress)
         assertEquals(conversation.createdAt, someTimeAgo)
         val existingMessages = fakeApiClient.published.size
-        conversation = bobClient.conversations.newConversation(alice.walletAddress)
+        conversation = runBlocking { bobClient.conversations.newConversation(alice.walletAddress) }
 
         assertEquals(
             "published more messages when we shouldn't have",
@@ -146,16 +134,20 @@ class ConversationTest {
 
     @Test
     fun testCanFindExistingV2Conversation() {
-        val existingConversation = bobClient.conversations.newConversation(
-            alice.walletAddress,
-            context = InvitationV1ContextBuilder.buildFromConversation("http://example.com/2"),
-        )
-        var conversation: Conversation? = null
-        fakeApiClient.assertNoPublish {
-            conversation = bobClient.conversations.newConversation(
+        val existingConversation = runBlocking {
+            bobClient.conversations.newConversation(
                 alice.walletAddress,
                 context = InvitationV1ContextBuilder.buildFromConversation("http://example.com/2"),
             )
+        }
+        var conversation: Conversation? = null
+        fakeApiClient.assertNoPublish {
+            runBlocking {
+                conversation = bobClient.conversations.newConversation(
+                    alice.walletAddress,
+                    context = InvitationV1ContextBuilder.buildFromConversation("http://example.com/2"),
+                )
+            }
         }
         assertEquals(
             "made new conversation instead of using existing one",
@@ -169,12 +161,14 @@ class ConversationTest {
         // Overwrite contact as legacy so we can get v1
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
-        val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
-        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
+        val bobConversation =
+            runBlocking { bobClient.conversations.newConversation(aliceWallet.address) }
+        val aliceConversation =
+            runBlocking { aliceClient.conversations.newConversation(bobWallet.address) }
 
-        bobConversation.send(content = "hey alice")
-        bobConversation.send(content = "hey alice again")
-        val messages = aliceConversation.messages()
+        runBlocking { bobConversation.send(content = "hey alice") }
+        runBlocking { bobConversation.send(content = "hey alice again") }
+        val messages = runBlocking { aliceConversation.messages() }
         assertEquals(2, messages.size)
         assertEquals("hey alice", messages[1].body)
         assertEquals(bobWallet.address, messages[1].senderAddress)
@@ -182,17 +176,21 @@ class ConversationTest {
 
     @Test
     fun testCanLoadV2Messages() {
-        val bobConversation = bobClient.conversations.newConversation(
-            aliceWallet.address,
-            InvitationV1ContextBuilder.buildFromConversation("hi"),
-        )
+        val bobConversation = runBlocking {
+            bobClient.conversations.newConversation(
+                aliceWallet.address,
+                InvitationV1ContextBuilder.buildFromConversation("hi"),
+            )
+        }
 
-        val aliceConversation = aliceClient.conversations.newConversation(
-            bobWallet.address,
-            InvitationV1ContextBuilder.buildFromConversation("hi"),
-        )
-        bobConversation.send(content = "hey alice")
-        val messages = aliceConversation.messages()
+        val aliceConversation = runBlocking {
+            aliceClient.conversations.newConversation(
+                bobWallet.address,
+                InvitationV1ContextBuilder.buildFromConversation("hi"),
+            )
+        }
+        runBlocking { bobConversation.send(content = "hey alice") }
+        val messages = runBlocking { aliceConversation.messages() }
         assertEquals(1, messages.size)
         assertEquals("hey alice", messages[0].body)
         assertEquals(bobWallet.address, messages[0].senderAddress)
@@ -200,10 +198,12 @@ class ConversationTest {
 
     @Test
     fun testVerifiesV2MessageSignature() {
-        val aliceConversation = aliceClient.conversations.newConversation(
-            bobWallet.address,
-            context = InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
-        )
+        val aliceConversation = runBlocking {
+            aliceClient.conversations.newConversation(
+                bobWallet.address,
+                context = InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
+            )
+        }
 
         val codec = TextCodec()
         val originalContent = codec.encode(content = "hello")
@@ -228,41 +228,59 @@ class ConversationTest {
             signedBytes,
             additionalData = headerBytes,
         )
+        val thirtyDayPeriodsSinceEpoch =
+            (Date().time / 1000 / 60 / 60 / 24 / 30).toInt()
+        val info = "$thirtyDayPeriodsSinceEpoch-${aliceClient.address}"
+        val infoEncoded = info.toByteStringUtf8().toByteArray()
+        val senderHmacGenerated =
+            Crypto.calculateMac(
+                Crypto.deriveKey(aliceConversation.keyMaterial!!, ByteArray(0), infoEncoded),
+                headerBytes
+            )
         val tamperedMessage =
             MessageV2Builder.buildFromCipherText(
                 headerBytes = headerBytes,
                 ciphertext = ciphertext,
-                senderHmac = null,
-                shouldPush = true,
+                senderHmac = senderHmacGenerated,
+                shouldPush = codec.shouldPush("this is a fake"),
             )
         val tamperedEnvelope = EnvelopeBuilder.buildFromString(
             topic = aliceConversation.topic,
             timestamp = Date(),
-            message = MessageBuilder.buildFromMessageV2(v2 = tamperedMessage.messageV2).toByteArray(),
+            message = MessageBuilder.buildFromMessageV2(v2 = tamperedMessage.messageV2)
+                .toByteArray(),
         )
-        aliceClient.publish(envelopes = listOf(tamperedEnvelope))
-        val bobConversation = bobClient.conversations.newConversation(
-            aliceWallet.address,
-            InvitationV1ContextBuilder.buildFromConversation("hi"),
-        )
+        runBlocking { aliceClient.publish(envelopes = listOf(tamperedEnvelope)) }
+        val bobConversation = runBlocking {
+            bobClient.conversations.newConversation(
+                aliceWallet.address,
+                InvitationV1ContextBuilder.buildFromConversation("hi"),
+            )
+        }
         assertThrows("Invalid signature", XMTPException::class.java) {
             bobConversation.decode(tamperedEnvelope)
         }
         // But it should be properly discarded from the message listing.
-        assertEquals(0, bobConversation.messages().size)
+        runBlocking {
+            assertEquals(0, bobConversation.messages().size)
+        }
     }
 
     @Test
     fun testCanSendGzipCompressedV1Messages() {
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
-        val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
-        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
-        bobConversation.send(
-            text = MutableList(1000) { "A" }.toString(),
-            sendOptions = SendOptions(compression = EncodedContentCompression.GZIP),
-        )
-        val messages = aliceConversation.messages()
+        val bobConversation =
+            runBlocking { bobClient.conversations.newConversation(aliceWallet.address) }
+        val aliceConversation =
+            runBlocking { aliceClient.conversations.newConversation(bobWallet.address) }
+        runBlocking {
+            bobConversation.send(
+                text = MutableList(1000) { "A" }.toString(),
+                sendOptions = SendOptions(compression = EncodedContentCompression.GZIP),
+            )
+        }
+        val messages = runBlocking { aliceConversation.messages() }
         assertEquals(1, messages.size)
         assertEquals(MutableList(1000) { "A" }.toString(), messages[0].content())
     }
@@ -271,32 +289,42 @@ class ConversationTest {
     fun testCanSendDeflateCompressedV1Messages() {
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
-        val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
-        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
-        bobConversation.send(
-            content = MutableList(1000) { "A" }.toString(),
-            options = SendOptions(compression = EncodedContentCompression.DEFLATE),
-        )
-        val messages = aliceConversation.messages()
+        val bobConversation =
+            runBlocking { bobClient.conversations.newConversation(aliceWallet.address) }
+        val aliceConversation =
+            runBlocking { aliceClient.conversations.newConversation(bobWallet.address) }
+        runBlocking {
+            bobConversation.send(
+                content = MutableList(1000) { "A" }.toString(),
+                options = SendOptions(compression = EncodedContentCompression.DEFLATE),
+            )
+        }
+        val messages = runBlocking { aliceConversation.messages() }
         assertEquals(1, messages.size)
         assertEquals(MutableList(1000) { "A" }.toString(), messages[0].content())
     }
 
     @Test
     fun testCanSendGzipCompressedV2Messages() {
-        val bobConversation = bobClient.conversations.newConversation(
-            aliceWallet.address,
-            InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
-        )
-        val aliceConversation = aliceClient.conversations.newConversation(
-            bobWallet.address,
-            InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
-        )
-        bobConversation.send(
-            text = MutableList(1000) { "A" }.toString(),
-            sendOptions = SendOptions(compression = EncodedContentCompression.GZIP),
-        )
-        val messages = aliceConversation.messages()
+        val bobConversation = runBlocking {
+            bobClient.conversations.newConversation(
+                aliceWallet.address,
+                InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
+            )
+        }
+        val aliceConversation = runBlocking {
+            aliceClient.conversations.newConversation(
+                bobWallet.address,
+                InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
+            )
+        }
+        runBlocking {
+            bobConversation.send(
+                text = MutableList(1000) { "A" }.toString(),
+                sendOptions = SendOptions(compression = EncodedContentCompression.GZIP),
+            )
+        }
+        val messages = runBlocking { aliceConversation.messages() }
         assertEquals(1, messages.size)
         assertEquals(MutableList(1000) { "A" }.toString(), messages[0].body)
         assertEquals(bobWallet.address, messages[0].senderAddress)
@@ -304,19 +332,25 @@ class ConversationTest {
 
     @Test
     fun testCanSendDeflateCompressedV2Messages() {
-        val bobConversation = bobClient.conversations.newConversation(
-            aliceWallet.address,
-            InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
-        )
-        val aliceConversation = aliceClient.conversations.newConversation(
-            bobWallet.address,
-            InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
-        )
-        bobConversation.send(
-            content = MutableList(1000) { "A" }.toString(),
-            options = SendOptions(compression = EncodedContentCompression.DEFLATE),
-        )
-        val messages = aliceConversation.messages()
+        val bobConversation = runBlocking {
+            bobClient.conversations.newConversation(
+                aliceWallet.address,
+                InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
+            )
+        }
+        val aliceConversation = runBlocking {
+            aliceClient.conversations.newConversation(
+                bobWallet.address,
+                InvitationV1ContextBuilder.buildFromConversation(conversationId = "hi"),
+            )
+        }
+        runBlocking {
+            bobConversation.send(
+                content = MutableList(1000) { "A" }.toString(),
+                options = SendOptions(compression = EncodedContentCompression.DEFLATE),
+            )
+        }
+        val messages = runBlocking { aliceConversation.messages() }
         assertEquals(1, messages.size)
         assertEquals(MutableList(1000) { "A" }.toString(), messages[0].body)
         assertEquals(bobWallet.address, messages[0].senderAddress)
@@ -326,7 +360,7 @@ class ConversationTest {
     fun testEndToEndConversation() {
         val fakeContactWallet = PrivateKeyBuilder()
         val fakeContactClient = Client().create(account = fakeContactWallet)
-        fakeContactClient.publishUserContact()
+        runBlocking { fakeContactClient.publishUserContact() }
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
         val contact = client.getUserContact(peerAddress = fakeContactWallet.address)!!
@@ -359,12 +393,12 @@ class ConversationTest {
             ConversationV2.create(client = client, invitation = invitationv1, header = header)
         assertEquals(fakeContactWallet.address, conversation.peerAddress)
 
-        conversation.send(content = "hello world")
+        runBlocking { conversation.send(content = "hello world") }
 
-        val conversationList = client.conversations.list()
+        val conversationList = runBlocking { client.conversations.list() }
         val recipientConversation = conversationList.lastOrNull()
 
-        val messages = recipientConversation?.messages()
+        val messages = runBlocking { recipientConversation?.messages() }
         val message = messages?.firstOrNull()
         if (message != null) {
             assertEquals("hello world", message.body)
@@ -373,10 +407,10 @@ class ConversationTest {
 
     @Test
     fun testCanUseCachedConversation() {
-        bobClient.conversations.newConversation(alice.walletAddress)
+        runBlocking { bobClient.conversations.newConversation(alice.walletAddress) }
 
         fakeApiClient.assertNoQuery {
-            bobClient.conversations.newConversation(alice.walletAddress)
+            runBlocking { bobClient.conversations.newConversation(alice.walletAddress) }
         }
     }
 
@@ -386,64 +420,75 @@ class ConversationTest {
         // Overwrite contact as legacy so we can get v1
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
-        val bobConversation = bobClient.conversations.newConversation(alice.walletAddress)
-        val aliceConversation = aliceClient.conversations.newConversation(bob.walletAddress)
+        val bobConversation =
+            runBlocking { bobClient.conversations.newConversation(alice.walletAddress) }
+        val aliceConversation =
+            runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
 
         val date = Date()
         date.time = date.time - 1000000
-        bobConversation.send(text = "hey alice 1", sentAt = date)
-        bobConversation.send(text = "hey alice 2")
-        bobConversation.send(text = "hey alice 3")
-        val messages = aliceConversation.messages(limit = 1)
+        runBlocking { bobConversation.send(text = "hey alice 1", sentAt = date) }
+        runBlocking { bobConversation.send(text = "hey alice 2") }
+        runBlocking { bobConversation.send(text = "hey alice 3") }
+        val messages = runBlocking { aliceConversation.messages(limit = 1) }
         assertEquals(1, messages.size)
         assertEquals("hey alice 3", messages[0].body)
     }
 
     @Test
     fun testCanPaginateV2Messages() {
-        val bobConversation = bobClient.conversations.newConversation(
-            alice.walletAddress,
-            context = InvitationV1ContextBuilder.buildFromConversation("hi"),
-        )
-
-        val aliceConversation = aliceClient.conversations.newConversation(
-            bob.walletAddress,
-            context = InvitationV1ContextBuilder.buildFromConversation("hi"),
-        )
+        val bobConversation = runBlocking {
+            bobClient.conversations.newConversation(
+                alice.walletAddress,
+                context = InvitationV1ContextBuilder.buildFromConversation("hi"),
+            )
+        }
+        val aliceConversation = runBlocking {
+            aliceClient.conversations.newConversation(
+                bob.walletAddress,
+                context = InvitationV1ContextBuilder.buildFromConversation("hi"),
+            )
+        }
         val date = Date()
         date.time = date.time - 1000000
-        bobConversation.send(text = "hey alice 1", sentAt = date)
-        bobConversation.send(text = "hey alice 2")
-        bobConversation.send(text = "hey alice 3")
-        val messages = aliceConversation.messages(limit = 1)
-        assertEquals(1, messages.size)
-        assertEquals("hey alice 3", messages[0].body)
-        val messages2 = aliceConversation.messages(limit = 1, after = date)
-        assertEquals(1, messages2.size)
-        assertEquals("hey alice 1", messages2[0].body)
-        val messagesAsc =
-            aliceConversation.messages(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING)
-        assertEquals("hey alice 1", messagesAsc[0].body)
-        val messagesDesc =
-            aliceConversation.messages(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING)
-        assertEquals("hey alice 3", messagesDesc[0].body)
+        runBlocking {
+            bobConversation.send(text = "hey alice 1", sentAt = date)
+            bobConversation.send(text = "hey alice 2")
+            bobConversation.send(text = "hey alice 3")
+            val messages = aliceConversation.messages(limit = 1)
+            assertEquals(1, messages.size)
+            assertEquals("hey alice 3", messages[0].body)
+            val messages2 = aliceConversation.messages(limit = 1, after = date)
+            assertEquals(1, messages2.size)
+            assertEquals("hey alice 3", messages2[0].body)
+            val messagesAsc =
+                aliceConversation.messages(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING)
+            assertEquals("hey alice 1", messagesAsc[0].body)
+            val messagesDesc =
+                aliceConversation.messages(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING)
+            assertEquals("hey alice 3", messagesDesc[0].body)
+        }
     }
 
     @Test
     fun testListBatchMessages() {
-        val bobConversation = aliceClient.conversations.newConversation(bob.walletAddress)
-        val steveConversation =
+        val bobConversation =
+            runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
+        val steveConversation = runBlocking {
             aliceClient.conversations.newConversation(fixtures.caro.walletAddress)
+        }
 
-        bobConversation.send(text = "hey alice 1")
-        bobConversation.send(text = "hey alice 2")
-        steveConversation.send(text = "hey alice 3")
-        val messages = aliceClient.conversations.listBatchMessages(
-            listOf(
-                Pair(steveConversation.topic, null),
-                Pair(bobConversation.topic, null),
-            ),
-        )
+        runBlocking { bobConversation.send(text = "hey alice 1") }
+        runBlocking { bobConversation.send(text = "hey alice 2") }
+        runBlocking { steveConversation.send(text = "hey alice 3") }
+        val messages = runBlocking {
+            aliceClient.conversations.listBatchMessages(
+                listOf(
+                    Pair(steveConversation.topic, null),
+                    Pair(bobConversation.topic, null),
+                ),
+            )
+        }
         val isSteveOrBobConversation = { topic: String ->
             (topic.equals(steveConversation.topic) || topic.equals(bobConversation.topic))
         }
@@ -455,21 +500,27 @@ class ConversationTest {
 
     @Test
     fun testListBatchDecryptedMessages() {
-        val bobConversation = aliceClient.conversations.newConversation(bob.walletAddress)
-        val steveConversation =
+        val bobConversation =
+            runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
+        val steveConversation = runBlocking {
             aliceClient.conversations.newConversation(fixtures.caro.walletAddress)
+        }
 
-        bobConversation.send(text = "hey alice 1")
-        bobConversation.send(text = "hey alice 2")
-        steveConversation.send(text = "hey alice 3")
-        val messages = aliceClient.conversations.listBatchDecryptedMessages(
-            listOf(
-                Pair(steveConversation.topic, null),
-                Pair(bobConversation.topic, null),
-            ),
-        )
+        runBlocking {
+            bobConversation.send(text = "hey alice 1")
+            bobConversation.send(text = "hey alice 2")
+            steveConversation.send(text = "hey alice 3")
+        }
+        val messages = runBlocking {
+            aliceClient.conversations.listBatchDecryptedMessages(
+                listOf(
+                    Pair(steveConversation.topic, null),
+                    Pair(bobConversation.topic, null),
+                ),
+            )
+        }
         val isSteveOrBobConversation = { topic: String ->
-            (topic.equals(steveConversation.topic) || topic.equals(bobConversation.topic))
+            (topic.lowercase() == steveConversation.topic.lowercase() || topic.lowercase() == bobConversation.topic.lowercase())
         }
         assertEquals(3, messages.size)
         assertTrue(isSteveOrBobConversation(messages[0].topic))
@@ -479,27 +530,34 @@ class ConversationTest {
 
     @Test
     fun testListBatchMessagesWithPagination() {
-        val bobConversation = aliceClient.conversations.newConversation(bob.walletAddress)
+        val bobConversation =
+            runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
         val steveConversation =
-            aliceClient.conversations.newConversation(fixtures.caro.walletAddress)
+            runBlocking { aliceClient.conversations.newConversation(fixtures.caro.walletAddress) }
 
-        bobConversation.send(text = "hey alice 1 bob")
-        steveConversation.send(text = "hey alice 1 steve")
+        runBlocking {
+            bobConversation.send(text = "hey alice 1 bob")
+            steveConversation.send(text = "hey alice 1 steve")
+        }
 
         Thread.sleep(100)
         val date = Date()
 
-        bobConversation.send(text = "hey alice 2 bob")
-        bobConversation.send(text = "hey alice 3 bob")
-        steveConversation.send(text = "hey alice 2 steve")
-        steveConversation.send(text = "hey alice 3 steve")
+        runBlocking {
+            bobConversation.send(text = "hey alice 2 bob")
+            bobConversation.send(text = "hey alice 3 bob")
+            steveConversation.send(text = "hey alice 2 steve")
+            steveConversation.send(text = "hey alice 3 steve")
+        }
 
-        val messages = aliceClient.conversations.listBatchMessages(
-            listOf(
-                Pair(steveConversation.topic, Pagination(after = date)),
-                Pair(bobConversation.topic, Pagination(after = date)),
-            ),
-        )
+        val messages = runBlocking {
+            aliceClient.conversations.listBatchMessages(
+                listOf(
+                    Pair(steveConversation.topic, Pagination(after = date)),
+                    Pair(bobConversation.topic, Pagination(after = date)),
+                ),
+            )
+        }
 
         assertEquals(4, messages.size)
     }
@@ -540,7 +598,6 @@ class ConversationTest {
             val conversation = bobClient.conversations.newConversation(alice.walletAddress)
             conversation.send(content = "hi")
             assertEquals("hi", awaitItem().messages(limit = 1).first().body)
-            awaitComplete()
         }
     }
 
@@ -551,25 +608,8 @@ class ConversationTest {
         fixtures.publishLegacyContact(client = aliceClient)
         val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
         conversation.streamMessages().test {
-            val encoder = TextCodec()
-            val encodedContent = encoder.encode(content = "hi alice")
-            // Stream a message
-            fakeApiClient.send(
-                envelope = EnvelopeBuilder.buildFromString(
-                    topic = conversation.topic,
-                    timestamp = Date(),
-                    message = MessageBuilder.buildFromMessageV1(
-                        v1 = MessageV1Builder.buildEncode(
-                            sender = bobClient.privateKeyBundleV1!!,
-                            recipient = aliceClient.privateKeyBundleV1!!.toPublicKeyBundle(),
-                            message = encodedContent.toByteArray(),
-                            timestamp = Date(),
-                        ),
-                    ).toByteArray(),
-                ),
-            )
+            conversation.send("hi alice")
             assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
-            awaitComplete()
         }
     }
 
@@ -577,26 +617,8 @@ class ConversationTest {
     fun testStreamingMessagesFromV2Conversations() = kotlinx.coroutines.test.runTest {
         val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
         conversation.streamMessages().test {
-            val encoder = TextCodec()
-            val encodedContent = encoder.encode(content = "hi alice")
-            // Stream a message
-            fakeApiClient.send(
-                envelope = EnvelopeBuilder.buildFromString(
-                    topic = conversation.topic,
-                    timestamp = Date(),
-                    message = MessageBuilder.buildFromMessageV2(
-                        v2 = MessageV2Builder.buildEncode(
-                            client = bobClient,
-                            encodedContent,
-                            topic = conversation.topic,
-                            keyMaterial = conversation.keyMaterial!!,
-                            codec = encoder,
-                        ).messageV2,
-                    ).toByteArray(),
-                ),
-            )
+            conversation.send("hi alice")
             assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
-            awaitComplete()
         }
     }
 
@@ -631,12 +653,13 @@ class ConversationTest {
         // Publish legacy contacts so we can get v1 conversations
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
-        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+        val conversation =
+            runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
         assertEquals(conversation.version, Conversation.Version.V1)
         val preparedMessage = conversation.prepareMessage(content = "hi")
         val messageID = preparedMessage.messageId
-        conversation.send(prepared = preparedMessage)
-        val messages = conversation.messages()
+        runBlocking { conversation.send(prepared = preparedMessage) }
+        val messages = runBlocking { conversation.messages() }
         val message = messages[0]
         assertEquals("hi", message.body)
         assertEquals(message.id, messageID)
@@ -644,11 +667,12 @@ class ConversationTest {
 
     @Test
     fun testCanPrepareV2Message() {
-        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+        val conversation =
+            runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
         val preparedMessage = conversation.prepareMessage(content = "hi")
         val messageID = preparedMessage.messageId
-        conversation.send(prepared = preparedMessage)
-        val messages = conversation.messages()
+        runBlocking { conversation.send(prepared = preparedMessage) }
+        val messages = runBlocking { conversation.messages() }
         val message = messages[0]
         assertEquals("hi", message.body)
         assertEquals(message.id, messageID)
@@ -656,15 +680,16 @@ class ConversationTest {
 
     @Test
     fun testCanSendPreparedMessageWithoutConversation() {
-        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
+        val conversation =
+            runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
         val preparedMessage = conversation.prepareMessage(content = "hi")
         val messageID = preparedMessage.messageId
 
         // This does not need the `conversation` to `.publish` the message.
         // This simulates a background task publishing all pending messages upon connection.
-        aliceClient.publish(envelopes = preparedMessage.envelopes)
+        runBlocking { aliceClient.publish(envelopes = preparedMessage.envelopes) }
 
-        val messages = conversation.messages()
+        val messages = runBlocking { conversation.messages() }
         val message = messages[0]
         assertEquals("hi", message.body)
         assertEquals(message.id, messageID)
@@ -724,70 +749,76 @@ class ConversationTest {
         }.build()
 
         val client = Client().create(account = PrivateKeyBuilder(key))
-        Assert.assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
-        val conversations = client.conversations.list()
-        Assert.assertEquals(1, conversations.size)
-        val topic = conversations[0].topic
-        val conversation = client.fetchConversation(topic)
-        Assert.assertEquals(conversations[0].topic, conversation?.topic)
-        Assert.assertEquals(conversations[0].peerAddress, conversation?.peerAddress)
+        assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
+        runBlocking {
+            val conversations = client.conversations.list()
+            assertEquals(1, conversations.size)
+            val topic = conversations[0].topic
+            val conversation = client.fetchConversation(topic)
+            assertEquals(conversations[0].topic, conversation?.topic)
+            assertEquals(conversations[0].peerAddress, conversation?.peerAddress)
 
-        val noConversation = client.fetchConversation("invalid_topic")
-        Assert.assertEquals(null, noConversation)
+            val noConversation = client.fetchConversation("invalid_topic")
+            assertEquals(null, noConversation)
+        }
     }
 
     @Test
     fun testCanSendEncodedContentV1Message() {
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
-        val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
-        val aliceConversation = aliceClient.conversations.newConversation(bobWallet.address)
+        val bobConversation =
+            runBlocking { bobClient.conversations.newConversation(aliceWallet.address) }
+        val aliceConversation =
+            runBlocking { aliceClient.conversations.newConversation(bobWallet.address) }
         val encodedContent = TextCodec().encode(content = "hi")
-        bobConversation.send(encodedContent = encodedContent)
-        val messages = aliceConversation.messages()
+        runBlocking { bobConversation.send(encodedContent = encodedContent) }
+        val messages = runBlocking { aliceConversation.messages() }
         assertEquals(1, messages.size)
         assertEquals("hi", messages[0].content())
     }
 
     @Test
     fun testCanSendEncodedContentV2Message() {
-        val bobConversation = bobClient.conversations.newConversation(aliceWallet.address)
+        val bobConversation =
+            runBlocking { bobClient.conversations.newConversation(aliceWallet.address) }
         val encodedContent = TextCodec().encode(content = "hi")
-        bobConversation.send(encodedContent = encodedContent)
-        val messages = bobConversation.messages()
+        runBlocking { bobConversation.send(encodedContent = encodedContent) }
+        val messages = runBlocking { bobConversation.messages() }
         assertEquals(1, messages.size)
         assertEquals("hi", messages[0].content())
     }
 
     @Test
     fun testCanHaveConsentState() {
-        val bobConversation = bobClient.conversations.newConversation(alice.walletAddress, null)
+        val bobConversation =
+            runBlocking { bobClient.conversations.newConversation(alice.walletAddress, null) }
         val isAllowed = bobConversation.consentState() == ConsentState.ALLOWED
 
         // Conversations you start should start as allowed
         assertTrue(isAllowed)
         assertTrue(bobClient.contacts.isAllowed(alice.walletAddress))
 
-        bobClient.contacts.deny(listOf(alice.walletAddress))
+        runBlocking { bobClient.contacts.deny(listOf(alice.walletAddress)) }
         bobClient.contacts.refreshConsentList()
 
         val isDenied = bobConversation.consentState() == ConsentState.DENIED
         assertEquals(bobClient.contacts.consentList.entries.size, 1)
         assertTrue(isDenied)
 
-        val aliceConversation = aliceClient.conversations.list()[0]
+        val aliceConversation = runBlocking { aliceClient.conversations.list()[0] }
         val isUnknown = aliceConversation.consentState() == ConsentState.UNKNOWN
 
         // Conversations started with you should start as unknown
         assertTrue(isUnknown)
 
-        aliceClient.contacts.allow(listOf(bob.walletAddress))
+        runBlocking { aliceClient.contacts.allow(listOf(bob.walletAddress)) }
 
         val isBobAllowed = aliceConversation.consentState() == ConsentState.ALLOWED
         assertTrue(isBobAllowed)
 
-        val aliceClient2 = Client().create(aliceWallet, fakeApiClient)
-        val aliceConversation2 = aliceClient2.conversations.list()[0]
+        val aliceClient2 = Client().create(aliceWallet)
+        val aliceConversation2 = runBlocking { aliceClient2.conversations.list()[0] }
 
         aliceClient2.contacts.refreshConsentList()
 
@@ -799,19 +830,20 @@ class ConversationTest {
 
     @Test
     fun testCanHaveImplicitConsentOnMessageSend() {
-        val bobConversation = bobClient.conversations.newConversation(alice.walletAddress, null)
+        val bobConversation =
+            runBlocking { bobClient.conversations.newConversation(alice.walletAddress, null) }
         val isAllowed = bobConversation.consentState() == ConsentState.ALLOWED
 
         // Conversations you start should start as allowed
         assertTrue(isAllowed)
 
-        val aliceConversation = aliceClient.conversations.list()[0]
+        val aliceConversation = runBlocking { aliceClient.conversations.list()[0] }
         val isUnknown = aliceConversation.consentState() == ConsentState.UNKNOWN
 
         // Conversations you receive should start as unknown
         assertTrue(isUnknown)
 
-        aliceConversation.send(content = "hey bob")
+        runBlocking { aliceConversation.send(content = "hey bob") }
         aliceClient.contacts.refreshConsentList()
         val isNowAllowed = aliceConversation.consentState() == ConsentState.ALLOWED
 

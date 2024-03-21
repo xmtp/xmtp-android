@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.xmtp.android.library.codecs.Fetcher
 import org.xmtp.android.library.messages.ContactBundle
@@ -186,16 +187,7 @@ class FakeApiClient : ApiClient {
         return PublishResponse.newBuilder().build()
     }
 
-    override suspend fun subscribe(topics: List<String>): Flow<Envelope> {
-        val env = stream.counts().first()
-
-        if (topics.contains(env.contentTopic)) {
-            return flowOf(env)
-        }
-        return flowOf()
-    }
-
-    override suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<MessageApiOuterClass.Envelope> {
+    override suspend fun subscribe(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<MessageApiOuterClass.Envelope> {
         val env = stream.counts().first()
 
         if (request.first().contentTopicsList.contains(env.contentTopic)) {
@@ -226,7 +218,7 @@ data class Fixtures(val aliceAccount: PrivateKeyBuilder, val bobAccount: Private
             message = contactBundle.toByteString()
         }.build()
 
-        client.publish(envelopes = listOf(envelope))
+        runBlocking { client.publish(envelopes = listOf(envelope)) }
     }
 }
 

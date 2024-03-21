@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.protobuf.kotlin.toByteStringUtf8
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,14 +25,17 @@ class AttachmentTest {
 
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
-        val aliceConversation =
+        val aliceConversation = runBlocking {
             aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        }
 
-        aliceConversation.send(
-            content = attachment,
-            options = SendOptions(contentType = ContentTypeAttachment),
-        )
-        val messages = aliceConversation.messages()
+        runBlocking {
+            aliceConversation.send(
+                content = attachment,
+                options = SendOptions(contentType = ContentTypeAttachment),
+            )
+        }
+        val messages = runBlocking { aliceConversation.messages() }
         assertEquals(messages.size, 1)
         if (messages.size == 1) {
             val content: Attachment? = messages[0].content()

@@ -3,11 +3,11 @@ package org.xmtp.android.library
 import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
+import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Message
@@ -22,7 +22,6 @@ import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
-import org.xmtp.android.library.messages.DecryptedMessage
 import java.util.Date
 
 data class ConversationV1(
@@ -60,7 +59,7 @@ data class ConversationV1(
      * If [direction] is specified then that will control the sort order of te messages.
      * @see Conversation.messages
      */
-    fun messages(
+    suspend fun messages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
@@ -68,9 +67,7 @@ data class ConversationV1(
     ): List<DecodedMessage> {
         val pagination =
             Pagination(limit = limit, before = before, after = after, direction = direction)
-        val result = runBlocking {
-            client.apiClient.envelopes(topic = topic.description, pagination = pagination)
-        }
+        val result = client.apiClient.envelopes(topic = topic.description, pagination = pagination)
 
         return result.mapNotNull { envelope ->
             decodeOrNull(envelope = envelope)
@@ -90,7 +87,7 @@ data class ConversationV1(
      * If [limit] is specified then results are pulled in pages of that size.
      * If [direction] is specified then that will control the sort order of te messages.
      */
-    fun decryptedMessages(
+    suspend fun decryptedMessages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
@@ -99,12 +96,11 @@ data class ConversationV1(
         val pagination =
             Pagination(limit = limit, before = before, after = after, direction = direction)
 
-        val envelopes = runBlocking {
+        val envelopes =
             client.apiClient.envelopes(
                 topic = Topic.directMessageV1(client.address, peerAddress).description,
                 pagination = pagination,
             )
-        }
 
         return envelopes.map { decrypt(it) }
     }
@@ -164,11 +160,11 @@ data class ConversationV1(
         }
     }
 
-    fun send(text: String, options: SendOptions? = null): String {
+    suspend fun send(text: String, options: SendOptions? = null): String {
         return send(text = text, sendOptions = options, sentAt = null)
     }
 
-    internal fun send(
+    internal suspend fun send(
         text: String,
         sendOptions: SendOptions? = null,
         sentAt: Date? = null,
@@ -177,17 +173,17 @@ data class ConversationV1(
         return send(preparedMessage)
     }
 
-    fun <T> send(content: T, options: SendOptions? = null): String {
+    suspend fun <T> send(content: T, options: SendOptions? = null): String {
         val preparedMessage = prepareMessage(content = content, options = options)
         return send(preparedMessage)
     }
 
-    fun send(encodedContent: EncodedContent, options: SendOptions? = null): String {
+    suspend fun send(encodedContent: EncodedContent, options: SendOptions? = null): String {
         val preparedMessage = prepareMessage(encodedContent = encodedContent, options = options)
         return send(preparedMessage)
     }
 
-    fun send(prepared: PreparedMessage): String {
+    suspend fun send(prepared: PreparedMessage): String {
         client.publish(envelopes = prepared.envelopes)
         if (client.contacts.consentList.state(address = peerAddress) == ConsentState.UNKNOWN) {
             client.contacts.allow(addresses = listOf(peerAddress))
@@ -272,7 +268,7 @@ data class ConversationV1(
         get() = topic.description.replace("/xmtp/0/dm-", "/xmtp/0/dmE-")
 
     fun streamEphemeral(): Flow<Envelope> = flow {
-        client.subscribe(topics = listOf(ephemeralTopic)).collect {
+        client.subscribe(listOf(ephemeralTopic)).collect {
             emit(it)
         }
     }
