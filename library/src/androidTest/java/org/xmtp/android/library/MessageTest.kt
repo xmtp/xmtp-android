@@ -269,19 +269,6 @@ class MessageTest {
         assertEquals("hello from kotlin", messages[0].body)
         assertEquals(convo.topic, messages[0].topic)
     }
-
-    @Test
-    fun testGetsV1ID() {
-        val fixtures = fixtures()
-        val conversation = runBlocking {
-            fixtures.aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
-        }
-        runBlocking { conversation.send(text = "hi") }
-        val envelope = fixtures.fakeApiClient.published.lastOrNull()!!
-        val decodedMessage = conversation.decode(envelope)
-        assertEquals(Hash.sha256(envelope.message.toByteArray()).toHex(), decodedMessage.id)
-    }
-
     @Test
     fun testGetsV2ID() {
         val envelopeMessageData =

@@ -16,7 +16,6 @@ import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
 
 @RunWith(AndroidJUnit4::class)
 class GroupMembershipChangeTest {
-    lateinit var fakeApiClient: FakeApiClient
     lateinit var alixWallet: PrivateKeyBuilder
     lateinit var boWallet: PrivateKeyBuilder
     lateinit var alix: PrivateKey
@@ -45,7 +44,6 @@ class GroupMembershipChangeTest {
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
 
-        fakeApiClient = fixtures.fakeApiClient
         alixClient = fixtures.aliceClient
         boClient = fixtures.bobClient
         caroClient = fixtures.caroClient

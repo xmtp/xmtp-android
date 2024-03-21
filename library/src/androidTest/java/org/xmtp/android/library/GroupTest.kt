@@ -24,7 +24,6 @@ import uniffi.xmtpv3.GroupPermissions
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
-    private lateinit var fakeApiClient: FakeApiClient
     private lateinit var alixWallet: PrivateKeyBuilder
     private lateinit var boWallet: PrivateKeyBuilder
     private lateinit var alix: PrivateKey
@@ -54,7 +53,6 @@ class GroupTest {
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
 
-        fakeApiClient = fixtures.fakeApiClient
         alixClient = fixtures.aliceClient
         boClient = fixtures.bobClient
         caroClient = fixtures.caroClient
@@ -264,10 +262,9 @@ class GroupTest {
 
     @Test
     fun testCannotSendMessageToGroupMemberNotOnV3() {
-        val fakeApiClient = FakeApiClient()
         val chuxAccount = PrivateKeyBuilder()
         val chux: PrivateKey = chuxAccount.getPrivateKey()
-        val chuxClient: Client = Client().create(account = chuxAccount, apiClient = fakeApiClient)
+        Client().create(account = chuxAccount)
 
         assertThrows("Recipient not on network", XMTPException::class.java) {
             runBlocking { boClient.conversations.newGroup(listOf(chux.walletAddress)) }
@@ -487,7 +484,7 @@ class GroupTest {
                 caroClient.conversations.newGroup(listOf(bo.walletAddress))
             assertEquals(group.id.toHex(), awaitItem().topic)
             val conversation =
-                boClient.conversations.newConversation(alix.walletAddress)
+                alixClient.conversations.newConversation(bo.walletAddress)
             assertEquals(conversation.topic, awaitItem().topic)
         }
     }

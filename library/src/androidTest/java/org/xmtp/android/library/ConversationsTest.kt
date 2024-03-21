@@ -33,7 +33,7 @@ class ConversationsTest {
         val client = fixtures.aliceClient
         val created = Date()
         val newWallet = PrivateKeyBuilder()
-        val newClient = Client().create(account = newWallet, apiClient = fixtures.fakeApiClient)
+        val newClient = Client().create(account = newWallet)
         val message = MessageV1Builder.buildEncode(
             sender = newClient.privateKeyBundleV1,
             recipient = fixtures.aliceClient.v1keys.toPublicKeyBundle(),
@@ -56,7 +56,7 @@ class ConversationsTest {
         val client = fixtures.aliceClient
         val created = Date()
         val newWallet = PrivateKeyBuilder()
-        val newClient = Client().create(account = newWallet, apiClient = fixtures.fakeApiClient)
+        val newClient = Client().create(account = newWallet)
         val invitation = InvitationV1.newBuilder().build().createDeterministic(
             sender = newClient.keys,
             recipient = client.keys.getPublicKeyBundle()
