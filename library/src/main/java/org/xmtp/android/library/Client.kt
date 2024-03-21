@@ -506,7 +506,7 @@ class Client() {
         return apiClient.subscribe(request = request)
     }
 
-    fun fetchConversation(topic: String?, includeGroups: Boolean = false): Conversation? {
+    suspend fun fetchConversation(topic: String?, includeGroups: Boolean = false): Conversation? {
         if (topic.isNullOrBlank()) return null
         return conversations.list(includeGroups = includeGroups).firstOrNull {
             it.topic == topic
