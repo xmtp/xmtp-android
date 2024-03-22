@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - np/fixes-docs
 permissions:
   contents: write
 jobs:
