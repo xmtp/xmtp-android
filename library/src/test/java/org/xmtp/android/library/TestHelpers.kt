@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.xmtp.android.library.codecs.Fetcher
 import org.xmtp.android.library.messages.ContactBundle
@@ -43,13 +44,11 @@ class FakeWallet : SigningKey {
     }
 
     override suspend fun sign(data: ByteArray): Signature {
-        val signature = privateKeyBuilder.sign(data)
-        return signature
+        return privateKeyBuilder.sign(data)
     }
 
     override suspend fun sign(message: String): Signature {
-        val signature = privateKeyBuilder.sign(message)
-        return signature
+        return privateKeyBuilder.sign(message)
     }
 
     override val address: String
@@ -66,8 +65,8 @@ class FakeApiClient : ApiClient {
     override val environment: XMTPEnvironment = XMTPEnvironment.LOCAL
     private var authToken: String? = null
     private val responses: MutableMap<String, List<Envelope>> = mutableMapOf()
-    val published: MutableList<Envelope> = mutableListOf()
-    var forbiddingQueries = false
+    private val published: MutableList<Envelope> = mutableListOf()
+    private var forbiddingQueries = false
     private var stream = FakeStreamHolder()
 
     fun assertNoPublish(callback: () -> Unit) {
@@ -188,16 +187,7 @@ class FakeApiClient : ApiClient {
         return PublishResponse.newBuilder().build()
     }
 
-    override suspend fun subscribe(topics: List<String>): Flow<Envelope> {
-        val env = stream.counts().first()
-
-        if (topics.contains(env.contentTopic)) {
-            return flowOf(env)
-        }
-        return flowOf()
-    }
-
-    override suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<MessageApiOuterClass.Envelope> {
+    override suspend fun subscribe(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<MessageApiOuterClass.Envelope> {
         val env = stream.counts().first()
 
         if (request.first().contentTopicsList.contains(env.contentTopic)) {
@@ -228,7 +218,7 @@ data class Fixtures(val aliceAccount: PrivateKeyBuilder, val bobAccount: Private
             message = contactBundle.toByteString()
         }.build()
 
-        client.publish(envelopes = listOf(envelope))
+        runBlocking { client.publish(envelopes = listOf(envelope)) }
     }
 }
 

@@ -1,7 +1,9 @@
 package org.xmtp.android.library
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -14,7 +16,6 @@ import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
 
 @RunWith(AndroidJUnit4::class)
 class GroupMembershipChangeTest {
-    lateinit var fakeApiClient: FakeApiClient
     lateinit var alixWallet: PrivateKeyBuilder
     lateinit var boWallet: PrivateKeyBuilder
     lateinit var alix: PrivateKey
@@ -25,18 +26,17 @@ class GroupMembershipChangeTest {
     lateinit var caro: PrivateKey
     lateinit var caroClient: Client
     lateinit var fixtures: Fixtures
+    val context = ApplicationProvider.getApplicationContext<Context>()
 
     @Before
     fun setUp() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        fixtures =
-            fixtures(
-                clientOptions = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableAlphaMls = true,
-                    appContext = context
-                )
+        fixtures = fixtures(
+            clientOptions = ClientOptions(
+                ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                enableAlphaMls = true,
+                appContext = context,
             )
+        )
         alixWallet = fixtures.aliceAccount
         alix = fixtures.alice
         boWallet = fixtures.bobAccount
@@ -44,7 +44,6 @@ class GroupMembershipChangeTest {
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
 
-        fakeApiClient = fixtures.fakeApiClient
         alixClient = fixtures.aliceClient
         boClient = fixtures.bobClient
         caroClient = fixtures.caroClient
@@ -54,12 +53,14 @@ class GroupMembershipChangeTest {
     fun testCanAddMembers() {
         Client.register(codec = GroupMembershipChangeCodec())
 
-        val group = alixClient.conversations.newGroup(
-            listOf(
-                bo.walletAddress,
-                caro.walletAddress
+        val group = runBlocking {
+            alixClient.conversations.newGroup(
+                listOf(
+                    bo.walletAddress,
+                    caro.walletAddress
+                )
             )
-        )
+        }
         val messages = group.messages()
         assertEquals(messages.size, 1)
         val content: GroupMembershipChanges? = messages.first().content()
@@ -74,16 +75,18 @@ class GroupMembershipChangeTest {
     fun testCanRemoveMembers() {
         Client.register(codec = GroupMembershipChangeCodec())
 
-        val group = alixClient.conversations.newGroup(
-            listOf(
-                bo.walletAddress,
-                caro.walletAddress
+        val group = runBlocking {
+            alixClient.conversations.newGroup(
+                listOf(
+                    bo.walletAddress,
+                    caro.walletAddress
+                )
             )
-        )
+        }
         val messages = group.messages()
         assertEquals(messages.size, 1)
         assertEquals(group.memberAddresses().size, 3)
-        group.removeMembers(listOf(caro.walletAddress))
+        runBlocking { group.removeMembers(listOf(caro.walletAddress)) }
         val updatedMessages = group.messages()
         assertEquals(updatedMessages.size, 2)
         assertEquals(group.memberAddresses().size, 2)
@@ -98,12 +101,14 @@ class GroupMembershipChangeTest {
 
     @Test
     fun testIfNotRegisteredReturnsFallback() {
-        val group = alixClient.conversations.newGroup(
-            listOf(
-                bo.walletAddress,
-                caro.walletAddress
+        val group = runBlocking {
+            alixClient.conversations.newGroup(
+                listOf(
+                    bo.walletAddress,
+                    caro.walletAddress
+                )
             )
-        )
+        }
         val messages = group.messages()
         assertEquals(messages.size, 1)
         assert(messages.first().fallbackContent.isBlank())

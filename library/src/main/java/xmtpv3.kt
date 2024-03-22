@@ -395,11 +395,13 @@ internal interface _UniFFILib : Library {
 
     fun uniffi_xmtpv3_fn_free_fficonversations(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
     ): Unit
-    fun uniffi_xmtpv3_fn_method_fficonversations_create_group(`ptr`: Pointer,`accountAddresses`: RustBuffer.ByValue,
+    fun uniffi_xmtpv3_fn_method_fficonversations_create_group(`ptr`: Pointer,`accountAddresses`: RustBuffer.ByValue,`permissions`: RustBuffer.ByValue,
     ): Pointer
     fun uniffi_xmtpv3_fn_method_fficonversations_list(`ptr`: Pointer,`opts`: RustBuffer.ByValue,
     ): Pointer
     fun uniffi_xmtpv3_fn_method_fficonversations_stream(`ptr`: Pointer,`callback`: Long,
+    ): Pointer
+    fun uniffi_xmtpv3_fn_method_fficonversations_stream_all_messages(`ptr`: Pointer,`messageCallback`: Long,
     ): Pointer
     fun uniffi_xmtpv3_fn_method_fficonversations_sync(`ptr`: Pointer,
     ): Pointer
@@ -411,6 +413,8 @@ internal interface _UniFFILib : Library {
     ): Long
     fun uniffi_xmtpv3_fn_method_ffigroup_find_messages(`ptr`: Pointer,`opts`: RustBuffer.ByValue,_uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
+    fun uniffi_xmtpv3_fn_method_ffigroup_group_metadata(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
+    ): Pointer
     fun uniffi_xmtpv3_fn_method_ffigroup_id(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_method_ffigroup_is_active(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
@@ -425,6 +429,14 @@ internal interface _UniFFILib : Library {
     ): Pointer
     fun uniffi_xmtpv3_fn_method_ffigroup_sync(`ptr`: Pointer,
     ): Pointer
+    fun uniffi_xmtpv3_fn_free_ffigroupmetadata(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
+    ): Unit
+    fun uniffi_xmtpv3_fn_method_ffigroupmetadata_conversation_type(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
+    ): RustBuffer.ByValue
+    fun uniffi_xmtpv3_fn_method_ffigroupmetadata_creator_account_address(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
+    ): RustBuffer.ByValue
+    fun uniffi_xmtpv3_fn_method_ffigroupmetadata_policy_type(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
+    ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_free_ffistreamcloser(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
     ): Unit
     fun uniffi_xmtpv3_fn_method_ffistreamcloser_end(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
@@ -647,6 +659,8 @@ internal interface _UniFFILib : Library {
     ): Short
     fun uniffi_xmtpv3_checksum_method_fficonversations_stream(
     ): Short
+    fun uniffi_xmtpv3_checksum_method_fficonversations_stream_all_messages(
+    ): Short
     fun uniffi_xmtpv3_checksum_method_fficonversations_sync(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_add_members(
@@ -654,6 +668,8 @@ internal interface _UniFFILib : Library {
     fun uniffi_xmtpv3_checksum_method_ffigroup_created_at_ns(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_find_messages(
+    ): Short
+    fun uniffi_xmtpv3_checksum_method_ffigroup_group_metadata(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_id(
     ): Short
@@ -668,6 +684,12 @@ internal interface _UniFFILib : Library {
     fun uniffi_xmtpv3_checksum_method_ffigroup_stream(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_sync(
+    ): Short
+    fun uniffi_xmtpv3_checksum_method_ffigroupmetadata_conversation_type(
+    ): Short
+    fun uniffi_xmtpv3_checksum_method_ffigroupmetadata_creator_account_address(
+    ): Short
+    fun uniffi_xmtpv3_checksum_method_ffigroupmetadata_policy_type(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffistreamcloser_end(
     ): Short
@@ -768,13 +790,16 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_xmtpv3_checksum_func_verify_k256_sha256() != 31332.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_create_group() != 45500.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_create_group() != 16460.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_list() != 44067.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_stream() != 60583.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_stream_all_messages() != 65211.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_sync() != 62598.toShort()) {
@@ -787,6 +812,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_find_messages() != 61973.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_group_metadata() != 3690.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_id() != 35243.toShort()) {
@@ -808,6 +836,15 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_sync() != 9422.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroupmetadata_conversation_type() != 37015.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroupmetadata_creator_account_address() != 1906.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroupmetadata_policy_type() != 22845.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffistreamcloser_end() != 47211.toShort()) {
@@ -1256,9 +1293,10 @@ abstract class FFIObject(
 
 public interface FfiConversationsInterface {
     @Throws(GenericException::class)
-    suspend fun `createGroup`(`accountAddresses`: List<String>): FfiGroup@Throws(GenericException::class)
+    suspend fun `createGroup`(`accountAddresses`: List<String>, `permissions`: GroupPermissions?): FfiGroup@Throws(GenericException::class)
     suspend fun `list`(`opts`: FfiListConversationsOptions): List<FfiGroup>@Throws(GenericException::class)
     suspend fun `stream`(`callback`: FfiConversationCallback): FfiStreamCloser@Throws(GenericException::class)
+    suspend fun `streamAllMessages`(`messageCallback`: FfiMessageCallback): FfiStreamCloser@Throws(GenericException::class)
     suspend fun `sync`()
     companion object
 }
@@ -1284,12 +1322,12 @@ class FfiConversations(
 
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `createGroup`(`accountAddresses`: List<String>) : FfiGroup {
+    override suspend fun `createGroup`(`accountAddresses`: List<String>, `permissions`: GroupPermissions?) : FfiGroup {
         return uniffiRustCallAsync(
             callWithPointer { thisPtr ->
                 _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_create_group(
                     thisPtr,
-                    FfiConverterSequenceString.lower(`accountAddresses`),
+                    FfiConverterSequenceString.lower(`accountAddresses`),FfiConverterOptionalTypeGroupPermissions.lower(`permissions`),
                 )
             },
             { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, continuation) },
@@ -1330,6 +1368,26 @@ class FfiConversations(
                 _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream(
                     thisPtr,
                     FfiConverterTypeFfiConversationCallback.lower(`callback`),
+                )
+            },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, continuation) },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+            // lift function
+            { FfiConverterTypeFfiStreamCloser.lift(it) },
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `streamAllMessages`(`messageCallback`: FfiMessageCallback) : FfiStreamCloser {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_all_messages(
+                    thisPtr,
+                    FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
                 )
             },
             { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, continuation) },
@@ -1398,7 +1456,8 @@ public interface FfiGroupInterface {
     @Throws(GenericException::class)
     suspend fun `addMembers`(`accountAddresses`: List<String>)
     fun `createdAtNs`(): Long@Throws(GenericException::class)
-    fun `findMessages`(`opts`: FfiListMessagesOptions): List<FfiMessage>
+    fun `findMessages`(`opts`: FfiListMessagesOptions): List<FfiMessage>@Throws(GenericException::class)
+    fun `groupMetadata`(): FfiGroupMetadata
     fun `id`(): ByteArray@Throws(GenericException::class)
     fun `isActive`(): Boolean@Throws(GenericException::class)
     fun `listMembers`(): List<FfiGroupMember>@Throws(GenericException::class)
@@ -1469,6 +1528,18 @@ class FfiGroup(
             }
         }.let {
             FfiConverterSequenceTypeFfiMessage.lift(it)
+        }
+
+
+    @Throws(GenericException::class)override fun `groupMetadata`(): FfiGroupMetadata =
+        callWithPointer {
+            rustCallWithError(GenericException) { _status ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_group_metadata(it,
+
+                    _status)
+            }
+        }.let {
+            FfiConverterTypeFfiGroupMetadata.lift(it)
         }
 
     override fun `id`(): ByteArray =
@@ -1612,6 +1683,98 @@ public object FfiConverterTypeFfiGroup: FfiConverter<FfiGroup, Pointer> {
     override fun allocationSize(value: FfiGroup) = 8
 
     override fun write(value: FfiGroup, buf: ByteBuffer) {
+        // The Rust code always expects pointers written as 8 bytes,
+        // and will fail to compile if they don't fit.
+        buf.putLong(Pointer.nativeValue(lower(value)))
+    }
+}
+
+
+
+
+public interface FfiGroupMetadataInterface {
+
+    fun `conversationType`(): String
+    fun `creatorAccountAddress`(): String@Throws(GenericException::class)
+    fun `policyType`(): GroupPermissions
+    companion object
+}
+
+class FfiGroupMetadata(
+    pointer: Pointer
+) : FFIObject(pointer), FfiGroupMetadataInterface {
+
+    /**
+     * Disconnect the object from the underlying Rust object.
+     *
+     * It can be called more than once, but once called, interacting with the object
+     * causes an `IllegalStateException`.
+     *
+     * Clients **must** call this method once done with the object, or cause a memory leak.
+     */
+    override protected fun freeRustArcPtr() {
+        rustCall() { status ->
+            _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_free_ffigroupmetadata(this.pointer, status)
+        }
+    }
+
+    override fun `conversationType`(): String =
+        callWithPointer {
+            rustCall() { _status ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroupmetadata_conversation_type(it,
+
+                    _status)
+            }
+        }.let {
+            FfiConverterString.lift(it)
+        }
+
+    override fun `creatorAccountAddress`(): String =
+        callWithPointer {
+            rustCall() { _status ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroupmetadata_creator_account_address(it,
+
+                    _status)
+            }
+        }.let {
+            FfiConverterString.lift(it)
+        }
+
+
+    @Throws(GenericException::class)override fun `policyType`(): GroupPermissions =
+        callWithPointer {
+            rustCallWithError(GenericException) { _status ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroupmetadata_policy_type(it,
+
+                    _status)
+            }
+        }.let {
+            FfiConverterTypeGroupPermissions.lift(it)
+        }
+
+
+
+
+    companion object
+
+}
+
+public object FfiConverterTypeFfiGroupMetadata: FfiConverter<FfiGroupMetadata, Pointer> {
+    override fun lower(value: FfiGroupMetadata): Pointer = value.callWithPointer { it }
+
+    override fun lift(value: Pointer): FfiGroupMetadata {
+        return FfiGroupMetadata(value)
+    }
+
+    override fun read(buf: ByteBuffer): FfiGroupMetadata {
+        // The Rust code always writes pointers as 8 bytes, and will
+        // fail to compile if they don't fit.
+        return lift(Pointer(buf.getLong()))
+    }
+
+    override fun allocationSize(value: FfiGroupMetadata) = 8
+
+    override fun write(value: FfiGroupMetadata, buf: ByteBuffer) {
         // The Rust code always expects pointers written as 8 bytes,
         // and will fail to compile if they don't fit.
         buf.putLong(Pointer.nativeValue(lower(value)))
@@ -2547,6 +2710,7 @@ sealed class GenericException(message: String): Exception(message) {
     class ApiException(message: String) : GenericException(message)
     class GroupException(message: String) : GenericException(message)
     class Signature(message: String) : GenericException(message)
+    class GroupMetadata(message: String) : GenericException(message)
     class Generic(message: String) : GenericException(message)
 
 
@@ -2565,7 +2729,8 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
             4 -> GenericException.ApiException(FfiConverterString.read(buf))
             5 -> GenericException.GroupException(FfiConverterString.read(buf))
             6 -> GenericException.Signature(FfiConverterString.read(buf))
-            7 -> GenericException.Generic(FfiConverterString.read(buf))
+            7 -> GenericException.GroupMetadata(FfiConverterString.read(buf))
+            8 -> GenericException.Generic(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
 
@@ -2601,14 +2766,42 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
                 buf.putInt(6)
                 Unit
             }
-            is GenericException.Generic -> {
+            is GenericException.GroupMetadata -> {
                 buf.putInt(7)
+                Unit
+            }
+            is GenericException.Generic -> {
+                buf.putInt(8)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
     }
 
 }
+
+
+
+
+enum class GroupPermissions {
+    EVERYONE_IS_ADMIN,GROUP_CREATOR_IS_ADMIN;
+    companion object
+}
+
+public object FfiConverterTypeGroupPermissions: FfiConverterRustBuffer<GroupPermissions> {
+    override fun read(buf: ByteBuffer) = try {
+        GroupPermissions.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: GroupPermissions) = 4
+
+    override fun write(value: GroupPermissions, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
 
 
 
@@ -3276,6 +3469,35 @@ public object FfiConverterOptionalTypeFfiPagingInfo: FfiConverterRustBuffer<FfiP
         } else {
             buf.put(1)
             FfiConverterTypeFfiPagingInfo.write(value, buf)
+        }
+    }
+}
+
+
+
+
+public object FfiConverterOptionalTypeGroupPermissions: FfiConverterRustBuffer<GroupPermissions?> {
+    override fun read(buf: ByteBuffer): GroupPermissions? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeGroupPermissions.read(buf)
+    }
+
+    override fun allocationSize(value: GroupPermissions?): Int {
+        if (value == null) {
+            return 1
+        } else {
+            return 1 + FfiConverterTypeGroupPermissions.allocationSize(value)
+        }
+    }
+
+    override fun write(value: GroupPermissions?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeGroupPermissions.write(value, buf)
         }
     }
 }

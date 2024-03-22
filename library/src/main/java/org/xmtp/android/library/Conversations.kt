@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import android.util.Log
+import com.google.protobuf.kotlin.toByteString
 import io.grpc.StatusException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
@@ -9,9 +10,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
@@ -32,6 +33,9 @@ import org.xmtp.android.library.messages.senderAddress
 import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.toSignedPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.keystore.api.v1.Keystore
+import org.xmtp.proto.keystore.api.v1.Keystore.GetConversationHmacKeysResponse.HmacKeyData
+import org.xmtp.proto.keystore.api.v1.Keystore.GetConversationHmacKeysResponse.HmacKeys
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
@@ -39,6 +43,9 @@ import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiListConversationsOptions
+import uniffi.xmtpv3.FfiMessage
+import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.GroupPermissions
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -91,7 +98,10 @@ data class Conversations(
         )
     }
 
-    fun newGroup(accountAddresses: List<String>): Group {
+    suspend fun newGroup(
+        accountAddresses: List<String>,
+        permissions: GroupPermissions = GroupPermissions.EVERYONE_IS_ADMIN,
+    ): Group {
         if (accountAddresses.isEmpty()) {
             throw XMTPException("Cannot start an empty group chat.")
         }
@@ -100,14 +110,15 @@ data class Conversations(
         ) {
             throw XMTPException("Recipient is sender")
         }
-        if (!client.canMessage(accountAddresses)) {
+        if (!client.canMessageV3(accountAddresses)) {
             throw XMTPException("Recipient not on network")
         }
 
-        val group = runBlocking {
-            libXMTPConversations?.createGroup(accountAddresses)
+        val group =
+            libXMTPConversations?.createGroup(accountAddresses, permissions = permissions)
                 ?: throw XMTPException("Client does not support Groups")
-        }
+        client.contacts.allowGroup(groupIds = listOf(group.id()))
+
         return Group(client, group)
     }
 
@@ -115,17 +126,19 @@ data class Conversations(
         libXMTPConversations?.sync()
     }
 
-    fun listGroups(after: Date? = null, before: Date? = null, limit: Int? = null): List<Group> {
-        return runBlocking {
-            libXMTPConversations?.list(
-                opts = FfiListConversationsOptions(
-                    after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                    before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                    limit?.toLong()
-                )
-            )?.map {
-                Group(client, it)
-            }
+    suspend fun listGroups(
+        after: Date? = null,
+        before: Date? = null,
+        limit: Int? = null,
+    ): List<Group> {
+        return libXMTPConversations?.list(
+            opts = FfiListConversationsOptions(
+                after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                limit?.toLong()
+            )
+        )?.map {
+            Group(client, it)
         } ?: emptyList()
     }
 
@@ -136,7 +149,7 @@ data class Conversations(
      * @return New [Conversation] using the address and according to that address is able to find
      * the topics if exists for that new conversation.
      */
-    fun newConversation(
+    suspend fun newConversation(
         peerAddress: String,
         context: Invitation.InvitationV1.Context? = null,
     ): Conversation {
@@ -222,7 +235,7 @@ data class Conversations(
      * Get the list of conversations that current user has
      * @return The list of [Conversation] that the current [Client] has.
      */
-    fun list(includeGroups: Boolean = false): List<Conversation> {
+    suspend fun list(includeGroups: Boolean = false): List<Conversation> {
         val newConversations = mutableListOf<Conversation>()
         val mostRecent = conversationsByTopic.values.maxOfOrNull { it.createdAt }
         val pagination = Pagination(after = mostRecent)
@@ -252,10 +265,8 @@ data class Conversations(
         }.map { Pair(it.topic, it) }
 
         if (includeGroups) {
-            val groups = runBlocking {
-                syncGroups()
-                listGroups()
-            }
+            syncGroups()
+            val groups = listGroups()
             conversationsByTopic += groups.map { Pair(it.id.toString(), Conversation.Group(it)) }
         }
         return conversationsByTopic.values.sortedByDescending { it.createdAt }
@@ -289,14 +300,48 @@ data class Conversations(
         return conversation
     }
 
-    private fun listIntroductionPeers(pagination: Pagination? = null): Map<String, Date> {
-        val envelopes =
-            runBlocking {
-                client.apiClient.queryTopic(
-                    topic = Topic.userIntro(client.address),
-                    pagination = pagination,
-                ).envelopesList
+    fun getHmacKeys(
+        request: Keystore.GetConversationHmacKeysRequest? = null,
+    ): Keystore.GetConversationHmacKeysResponse {
+        val thirtyDayPeriodsSinceEpoch = (Date().time / 1000 / 60 / 60 / 24 / 30).toInt()
+        val hmacKeysResponse = Keystore.GetConversationHmacKeysResponse.newBuilder()
+
+        var topics = conversationsByTopic
+
+        if (!request?.topicsList.isNullOrEmpty()) {
+            topics = topics.filter {
+                request!!.topicsList.contains(it.key)
+            }.toMutableMap()
+        }
+
+        topics.forEach {
+            val conversation = it.value
+            val hmacKeys = HmacKeys.newBuilder()
+            if (conversation.keyMaterial != null) {
+                (thirtyDayPeriodsSinceEpoch - 1..thirtyDayPeriodsSinceEpoch + 1).forEach { value ->
+                    val info = "$value-${client.address}"
+                    val hmacKey =
+                        Crypto.deriveKey(
+                            conversation.keyMaterial!!,
+                            ByteArray(0),
+                            info.toByteArray(Charsets.UTF_8),
+                        )
+                    val hmacKeyData = HmacKeyData.newBuilder()
+                    hmacKeyData.hmacKey = hmacKey.toByteString()
+                    hmacKeyData.thirtyDayPeriodsSinceEpoch = value
+                    hmacKeys.addValues(hmacKeyData)
+                }
+                hmacKeysResponse.putHmacKeys(conversation.topic, hmacKeys.build())
             }
+        }
+        return hmacKeysResponse.build()
+    }
+
+    private suspend fun listIntroductionPeers(pagination: Pagination? = null): Map<String, Date> {
+        val envelopes = client.apiClient.queryTopic(
+            topic = Topic.userIntro(client.address),
+            pagination = pagination,
+        ).envelopesList
         val messages = envelopes.mapNotNull { envelope ->
             try {
                 val message = MessageV1Builder.buildFromBytes(envelope.message.toByteArray())
@@ -332,10 +377,9 @@ data class Conversations(
      * @param pagination Information of the topics, ranges (dates), etc.
      * @return List of [SealedInvitation] that are inside of the range specified by [pagination]
      */
-    private fun listInvitations(pagination: Pagination? = null): List<SealedInvitation> {
-        val envelopes = runBlocking {
+    private suspend fun listInvitations(pagination: Pagination? = null): List<SealedInvitation> {
+        val envelopes =
             client.apiClient.envelopes(Topic.userInvite(client.address).description, pagination)
-        }
         return envelopes.map { envelope ->
             SealedInvitation.parseFrom(envelope.message)
         }
@@ -355,7 +399,7 @@ data class Conversations(
      *  This pulls messages from multiple conversations in a single call.
      *  @see Conversation.messages
      */
-    fun listBatchMessages(
+    suspend fun listBatchMessages(
         topics: List<Pair<String, Pagination?>>,
     ): List<DecodedMessage> {
         val requests = topics.map { (topic, page) ->
@@ -367,21 +411,19 @@ data class Conversations(
         val messages: MutableList<DecodedMessage> = mutableListOf()
         val batches = requests.chunked(maxQueryRequestsPerBatch)
         for (batch in batches) {
-            runBlocking {
-                messages.addAll(
-                    client.batchQuery(batch).responsesOrBuilderList.flatMap { res ->
-                        res.envelopesList.mapNotNull { envelope ->
-                            val conversation = conversationsByTopic[envelope.contentTopic]
-                            if (conversation == null) {
-                                Log.d(TAG, "discarding message, unknown conversation $envelope")
-                                return@mapNotNull null
-                            }
-                            val msg = conversation.decodeOrNull(envelope)
-                            msg
+            messages.addAll(
+                client.batchQuery(batch).responsesOrBuilderList.flatMap { res ->
+                    res.envelopesList.mapNotNull { envelope ->
+                        val conversation = conversationsByTopic[envelope.contentTopic]
+                        if (conversation == null) {
+                            Log.d(TAG, "discarding message, unknown conversation $envelope")
+                            return@mapNotNull null
                         }
-                    },
-                )
-            }
+                        val msg = conversation.decodeOrNull(envelope)
+                        msg
+                    }
+                },
+            )
         }
         return messages
     }
@@ -391,7 +433,7 @@ data class Conversations(
      *  This pulls messages from multiple conversations in a single call.
      *  @see listBatchMessages
      */
-    fun listBatchDecryptedMessages(
+    suspend fun listBatchDecryptedMessages(
         topics: List<Pair<String, Pagination?>>,
     ): List<DecryptedMessage> {
         val requests = topics.map { (topic, page) ->
@@ -403,26 +445,24 @@ data class Conversations(
         val messages: MutableList<DecryptedMessage> = mutableListOf()
         val batches = requests.chunked(maxQueryRequestsPerBatch)
         for (batch in batches) {
-            runBlocking {
-                messages.addAll(
-                    client.batchQuery(batch).responsesOrBuilderList.flatMap { res ->
-                        res.envelopesList.mapNotNull { envelope ->
-                            val conversation = conversationsByTopic[envelope.contentTopic]
-                            if (conversation == null) {
-                                Log.d(TAG, "discarding message, unknown conversation $envelope")
-                                return@mapNotNull null
-                            }
-                            try {
-                                val msg = conversation.decrypt(envelope)
-                                msg
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Error decrypting message: $envelope", e)
-                                null
-                            }
+            messages.addAll(
+                client.batchQuery(batch).responsesOrBuilderList.flatMap { res ->
+                    res.envelopesList.mapNotNull { envelope ->
+                        val conversation = conversationsByTopic[envelope.contentTopic]
+                        if (conversation == null) {
+                            Log.d(TAG, "discarding message, unknown conversation $envelope")
+                            return@mapNotNull null
                         }
-                    },
-                )
-            }
+                        try {
+                            val msg = conversation.decrypt(envelope)
+                            msg
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error decrypting message: $envelope", e)
+                            null
+                        }
+                    }
+                },
+            )
         }
         return messages
     }
@@ -434,7 +474,7 @@ data class Conversations(
      * @param created Specified date creation for this invitation.
      * @return [SealedInvitation] with the specified information.
      */
-    fun sendInvitation(
+    suspend fun sendInvitation(
         recipient: SignedPublicKeyBundle,
         invitation: InvitationV1,
         created: Date,
@@ -448,26 +488,24 @@ data class Conversations(
             )
             val peerAddress = recipient.walletAddress
 
-            runBlocking {
-                client.publish(
-                    envelopes = listOf(
-                        EnvelopeBuilder.buildFromTopic(
-                            topic = Topic.userInvite(
-                                client.address,
-                            ),
-                            timestamp = created,
-                            message = sealed.toByteArray(),
+            client.publish(
+                envelopes = listOf(
+                    EnvelopeBuilder.buildFromTopic(
+                        topic = Topic.userInvite(
+                            client.address,
                         ),
-                        EnvelopeBuilder.buildFromTopic(
-                            topic = Topic.userInvite(
-                                peerAddress,
-                            ),
-                            timestamp = created,
-                            message = sealed.toByteArray(),
-                        ),
+                        timestamp = created,
+                        message = sealed.toByteArray(),
                     ),
-                )
-            }
+                    EnvelopeBuilder.buildFromTopic(
+                        topic = Topic.userInvite(
+                            peerAddress,
+                        ),
+                        timestamp = created,
+                        message = sealed.toByteArray(),
+                    ),
+                ),
+            )
             return sealed
         }
     }
@@ -479,8 +517,11 @@ data class Conversations(
      */
     fun stream(): Flow<Conversation> = flow {
         val streamedConversationTopics: MutableSet<String> = mutableSetOf()
-        client.subscribeTopic(
-            listOf(Topic.userIntro(client.address), Topic.userInvite(client.address)),
+        client.subscribe(
+            listOf(
+                Topic.userIntro(client.address).description,
+                Topic.userInvite(client.address).description
+            )
         ).collect { envelope ->
             if (envelope.contentTopic == Topic.userIntro(client.address).description) {
                 val conversationV1 = fromIntro(envelope = envelope)
@@ -526,12 +567,34 @@ data class Conversations(
         awaitClose { stream.end() }
     }
 
+    fun streamAllGroupMessages(): Flow<DecodedMessage> = callbackFlow {
+        val messageCallback = object : FfiMessageCallback {
+            override fun onMessage(message: FfiMessage) {
+                trySend(Message(client, message).decode())
+            }
+        }
+        val stream = libXMTPConversations?.streamAllMessages(messageCallback)
+            ?: throw XMTPException("Client does not support Groups")
+        awaitClose { stream.end() }
+    }
+
+    fun streamAllGroupDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
+        val messageCallback = object : FfiMessageCallback {
+            override fun onMessage(message: FfiMessage) {
+                trySend(Message(client, message).decrypt())
+            }
+        }
+        val stream = libXMTPConversations?.streamAllMessages(messageCallback)
+            ?: throw XMTPException("Client does not support Groups")
+        awaitClose { stream.end() }
+    }
+
     /**
      * Get the stream of all messages of the current [Client]
      * @return Flow object of [DecodedMessage] that represents all the messages of the
      * current [Client] as userInvite and userIntro
      */
-    fun streamAllMessages(): Flow<DecodedMessage> = flow {
+    private fun streamAllV2Messages(): Flow<DecodedMessage> = flow {
         val topics = mutableListOf(
             Topic.userInvite(client.address).description,
             Topic.userIntro(client.address).description,
@@ -586,7 +649,23 @@ data class Conversations(
         }
     }
 
-    fun streamAllDecryptedMessages(): Flow<DecryptedMessage> = flow {
+    fun streamAllMessages(includeGroups: Boolean = false): Flow<DecodedMessage> {
+        return if (includeGroups) {
+            merge(streamAllV2Messages(), streamAllGroupMessages())
+        } else {
+            streamAllV2Messages()
+        }
+    }
+
+    fun streamAllDecryptedMessages(includeGroups: Boolean = false): Flow<DecryptedMessage> {
+        return if (includeGroups) {
+            merge(streamAllV2DecryptedMessages(), streamAllGroupDecryptedMessages())
+        } else {
+            streamAllV2DecryptedMessages()
+        }
+    }
+
+    private fun streamAllV2DecryptedMessages(): Flow<DecryptedMessage> = flow {
         val topics = mutableListOf(
             Topic.userInvite(client.address).description,
             Topic.userIntro(client.address).description,

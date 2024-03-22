@@ -2,10 +2,9 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.fail
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -27,8 +26,8 @@ class ClientTest {
     fun testHasPrivateKeyBundleV1() {
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
-        assertEquals(1, client.privateKeyBundleV1?.preKeysList?.size)
-        val preKey = client.privateKeyBundleV1?.preKeysList?.get(0)
+        assertEquals(1, client.privateKeyBundleV1.preKeysList?.size)
+        val preKey = client.privateKeyBundleV1.preKeysList?.get(0)
         assert(preKey?.publicKey?.hasSignature() ?: false)
     }
 
@@ -51,15 +50,15 @@ class ClientTest {
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
         val bundle = client.privateKeyBundle
-        val clientFromV1Bundle = Client().buildFromBundle(bundle!!)
+        val clientFromV1Bundle = Client().buildFromBundle(bundle)
         assertEquals(client.address, clientFromV1Bundle.address)
         assertEquals(
-            client.privateKeyBundleV1?.identityKey,
-            clientFromV1Bundle.privateKeyBundleV1?.identityKey,
+            client.privateKeyBundleV1.identityKey,
+            clientFromV1Bundle.privateKeyBundleV1.identityKey,
         )
         assertEquals(
-            client.privateKeyBundleV1?.preKeysList,
-            clientFromV1Bundle.privateKeyBundleV1?.preKeysList,
+            client.privateKeyBundleV1.preKeysList,
+            clientFromV1Bundle.privateKeyBundleV1.preKeysList,
         )
     }
 
@@ -68,15 +67,15 @@ class ClientTest {
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
         val bundleV1 = client.v1keys
-        val clientFromV1Bundle = Client().buildFromV1Bundle(bundleV1!!)
+        val clientFromV1Bundle = Client().buildFromV1Bundle(bundleV1)
         assertEquals(client.address, clientFromV1Bundle.address)
         assertEquals(
-            client.privateKeyBundleV1?.identityKey,
-            clientFromV1Bundle.privateKeyBundleV1?.identityKey,
+            client.privateKeyBundleV1.identityKey,
+            clientFromV1Bundle.privateKeyBundleV1.identityKey,
         )
         assertEquals(
-            client.privateKeyBundleV1?.preKeysList,
-            clientFromV1Bundle.privateKeyBundleV1?.preKeysList,
+            client.privateKeyBundleV1.preKeysList,
+            clientFromV1Bundle.privateKeyBundleV1.preKeysList,
         )
     }
 
@@ -91,21 +90,22 @@ class ClientTest {
         )
         val client =
             Client().create(account = fakeWallet, options = options)
-        assertEquals(
-            client.address.lowercase(),
-            client.libXMTPClient?.accountAddress()?.lowercase()
-        )
+        assert(client.canMessageV3(listOf(client.address)))
 
         val bundle = client.privateKeyBundle
-        val clientFromV1Bundle = Client().buildFromBundle(bundle, account = fakeWallet, options = options)
+        val clientFromV1Bundle =
+            Client().buildFromBundle(bundle, account = fakeWallet, options = options)
         assertEquals(client.address, clientFromV1Bundle.address)
         assertEquals(
             client.privateKeyBundleV1.identityKey,
             clientFromV1Bundle.privateKeyBundleV1.identityKey,
         )
+
+        assert(clientFromV1Bundle.canMessageV3(listOf(client.address)))
+
         assertEquals(
-            client.libXMTPClient?.accountAddress(),
-            clientFromV1Bundle.libXMTPClient?.accountAddress()
+            client.address,
+            clientFromV1Bundle.address
         )
     }
 
@@ -122,16 +122,78 @@ class ClientTest {
                     appContext = context
                 )
             )
-        val v3Client = client.libXMTPClient
-        assertEquals(client.address.lowercase(), v3Client?.accountAddress()?.lowercase())
+        assert(client.canMessageV3(listOf(client.address)))
+    }
+
+    @Test
+    fun testCanDeleteDatabase() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val fakeWallet2 = PrivateKeyBuilder()
+        var client =
+            Client().create(
+                account = fakeWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableAlphaMls = true,
+                    appContext = context
+                )
+            )
+        val client2 =
+            Client().create(
+                account = fakeWallet2,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableAlphaMls = true,
+                    appContext = context
+                )
+            )
+
+        runBlocking {
+            client.conversations.newGroup(listOf(client2.address))
+            client.conversations.syncGroups()
+            assertEquals(client.conversations.listGroups().size, 1)
+        }
+
+        client.deleteLocalDatabase()
+
+        client =
+            Client().create(
+                account = fakeWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableAlphaMls = true,
+                    appContext = context
+                )
+            )
+
+        runBlocking {
+            client.conversations.syncGroups()
+            assertEquals(client.conversations.listGroups().size, 0)
+        }
+    }
+
+    @Test
+    fun testCreatesAV3DevClient() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val client =
+            Client().create(
+                account = fakeWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.DEV, true),
+                    enableAlphaMls = true,
+                    appContext = context
+                )
+            )
+        assert(client.canMessageV3(listOf(client.address)))
     }
 
     @Test
     fun testDoesNotCreateAV3Client() {
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
-        val v3Client = client.libXMTPClient
-        assertNull(v3Client)
+        assert(!client.canMessageV3(listOf(client.address)))
     }
 
     @Test
@@ -145,13 +207,12 @@ class ClientTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testPublicCanMessage() {
         val aliceWallet = PrivateKeyBuilder()
         val notOnNetwork = PrivateKeyBuilder()
         val opts = ClientOptions(ClientOptions.Api(XMTPEnvironment.LOCAL, false))
         val aliceClient = Client().create(aliceWallet, opts)
-        aliceClient.ensureUserContactPublished()
+        runBlocking { aliceClient.ensureUserContactPublished() }
 
         val canMessage = Client.canMessage(aliceWallet.address, opts)
         val cannotMessage = Client.canMessage(notOnNetwork.address, opts)
@@ -161,7 +222,6 @@ class ClientTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testPreEnableIdentityCallback() {
         val fakeWallet = PrivateKeyBuilder()
         val expectation = CompletableFuture<Unit>()
@@ -184,7 +244,6 @@ class ClientTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testPreCreateIdentityCallback() {
         val fakeWallet = PrivateKeyBuilder()
         val expectation = CompletableFuture<Unit>()
