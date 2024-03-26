@@ -72,7 +72,7 @@ These files can serve as the basis for what you might want to provide for your o
 
 5. Add the example notification server address to the example app's `MainActivity`. In this case, it should be `PushNotificationTokenManager.init(this, "10.0.2.2:8080")`.
 
-6. Change the example app's environment to `XMTPEnvironment.PRODUCTION` in `Client.kt`.
+6. Change the example app's environment to `XMTPEnvironment.PRODUCTION` in `ClientManager.kt`.
 
 7. Set up the example app to register the FCM token with the network and then subscribe each conversation to push notifications. For example:
 
@@ -81,7 +81,24 @@ These files can serve as the basis for what you might want to provide for your o
     ```
 
     ```kotlin
-    XMTPPush(context, "10.0.2.2:8080").subscribe(conversations.map { it.topic })
+    val subscriptions = conversations.map {
+        val hmacKeysResult = ClientManager.client.conversations.getHmacKeys()
+        val hmacKeys = hmacKeysResult.hmacKeysMap
+        val result = hmacKeys[it.topic]?.valuesList?.map { hmacKey ->
+            Service.Subscription.HmacKey.newBuilder().also { sub_key ->
+                sub_key.key = hmacKey.hmacKey
+                sub_key.thirtyDayPeriodsSinceEpoch = hmacKey.thirtyDayPeriodsSinceEpoch
+            }.build()
+        }
+
+        Service.Subscription.newBuilder().also { sub ->
+            sub.addAllHmacKeys(result)
+            sub.topic = it.topic
+            sub.isSilent = it.version == Conversation.Version.V1
+        }.build()
+    }
+
+    XMTPPush(context, "10.0.2.2:8080").subscribeWithMetadata(subscriptions)
     ```
 
     ```kotlin
