@@ -14,6 +14,7 @@ import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.example.ClientManager
 import org.xmtp.android.example.R
 import org.xmtp.android.example.conversation.ConversationDetailActivity
@@ -56,7 +57,8 @@ class PushNotificationsService : FirebaseMessagingService() {
         GlobalScope.launch(Dispatchers.Main) {
             ClientManager.createClient(keysData, applicationContext)
         }
-        val conversation = ClientManager.client.fetchConversation(topic, includeGroups = true)
+        val conversation =
+            runBlocking { ClientManager.client.fetchConversation(topic, includeGroups = true) }
         if (conversation == null) {
             Log.e(TAG, "No keys or conversation persisted")
             return
@@ -96,13 +98,7 @@ class PushNotificationsService : FirebaseMessagingService() {
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
+                Log.e(TAG, "No push notification permissions granted")
                 return
             }
             notify(topic.hashCode(), builder.build())

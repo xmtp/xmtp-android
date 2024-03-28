@@ -55,11 +55,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.peerAddress
                 is V2 -> conversationV2.peerAddress
-                is Group -> {
-                    val addresses = group.memberAddresses().toMutableList()
-                    addresses.remove(clientAddress)
-                    addresses.joinToString(",")
-                }
+                is Group -> group.peerAddresses().joinToString(",")
             }
         }
 
@@ -68,11 +64,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> listOf(conversationV1.peerAddress)
                 is V2 -> listOf(conversationV2.peerAddress)
-                is Group -> {
-                    val addresses = group.memberAddresses().toMutableList()
-                    addresses.remove(clientAddress)
-                    addresses
-                }
+                is Group -> group.peerAddresses()
             }
         }
 
@@ -100,7 +92,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.client.contacts.consentList.state(address = peerAddress)
             is V2 -> conversationV2.client.contacts.consentList.state(address = peerAddress)
-            is Group -> ConsentState.UNKNOWN // No such thing as consent for a group
+            is Group -> group.client.contacts.consentList.groupState(groupId = group.id)
         }
     }
 
@@ -177,7 +169,7 @@ sealed class Conversation {
         }
     }
 
-    fun send(prepared: PreparedMessage): String {
+    suspend fun send(prepared: PreparedMessage): String {
         return when (this) {
             is V1 -> conversationV1.send(prepared = prepared)
             is V2 -> conversationV2.send(prepared = prepared)
@@ -185,7 +177,7 @@ sealed class Conversation {
         }
     }
 
-    fun <T> send(content: T, options: SendOptions? = null): String {
+    suspend fun <T> send(content: T, options: SendOptions? = null): String {
         return when (this) {
             is V1 -> conversationV1.send(content = content, options = options)
             is V2 -> conversationV2.send(content = content, options = options)
@@ -193,7 +185,7 @@ sealed class Conversation {
         }
     }
 
-    fun send(text: String, sendOptions: SendOptions? = null, sentAt: Date? = null): String {
+    suspend fun send(text: String, sendOptions: SendOptions? = null, sentAt: Date? = null): String {
         return when (this) {
             is V1 -> conversationV1.send(text = text, sendOptions, sentAt)
             is V2 -> conversationV2.send(text = text, sendOptions, sentAt)
@@ -201,7 +193,7 @@ sealed class Conversation {
         }
     }
 
-    fun send(encodedContent: EncodedContent, options: SendOptions? = null): String {
+    suspend fun send(encodedContent: EncodedContent, options: SendOptions? = null): String {
         return when (this) {
             is V1 -> conversationV1.send(encodedContent = encodedContent, options = options)
             is V2 -> conversationV2.send(encodedContent = encodedContent, options = options)
@@ -214,7 +206,7 @@ sealed class Conversation {
             return client.address
         }
 
-    // Is the topic of the conversation depending of the version
+    // Is the topic of the conversation depending on the version
     val topic: String
         get() {
             return when (this) {
@@ -237,7 +229,7 @@ sealed class Conversation {
      * If [limit] is specified then results are pulled in pages of that size.
      * If [direction] is specified then that will control the sort order of te messages.
      */
-    fun messages(
+    suspend fun messages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
@@ -270,7 +262,7 @@ sealed class Conversation {
         }
     }
 
-    fun decryptedMessages(
+    suspend fun decryptedMessages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
@@ -291,11 +283,7 @@ sealed class Conversation {
             is V1 -> conversationV1.decrypt(envelope)
             is V2 -> conversationV2.decrypt(envelope)
             is Group -> {
-                if (message == null) {
-                    throw XMTPException("Groups require message be passed")
-                } else {
-                    group.decrypt(message)
-                }
+                message?.decrypt() ?: throw XMTPException("Groups require message be passed")
             }
         }
     }

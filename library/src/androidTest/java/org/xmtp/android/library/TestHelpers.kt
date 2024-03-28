@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.xmtp.android.library.codecs.Fetcher
 import org.xmtp.android.library.messages.ContactBundle
@@ -47,12 +48,8 @@ class FakeWallet : SigningKey {
         return signature
     }
 
-    override fun sign(text: String): ByteArray {
-        return privateKeyBuilder.sign(text)
-    }
-
-    override suspend fun signLegacy(message: String): Signature {
-        val signature = privateKeyBuilder.signLegacy(message)
+    override suspend fun sign(message: String): Signature {
+        val signature = privateKeyBuilder.sign(message)
         return signature
     }
 
@@ -194,17 +191,7 @@ class FakeApiClient : ApiClient {
         published.addAll(envelopes)
         return PublishResponse.newBuilder().build()
     }
-
-    override suspend fun subscribe(topics: List<String>): Flow<Envelope> {
-        val env = stream.counts().first()
-
-        if (topics.contains(env.contentTopic)) {
-            return flowOf(env)
-        }
-        return flowOf()
-    }
-
-    override suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<MessageApiOuterClass.Envelope> {
+    override suspend fun subscribe(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<MessageApiOuterClass.Envelope> {
         val env = stream.counts().first()
 
         if (request.first().contentTopicsList.contains(env.contentTopic)) {
@@ -222,11 +209,11 @@ data class Fixtures(
 ) {
     var fakeApiClient: FakeApiClient = FakeApiClient()
     var alice: PrivateKey = aliceAccount.getPrivateKey()
-    var aliceClient: Client = Client().create(account = aliceAccount, apiClient = fakeApiClient, options = clientOptions)
+    var aliceClient: Client = Client().create(account = aliceAccount, options = clientOptions)
     var bob: PrivateKey = bobAccount.getPrivateKey()
-    var bobClient: Client = Client().create(account = bobAccount, apiClient = fakeApiClient, options = clientOptions)
+    var bobClient: Client = Client().create(account = bobAccount, options = clientOptions)
     var caro: PrivateKey = caroAccount.getPrivateKey()
-    var caroClient: Client = Client().create(account = caroAccount, apiClient = fakeApiClient, options = clientOptions)
+    var caroClient: Client = Client().create(account = caroAccount, options = clientOptions)
     constructor(clientOptions: ClientOptions?) : this(
         aliceAccount = PrivateKeyBuilder(),
         bobAccount = PrivateKeyBuilder(),
@@ -246,7 +233,7 @@ data class Fixtures(
             message = contactBundle.toByteString()
         }.build()
 
-        client.publish(envelopes = listOf(envelope))
+        runBlocking { client.publish(envelopes = listOf(envelope)) }
     }
 }
 

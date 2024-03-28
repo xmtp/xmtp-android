@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,12 +20,13 @@ class ReplyTest {
 
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
-        val aliceConversation =
+        val aliceConversation = runBlocking {
             aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+        }
 
-        aliceConversation.send(text = "hey alice 2 bob")
+        runBlocking { aliceConversation.send(text = "hey alice 2 bob") }
 
-        val messageToReact = aliceConversation.messages()[0]
+        val messageToReact = runBlocking { aliceConversation.messages()[0] }
 
         val attachment = Reply(
             reference = messageToReact.id,
@@ -32,11 +34,13 @@ class ReplyTest {
             contentType = ContentTypeText
         )
 
-        aliceConversation.send(
-            content = attachment,
-            options = SendOptions(contentType = ContentTypeReply),
-        )
-        val messages = aliceConversation.messages()
+        runBlocking {
+            aliceConversation.send(
+                content = attachment,
+                options = SendOptions(contentType = ContentTypeReply),
+            )
+        }
+        val messages = runBlocking { aliceConversation.messages() }
         assertEquals(messages.size, 2)
         if (messages.size == 2) {
             val content: Reply? = messages.first().content()

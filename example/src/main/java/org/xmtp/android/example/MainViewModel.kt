@@ -15,11 +15,13 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.example.extension.flowWhileShared
 import org.xmtp.android.example.extension.stateFlow
 import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
 import org.xmtp.android.library.Conversation
 import org.xmtp.android.library.DecodedMessage
+import org.xmtp.android.library.push.Service
 
 class MainViewModel : ViewModel() {
 
@@ -43,7 +45,24 @@ class MainViewModel : ViewModel() {
             val listItems = mutableListOf<MainListItem>()
             try {
                 val conversations = ClientManager.client.conversations.list(includeGroups = true)
-                PushNotificationTokenManager.xmtpPush.subscribe(conversations.map { it.topic })
+                val hmacKeysResult = ClientManager.client.conversations.getHmacKeys()
+                val subscriptions = conversations.map {
+                    val hmacKeys = hmacKeysResult.hmacKeysMap
+                    val result = hmacKeys[it.topic]?.valuesList?.map { hmacKey ->
+                        Service.Subscription.HmacKey.newBuilder().also { sub_key ->
+                            sub_key.key = hmacKey.hmacKey
+                            sub_key.thirtyDayPeriodsSinceEpoch = hmacKey.thirtyDayPeriodsSinceEpoch
+                        }.build()
+                    }
+
+                    Service.Subscription.newBuilder().also { sub ->
+                        sub.addAllHmacKeys(result)
+                        sub.topic = it.topic
+                        sub.isSilent = it.version == Conversation.Version.V1
+                    }.build()
+                }
+
+                PushNotificationTokenManager.xmtpPush.subscribeWithMetadata(subscriptions)
                 listItems.addAll(
                     conversations.map { conversation ->
                         val lastMessage = fetchMostRecentMessage(conversation)
@@ -70,7 +89,7 @@ class MainViewModel : ViewModel() {
 
     @WorkerThread
     private fun fetchMostRecentMessage(conversation: Conversation): DecodedMessage? {
-        return conversation.messages(limit = 1).firstOrNull()
+        return runBlocking { conversation.messages(limit = 1).firstOrNull() }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
