@@ -14,7 +14,8 @@ services:
       - --wait-for-db=30s
       - --api.authn.enable
     ports:
-      - 5557:5556
+      - 5555:5555
+      - 5556:5556
     depends_on:
       - db
 
