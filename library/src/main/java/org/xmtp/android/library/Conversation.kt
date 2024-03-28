@@ -8,6 +8,7 @@ import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.PagingInfoSortDirection
+import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
@@ -212,7 +213,7 @@ sealed class Conversation {
             return when (this) {
                 is V1 -> conversationV1.topic.description
                 is V2 -> conversationV2.topic
-                is Group -> group.id.toHex()
+                is Group -> group.topic
             }
         }
 
