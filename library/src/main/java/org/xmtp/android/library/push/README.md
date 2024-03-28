@@ -81,9 +81,9 @@ These files can serve as the basis for what you might want to provide for your o
     ```
 
     ```kotlin
+    val hmacKeys = hmacKeysResult.hmacKeysMap
     val subscriptions = conversations.map {
         val hmacKeysResult = ClientManager.client.conversations.getHmacKeys()
-        val hmacKeys = hmacKeysResult.hmacKeysMap
         val result = hmacKeys[it.topic]?.valuesList?.map { hmacKey ->
             Service.Subscription.HmacKey.newBuilder().also { sub_key ->
                 sub_key.key = hmacKey.hmacKey
