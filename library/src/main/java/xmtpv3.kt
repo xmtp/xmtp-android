@@ -399,6 +399,8 @@ internal interface _UniFFILib : Library {
     ): Pointer
     fun uniffi_xmtpv3_fn_method_fficonversations_list(`ptr`: Pointer,`opts`: RustBuffer.ByValue,
     ): Pointer
+    fun uniffi_xmtpv3_fn_method_fficonversations_process_streamed_welcome_message(`ptr`: Pointer,`envelopeBytes`: RustBuffer.ByValue,_uniffi_out_err: RustCallStatus,
+    ): Pointer
     fun uniffi_xmtpv3_fn_method_fficonversations_stream(`ptr`: Pointer,`callback`: Long,
     ): Pointer
     fun uniffi_xmtpv3_fn_method_fficonversations_stream_all_messages(`ptr`: Pointer,`messageCallback`: Long,
@@ -421,6 +423,8 @@ internal interface _UniFFILib : Library {
     ): Byte
     fun uniffi_xmtpv3_fn_method_ffigroup_list_members(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
+    fun uniffi_xmtpv3_fn_method_ffigroup_process_streamed_group_message(`ptr`: Pointer,`envelopeBytes`: RustBuffer.ByValue,
+    ): Pointer
     fun uniffi_xmtpv3_fn_method_ffigroup_remove_members(`ptr`: Pointer,`accountAddresses`: RustBuffer.ByValue,
     ): Pointer
     fun uniffi_xmtpv3_fn_method_ffigroup_send(`ptr`: Pointer,`contentBytes`: RustBuffer.ByValue,
@@ -657,6 +661,8 @@ internal interface _UniFFILib : Library {
     ): Short
     fun uniffi_xmtpv3_checksum_method_fficonversations_list(
     ): Short
+    fun uniffi_xmtpv3_checksum_method_fficonversations_process_streamed_welcome_message(
+    ): Short
     fun uniffi_xmtpv3_checksum_method_fficonversations_stream(
     ): Short
     fun uniffi_xmtpv3_checksum_method_fficonversations_stream_all_messages(
@@ -676,6 +682,8 @@ internal interface _UniFFILib : Library {
     fun uniffi_xmtpv3_checksum_method_ffigroup_is_active(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_list_members(
+    ): Short
+    fun uniffi_xmtpv3_checksum_method_ffigroup_process_streamed_group_message(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_remove_members(
     ): Short
@@ -796,6 +804,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_list() != 44067.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_process_streamed_welcome_message() != 55636.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_stream() != 60583.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -824,6 +835,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_list_members() != 15786.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_process_streamed_group_message() != 54382.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_remove_members() != 1645.toShort()) {
@@ -1295,6 +1309,7 @@ public interface FfiConversationsInterface {
     @Throws(GenericException::class)
     suspend fun `createGroup`(`accountAddresses`: List<String>, `permissions`: GroupPermissions?): FfiGroup@Throws(GenericException::class)
     suspend fun `list`(`opts`: FfiListConversationsOptions): List<FfiGroup>@Throws(GenericException::class)
+    fun `processStreamedWelcomeMessage`(`envelopeBytes`: ByteArray): FfiGroup@Throws(GenericException::class)
     suspend fun `stream`(`callback`: FfiConversationCallback): FfiStreamCloser@Throws(GenericException::class)
     suspend fun `streamAllMessages`(`messageCallback`: FfiMessageCallback): FfiStreamCloser@Throws(GenericException::class)
     suspend fun `sync`()
@@ -1359,6 +1374,18 @@ class FfiConversations(
             GenericException.ErrorHandler,
         )
     }
+
+    @Throws(GenericException::class)override fun `processStreamedWelcomeMessage`(`envelopeBytes`: ByteArray): FfiGroup =
+        callWithPointer {
+            rustCallWithError(GenericException) { _status ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_process_streamed_welcome_message(it,
+                    FfiConverterByteArray.lower(`envelopeBytes`),
+                    _status)
+            }
+        }.let {
+            FfiConverterTypeFfiGroup.lift(it)
+        }
+
 
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -1461,6 +1488,7 @@ public interface FfiGroupInterface {
     fun `id`(): ByteArray@Throws(GenericException::class)
     fun `isActive`(): Boolean@Throws(GenericException::class)
     fun `listMembers`(): List<FfiGroupMember>@Throws(GenericException::class)
+    suspend fun `processStreamedGroupMessage`(`envelopeBytes`: ByteArray): FfiMessage@Throws(GenericException::class)
     suspend fun `removeMembers`(`accountAddresses`: List<String>)@Throws(GenericException::class)
     suspend fun `send`(`contentBytes`: ByteArray)@Throws(GenericException::class)
     suspend fun `stream`(`messageCallback`: FfiMessageCallback): FfiStreamCloser@Throws(GenericException::class)
@@ -1577,6 +1605,26 @@ class FfiGroup(
             FfiConverterSequenceTypeFfiGroupMember.lift(it)
         }
 
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `processStreamedGroupMessage`(`envelopeBytes`: ByteArray) : FfiMessage {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_process_streamed_group_message(
+                    thisPtr,
+                    FfiConverterByteArray.lower(`envelopeBytes`),
+                )
+            },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, continuation) },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+            // lift function
+            { FfiConverterTypeFfiMessage.lift(it) },
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
 
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
