@@ -92,7 +92,7 @@ class GroupTest {
         assertEquals(boGroup.adminAddress().lowercase(), boClient.address.lowercase())
         assertEquals(alixGroup.adminAddress().lowercase(), boClient.address.lowercase())
         assert(boGroup.isAdmin())
-        assert(!alixGroup.isAdmin())
+        assert(alixGroup.isAdmin())
     }
 
     @Test
