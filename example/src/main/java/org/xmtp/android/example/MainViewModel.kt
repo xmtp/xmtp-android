@@ -57,7 +57,9 @@ class MainViewModel : ViewModel() {
                     }
 
                     Service.Subscription.newBuilder().also { sub ->
-                        sub.addAllHmacKeys(result)
+                        if (!result.isNullOrEmpty()) {
+                            sub.addAllHmacKeys(result)
+                        }
                         sub.topic = it.topic
                         sub.isSilent = it.version == Conversation.Version.V1
                     }.build()
