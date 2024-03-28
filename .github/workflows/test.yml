@@ -25,12 +25,12 @@ jobs:
       - name: Start Docker containers
         run: dev/up
       - name: Gradle Run Unit Tests
-        run: ./gradlew library:testDebug
+        run: ./gradlew test
   library-integration:
     name: Library (Integration Tests)
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v4
       - name: Configure JDK
         uses: actions/setup-java@v4
@@ -52,5 +52,5 @@ jobs:
           disable-animations: true
           disk-size: 6000M
           heap-size: 600M
-          script: ./gradlew library:testDebugUnitTest --tests "org.xmtp.android.library.*"
+          script: ./gradlew connectedAndroidTest
 
