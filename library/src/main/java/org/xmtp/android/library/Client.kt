@@ -166,6 +166,7 @@ class Client() {
         apiClient: ApiClient,
         libXMTPClient: FfiXmtpClient? = null,
         dbPath: String = "",
+        installationIds: List<String> = emptyList(),
     ) : this() {
         this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
@@ -175,6 +176,7 @@ class Client() {
         this.conversations =
             Conversations(client = this, libXMTPConversations = libXMTPClient?.conversations())
         this.dbPath = dbPath
+        this.installationIds = installationIds
     }
 
     fun buildFrom(
@@ -202,12 +204,21 @@ class Client() {
             }
         } else Pair(null, " ")
 
+        val installationIds = if (v3Client != null) {
+            runBlocking {
+                v3Client.installationIds().map { it.toHex() }
+            }
+        } else {
+            emptyList()
+        }
+
         return Client(
             address = address,
             privateKeyBundleV1 = bundle,
             apiClient = apiClient,
             libXMTPClient = v3Client,
-            dbPath = dbPath
+            dbPath = dbPath,
+            installationIds = installationIds
         )
     }
 
@@ -251,13 +262,22 @@ class Client() {
                         account.address
                     )
 
+                val installationIds = if (libXMTPClient != null) {
+                    runBlocking {
+                        libXMTPClient.installationIds().map { it.toHex() }
+                    }
+                } else {
+                    emptyList()
+                }
+
                 val client =
                     Client(
                         account.address,
                         privateKeyBundleV1,
                         apiClient,
                         libXMTPClient,
-                        dbPath
+                        dbPath,
+                        installationIds
                     )
                 client.ensureUserContactPublished()
                 client
@@ -299,12 +319,21 @@ class Client() {
             }
         } else Pair(null, "")
 
+        val installationIds = if (v3Client != null) {
+            runBlocking {
+                v3Client.installationIds().map { it.toHex() }
+            }
+        } else {
+            emptyList()
+        }
+
         return Client(
             address = address,
             privateKeyBundleV1 = v1Bundle,
             apiClient = apiClient,
             libXMTPClient = v3Client,
-            dbPath = dbPath
+            dbPath = dbPath,
+            installationIds = installationIds
         )
     }
 
@@ -502,6 +531,7 @@ class Client() {
     suspend fun subscribe(topics: List<String>): Flow<Envelope> {
         return subscribe2(flowOf(makeSubscribeRequest(topics)))
     }
+
     suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<Envelope> {
         return apiClient.subscribe(request = request)
     }
