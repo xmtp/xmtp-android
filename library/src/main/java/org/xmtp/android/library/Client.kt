@@ -81,6 +81,7 @@ data class ClientOptions(
 
 class Client() {
     lateinit var address: String
+    lateinit var installationIds: List<String>
     lateinit var privateKeyBundleV1: PrivateKeyBundleV1
     lateinit var apiClient: ApiClient
     lateinit var contacts: Contacts
@@ -89,7 +90,6 @@ class Client() {
     val libXMTPVersion: String = getVersionInfo()
     private var libXMTPClient: FfiXmtpClient? = null
     private var dbPath: String = ""
-    private lateinit var v2RustClient: FfiV2ApiClient
 
     companion object {
         private const val TAG = "Client"

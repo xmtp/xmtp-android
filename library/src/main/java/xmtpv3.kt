@@ -475,6 +475,8 @@ internal interface _UniFFILib : Library {
     ): Pointer
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_conversations(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
     ): Pointer
+    fun uniffi_xmtpv3_fn_method_ffixmtpclient_installation_ids(`ptr`: Pointer,
+    ): Pointer
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_register_identity(`ptr`: Pointer,`recoverableWalletSignature`: RustBuffer.ByValue,
     ): Pointer
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_text_to_sign(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
@@ -725,6 +727,8 @@ internal interface _UniFFILib : Library {
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_conversations(
     ): Short
+    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_installation_ids(
+    ): Short
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_register_identity(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_text_to_sign(
@@ -898,6 +902,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_conversations() != 31628.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_installation_ids() != 58687.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_register_identity() != 64634.toShort()) {
@@ -2185,6 +2192,7 @@ public interface FfiXmtpClientInterface {
     fun `accountAddress`(): String@Throws(GenericException::class)
     suspend fun `canMessage`(`accountAddresses`: List<String>): List<Boolean>
     fun `conversations`(): FfiConversations@Throws(GenericException::class)
+    suspend fun `installationIds`(): List<ByteArray>@Throws(GenericException::class)
     suspend fun `registerIdentity`(`recoverableWalletSignature`: ByteArray?)
     fun `textToSign`(): String?
     companion object
@@ -2250,6 +2258,26 @@ class FfiXmtpClient(
             FfiConverterTypeFfiConversations.lift(it)
         }
 
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `installationIds`() : List<ByteArray> {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_installation_ids(
+                    thisPtr,
+
+                    )
+            },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, continuation) },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+            // lift function
+            { FfiConverterSequenceByteArray.lift(it) },
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
 
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
