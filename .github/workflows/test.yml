@@ -32,6 +32,11 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
+      - name: Configure JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: '17'
       - name: Start Docker containers
         run: dev/up
       - name: Enable KVM
