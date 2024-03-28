@@ -11,7 +11,6 @@ sealed class Topic {
     data class userWelcome(val installationId: String?) : Topic()
     data class groupMessage(val groupId: String?) : Topic()
 
-
     /**
      * Getting the [Topic] structured depending if is [userPrivateStoreKeyBundle], [contact],
      * [userIntro], [userInvite], [directMessageV1], [directMessageV2] and [preferenceList]

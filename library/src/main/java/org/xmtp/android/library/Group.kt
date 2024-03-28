@@ -126,7 +126,6 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     suspend fun processMessage(envelopeBytes: ByteArray): Message {
         val message = libXMTPGroup.processStreamedGroupMessage(envelopeBytes)
         return Message(client, message)
-
     }
 
     fun isActive(): Boolean {
