@@ -58,4 +58,4 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest --stacktrace -PpreDexEnable=false --max-workers 4 --no-daemon
+          script: ./gradlew connectedCheck --stacktrace -PpreDexEnable=false --max-workers 4 --no-daemon
