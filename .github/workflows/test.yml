@@ -51,11 +51,5 @@ jobs:
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 28
-          arch: x86
-          profile: Nexus 5X
-          target: playstore
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: ./gradlew connectedCheck --stacktrace -PpreDexEnable=false --max-workers 4 --no-daemon
+          api-level: 29
+          script: ./gradlew connectedCheck
