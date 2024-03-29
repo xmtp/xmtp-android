@@ -53,7 +53,5 @@ jobs:
         with:
           api-level: 29
           script:
-            adb kill-server
-            adb start-server
             ./gradlew library:connectedDebugAndroidTest
             ./gradlew connectedCheck
