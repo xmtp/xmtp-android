@@ -49,7 +49,7 @@ jobs:
 #          sudo udevadm control --reload-rules
 #          sudo udevadm trigger --name-match=kvm
       - name: Run Tests
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@v6b0df4b0efb23bb0ec63d881db79aefbc976e4b2
         with:
           api-level: 29
           script: ./gradlew connectedCheck
