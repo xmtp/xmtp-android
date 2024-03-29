@@ -7,7 +7,7 @@ import org.xmtp.android.example.R
 import org.xmtp.android.example.databinding.ListItemConversationBinding
 import org.xmtp.android.example.extension.truncatedAddress
 import org.xmtp.android.library.Conversation
-import org.xmtp.android.org.xmtp.android.library.codecs.GroupMembershipChanges
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
 
 class ConversationViewHolder(
     private val binding: ListItemConversationBinding,

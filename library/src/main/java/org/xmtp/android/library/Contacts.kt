@@ -55,7 +55,7 @@ class ConsentList(val client: Client) {
     private val privateKey = client.privateKeyBundleV1.identityKey.secp256K1.bytes
 
     private val identifier: String =
-        org.xmtp.android.generatePrivatePreferencesTopicIdentifier(
+        uniffi.xmtpv3.generatePrivatePreferencesTopicIdentifier(
             privateKey.toByteArray(),
         )
 
@@ -70,7 +70,7 @@ class ConsentList(val client: Client) {
         val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
         for (envelope in envelopes) {
             val payload =
-                org.xmtp.android.userPreferencesDecrypt(
+                uniffi.xmtpv3.userPreferencesDecrypt(
                     publicKey.toByteArray(),
                     privateKey.toByteArray(),
                     envelope.message.toByteArray(),
@@ -139,7 +139,7 @@ class ConsentList(val client: Client) {
             }.build()
 
         val message =
-            org.xmtp.android.userPreferencesEncrypt(
+            uniffi.xmtpv3.userPreferencesEncrypt(
                 publicKey.toByteArray(),
                 privateKey.toByteArray(),
                 payload.toByteArray(),

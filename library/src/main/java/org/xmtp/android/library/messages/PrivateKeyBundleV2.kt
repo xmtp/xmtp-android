@@ -42,7 +42,7 @@ fun PrivateKeyBundleV2.sharedSecret(
 
 @OptIn(ExperimentalUnsignedTypes::class)
 fun PrivateKeyBundleV2.sharedSecret(privateData: ByteArray, publicData: ByteArray): ByteArray {
-    return org.xmtp.android.diffieHellmanK256(privateData, publicData).toUByteArray().toByteArray()
+    return uniffi.xmtpv3.diffieHellmanK256(privateData, publicData).toUByteArray().toByteArray()
 }
 
 fun PrivateKeyBundleV2.findPreKey(myPreKey: SignedPublicKey): SignedPrivateKey {

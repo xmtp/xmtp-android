@@ -499,7 +499,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("Flaky")
     fun testListBatchDecryptedMessages() {
         val bobConversation =
             runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
@@ -791,7 +790,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("Flaky")
     fun testCanHaveConsentState() {
         val bobConversation =
             runBlocking { bobClient.conversations.newConversation(alice.walletAddress, null) }
