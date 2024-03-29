@@ -3,7 +3,7 @@
 
 @file:Suppress("NAME_SHADOWING")
 
-package uniffi.xmtpv3;
+package org.xmtp.android;
 
 // Common helper code.
 //

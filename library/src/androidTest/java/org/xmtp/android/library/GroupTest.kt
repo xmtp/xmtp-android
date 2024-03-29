@@ -20,7 +20,7 @@ import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import uniffi.xmtpv3.GroupPermissions
+import org.xmtp.android.GroupPermissions
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {

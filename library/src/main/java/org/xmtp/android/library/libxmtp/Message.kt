@@ -6,7 +6,7 @@ import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.toHex
-import uniffi.xmtpv3.FfiMessage
+import org.xmtp.android.FfiMessage
 import java.util.Date
 
 data class Message(val client: Client, private val libXMTPMessage: FfiMessage) {

@@ -11,7 +11,7 @@ import org.xmtp.android.example.R
 import org.xmtp.android.example.conversation.ConversationDetailViewModel
 import org.xmtp.android.example.databinding.ListItemMessageBinding
 import org.xmtp.android.example.extension.margins
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
+import org.xmtp.android.org.xmtp.android.library.codecs.GroupMembershipChanges
 import java.text.SimpleDateFormat
 import java.util.Locale
 

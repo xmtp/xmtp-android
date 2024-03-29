@@ -11,8 +11,8 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChangeCodec
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
+import org.xmtp.android.org.xmtp.android.library.codecs.GroupMembershipChangeCodec
+import org.xmtp.android.org.xmtp.android.library.codecs.GroupMembershipChanges
 
 @RunWith(AndroidJUnit4::class)
 class GroupMembershipChangeTest {

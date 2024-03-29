@@ -68,7 +68,7 @@ val Signature.rawDataWithNormalizedRecovery: ByteArray
 @OptIn(ExperimentalUnsignedTypes::class)
 fun Signature.verify(signedBy: PublicKey, digest: ByteArray): Boolean {
     return try {
-        uniffi.xmtpv3.verifyK256Sha256(
+        org.xmtp.android.verifyK256Sha256(
             signedBy.secp256K1Uncompressed.bytes.toByteArray(),
             digest,
             ecdsaCompact.bytes.toByteArray(),

@@ -1,7 +1,7 @@
 package org.xmtp.android.library.libxmtp
 
 import android.util.Log
-import uniffi.xmtpv3.FfiLogger
+import org.xmtp.android.FfiLogger
 
 class XMTPLogger : FfiLogger {
     override fun log(level: UInt, levelLabel: String, message: String) {

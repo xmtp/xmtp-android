@@ -1,4 +1,4 @@
-package uniffi.xmtpv3.org.xmtp.android.library.codecs
+package org.xmtp.android.org.xmtp.android.library.codecs
 
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.ContentTypeId

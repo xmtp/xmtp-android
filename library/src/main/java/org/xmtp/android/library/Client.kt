@@ -43,11 +43,11 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
-import uniffi.xmtpv3.FfiV2ApiClient
-import uniffi.xmtpv3.FfiXmtpClient
-import uniffi.xmtpv3.LegacyIdentitySource
-import uniffi.xmtpv3.createClient
-import uniffi.xmtpv3.getVersionInfo
+import org.xmtp.android.FfiV2ApiClient
+import org.xmtp.android.FfiXmtpClient
+import org.xmtp.android.LegacyIdentitySource
+import org.xmtp.android.createClient
+import org.xmtp.android.getVersionInfo
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore
