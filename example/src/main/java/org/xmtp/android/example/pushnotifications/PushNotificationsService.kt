@@ -59,9 +59,8 @@ class PushNotificationsService : FirebaseMessagingService() {
         GlobalScope.launch(Dispatchers.Main) {
             ClientManager.createClient(keysData, applicationContext)
         }
-        val welcomeTopics =
-            ClientManager.client.installationIds.map { Topic.userWelcome(it).description }
-        val builder = if (welcomeTopics.contains(topic)) {
+        val welcomeTopic = Topic.userWelcome(ClientManager.client.installationId).description
+        val builder = if (welcomeTopic == topic) {
             val group = ClientManager.client.conversations.fromWelcome(encryptedMessageData)
             val pendingIntent = PendingIntent.getActivity(
                 this,

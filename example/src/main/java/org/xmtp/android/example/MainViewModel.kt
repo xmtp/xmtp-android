@@ -65,13 +65,11 @@ class MainViewModel : ViewModel() {
                     }.build()
                 }.toMutableList()
 
-                ClientManager.client.installationIds.map {
-                    val welcomeTopic = Service.Subscription.newBuilder().also { sub ->
-                        sub.topic = Topic.userWelcome(it).description
-                        sub.isSilent = false
-                    }.build()
-                    subscriptions.add(welcomeTopic)
-                }
+                val welcomeTopic = Service.Subscription.newBuilder().also { sub ->
+                    sub.topic = Topic.userWelcome(ClientManager.client.installationId).description
+                    sub.isSilent = false
+                }.build()
+                subscriptions.add(welcomeTopic)
 
                 PushNotificationTokenManager.xmtpPush.subscribeWithMetadata(subscriptions)
                 listItems.addAll(

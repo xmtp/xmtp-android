@@ -80,13 +80,13 @@ data class ClientOptions(
 
 class Client() {
     lateinit var address: String
-    lateinit var installationIds: List<String>
     lateinit var privateKeyBundleV1: PrivateKeyBundleV1
     lateinit var apiClient: ApiClient
     lateinit var contacts: Contacts
     lateinit var conversations: Conversations
     var logger: XMTPLogger = XMTPLogger()
     val libXMTPVersion: String = getVersionInfo()
+    var installationId: String = ""
     private var libXMTPClient: FfiXmtpClient? = null
     private var dbPath: String = ""
 
@@ -165,7 +165,7 @@ class Client() {
         apiClient: ApiClient,
         libXMTPClient: FfiXmtpClient? = null,
         dbPath: String = "",
-        installationIds: List<String> = emptyList(),
+        installationId: String = "",
     ) : this() {
         this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
@@ -175,7 +175,7 @@ class Client() {
         this.conversations =
             Conversations(client = this, libXMTPConversations = libXMTPClient?.conversations())
         this.dbPath = dbPath
-        this.installationIds = installationIds
+        this.installationId = installationId
     }
 
     fun buildFrom(
@@ -203,21 +203,13 @@ class Client() {
             }
         } else Pair(null, " ")
 
-        val installationIds = if (v3Client != null) {
-            runBlocking {
-                v3Client.installationIds().map { it.toHex() }
-            }
-        } else {
-            emptyList()
-        }
-
         return Client(
             address = address,
             privateKeyBundleV1 = bundle,
             apiClient = apiClient,
             libXMTPClient = v3Client,
             dbPath = dbPath,
-            installationIds = installationIds
+            installationId = v3Client?.installationId()?.toHex() ?: ""
         )
     }
 
@@ -261,14 +253,6 @@ class Client() {
                         account.address
                     )
 
-                val installationIds = if (libXMTPClient != null) {
-                    runBlocking {
-                        libXMTPClient.installationIds().map { it.toHex() }
-                    }
-                } else {
-                    emptyList()
-                }
-
                 val client =
                     Client(
                         account.address,
@@ -276,7 +260,7 @@ class Client() {
                         apiClient,
                         libXMTPClient,
                         dbPath,
-                        installationIds
+                        libXMTPClient?.installationId()?.toHex() ?: ""
                     )
                 client.ensureUserContactPublished()
                 client
@@ -318,21 +302,13 @@ class Client() {
             }
         } else Pair(null, "")
 
-        val installationIds = if (v3Client != null) {
-            runBlocking {
-                v3Client.installationIds().map { it.toHex() }
-            }
-        } else {
-            emptyList()
-        }
-
         return Client(
             address = address,
             privateKeyBundleV1 = v1Bundle,
             apiClient = apiClient,
             libXMTPClient = v3Client,
             dbPath = dbPath,
-            installationIds = installationIds
+            installationId = v3Client?.installationId()?.toHex() ?: ""
         )
     }
 
