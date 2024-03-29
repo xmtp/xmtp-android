@@ -52,4 +52,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          script: ./gradlew connectedCheck
+          script:
+            adb kill-server
+            adb start-server
+            ./gradlew :library:connectedDebugAndroidTest
