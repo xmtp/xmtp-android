@@ -123,7 +123,7 @@ class ClientTest {
                 )
             )
         assert(client.canMessageV3(listOf(client.address)))
-        assert(client.installationIds.isNotEmpty())
+        assert(client.installationId.isNotEmpty())
     }
 
     @Test
