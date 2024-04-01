@@ -354,6 +354,9 @@ $dokka.location:org.xmtp.android.library.messages/Topic.directMessageV1/directMe
 $dokka.location:org.xmtp.android.library.messages/Topic.directMessageV2///PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/direct-message-v2/index.html
 $dokka.location:org.xmtp.android.library.messages/Topic.directMessageV2/addresses/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/direct-message-v2/addresses.html
 $dokka.location:org.xmtp.android.library.messages/Topic.directMessageV2/directMessageV2/#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/direct-message-v2/direct-message-v2.html
+$dokka.location:org.xmtp.android.library.messages/Topic.groupMessage///PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/group-message/index.html
+$dokka.location:org.xmtp.android.library.messages/Topic.groupMessage/groupId/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/group-message/group-id.html
+$dokka.location:org.xmtp.android.library.messages/Topic.groupMessage/groupMessage/#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/group-message/group-message.html
 $dokka.location:org.xmtp.android.library.messages/Topic.preferenceList///PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/preference-list/index.html
 $dokka.location:org.xmtp.android.library.messages/Topic.preferenceList/identifier/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/preference-list/identifier.html
 $dokka.location:org.xmtp.android.library.messages/Topic.preferenceList/preferenceList/#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/preference-list/preference-list.html
@@ -366,6 +369,9 @@ $dokka.location:org.xmtp.android.library.messages/Topic.userInvite/userInvite/#k
 $dokka.location:org.xmtp.android.library.messages/Topic.userPrivateStoreKeyBundle///PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/user-private-store-key-bundle/index.html
 $dokka.location:org.xmtp.android.library.messages/Topic.userPrivateStoreKeyBundle/address/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/user-private-store-key-bundle/address.html
 $dokka.location:org.xmtp.android.library.messages/Topic.userPrivateStoreKeyBundle/userPrivateStoreKeyBundle/#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/user-private-store-key-bundle/user-private-store-key-bundle.html
+$dokka.location:org.xmtp.android.library.messages/Topic.userWelcome///PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/user-welcome/index.html
+$dokka.location:org.xmtp.android.library.messages/Topic.userWelcome/installationId/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/user-welcome/installation-id.html
+$dokka.location:org.xmtp.android.library.messages/Topic.userWelcome/userWelcome/#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/user-welcome/user-welcome.html
 $dokka.location:org.xmtp.android.library.messages/Topic///PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/index.html
 $dokka.location:org.xmtp.android.library.messages/Topic/description/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/description.html
 $dokka.location:org.xmtp.android.library.messages/UnsignedPublicKeyBuilder.Companion///PointingToDeclaration/library/org.xmtp.android.library.messages/-unsigned-public-key-builder/-companion/index.html
@@ -863,7 +869,7 @@ $dokka.location:org.xmtp.android.library/Client.Companion/codecRegistry/#/Pointi
 $dokka.location:org.xmtp.android.library/Client.Companion/register/#org.xmtp.android.library.codecs.ContentCodec[*]/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/register.html
 $dokka.location:org.xmtp.android.library/Client///PointingToDeclaration/library/org.xmtp.android.library/-client/index.html
 $dokka.location:org.xmtp.android.library/Client/Client/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
-$dokka.location:org.xmtp.android.library/Client/Client/#kotlin.String#org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV1#org.xmtp.android.library.ApiClient#uniffi.xmtpv3.FfiXmtpClient?#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
+$dokka.location:org.xmtp.android.library/Client/Client/#kotlin.String#org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV1#org.xmtp.android.library.ApiClient#uniffi.xmtpv3.FfiXmtpClient?#kotlin.String#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
 $dokka.location:org.xmtp.android.library/Client/address/#/PointingToDeclaration/library/org.xmtp.android.library/-client/address.html
 $dokka.location:org.xmtp.android.library/Client/apiClient/#/PointingToDeclaration/library/org.xmtp.android.library/-client/api-client.html
 $dokka.location:org.xmtp.android.library/Client/batchQuery/#kotlin.collections.List[org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest]/PointingToDeclaration/library/org.xmtp.android.library/-client/batch-query.html
@@ -883,6 +889,7 @@ $dokka.location:org.xmtp.android.library/Client/getUserContact/#kotlin.String/Po
 $dokka.location:org.xmtp.android.library/Client/importConversation/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-client/import-conversation.html
 $dokka.location:org.xmtp.android.library/Client/importV1Conversation/#org.xmtp.android.library.ConversationV1Export/PointingToDeclaration/library/org.xmtp.android.library/-client/import-v1-conversation.html
 $dokka.location:org.xmtp.android.library/Client/importV2Conversation/#org.xmtp.android.library.ConversationV2Export/PointingToDeclaration/library/org.xmtp.android.library/-client/import-v2-conversation.html
+$dokka.location:org.xmtp.android.library/Client/installationId/#/PointingToDeclaration/library/org.xmtp.android.library/-client/installation-id.html
 $dokka.location:org.xmtp.android.library/Client/keys/#/PointingToDeclaration/library/org.xmtp.android.library/-client/keys.html
 $dokka.location:org.xmtp.android.library/Client/libXMTPVersion/#/PointingToDeclaration/library/org.xmtp.android.library/-client/lib-x-m-t-p-version.html
 $dokka.location:org.xmtp.android.library/Client/logger/#/PointingToDeclaration/library/org.xmtp.android.library/-client/logger.html
@@ -1078,6 +1085,7 @@ $dokka.location:org.xmtp.android.library/Conversations/conversation/#org.xmtp.pr
 $dokka.location:org.xmtp.android.library/Conversations/conversationsByTopic/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/conversations-by-topic.html
 $dokka.location:org.xmtp.android.library/Conversations/fromIntro/#org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope/PointingToDeclaration/library/org.xmtp.android.library/-conversations/from-intro.html
 $dokka.location:org.xmtp.android.library/Conversations/fromInvite/#org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope/PointingToDeclaration/library/org.xmtp.android.library/-conversations/from-invite.html
+$dokka.location:org.xmtp.android.library/Conversations/fromWelcome/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-conversations/from-welcome.html
 $dokka.location:org.xmtp.android.library/Conversations/getHmacKeys/#org.xmtp.proto.keystore.api.v1.Keystore.GetConversationHmacKeysRequest?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/get-hmac-keys.html
 $dokka.location:org.xmtp.android.library/Conversations/importTopicData/#org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData/PointingToDeclaration/library/org.xmtp.android.library/-conversations/import-topic-data.html
 $dokka.location:org.xmtp.android.library/Conversations/list/#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-conversations/list.html
@@ -1157,6 +1165,7 @@ $dokka.location:org.xmtp.android.library/Group/messages/#kotlin.Int?#java.util.D
 $dokka.location:org.xmtp.android.library/Group/peerAddresses/#/PointingToDeclaration/library/org.xmtp.android.library/-group/peer-addresses.html
 $dokka.location:org.xmtp.android.library/Group/permissionLevel/#/PointingToDeclaration/library/org.xmtp.android.library/-group/permission-level.html
 $dokka.location:org.xmtp.android.library/Group/prepareMessage/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-group/prepare-message.html
+$dokka.location:org.xmtp.android.library/Group/processMessage/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-group/process-message.html
 $dokka.location:org.xmtp.android.library/Group/removeMembers/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-group/remove-members.html
 $dokka.location:org.xmtp.android.library/Group/send/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-group/send.html
 $dokka.location:org.xmtp.android.library/Group/send/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-group/send.html
@@ -1164,6 +1173,7 @@ $dokka.location:org.xmtp.android.library/Group/send/#org.xmtp.proto.message.cont
 $dokka.location:org.xmtp.android.library/Group/streamDecryptedMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-group/stream-decrypted-messages.html
 $dokka.location:org.xmtp.android.library/Group/streamMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-group/stream-messages.html
 $dokka.location:org.xmtp.android.library/Group/sync/#/PointingToDeclaration/library/org.xmtp.android.library/-group/sync.html
+$dokka.location:org.xmtp.android.library/Group/topic/#/PointingToDeclaration/library/org.xmtp.android.library/-group/topic.html
 $dokka.location:org.xmtp.android.library/KeyUtil///PointingToDeclaration/library/org.xmtp.android.library/-key-util/index.html
 $dokka.location:org.xmtp.android.library/KeyUtil/addUncompressedByte/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-key-util/add-uncompressed-byte.html
 $dokka.location:org.xmtp.android.library/KeyUtil/getPublicKey/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-key-util/get-public-key.html
@@ -1248,6 +1258,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversations///PointingToDeclaration/library/
 $dokka.location:uniffi.xmtpv3/FfiConversations/FfiConversations/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/-ffi-conversations.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/createGroup/#kotlin.collections.List[kotlin.String]#uniffi.xmtpv3.GroupPermissions?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/create-group.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/list/#uniffi.xmtpv3.FfiListConversationsOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/list.html
+$dokka.location:uniffi.xmtpv3/FfiConversations/processStreamedWelcomeMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/process-streamed-welcome-message.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/stream/#uniffi.xmtpv3.FfiConversationCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/stream.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/streamAllMessages/#uniffi.xmtpv3.FfiMessageCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/stream-all-messages.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/sync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/sync.html
@@ -1255,6 +1266,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversationsInterface.Companion///PointingToDe
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/index.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/createGroup/#kotlin.collections.List[kotlin.String]#uniffi.xmtpv3.GroupPermissions?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/create-group.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/list/#uniffi.xmtpv3.FfiListConversationsOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/list.html
+$dokka.location:uniffi.xmtpv3/FfiConversationsInterface/processStreamedWelcomeMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/process-streamed-welcome-message.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/stream/#uniffi.xmtpv3.FfiConversationCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/stream.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/streamAllMessages/#uniffi.xmtpv3.FfiMessageCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/stream-all-messages.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/sync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/sync.html
@@ -1517,6 +1529,7 @@ $dokka.location:uniffi.xmtpv3/FfiGroup/groupMetadata/#/PointingToDeclaration/li
 $dokka.location:uniffi.xmtpv3/FfiGroup/id/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/id.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/isActive/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/is-active.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/listMembers/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/list-members.html
+$dokka.location:uniffi.xmtpv3/FfiGroup/processStreamedGroupMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/process-streamed-group-message.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/removeMembers/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/remove-members.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/send/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/send.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/stream/#uniffi.xmtpv3.FfiMessageCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/stream.html
@@ -1530,6 +1543,7 @@ $dokka.location:uniffi.xmtpv3/FfiGroupInterface/groupMetadata/#/PointingToDeclar
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/id/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/id.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/isActive/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/is-active.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/listMembers/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/list-members.html
+$dokka.location:uniffi.xmtpv3/FfiGroupInterface/processStreamedGroupMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/process-streamed-group-message.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/removeMembers/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/remove-members.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/send/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/send.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/stream/#uniffi.xmtpv3.FfiMessageCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/stream.html
@@ -1662,6 +1676,7 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClient/FfiXmtpClient/#com.sun.jna.Pointer/P
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/accountAddress/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/account-address.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/canMessage/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/can-message.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/conversations/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/conversations.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClient/installationId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/installation-id.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/registerIdentity/#kotlin.ByteArray?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/register-identity.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/textToSign/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/text-to-sign.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/-companion/index.html
@@ -1669,6 +1684,7 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface///PointingToDeclaration/li
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/accountAddress/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/account-address.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/canMessage/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/can-message.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/conversations/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/conversations.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/installationId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/installation-id.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/registerIdentity/#kotlin.ByteArray?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/register-identity.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/textToSign/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/text-to-sign.html
 $dokka.location:uniffi.xmtpv3/ForeignBytes.ByValue///PointingToDeclaration/library/uniffi.xmtpv3/-foreign-bytes/-by-value/index.html
