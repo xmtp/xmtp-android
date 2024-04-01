@@ -23,6 +23,7 @@ import org.xmtp.android.example.utils.KeyUtil
 import org.xmtp.android.library.Conversation
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Topic
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
 import java.util.Date
 
 class PushNotificationsService : FirebaseMessagingService() {
@@ -98,7 +99,16 @@ class PushNotificationsService : FirebaseMessagingService() {
             }
             val peerAddress = conversation.peerAddress
 
-            val body = decodedMessage.body
+            val body: String = if (decodedMessage.content<Any>() is String) {
+                decodedMessage.body
+            } else if (decodedMessage.content<Any>() is GroupMembershipChanges) {
+                val changes = decodedMessage.content() as? GroupMembershipChanges
+                "Membership Changed ${
+                    changes?.membersAddedList?.mapNotNull { it.accountAddress }.toString()
+                }"
+            } else {
+                ""
+            }
             val title = peerAddress.truncatedAddress()
 
             val pendingIntent = PendingIntent.getActivity(
