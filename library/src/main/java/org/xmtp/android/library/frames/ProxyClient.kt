@@ -18,7 +18,7 @@ class ProxyClient(private val baseUrl: String) {
         return Gson().fromJson(response, GetMetadataResponse::class.java)
     }
 
-    suspend fun post(url: String, payload: Any): GetMetadataResponse {
+    fun post(url: String, payload: Any): GetMetadataResponse {
         val connection = URL("$baseUrl?url=${java.net.URLEncoder.encode(url, "UTF-8")}").openConnection() as HttpURLConnection
         connection.requestMethod = "POST"
         connection.setRequestProperty("Content-Type", "application/json; utf-8")

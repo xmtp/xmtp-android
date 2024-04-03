@@ -16,7 +16,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 @RunWith(AndroidJUnit4::class)
-
 class FramesTest {
     @Test
     fun testFramesClient() {
@@ -49,10 +48,10 @@ class FramesTest {
             signedPayload = framesClient.signFrameAction(inputs = frameInputs)
         }
         val postUrl = metadata.extractedTags["fc:frame:post_url"]
-            ?: throw Exception("postUrl should exist")
+        assertNotNull(postUrl)
         val response: GetMetadataResponse
         runBlocking {
-            response = framesClient.proxy.post(url = postUrl, payload = signedPayload)
+            response = framesClient.proxy.post(url = postUrl!!, payload = signedPayload)
         }
 
         assertEquals(response.extractedTags["fc:frame"], "vNext")

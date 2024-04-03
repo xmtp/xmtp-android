@@ -1,8 +1,6 @@
 package org.xmtp.android.library.frames
 
 import android.util.Base64
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.frames.Constants.PROTOCOL_VERSION
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -15,30 +13,35 @@ import org.xmtp.proto.message.contents.Frames.FrameAction
 
 class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = OpenFramesProxy()) {
 
-    suspend fun signFrameAction(inputs: FrameActionInputs): FramePostPayload = withContext(Dispatchers.IO) {
+    suspend fun signFrameAction(inputs: FrameActionInputs): FramePostPayload {
         val opaqueConversationIdentifier = buildOpaqueIdentifier(inputs)
         val frameUrl = inputs.frameUrl
         val buttonIndex = inputs.buttonIndex
-        val inputText = inputs.inputText ?: ""
-        val state = inputs.state ?: ""
+        val inputText = inputs.inputText
+        val state = inputs.state
         val now = System.currentTimeMillis() / 1000
-        val test = FrameActionBody
+        val frameActionBuilder = FrameActionBody
             .newBuilder()
             .setFrameUrl(frameUrl)
             .setButtonIndex(buttonIndex)
-            .setInputText(inputText)
-            .setState(state)
-            .setUnixTimestamp(
-            now.toInt()
-        )
+            .setOpaqueConversationIdentifier(opaqueConversationIdentifier)
+            .setTimestamp(now)
+            .setUnixTimestamp(now.toInt())
 
-        val toSign = test.build()
+        if (inputText != null) {
+            frameActionBuilder.inputText = inputText
+        }
+        if (state != null) {
+            frameActionBuilder.state = state
+        }
+
+        val toSign = frameActionBuilder.build()
         val signedAction = Base64.encodeToString(buildSignedFrameAction(toSign), Base64.NO_WRAP)
 
         val untrustedData = FramePostUntrustedData(frameUrl, now, buttonIndex, inputText, state, xmtpClient.address, opaqueConversationIdentifier, now.toInt())
         val trustedData = FramePostTrustedData(signedAction)
 
-        FramePostPayload("xmtp@$PROTOCOL_VERSION", untrustedData, trustedData)
+        return FramePostPayload("xmtp@$PROTOCOL_VERSION", untrustedData, trustedData)
     }
 
     private suspend fun signDigest(digest: ByteArray): Signature {
@@ -47,7 +50,7 @@ class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = 
         return PrivateKeyBuilder(privateKey).sign(digest)
     }
 
-    private suspend fun getPublicKeyBundle():  SignedPublicKeyBundle  {
+    private fun getPublicKeyBundle(): SignedPublicKeyBundle {
         return xmtpClient.keys.getPublicKeyBundle()
     }
 
@@ -59,9 +62,9 @@ class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = 
         val frameAction = FrameAction.newBuilder()
             .setActionBody(actionBodyInputs.toByteString())
             .setSignature(signature)
-            .setSignedPublicKeyBundle(publicKeyBundle).build();
+            .setSignedPublicKeyBundle(publicKeyBundle).build()
 
-        return frameAction.toByteArray();
+        return frameAction.toByteArray()
     }
 
     private fun buildOpaqueIdentifier(inputs: FrameActionInputs): String {
