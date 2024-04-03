@@ -7,23 +7,23 @@ import org.xmtp.android.library.frames.Constants.OPEN_FRAMES_PROXY_URL
 
 class OpenFramesProxy(private val inner: ProxyClient = ProxyClient(OPEN_FRAMES_PROXY_URL)) {
 
-    suspend fun readMetadata(url: String): GetMetadataResponse = withContext(Dispatchers.IO) {
-        inner.readMetadata(url)
+    suspend fun readMetadata(url: String): GetMetadataResponse {
+        return inner.readMetadata(url)
     }
 
-    suspend fun post(url: String, payload: FramePostPayload): GetMetadataResponse = withContext(Dispatchers.IO) {
-        inner.post(url, payload)
+    suspend fun post(url: String, payload: FramePostPayload): GetMetadataResponse {
+        return inner.post(url, payload)
     }
 
-    suspend fun postRedirect(url: String, payload: FramePostPayload): FramesApiRedirectResponse = withContext(Dispatchers.IO) {
-        inner.postRedirect(url, payload)
+    suspend fun postRedirect(url: String, payload: FramePostPayload): FramesApiRedirectResponse {
+        return inner.postRedirect(url, payload)
     }
 
-    suspend fun mediaUrl(url: String): String = withContext(Dispatchers.IO) {
+    fun mediaUrl(url: String): String {
         if (url.startsWith("data:")) {
-            url
+            return url
         } else {
-            inner.mediaUrl(url)
+            return inner.mediaUrl(url)
         }
     }
 }
