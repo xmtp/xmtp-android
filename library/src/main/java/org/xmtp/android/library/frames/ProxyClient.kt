@@ -3,6 +3,7 @@ package org.xmtp.android.library.frames
 import java.net.HttpURLConnection
 import java.net.URL
 import com.google.gson.Gson
+import org.xmtp.android.library.XMTPException
 import java.io.OutputStreamWriter
 
 class ProxyClient(private val baseUrl: String) {
@@ -11,7 +12,7 @@ class ProxyClient(private val baseUrl: String) {
         val connection = URL("$baseUrl?url=${java.net.URLEncoder.encode(url, "UTF-8")}").openConnection() as HttpURLConnection
 
         if (connection.responseCode != HttpURLConnection.HTTP_OK) {
-            throw FramesApiError("Failed to read metadata for $url", connection.responseCode)
+            throw XMTPException("Failed to read metadata for $url, response code $connection.responseCode")
         }
 
         val response = connection.inputStream.bufferedReader().use { it.readText() }
@@ -59,7 +60,7 @@ class ProxyClient(private val baseUrl: String) {
         }
 
         if (connection.responseCode != HttpURLConnection.HTTP_OK) {
-            throw FramesApiError("Failed to post to frame: ${connection.responseMessage}", connection.responseCode)
+            throw XMTPException("Failed to post to frame: ${connection.responseMessage}, resoinse code $connection.responseCode")
         }
 
         val response = connection.inputStream.bufferedReader().use { it.readText() }

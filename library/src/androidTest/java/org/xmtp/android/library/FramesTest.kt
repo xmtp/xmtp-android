@@ -25,7 +25,7 @@ class FramesTest {
 
         val framesClient = FramesClient(xmtpClient = aliceClient)
         val conversationTopic = "foo"
-        val participantAccountAddresses = listOf("amal", "bola")
+        val participantAccountAddresses = listOf("alix", "bo")
         val metadata: GetMetadataResponse
         runBlocking {
             metadata = framesClient.proxy.readMetadata(url = frameUrl)

@@ -2,6 +2,7 @@ package org.xmtp.android.library.frames
 
 import android.util.Base64
 import org.xmtp.android.library.Client
+import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.frames.FramesConstants.PROTOCOL_VERSION
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.Signature
@@ -10,6 +11,8 @@ import org.xmtp.proto.message.contents.PublicKeyOuterClass.SignedPublicKeyBundle
 import java.security.MessageDigest
 import org.xmtp.proto.message.contents.Frames.FrameActionBody
 import org.xmtp.proto.message.contents.Frames.FrameAction
+import java.util.Date
+import kotlin.time.Duration.Companion.nanoseconds
 
 class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = OpenFramesProxy()) {
 
@@ -19,20 +22,19 @@ class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = 
         val buttonIndex = inputs.buttonIndex
         val inputText = inputs.inputText
         val state = inputs.state
-        val now = System.currentTimeMillis() / 1000
-        val frameActionBuilder = FrameActionBody
-            .newBuilder()
-            .setFrameUrl(frameUrl)
-            .setButtonIndex(buttonIndex)
-            .setOpaqueConversationIdentifier(opaqueConversationIdentifier)
-            .setTimestamp(now)
-            .setUnixTimestamp(now.toInt())
-
-        if (inputText != null) {
-            frameActionBuilder.inputText = inputText
-        }
-        if (state != null) {
-            frameActionBuilder.state = state
+        val now = Date().time * 1_000_000
+        val frameActionBuilder = FrameActionBody.newBuilder().also { frame ->
+            frame.frameUrl = frameUrl
+            frame.buttonIndex = buttonIndex
+            frame.opaqueConversationIdentifier = opaqueConversationIdentifier
+            frame.timestamp = now
+            frame.unixTimestamp = now.toInt()
+            if (inputText != null) {
+                frame.inputText = inputText
+            }
+            if (state != null) {
+                frame.state = state
+            }
         }
 
         val toSign = frameActionBuilder.build()
@@ -59,10 +61,11 @@ class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = 
         val signature = signDigest(digest)
 
         val publicKeyBundle = getPublicKeyBundle()
-        val frameAction = FrameAction.newBuilder()
-            .setActionBody(actionBodyInputs.toByteString())
-            .setSignature(signature)
-            .setSignedPublicKeyBundle(publicKeyBundle).build()
+        val frameAction = FrameAction.newBuilder().also {
+            it.actionBody = actionBodyInputs.toByteString()
+            it.signature = signature
+            it.signedPublicKeyBundle = publicKeyBundle
+        }.build()
 
         return frameAction.toByteArray()
     }
@@ -77,7 +80,7 @@ class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = 
             }
             is ConversationActionInputs.Dm -> {
                 val dmInputs = inputs.conversationInputs.inputs
-                val conversationTopic = dmInputs.conversationTopic ?: throw InvalidArgumentsError()
+                val conversationTopic = dmInputs.conversationTopic ?: throw XMTPException("No conversation topic")
                 val combined = (conversationTopic.lowercase() + dmInputs.participantAccountAddresses.map { it.lowercase() }.sorted().joinToString("")).toByteArray()
                 val digest = sha256(combined)
                 Base64.encodeToString(digest, Base64.NO_WRAP)

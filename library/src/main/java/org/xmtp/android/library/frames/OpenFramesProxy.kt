@@ -1,6 +1,7 @@
 package org.xmtp.android.library.frames
 
 import org.xmtp.android.library.frames.FramesConstants.OPEN_FRAMES_PROXY_URL
+import java.net.URI
 
 class OpenFramesProxy(private val inner: ProxyClient = ProxyClient(OPEN_FRAMES_PROXY_URL)) {
 
@@ -17,7 +18,7 @@ class OpenFramesProxy(private val inner: ProxyClient = ProxyClient(OPEN_FRAMES_P
     }
 
     fun mediaUrl(url: String): String {
-        if (url.startsWith("data:")) {
+        if (URI(url).scheme == "data") {
             return url
         } else {
             return inner.mediaUrl(url)
