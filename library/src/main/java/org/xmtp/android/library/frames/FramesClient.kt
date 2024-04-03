@@ -12,7 +12,6 @@ import java.security.MessageDigest
 import org.xmtp.proto.message.contents.Frames.FrameActionBody
 import org.xmtp.proto.message.contents.Frames.FrameAction
 import java.util.Date
-import kotlin.time.Duration.Companion.nanoseconds
 
 class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = OpenFramesProxy()) {
 
