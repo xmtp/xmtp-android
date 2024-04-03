@@ -1,8 +1,5 @@
 package org.xmtp.android.library.frames
 
-import ProxyClient
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.xmtp.android.library.frames.Constants.OPEN_FRAMES_PROXY_URL
 
 class OpenFramesProxy(private val inner: ProxyClient = ProxyClient(OPEN_FRAMES_PROXY_URL)) {

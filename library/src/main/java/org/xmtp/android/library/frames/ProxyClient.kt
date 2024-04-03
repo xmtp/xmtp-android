@@ -1,10 +1,8 @@
+package org.xmtp.android.library.frames
 
-import org.xmtp.android.library.frames.GetMetadataResponse
-import org.xmtp.android.library.frames.PostRedirectResponse
 import java.net.HttpURLConnection
 import java.net.URL
 import com.google.gson.Gson
-import org.xmtp.android.library.frames.FramesApiError
 import java.io.OutputStreamWriter
 
 class ProxyClient(private val baseUrl: String) {

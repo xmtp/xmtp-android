@@ -15,7 +15,6 @@ import org.xmtp.android.library.frames.GetMetadataResponse
 import java.net.HttpURLConnection
 import java.net.URL
 
-
 @RunWith(AndroidJUnit4::class)
 
 class FramesTest {
