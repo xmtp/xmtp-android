@@ -38,18 +38,15 @@ data class OpenFrameResult(
     val state: String?
 )
 
-
 data class GetMetadataResponse(
     val url: String,
     val extractedTags: Map<String, String>
 )
 
-
 data class PostRedirectResponse(
     val originalUrl: String,
     val redirectedTo: String
 )
-
 
 data class OpenFramesUntrustedData(
     val url: String,
@@ -60,7 +57,6 @@ data class OpenFramesUntrustedData(
 )
 
 typealias FramesApiRedirectResponse = PostRedirectResponse
-
 
 data class FramePostUntrustedData(
     val url: String,
@@ -73,11 +69,9 @@ data class FramePostUntrustedData(
     val unixTimestamp: Int
 )
 
-
 data class FramePostTrustedData(
     val messageBytes: String
 )
-
 
 data class FramePostPayload(
     val clientProtocol: String,
@@ -85,27 +79,20 @@ data class FramePostPayload(
     val trustedData: FramePostTrustedData
 )
 
-
 data class DmActionInputs(
     val conversationTopic: String?,
     val participantAccountAddresses: List<String>
 )
-
 
 data class GroupActionInputs(
     val groupId: ByteArray,
     val groupSecret: ByteArray
 )
 
-
 sealed class ConversationActionInputs {
-
     data class Dm(val inputs: DmActionInputs) : ConversationActionInputs()
-
-
     data class Group(val inputs: GroupActionInputs) : ConversationActionInputs()
 }
-
 
 data class FrameActionInputs(
     val frameUrl: String,
