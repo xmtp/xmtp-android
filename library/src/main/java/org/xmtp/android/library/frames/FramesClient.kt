@@ -2,7 +2,7 @@ package org.xmtp.android.library.frames
 
 import android.util.Base64
 import org.xmtp.android.library.Client
-import org.xmtp.android.library.frames.Constants.PROTOCOL_VERSION
+import org.xmtp.android.library.frames.FramesConstants.PROTOCOL_VERSION
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.getPublicKeyBundle

@@ -1,6 +1,6 @@
 package org.xmtp.android.library.frames
 
-import org.xmtp.android.library.frames.Constants.OPEN_FRAMES_PROXY_URL
+import org.xmtp.android.library.frames.FramesConstants.OPEN_FRAMES_PROXY_URL
 
 class OpenFramesProxy(private val inner: ProxyClient = ProxyClient(OPEN_FRAMES_PROXY_URL)) {
 
