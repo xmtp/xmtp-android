@@ -60,11 +60,11 @@ class ConsentList(val client: Client) {
         )
 
     @OptIn(ExperimentalUnsignedTypes::class)
-    suspend fun load(): ConsentList {
+    suspend fun load(afterDate: Date? = null): ConsentList {
         val envelopes =
             client.apiClient.envelopes(
                 Topic.preferenceList(identifier).description,
-                Pagination(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING),
+                Pagination(direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING, after = afterDate),
             )
         val consentList = ConsentList(client)
         val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
@@ -203,9 +203,9 @@ data class Contacts(
 ) {
     var consentList: ConsentList = ConsentList(client)
 
-    fun refreshConsentList(): ConsentList {
+    fun refreshConsentList(afterDate: Date? = null): ConsentList {
         runBlocking {
-            consentList = ConsentList(client).load()
+            consentList = ConsentList(client).load(afterDate)
         }
         return consentList
     }

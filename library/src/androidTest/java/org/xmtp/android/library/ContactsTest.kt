@@ -6,6 +6,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.walletAddress
+import java.util.Date
 
 @RunWith(AndroidJUnit4::class)
 class ContactsTest {
@@ -68,5 +69,26 @@ class ContactsTest {
 
         result = contacts.isDenied(fixtures.alice.walletAddress)
         assert(result)
+    }
+
+    @Test
+    fun testRefreshConsentListPagination() {
+        val fixtures = fixtures()
+        val contacts = fixtures.bobClient.contacts
+        val aliceAddress = fixtures.alice.walletAddress
+        runBlocking {
+            contacts.deny(listOf(aliceAddress))
+        }
+        val date = Date()
+        val result: ConsentList
+        runBlocking {
+            result = contacts.consentList.load(date)
+        }
+        assert(result.entries[ConsentListEntry.address(aliceAddress).key]?.consentType == null)
+        val allResult: ConsentList
+        runBlocking {
+            allResult = contacts.consentList.load()
+        }
+        assert(allResult.entries[ConsentListEntry.address(aliceAddress).key]?.consentType != null)
     }
 }
