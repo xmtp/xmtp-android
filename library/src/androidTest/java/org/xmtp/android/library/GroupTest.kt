@@ -444,6 +444,8 @@ class GroupTest {
 
     @Test
     fun testCanStreamAllDecryptedGroupMessages() = kotlinx.coroutines.test.runTest {
+        Client.register(codec = GroupMembershipChangeCodec())
+        val membershipChange = GroupMembershipChanges.newBuilder().build()
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         alixClient.conversations.syncGroups()
 
@@ -460,6 +462,10 @@ class GroupTest {
         }
 
         group.send("hi 1")
+        group.send(
+            content = membershipChange,
+            options = SendOptions(contentType = ContentTypeGroupMembershipChange),
+        )
         group.send("hi 2")
 
         job.join()
