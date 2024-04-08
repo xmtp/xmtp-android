@@ -8,14 +8,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.codecs.ContentTypeReply
-import org.xmtp.android.library.codecs.ContentTypeText
-import org.xmtp.android.library.codecs.Reply
 import org.xmtp.android.library.messages.MessageKind
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupMembershipChangesOrBuilder
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupMembershipChange
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChangeCodec
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
