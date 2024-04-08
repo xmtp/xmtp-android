@@ -17,6 +17,7 @@ import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1
+import org.xmtp.android.library.messages.MessageKind
 import org.xmtp.android.library.messages.MessageV1Builder
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.SealedInvitation
@@ -46,6 +47,7 @@ import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.GroupPermissions
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupMembershipChange
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -576,7 +578,10 @@ data class Conversations(
     fun streamAllGroupMessages(): Flow<DecodedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                trySend(MessageV3(client, message).decode())
+                val decodedMessage = MessageV3(client, message).decode()
+                if (!(decodedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decodedMessage.kind != MessageKind.MEMBERSHIP_CHANGE)) {
+                    trySend(decodedMessage)
+                }
             }
         }
         val stream = libXMTPConversations?.streamAllMessages(messageCallback)
@@ -587,7 +592,10 @@ data class Conversations(
     fun streamAllGroupDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                trySend(MessageV3(client, message).decrypt())
+                val decryptedMessage = MessageV3(client, message).decrypt()
+                if (!(decryptedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decryptedMessage.kind != MessageKind.MEMBERSHIP_CHANGE)) {
+                    trySend(decryptedMessage)
+                }
             }
         }
         val stream = libXMTPConversations?.streamAllMessages(messageCallback)
