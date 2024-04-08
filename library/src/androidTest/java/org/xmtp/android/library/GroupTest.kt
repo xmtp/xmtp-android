@@ -22,6 +22,9 @@ import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.GroupPermissions
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupMembershipChange
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChangeCodec
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
@@ -362,12 +365,19 @@ class GroupTest {
 
     @Test
     fun testCanStreamGroupMessages() = kotlinx.coroutines.test.runTest {
+        Client.register(codec = GroupMembershipChangeCodec())
+        val membershipChange = GroupMembershipChanges.newBuilder().build()
+
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
         alixClient.conversations.syncGroups()
         val alixGroup = alixClient.conversations.listGroups().first()
         group.streamMessages().test {
             alixGroup.send("hi")
             assertEquals("hi", awaitItem().body)
+            alixGroup.send(
+                content = membershipChange,
+                options = SendOptions(contentType = ContentTypeGroupMembershipChange),
+            )
             alixGroup.send("hi again")
             assertEquals("hi again", awaitItem().body)
         }

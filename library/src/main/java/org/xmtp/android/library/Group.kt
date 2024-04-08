@@ -135,9 +135,22 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
     }
 
-    suspend fun processMessage(envelopeBytes: ByteArray): MessageV3 {
+    suspend fun processMessage(envelopeBytes: ByteArray): DecodedMessage {
         val message = libXMTPGroup.processStreamedGroupMessage(envelopeBytes)
-        return MessageV3(client, message)
+        val decodedMessage = MessageV3(client, message).decode()
+        if (decodedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decodedMessage.kind != MessageKind.MEMBERSHIP_CHANGE) {
+            throw XMTPException("Invalid message")
+        }
+        return decodedMessage
+    }
+
+    suspend fun processMessageDecrypted(envelopeBytes: ByteArray): DecryptedMessage {
+        val message = libXMTPGroup.processStreamedGroupMessage(envelopeBytes)
+        val decryptedMessage = MessageV3(client, message).decrypt()
+        if (decryptedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decryptedMessage.kind != MessageKind.MEMBERSHIP_CHANGE) {
+            throw XMTPException("Invalid message")
+        }
+        return decryptedMessage
     }
 
     fun isActive(): Boolean {
@@ -185,7 +198,10 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                trySend(MessageV3(client, message).decode())
+                val decodedMessage = MessageV3(client, message).decode()
+                if (!(decodedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decodedMessage.kind != MessageKind.MEMBERSHIP_CHANGE)) {
+                    trySend(decodedMessage)
+                }
             }
         }
 
@@ -196,7 +212,10 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     fun streamDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                trySend(MessageV3(client, message).decrypt())
+                val decryptedMessage = MessageV3(client, message).decrypt()
+                if (!(decryptedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decryptedMessage.kind != MessageKind.MEMBERSHIP_CHANGE)) {
+                    trySend(decryptedMessage)
+                }
             }
         }
 
