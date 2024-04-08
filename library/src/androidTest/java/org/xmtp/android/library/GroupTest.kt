@@ -17,6 +17,7 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
+import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
@@ -323,6 +324,7 @@ class GroupTest {
         runBlocking { sameGroup.sync() }
         assertEquals(sameGroup.messages().size, 2)
         assertEquals(sameGroup.messages().first().body, "gm")
+        assertEquals(sameGroup.messages().first().kind, MessageV3.MessageKind.APPLICATION)
     }
 
     @Test
