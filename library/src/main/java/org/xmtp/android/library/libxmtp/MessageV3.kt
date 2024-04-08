@@ -5,6 +5,7 @@ import org.xmtp.android.library.DecodedMessage
 import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.messages.DecryptedMessage
+import org.xmtp.android.library.messages.MessageKind
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.toHex
 import uniffi.xmtpv3.FfiGroupMessageKind
@@ -13,9 +14,6 @@ import java.util.Date
 
 data class MessageV3(val client: Client, private val libXMTPMessage: FfiMessage) {
 
-    enum class MessageKind {
-        APPLICATION, MEMBERSHIP_CHANGE
-    }
     val id: ByteArray
         get() = libXMTPMessage.id
 

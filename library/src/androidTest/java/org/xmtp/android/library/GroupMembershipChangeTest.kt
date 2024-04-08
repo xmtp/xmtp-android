@@ -8,7 +8,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.libxmtp.MessageV3
+import org.xmtp.android.library.messages.MessageKind
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
@@ -70,7 +70,7 @@ class GroupMembershipChangeTest {
             content?.membersAddedList?.map { it.accountAddress.lowercase() }?.sorted()
         )
         assert(content?.membersRemovedList.isNullOrEmpty())
-        assertEquals(messages.first().kind, MessageV3.MessageKind.MEMBERSHIP_CHANGE)
+        assertEquals(messages.first().kind, MessageKind.MEMBERSHIP_CHANGE)
     }
 
     @Test
@@ -99,7 +99,7 @@ class GroupMembershipChangeTest {
             content?.membersRemovedList?.map { it.accountAddress.lowercase() }?.sorted()
         )
         assert(content?.membersAddedList.isNullOrEmpty())
-        assertEquals(updatedMessages.first().kind, MessageV3.MessageKind.MEMBERSHIP_CHANGE)
+        assertEquals(updatedMessages.first().kind, MessageKind.MEMBERSHIP_CHANGE)
     }
 
     @Test

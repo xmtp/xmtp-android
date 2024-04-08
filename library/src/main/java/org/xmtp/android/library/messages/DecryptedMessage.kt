@@ -1,7 +1,6 @@
 package org.xmtp.android.library.messages
 
 import org.xmtp.android.library.codecs.EncodedContent
-import org.xmtp.android.library.libxmtp.MessageV3
 import java.util.Date
 
 data class DecryptedMessage(
@@ -10,5 +9,5 @@ data class DecryptedMessage(
     var senderAddress: String,
     var sentAt: Date,
     var topic: String = "",
-    var kind: MessageV3.MessageKind = MessageV3.MessageKind.APPLICATION
+    var kind: MessageKind = MessageKind.APPLICATION
 )
