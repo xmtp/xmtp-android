@@ -8,10 +8,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.xmtp.android.library.codecs.ContentTypeReply
+import org.xmtp.android.library.codecs.ContentTypeText
+import org.xmtp.android.library.codecs.Reply
 import org.xmtp.android.library.messages.MessageKind
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupMembershipChangesOrBuilder
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupMembershipChange
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChangeCodec
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
 
@@ -100,6 +105,34 @@ class GroupMembershipChangeTest {
         )
         assert(content?.membersAddedList.isNullOrEmpty())
         assertEquals(updatedMessages.first().kind, MessageKind.MEMBERSHIP_CHANGE)
+    }
+
+    @Test
+    fun testRemovesInvalidMessageKind() {
+        Client.register(codec = GroupMembershipChangeCodec())
+
+        val membershipChange = GroupMembershipChanges.newBuilder().build()
+
+        val group = runBlocking {
+            alixClient.conversations.newGroup(
+                listOf(
+                    bo.walletAddress,
+                    caro.walletAddress
+                )
+            )
+        }
+        val messages = group.messages()
+        assertEquals(messages.size, 1)
+        assertEquals(group.memberAddresses().size, 3)
+        runBlocking {
+            group.send(
+                content = membershipChange,
+                options = SendOptions(contentType = ContentTypeGroupMembershipChange),
+            )
+            group.sync()
+        }
+        val updatedMessages = group.messages()
+        assertEquals(updatedMessages.size, 1)
     }
 
     @Test

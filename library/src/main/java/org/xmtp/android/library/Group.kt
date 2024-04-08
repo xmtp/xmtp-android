@@ -8,6 +8,7 @@ import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
+import org.xmtp.android.library.messages.MessageKind
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
@@ -17,6 +18,7 @@ import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.GroupPermissions
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupMembershipChange
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -96,9 +98,14 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         ).map {
             MessageV3(client, it).decode()
         }
+
+        val filteredMessages = messages.filterNot {
+            it.encodedContent.type == ContentTypeGroupMembershipChange && it.kind != MessageKind.MEMBERSHIP_CHANGE
+        }
+
         return when (direction) {
-            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
-            else -> messages.reversed()
+            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> filteredMessages
+            else -> filteredMessages.reversed()
         }
     }
 
@@ -117,9 +124,14 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         ).map {
             MessageV3(client, it).decrypt()
         }
+
+        val filteredMessages = messages.filterNot {
+            it.encodedContent.type == ContentTypeGroupMembershipChange && it.kind != MessageKind.MEMBERSHIP_CHANGE
+        }
+
         return when (direction) {
-            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
-            else -> messages.reversed()
+            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> filteredMessages
+            else -> filteredMessages.reversed()
         }
     }
 
