@@ -12,10 +12,6 @@ enum class MessageVersion(val rawValue: String) {
     }
 }
 
-enum class MessageKind {
-    APPLICATION, MEMBERSHIP_CHANGE
-}
-
 class MessageBuilder {
     companion object {
         fun buildFromMessageV1(v1: MessageV1): Message {

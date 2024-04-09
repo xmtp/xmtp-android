@@ -92,7 +92,7 @@ class PushNotificationsService : FirebaseMessagingService() {
                 return
             }
             val decodedMessage = if (conversation is Conversation.Group) {
-                runBlocking { conversation.group.processMessage(encryptedMessageData) }
+                runBlocking { conversation.group.processMessage(encryptedMessageData).decode() }
             } else {
                 val envelope = EnvelopeBuilder.buildFromString(topic, Date(), encryptedMessageData)
                 conversation.decode(envelope)

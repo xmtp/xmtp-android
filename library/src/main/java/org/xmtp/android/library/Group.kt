@@ -8,7 +8,6 @@ import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
-import org.xmtp.android.library.messages.MessageKind
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
@@ -18,7 +17,6 @@ import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.GroupPermissions
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupMembershipChange
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -95,17 +93,13 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
                 sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit = limit?.toLong()
             )
-        ).map {
-            MessageV3(client, it).decode()
-        }
-
-        val filteredMessages = messages.filterNot {
-            it.encodedContent.type == ContentTypeGroupMembershipChange && it.kind != MessageKind.MEMBERSHIP_CHANGE
+        ).mapNotNull {
+            MessageV3(client, it).decodeOrNull()
         }
 
         return when (direction) {
-            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> filteredMessages
-            else -> filteredMessages.reversed()
+            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
+            else -> messages.reversed()
         }
     }
 
@@ -121,36 +115,19 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
                 sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit = limit?.toLong()
             )
-        ).map {
-            MessageV3(client, it).decrypt()
-        }
-
-        val filteredMessages = messages.filterNot {
-            it.encodedContent.type == ContentTypeGroupMembershipChange && it.kind != MessageKind.MEMBERSHIP_CHANGE
+        ).mapNotNull {
+            MessageV3(client, it).decryptOrNull()
         }
 
         return when (direction) {
-            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> filteredMessages
-            else -> filteredMessages.reversed()
+            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
+            else -> messages.reversed()
         }
     }
 
-    suspend fun processMessage(envelopeBytes: ByteArray): DecodedMessage {
+    suspend fun processMessage(envelopeBytes: ByteArray): MessageV3 {
         val message = libXMTPGroup.processStreamedGroupMessage(envelopeBytes)
-        val decodedMessage = MessageV3(client, message).decode()
-        if (decodedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decodedMessage.kind != MessageKind.MEMBERSHIP_CHANGE) {
-            throw XMTPException("Invalid message")
-        }
-        return decodedMessage
-    }
-
-    suspend fun processMessageDecrypted(envelopeBytes: ByteArray): DecryptedMessage {
-        val message = libXMTPGroup.processStreamedGroupMessage(envelopeBytes)
-        val decryptedMessage = MessageV3(client, message).decrypt()
-        if (decryptedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decryptedMessage.kind != MessageKind.MEMBERSHIP_CHANGE) {
-            throw XMTPException("Invalid message")
-        }
-        return decryptedMessage
+        return MessageV3(client, message)
     }
 
     fun isActive(): Boolean {
@@ -198,9 +175,9 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                val decodedMessage = MessageV3(client, message).decode()
-                if (!(decodedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decodedMessage.kind != MessageKind.MEMBERSHIP_CHANGE)) {
-                    trySend(decodedMessage)
+                val decodedMessage = MessageV3(client, message).decodeOrNull()
+                decodedMessage?.let {
+                    trySend(it)
                 }
             }
         }
@@ -212,9 +189,9 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     fun streamDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                val decryptedMessage = MessageV3(client, message).decrypt()
-                if (!(decryptedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decryptedMessage.kind != MessageKind.MEMBERSHIP_CHANGE)) {
-                    trySend(decryptedMessage)
+                val decryptedMessage = MessageV3(client, message).decryptOrNull()
+                decryptedMessage?.let {
+                    trySend(it)
                 }
             }
         }

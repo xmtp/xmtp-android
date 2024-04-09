@@ -17,7 +17,6 @@ import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.InvitationV1
-import org.xmtp.android.library.messages.MessageKind
 import org.xmtp.android.library.messages.MessageV1Builder
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.SealedInvitation
@@ -578,9 +577,9 @@ data class Conversations(
     fun streamAllGroupMessages(): Flow<DecodedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                val decodedMessage = MessageV3(client, message).decode()
-                if (!(decodedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decodedMessage.kind != MessageKind.MEMBERSHIP_CHANGE)) {
-                    trySend(decodedMessage)
+                val decodedMessage = MessageV3(client, message).decodeOrNull()
+                decodedMessage?.let {
+                    trySend(it)
                 }
             }
         }
@@ -592,9 +591,9 @@ data class Conversations(
     fun streamAllGroupDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                val decryptedMessage = MessageV3(client, message).decrypt()
-                if (!(decryptedMessage.encodedContent.type == ContentTypeGroupMembershipChange && decryptedMessage.kind != MessageKind.MEMBERSHIP_CHANGE)) {
-                    trySend(decryptedMessage)
+                val decryptedMessage = MessageV3(client, message).decryptOrNull()
+                decryptedMessage?.let {
+                    trySend(it)
                 }
             }
         }
