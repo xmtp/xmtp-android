@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import com.google.protobuf.kotlin.toByteString
 import io.grpc.Grpc
 import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
@@ -13,14 +14,22 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Cursor
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PagingInfo
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SubscribeRequest
+import org.xmtp.proto.message.api.v1.queryResponse
+import uniffi.xmtpv3.FfiCursor
 import uniffi.xmtpv3.FfiEnvelope
+import uniffi.xmtpv3.FfiPagingInfo
 import uniffi.xmtpv3.FfiPublishRequest
+import uniffi.xmtpv3.FfiSortDirection
 import uniffi.xmtpv3.FfiV2ApiClient
+import uniffi.xmtpv3.FfiV2QueryRequest
+import uniffi.xmtpv3.FfiV2QueryResponse
 import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
@@ -103,16 +112,7 @@ data class GRPCApiClient(
         cursor: Cursor?,
     ): QueryResponse {
         val request = makeQueryRequest(topic, pagination, cursor)
-        val headers = Metadata()
-
-        authToken?.let { token ->
-            headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
-        }
-        headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
-        if (appVersion != null) {
-            headers.put(APP_VERSION_HEADER_KEY, appVersion)
-        }
-        return rustV2Client.query(request, headers = headers)
+        return queryResponseFromFFi(rustV2Client.query(queryRequestToFFi(request)))
     }
 
     /**
@@ -180,10 +180,86 @@ data class GRPCApiClient(
     }
 
     private fun envelopeToFFi(envelope: Envelope): FfiEnvelope {
-        FfiEnvelope(
+        return FfiEnvelope(
             contentTopic = envelope.contentTopic,
             timestampNs = envelope.timestampNs.toULong(),
             message = envelope.message.toByteArray()
         )
+    }
+
+    private fun envelopeFromFFi(envelope: FfiEnvelope): Envelope {
+        return Envelope.newBuilder().also {
+            it.contentTopic = envelope.contentTopic,
+            it.timestampNs = envelope.timestampNs.toLong()
+            it.message = envelope.message.toByteString()
+        }.build()
+    }
+
+    private fun queryRequestToFFi(request: QueryRequest): FfiV2QueryRequest {
+        return FfiV2QueryRequest(
+            contentTopics = request.contentTopicsList,
+            startTimeNs = request.startTimeNs.toULong(),
+            endTimeNs = request.endTimeNs.toULong(),
+            pagingInfo = pagingInfoToFFi(request.pagingInfo)
+        )
+    }
+
+    private fun queryResponseFromFFi(response: FfiV2QueryResponse): QueryResponse {
+        return QueryResponse.newBuilder().also { queryResponse ->
+            queryResponse.addAllEnvelopes(response.envelopes.map { envelopeFromFFi(it) })
+            response.pagingInfo?.let {
+                queryResponse.pagingInfo = pagingInfoFromFFi(it)
+            }
+        }.build()
+    }
+
+    private fun pagingInfoFromFFi(info: FfiPagingInfo): PagingInfo {
+        return PagingInfo.newBuilder().also {
+            it.limit = info.limit.toInt()
+            info.cursor?.let { cursor ->
+                it.cursor = cursorFromFFi(cursor)
+            }
+            it.direction = directionFromFfi(info.direction)
+        }.build()
+    }
+
+    private fun pagingInfoToFFi(info: PagingInfo): FfiPagingInfo {
+        return FfiPagingInfo(
+            limit = info.limit.toUInt(),
+            cursor = cursorToFFi(info.cursor),
+            direction = directionToFfi(info.direction)
+        )
+    }
+
+    private fun directionToFfi(direction: SortDirection): FfiSortDirection {
+        return when (direction) {
+            SortDirection.SORT_DIRECTION_ASCENDING -> FfiSortDirection.ASCENDING
+            SortDirection.SORT_DIRECTION_DESCENDING -> FfiSortDirection.DESCENDING
+            else -> FfiSortDirection.UNSPECIFIED
+        }
+    }
+
+    private fun directionFromFfi(direction: FfiSortDirection): SortDirection {
+        return when (direction) {
+            FfiSortDirection.ASCENDING -> SortDirection.SORT_DIRECTION_ASCENDING
+            FfiSortDirection.DESCENDING -> SortDirection.SORT_DIRECTION_DESCENDING
+            else -> SortDirection.SORT_DIRECTION_UNSPECIFIED
+        }
+    }
+
+    private fun cursorToFFi(cursor: Cursor): FfiCursor {
+        return FfiCursor(
+            digest = cursor.index.digest.toByteArray(),
+            senderTimeNs = cursor.index.senderTimeNs.toULong()
+        )
+    }
+
+    private fun cursorFromFFi(cursor: FfiCursor): Cursor {
+        return Cursor.newBuilder().also {
+            it.index.toBuilder().also { index ->
+                index.digest = cursor.digest.toByteString()
+                index.senderTimeNs = cursor.senderTimeNs.toLong()
+            }.build()
+        }.build()
     }
 }
