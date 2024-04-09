@@ -18,6 +18,8 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SubscribeRequest
+import uniffi.xmtpv3.FfiEnvelope
+import uniffi.xmtpv3.FfiPublishRequest
 import uniffi.xmtpv3.FfiV2ApiClient
 import java.io.Closeable
 import java.util.concurrent.TimeUnit
@@ -34,7 +36,7 @@ interface ApiClient {
     suspend fun queryTopic(topic: Topic, pagination: Pagination? = null): QueryResponse
     suspend fun batchQuery(requests: List<QueryRequest>): BatchQueryResponse
     suspend fun envelopes(topic: String, pagination: Pagination? = null): List<Envelope>
-    suspend fun publish(envelopes: List<Envelope>): PublishResponse
+    suspend fun publish(envelopes: List<Envelope>)
     suspend fun subscribe(request: Flow<SubscribeRequest>): Flow<Envelope>
 }
 
@@ -89,19 +91,6 @@ data class GRPCApiClient(
         ): SubscribeRequest = SubscribeRequest.newBuilder().addAllContentTopics(topics).build()
     }
 
-    private val channel: ManagedChannel =
-        Grpc.newChannelBuilderForAddress(
-            environment.getValue(),
-            if (environment == XMTPEnvironment.LOCAL) 5556 else 443,
-            if (secure) {
-                TlsChannelCredentials.create()
-            } else {
-                InsecureChannelCredentials.create()
-            },
-        ).build()
-
-    private val client: MessageApiGrpcKt.MessageApiCoroutineStub =
-        MessageApiGrpcKt.MessageApiCoroutineStub(channel)
     private var authToken: String? = null
 
     override fun setAuthToken(token: String) {
@@ -123,7 +112,7 @@ data class GRPCApiClient(
         if (appVersion != null) {
             headers.put(APP_VERSION_HEADER_KEY, appVersion)
         }
-        return client.query(request, headers = headers)
+        return rustV2Client.query(request, headers = headers)
     }
 
     /**
@@ -165,23 +154,14 @@ data class GRPCApiClient(
         if (appVersion != null) {
             headers.put(APP_VERSION_HEADER_KEY, appVersion)
         }
-        return client.batchQuery(batchRequest, headers = headers)
+        return rustV2Client.batchQuery(batchRequest, headers = headers)
     }
 
-    override suspend fun publish(envelopes: List<Envelope>): PublishResponse {
-        val request = PublishRequest.newBuilder().addAllEnvelopes(envelopes).build()
-        val headers = Metadata()
+    override suspend fun publish(envelopes: List<Envelope>) {
+        val ffiEnvelopes = envelopes.map { envelopeToFFi(it) }
+        val request = FfiPublishRequest(envelopes = ffiEnvelopes)
 
-        authToken?.let { token ->
-            headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
-        }
-
-        headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
-        if (appVersion != null) {
-            headers.put(APP_VERSION_HEADER_KEY, appVersion)
-        }
-
-        return client.publish(request, headers)
+        rustV2Client.publish(request = request, authToken = authToken ?: "")
     }
 
     override suspend fun subscribe(request: Flow<SubscribeRequest>): Flow<Envelope> {
@@ -192,10 +172,18 @@ data class GRPCApiClient(
             headers.put(APP_VERSION_HEADER_KEY, appVersion)
         }
 
-        return client.subscribe2(request, headers)
+        return rustV2Client.subscribe2(request, headers)
     }
 
     override fun close() {
-        channel.shutdown().awaitTermination(5, TimeUnit.SECONDS)
+        rustV2Client.close()
+    }
+
+    private fun envelopeToFFi(envelope: Envelope): FfiEnvelope {
+        FfiEnvelope(
+            contentTopic = envelope.contentTopic,
+            timestampNs = envelope.timestampNs.toULong(),
+            message = envelope.message.toByteArray()
+        )
     }
 }
