@@ -854,7 +854,7 @@ class ConversationTest {
             val bobConversation = bobClient.conversations.newConversation(alice.walletAddress)
             val caroConversation =
                 bobClient.conversations.newConversation(fixtures.caro.walletAddress)
-
+            bobClient.contacts.refreshConsentList()
             assertEquals(bobClient.contacts.consentList.entries.size, 2)
             assertTrue(bobConversation.consentState() == ConsentState.ALLOWED)
             assertTrue(caroConversation.consentState() == ConsentState.ALLOWED)
