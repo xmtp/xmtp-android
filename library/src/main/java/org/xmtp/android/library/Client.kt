@@ -91,7 +91,6 @@ class Client() {
     var installationId: String = ""
     private var libXMTPClient: FfiXmtpClient? = null
     private var dbPath: String = ""
-    private lateinit var v2RustClient: FfiV2ApiClient
 
     companion object {
         private const val TAG = "Client"
@@ -151,9 +150,16 @@ class Client() {
 
         fun canMessage(peerAddress: String, options: ClientOptions? = null): Boolean {
             val clientOptions = options ?: ClientOptions()
+            val v2Client = runBlocking {
+                createV2Client(
+                    host = clientOptions.api.env.getUrl(),
+                    isSecure = clientOptions.api.isSecure
+                )
+            }
             val api = GRPCApiClient(
                 environment = clientOptions.api.env,
                 secure = clientOptions.api.isSecure,
+                rustV2Client = v2Client
             )
             return runBlocking {
                 val topics = api.queryTopic(Topic.contact(peerAddress)).envelopesList
@@ -166,7 +172,6 @@ class Client() {
         address: String,
         privateKeyBundleV1: PrivateKeyBundleV1,
         apiClient: ApiClient,
-        v2Client: FfiV2ApiClient,
         libXMTPClient: FfiXmtpClient? = null,
         dbPath: String = "",
         installationId: String = "",
@@ -174,7 +179,6 @@ class Client() {
         this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
-        this.v2RustClient = v2Client
         this.contacts = Contacts(client = this)
         this.libXMTPClient = libXMTPClient
         this.conversations =
@@ -192,7 +196,7 @@ class Client() {
         val clientOptions = options ?: ClientOptions()
         val v2Client = runBlocking {
             createV2Client(
-                host = "http://${clientOptions.api.env.getValue()}:5556",
+                host = clientOptions.api.env.getUrl(),
                 isSecure = clientOptions.api.isSecure
             )
         }
@@ -200,6 +204,7 @@ class Client() {
             GRPCApiClient(
                 environment = clientOptions.api.env,
                 secure = clientOptions.api.isSecure,
+                rustV2Client = v2Client
             )
         val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
             runBlocking {
@@ -218,7 +223,6 @@ class Client() {
             address = address,
             privateKeyBundleV1 = bundle,
             apiClient = apiClient,
-            v2Client = v2Client,
             libXMTPClient = v3Client,
             dbPath = dbPath,
             installationId = v3Client?.installationId()?.toHex() ?: ""
@@ -230,10 +234,17 @@ class Client() {
         options: ClientOptions? = null,
     ): Client {
         val clientOptions = options ?: ClientOptions()
+        val v2Client = runBlocking {
+            createV2Client(
+                host = clientOptions.api.env.getUrl(),
+                isSecure = clientOptions.api.isSecure
+            )
+        }
         val apiClient =
             GRPCApiClient(
                 environment = clientOptions.api.env,
                 secure = clientOptions.api.isSecure,
+                rustV2Client = v2Client
             )
         return create(
             account = account,
@@ -265,16 +276,11 @@ class Client() {
                         account.address
                     )
 
-                val v2Client = createV2Client(
-                    host = "http://${clientOptions.api.env.getValue()}:5556",
-                    isSecure = clientOptions.api.isSecure
-                )
                 val client =
                     Client(
                         account.address,
                         privateKeyBundleV1,
                         apiClient,
-                        v2Client,
                         libXMTPClient,
                         dbPath,
                         libXMTPClient?.installationId()?.toHex() ?: ""
@@ -303,7 +309,7 @@ class Client() {
         val newOptions = options ?: ClientOptions()
         val v2Client = runBlocking {
             createV2Client(
-                host = "http://${newOptions.api.env.getValue()}:5556",
+                host = newOptions.api.env.getUrl(),
                 isSecure = newOptions.api.isSecure
             )
         }
@@ -311,6 +317,7 @@ class Client() {
             GRPCApiClient(
                 environment = newOptions.api.env,
                 secure = newOptions.api.isSecure,
+                rustV2Client = v2Client
             )
         val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
             runBlocking {
@@ -329,7 +336,6 @@ class Client() {
             address = address,
             privateKeyBundleV1 = v1Bundle,
             apiClient = apiClient,
-            v2Client = v2Client,
             libXMTPClient = v3Client,
             dbPath = dbPath,
             installationId = v3Client?.installationId()?.toHex() ?: ""

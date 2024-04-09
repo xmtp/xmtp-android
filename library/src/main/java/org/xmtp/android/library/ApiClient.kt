@@ -18,6 +18,7 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SubscribeRequest
+import uniffi.xmtpv3.FfiV2ApiClient
 import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
@@ -41,6 +42,7 @@ data class GRPCApiClient(
     override val environment: XMTPEnvironment,
     val secure: Boolean = true,
     val appVersion: String? = null,
+    val rustV2Client: FfiV2ApiClient,
 ) :
     ApiClient, Closeable {
     companion object {
