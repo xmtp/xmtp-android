@@ -28,6 +28,8 @@ import uniffi.xmtpv3.FfiPagingInfo
 import uniffi.xmtpv3.FfiPublishRequest
 import uniffi.xmtpv3.FfiSortDirection
 import uniffi.xmtpv3.FfiV2ApiClient
+import uniffi.xmtpv3.FfiV2BatchQueryRequest
+import uniffi.xmtpv3.FfiV2BatchQueryResponse
 import uniffi.xmtpv3.FfiV2QueryRequest
 import uniffi.xmtpv3.FfiV2QueryResponse
 import java.io.Closeable
@@ -57,15 +59,6 @@ data class GRPCApiClient(
 ) :
     ApiClient, Closeable {
     companion object {
-        val AUTHORIZATION_HEADER_KEY: Metadata.Key<String> =
-            Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER)
-
-        val CLIENT_VERSION_HEADER_KEY: Metadata.Key<String> =
-            Metadata.Key.of("X-Client-Version", Metadata.ASCII_STRING_MARSHALLER)
-
-        val APP_VERSION_HEADER_KEY: Metadata.Key<String> =
-            Metadata.Key.of("X-App-Version", Metadata.ASCII_STRING_MARSHALLER)
-
         fun makeQueryRequest(
             topic: String,
             pagination: Pagination? = null,
@@ -144,17 +137,8 @@ data class GRPCApiClient(
     override suspend fun batchQuery(
         requests: List<QueryRequest>,
     ): BatchQueryResponse {
-        val batchRequest = BatchQueryRequest.newBuilder().addAllRequests(requests).build()
-        val headers = Metadata()
-
-        authToken?.let { token ->
-            headers.put(AUTHORIZATION_HEADER_KEY, "Bearer $token")
-        }
-        headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
-        if (appVersion != null) {
-            headers.put(APP_VERSION_HEADER_KEY, appVersion)
-        }
-        return rustV2Client.batchQuery(batchRequest, headers = headers)
+        val batchRequest = requests.map { queryRequestToFFi(it) }
+        return batchQueryResponseFromFFi(rustV2Client.batchQuery(FfiV2BatchQueryRequest(requests = batchRequest)))
     }
 
     override suspend fun publish(envelopes: List<Envelope>) {
@@ -165,13 +149,6 @@ data class GRPCApiClient(
     }
 
     override suspend fun subscribe(request: Flow<SubscribeRequest>): Flow<Envelope> {
-        val headers = Metadata()
-
-        headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
-        if (appVersion != null) {
-            headers.put(APP_VERSION_HEADER_KEY, appVersion)
-        }
-
         return rustV2Client.subscribe2(request, headers)
     }
 
@@ -189,7 +166,7 @@ data class GRPCApiClient(
 
     private fun envelopeFromFFi(envelope: FfiEnvelope): Envelope {
         return Envelope.newBuilder().also {
-            it.contentTopic = envelope.contentTopic,
+            it.contentTopic = envelope.contentTopic
             it.timestampNs = envelope.timestampNs.toLong()
             it.message = envelope.message.toByteString()
         }.build()
@@ -210,6 +187,12 @@ data class GRPCApiClient(
             response.pagingInfo?.let {
                 queryResponse.pagingInfo = pagingInfoFromFFi(it)
             }
+        }.build()
+    }
+
+    private fun batchQueryResponseFromFFi(response: FfiV2BatchQueryResponse): BatchQueryResponse {
+        return BatchQueryResponse.newBuilder().also { queryResponse ->
+            queryResponse.addAllResponses(response.responses.map { queryResponseFromFFi(it) })
         }.build()
     }
 
