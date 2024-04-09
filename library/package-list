@@ -1041,7 +1041,7 @@ $dokka.location:org.xmtp.android.library/CodecRegistry/find/#org.xmtp.proto.mess
 $dokka.location:org.xmtp.android.library/CodecRegistry/findFromId/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-codec-registry/find-from-id.html
 $dokka.location:org.xmtp.android.library/CodecRegistry/register/#org.xmtp.android.library.codecs.ContentCodec[*]/PointingToDeclaration/library/org.xmtp.android.library/-codec-registry/register.html
 $dokka.location:org.xmtp.android.library/ConsentList///PointingToDeclaration/library/org.xmtp.android.library/-consent-list/index.html
-$dokka.location:org.xmtp.android.library/ConsentList/ConsentList/#org.xmtp.android.library.Client/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/-consent-list.html
+$dokka.location:org.xmtp.android.library/ConsentList/ConsentList/#org.xmtp.android.library.Client#kotlin.collections.MutableMap[kotlin.String,org.xmtp.android.library.ConsentListEntry]/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/-consent-list.html
 $dokka.location:org.xmtp.android.library/ConsentList/allow/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/allow.html
 $dokka.location:org.xmtp.android.library/ConsentList/allowGroup/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/allow-group.html
 $dokka.location:org.xmtp.android.library/ConsentList/client/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/client.html
@@ -1050,7 +1050,7 @@ $dokka.location:org.xmtp.android.library/ConsentList/denyGroup/#kotlin.ByteArray
 $dokka.location:org.xmtp.android.library/ConsentList/entries/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/entries.html
 $dokka.location:org.xmtp.android.library/ConsentList/groupState/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/group-state.html
 $dokka.location:org.xmtp.android.library/ConsentList/load/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/load.html
-$dokka.location:org.xmtp.android.library/ConsentList/publish/#org.xmtp.android.library.ConsentListEntry/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/publish.html
+$dokka.location:org.xmtp.android.library/ConsentList/publish/#kotlin.collections.List[org.xmtp.android.library.ConsentListEntry]/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/publish.html
 $dokka.location:org.xmtp.android.library/ConsentList/state/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/state.html
 $dokka.location:org.xmtp.android.library/ConsentListEntry.Companion///PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/-companion/index.html
 $dokka.location:org.xmtp.android.library/ConsentListEntry.Companion/address/#kotlin.String#org.xmtp.android.library.ConsentState/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/-companion/address.html
@@ -1075,7 +1075,7 @@ $dokka.location:org.xmtp.android.library/ConsentState/values/#/PointingToDeclara
 $dokka.location:org.xmtp.android.library/Constants///PointingToDeclaration/library/org.xmtp.android.library/-constants/index.html
 $dokka.location:org.xmtp.android.library/Constants/VERSION/#/PointingToDeclaration/library/org.xmtp.android.library/-constants/-v-e-r-s-i-o-n.html
 $dokka.location:org.xmtp.android.library/Contacts///PointingToDeclaration/library/org.xmtp.android.library/-contacts/index.html
-$dokka.location:org.xmtp.android.library/Contacts/Contacts/#org.xmtp.android.library.Client#kotlin.collections.MutableMap[kotlin.String,org.xmtp.proto.message.contents.Contact.ContactBundle]#kotlin.collections.MutableMap[kotlin.String,kotlin.Boolean]/PointingToDeclaration/library/org.xmtp.android.library/-contacts/-contacts.html
+$dokka.location:org.xmtp.android.library/Contacts/Contacts/#org.xmtp.android.library.Client#kotlin.collections.MutableMap[kotlin.String,org.xmtp.proto.message.contents.Contact.ContactBundle]#kotlin.collections.MutableMap[kotlin.String,kotlin.Boolean]#org.xmtp.android.library.ConsentList/PointingToDeclaration/library/org.xmtp.android.library/-contacts/-contacts.html
 $dokka.location:org.xmtp.android.library/Contacts/allow/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-contacts/allow.html
 $dokka.location:org.xmtp.android.library/Contacts/allowGroup/#kotlin.collections.List[kotlin.ByteArray]/PointingToDeclaration/library/org.xmtp.android.library/-contacts/allow-group.html
 $dokka.location:org.xmtp.android.library/Contacts/client/#/PointingToDeclaration/library/org.xmtp.android.library/-contacts/client.html
