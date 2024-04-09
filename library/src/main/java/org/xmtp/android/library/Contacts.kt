@@ -8,6 +8,7 @@ import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesAction
 import java.util.Date
 
@@ -68,9 +69,10 @@ class ConsentList(
             client.apiClient.envelopes(
                 Topic.preferenceList(identifier).description,
                 Pagination(
-                    after = lastFetched
+                    after = lastFetched,
+                    direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING
                 ),
-            ).reversed()
+            )
         lastFetched = newDate
         val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
         for (envelope in envelopes) {
