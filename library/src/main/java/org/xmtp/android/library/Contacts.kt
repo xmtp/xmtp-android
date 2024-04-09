@@ -22,7 +22,6 @@ data class ConsentListEntry(
     val value: String,
     val entryType: EntryType,
     val consentType: ConsentState,
-    val createdAt: Date,
 ) {
     enum class EntryType {
         ADDRESS,
@@ -33,17 +32,15 @@ data class ConsentListEntry(
         fun address(
             address: String,
             type: ConsentState = ConsentState.UNKNOWN,
-            createdAt: Date = Date(),
         ): ConsentListEntry {
-            return ConsentListEntry(address, EntryType.ADDRESS, type, createdAt)
+            return ConsentListEntry(address, EntryType.ADDRESS, type)
         }
 
         fun groupId(
             groupId: ByteArray,
             type: ConsentState = ConsentState.UNKNOWN,
-            createdAt: Date = Date(),
         ): ConsentListEntry {
-            return ConsentListEntry(String(groupId), EntryType.GROUP_ID, type, createdAt)
+            return ConsentListEntry(String(groupId), EntryType.GROUP_ID, type)
         }
     }
 
@@ -55,6 +52,7 @@ class ConsentList(
     val client: Client,
     val entries: MutableMap<String, ConsentListEntry> = mutableMapOf(),
 ) {
+    private var lastFetched: Date? = null
     private val publicKey =
         client.privateKeyBundleV1.identityKey.publicKey.secp256K1Uncompressed.bytes
     private val privateKey = client.privateKeyBundleV1.identityKey.secp256K1.bytes
@@ -66,17 +64,17 @@ class ConsentList(
 
     @OptIn(ExperimentalUnsignedTypes::class)
     suspend fun load(): List<ConsentListEntry> {
-        val mostRecent = entries.values.maxOfOrNull { it.createdAt }
-
+        val newDate = Date()
         val envelopes =
             client.apiClient.envelopes(
                 Topic.preferenceList(identifier).description,
                 Pagination(
-                    before = mostRecent,
+                    before = lastFetched,
                     direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING
                 ),
             )
-        val preferences: MutableList<Pair<PrivatePreferencesAction, Date>> = mutableListOf()
+        lastFetched = newDate
+        val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
         for (envelope in envelopes) {
             val payload =
                 uniffi.xmtpv3.userPreferencesDecrypt(
@@ -86,26 +84,24 @@ class ConsentList(
                 )
 
             preferences.add(
-                Pair(
-                    PrivatePreferencesAction.parseFrom(
-                        payload.toUByteArray().toByteArray(),
-                    ), Date(envelope.timestampNs)
+                PrivatePreferencesAction.parseFrom(
+                    payload.toUByteArray().toByteArray(),
                 )
             )
         }
 
-        preferences.iterator().forEach { (preference, date) ->
+        preferences.iterator().forEach { preference ->
             preference.allowAddress?.walletAddressesList?.forEach { address ->
-                allow(address, date)
+                allow(address)
             }
             preference.denyAddress?.walletAddressesList?.forEach { address ->
-                deny(address, date)
+                deny(address)
             }
             preference.allowGroup?.groupIdsList?.forEach { groupId ->
-                allowGroup(groupId.toByteArray(), date)
+                allowGroup(groupId.toByteArray())
             }
             preference.denyGroup?.groupIdsList?.forEach { groupId ->
-                denyGroup(groupId.toByteArray(), date)
+                denyGroup(groupId.toByteArray())
             }
         }
 
@@ -171,29 +167,29 @@ class ConsentList(
         client.publish(listOf(envelope))
     }
 
-    fun allow(address: String, date: Date): ConsentListEntry {
-        val entry = ConsentListEntry.address(address, ConsentState.ALLOWED, date)
+    fun allow(address: String): ConsentListEntry {
+        val entry = ConsentListEntry.address(address, ConsentState.ALLOWED)
         entries[entry.key] = entry
 
         return entry
     }
 
-    fun deny(address: String, date: Date): ConsentListEntry {
-        val entry = ConsentListEntry.address(address, ConsentState.DENIED, date)
+    fun deny(address: String): ConsentListEntry {
+        val entry = ConsentListEntry.address(address, ConsentState.DENIED)
         entries[entry.key] = entry
 
         return entry
     }
 
-    fun allowGroup(groupId: ByteArray, date: Date): ConsentListEntry {
-        val entry = ConsentListEntry.groupId(groupId, ConsentState.ALLOWED, date)
+    fun allowGroup(groupId: ByteArray): ConsentListEntry {
+        val entry = ConsentListEntry.groupId(groupId, ConsentState.ALLOWED)
         entries[entry.key] = entry
 
         return entry
     }
 
-    fun denyGroup(groupId: ByteArray, date: Date): ConsentListEntry {
-        val entry = ConsentListEntry.groupId(groupId, ConsentState.DENIED, date)
+    fun denyGroup(groupId: ByteArray): ConsentListEntry {
+        val entry = ConsentListEntry.groupId(groupId, ConsentState.DENIED)
         entries[entry.key] = entry
 
         return entry
