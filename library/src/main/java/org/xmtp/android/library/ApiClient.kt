@@ -6,7 +6,11 @@ import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
 import io.grpc.Metadata
 import io.grpc.TlsChannelCredentials
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
@@ -32,8 +36,10 @@ import uniffi.xmtpv3.FfiV2BatchQueryRequest
 import uniffi.xmtpv3.FfiV2BatchQueryResponse
 import uniffi.xmtpv3.FfiV2QueryRequest
 import uniffi.xmtpv3.FfiV2QueryResponse
+import uniffi.xmtpv3.FfiV2SubscribeRequest
 import java.io.Closeable
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.cancellation.CancellationException
 
 interface ApiClient {
     val environment: XMTPEnvironment
@@ -48,7 +54,7 @@ interface ApiClient {
     suspend fun batchQuery(requests: List<QueryRequest>): BatchQueryResponse
     suspend fun envelopes(topic: String, pagination: Pagination? = null): List<Envelope>
     suspend fun publish(envelopes: List<Envelope>)
-    suspend fun subscribe(request: Flow<SubscribeRequest>): Flow<Envelope>
+    suspend fun subscribe(topics: List<String>): Flow<Envelope>
 }
 
 data class GRPCApiClient(
@@ -87,10 +93,6 @@ data class GRPCApiClient(
                         }.build()
                     }
                 }.build()
-
-        fun makeSubscribeRequest(
-            topics: List<String>,
-        ): SubscribeRequest = SubscribeRequest.newBuilder().addAllContentTopics(topics).build()
     }
 
     private var authToken: String? = null
@@ -148,8 +150,37 @@ data class GRPCApiClient(
         rustV2Client.publish(request = request, authToken = authToken ?: "")
     }
 
-    override suspend fun subscribe(request: Flow<SubscribeRequest>): Flow<Envelope> {
-        return rustV2Client.subscribe2(request, headers)
+    override suspend fun subscribe(topics: List<String>): Flow<Envelope> = callbackFlow {
+        val request = SubscribeRequest.newBuilder().apply {
+            addAllContentTopics(topics)
+        }.build()
+        val subscription = rustV2Client.subscribe(
+            FfiV2SubscribeRequest(contentTopics = request.contentTopicsList)
+        )
+        try {
+            // Launch a separate coroutine for subscription
+            val job = launch {
+                try {
+                    // Continuously emit envelopes received from the subscription.
+                    while (true) {
+                        val nextEnvelope = envelopeFromFFi(subscription.next())
+                        trySend(nextEnvelope).isSuccess
+                    }
+                } catch (e: Exception) {
+                    if (e !is CancellationException) {
+                        subscription.close()
+                        throw XMTPException("ApiClientError.subscribeError: ${e.message}", e)
+                    }
+                }
+            }
+            awaitClose {
+                job.cancel()
+                subscription.close()
+            }
+        } catch (e: Exception) {
+            subscription.close()
+            throw e
+        }
     }
 
     override fun close() {

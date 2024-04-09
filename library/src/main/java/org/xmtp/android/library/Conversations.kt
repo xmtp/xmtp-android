@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
-import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
 import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
@@ -616,11 +615,9 @@ data class Conversations(
             topics.add(conversation.topic)
         }
 
-        val subscribeFlow = MutableStateFlow(makeSubscribeRequest(topics))
-
         while (true) {
             try {
-                client.subscribe2(request = subscribeFlow).collect { envelope ->
+                client.subscribe(topics).collect { envelope ->
                     when {
                         conversationsByTopic.containsKey(envelope.contentTopic) -> {
                             val conversation = conversationsByTopic[envelope.contentTopic]
@@ -632,7 +629,7 @@ data class Conversations(
                             val conversation = fromInvite(envelope = envelope)
                             conversationsByTopic[conversation.topic] = conversation
                             topics.add(conversation.topic)
-                            subscribeFlow.value = makeSubscribeRequest(topics)
+                            return@collect
                         }
 
                         envelope.contentTopic.startsWith("/xmtp/0/intro-") -> {
@@ -641,9 +638,8 @@ data class Conversations(
                             val decoded = conversation.decode(envelope)
                             emit(decoded)
                             topics.add(conversation.topic)
-                            subscribeFlow.value = makeSubscribeRequest(topics)
+                            return@collect
                         }
-
                         else -> {}
                     }
                 }
@@ -687,11 +683,9 @@ data class Conversations(
             topics.add(conversation.topic)
         }
 
-        val subscribeFlow = MutableStateFlow(makeSubscribeRequest(topics))
-
         while (true) {
             try {
-                client.subscribe2(request = subscribeFlow).collect { envelope ->
+                client.subscribe(topics).collect { envelope ->
                     when {
                         conversationsByTopic.containsKey(envelope.contentTopic) -> {
                             val conversation = conversationsByTopic[envelope.contentTopic]
@@ -703,7 +697,7 @@ data class Conversations(
                             val conversation = fromInvite(envelope = envelope)
                             conversationsByTopic[conversation.topic] = conversation
                             topics.add(conversation.topic)
-                            subscribeFlow.value = makeSubscribeRequest(topics)
+                            return@collect
                         }
 
                         envelope.contentTopic.startsWith("/xmtp/0/intro-") -> {
@@ -712,7 +706,7 @@ data class Conversations(
                             val decrypted = conversation.decrypt(envelope)
                             emit(decrypted)
                             topics.add(conversation.topic)
-                            subscribeFlow.value = makeSubscribeRequest(topics)
+                            return@collect
                         }
 
                         else -> {}

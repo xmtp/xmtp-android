@@ -9,12 +9,10 @@ import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Keys.toChecksumAddress
-import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.XMTPLogger
@@ -43,7 +41,6 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
-import uniffi.xmtpv3.FfiV2ApiClient
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.LegacyIdentitySource
 import uniffi.xmtpv3.createClient
@@ -534,11 +531,7 @@ class Client() {
     }
 
     suspend fun subscribe(topics: List<String>): Flow<Envelope> {
-        return subscribe2(flowOf(makeSubscribeRequest(topics)))
-    }
-
-    suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<Envelope> {
-        return apiClient.subscribe(request = request)
+        return apiClient.subscribe(topics)
     }
 
     suspend fun fetchConversation(topic: String?, includeGroups: Boolean = false): Conversation? {
@@ -548,7 +541,7 @@ class Client() {
         }
     }
 
-    suspend fun publish(envelopes: List<Envelope>): PublishResponse {
+    suspend fun publish(envelopes: List<Envelope>) {
         val authorized = AuthorizedIdentity(
             address = address,
             authorized = privateKeyBundleV1.identityKey.publicKey,

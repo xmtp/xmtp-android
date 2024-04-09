@@ -27,6 +27,7 @@ import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.InvitationV1Kt.context
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundle
+import uniffi.xmtpv3.createV2Client
 import java.util.Date
 
 @RunWith(AndroidJUnit4::class)
@@ -63,9 +64,16 @@ class LocalInstrumentedTest {
         val identity = PrivateKey.newBuilder().build().generate()
         val authorized = alice.createIdentity(identity)
         val authToken = authorized.createAuthToken()
+        val v2Client = runBlocking {
+            createV2Client(
+                host = XMTPEnvironment.LOCAL.getUrl(),
+                isSecure = false
+            )
+        }
         val api = GRPCApiClient(
             environment = XMTPEnvironment.LOCAL,
             secure = false,
+            rustV2Client = v2Client
         )
         api.setAuthToken(authToken)
         val encryptedBundle = authorized.toBundle.encrypted(alice)
@@ -93,9 +101,16 @@ class LocalInstrumentedTest {
         val identity = PrivateKeyBuilder().getPrivateKey()
         val authorized = aliceWallet.createIdentity(identity)
         val authToken = authorized.createAuthToken()
+        val v2Client = runBlocking {
+            createV2Client(
+                host = XMTPEnvironment.LOCAL.getUrl(),
+                isSecure = false
+            )
+        }
         val api = GRPCApiClient(
             environment = XMTPEnvironment.LOCAL,
             secure = false,
+            rustV2Client = v2Client
         )
         api.setAuthToken(authToken)
         val encryptedBundle =
@@ -754,9 +769,16 @@ class LocalInstrumentedTest {
         val identity = PrivateKey.newBuilder().build().generate()
         val authorized = alice.createIdentity(identity)
         val authToken = authorized.createAuthToken()
+        val v2Client = runBlocking {
+            createV2Client(
+                host = XMTPEnvironment.LOCAL.getUrl(),
+                isSecure = false
+            )
+        }
         val api = GRPCApiClient(
             environment = XMTPEnvironment.LOCAL,
             secure = false,
+            rustV2Client = v2Client
         )
         api.setAuthToken(authToken)
         val encryptedBundle = authorized.toBundle.encrypted(alice)

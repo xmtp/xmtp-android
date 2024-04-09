@@ -185,18 +185,18 @@ class FakeApiClient : ApiClient {
         }.build()
     }
 
-    override suspend fun publish(envelopes: List<MessageApiOuterClass.Envelope>): MessageApiOuterClass.PublishResponse {
+    override suspend fun publish(envelopes: List<MessageApiOuterClass.Envelope>) {
         for (envelope in envelopes) {
             send(envelope)
         }
         published.addAll(envelopes)
-        return PublishResponse.newBuilder().build()
+        PublishResponse.newBuilder().build()
     }
 
-    override suspend fun subscribe(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<MessageApiOuterClass.Envelope> {
+    override suspend fun subscribe(topics: List<String>): Flow<MessageApiOuterClass.Envelope> {
         val env = stream.counts().first()
 
-        if (request.first().contentTopicsList.contains(env.contentTopic)) {
+        if (topics.contains(env.contentTopic)) {
             return flowOf(env)
         }
         return flowOf()
