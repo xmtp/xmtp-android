@@ -849,6 +849,23 @@ class ConversationTest {
     }
 
     @Test
+    fun testCanPublishMultipleAddressConsentState() {
+        runBlocking {
+            val bobConversation = bobClient.conversations.newConversation(alice.walletAddress)
+            val caroConversation =
+                bobClient.conversations.newConversation(fixtures.caro.walletAddress)
+
+            assertEquals(bobClient.contacts.consentList.entries.size, 2)
+            assertTrue(bobConversation.consentState() == ConsentState.ALLOWED)
+            assertTrue(caroConversation.consentState() == ConsentState.ALLOWED)
+            bobClient.contacts.deny(listOf(alice.walletAddress, fixtures.caro.walletAddress))
+            assertEquals(bobClient.contacts.consentList.entries.size, 2)
+            assertTrue(bobConversation.consentState() == ConsentState.DENIED)
+            assertTrue(caroConversation.consentState() == ConsentState.DENIED)
+        }
+    }
+
+    @Test
     fun testCanValidateTopicsInsideConversation() {
         val validId = "sdfsadf095b97a9284dcd82b2274856ccac8a21de57bebe34e7f9eeb855fb21126d3b8f"
 

@@ -109,63 +109,62 @@ class ConsentList(
     }
 
     suspend fun publish(entries: List<ConsentListEntry>) {
-        val envelopes = entries.map { entry ->
-            val payload =
-                PrivatePreferencesAction.newBuilder().also {
-                    when (entry.entryType) {
-                        ConsentListEntry.EntryType.ADDRESS -> {
-                            when (entry.consentType) {
-                                ConsentState.ALLOWED ->
-                                    it.setAllowAddress(
-                                        PrivatePreferencesAction.AllowAddress.newBuilder()
-                                            .addWalletAddresses(entry.value),
-                                    )
+        val payload = PrivatePreferencesAction.newBuilder().also {
+            entries.forEach { entry ->
+                when (entry.entryType) {
+                    ConsentListEntry.EntryType.ADDRESS -> {
+                        when (entry.consentType) {
+                            ConsentState.ALLOWED ->
+                                it.setAllowAddress(
+                                    PrivatePreferencesAction.AllowAddress.newBuilder()
+                                        .addWalletAddresses(entry.value),
+                                )
 
-                                ConsentState.DENIED ->
-                                    it.setDenyAddress(
-                                        PrivatePreferencesAction.DenyAddress.newBuilder()
-                                            .addWalletAddresses(entry.value),
-                                    )
+                            ConsentState.DENIED ->
+                                it.setDenyAddress(
+                                    PrivatePreferencesAction.DenyAddress.newBuilder()
+                                        .addWalletAddresses(entry.value),
+                                )
 
-                                ConsentState.UNKNOWN -> it.clearMessageType()
-                            }
-                        }
-
-                        ConsentListEntry.EntryType.GROUP_ID -> {
-                            when (entry.consentType) {
-                                ConsentState.ALLOWED ->
-                                    it.setAllowGroup(
-                                        PrivatePreferencesAction.AllowGroup.newBuilder()
-                                            .addGroupIds(entry.value.toByteStringUtf8()),
-                                    )
-
-                                ConsentState.DENIED ->
-                                    it.setDenyGroup(
-                                        PrivatePreferencesAction.DenyGroup.newBuilder()
-                                            .addGroupIds(entry.value.toByteStringUtf8()),
-                                    )
-
-                                ConsentState.UNKNOWN -> it.clearMessageType()
-                            }
+                            ConsentState.UNKNOWN -> it.clearMessageType()
                         }
                     }
-                }.build()
 
-            val message =
-                uniffi.xmtpv3.userPreferencesEncrypt(
-                    publicKey.toByteArray(),
-                    privateKey.toByteArray(),
-                    payload.toByteArray(),
-                )
+                    ConsentListEntry.EntryType.GROUP_ID -> {
+                        when (entry.consentType) {
+                            ConsentState.ALLOWED ->
+                                it.setAllowGroup(
+                                    PrivatePreferencesAction.AllowGroup.newBuilder()
+                                        .addGroupIds(entry.value.toByteStringUtf8()),
+                                )
 
-            EnvelopeBuilder.buildFromTopic(
-                Topic.preferenceList(identifier),
-                Date(),
-                ByteArray(message.size) { message[it] },
+                            ConsentState.DENIED ->
+                                it.setDenyGroup(
+                                    PrivatePreferencesAction.DenyGroup.newBuilder()
+                                        .addGroupIds(entry.value.toByteStringUtf8()),
+                                )
+
+                            ConsentState.UNKNOWN -> it.clearMessageType()
+                        }
+                    }
+                }
+            }
+        }.build()
+
+        val message =
+            uniffi.xmtpv3.userPreferencesEncrypt(
+                publicKey.toByteArray(),
+                privateKey.toByteArray(),
+                payload.toByteArray(),
             )
-        }
 
-        client.publish(envelopes)
+        val envelope = EnvelopeBuilder.buildFromTopic(
+            Topic.preferenceList(identifier),
+            Date(),
+            ByteArray(message.size) { message[it] },
+        )
+
+        client.publish(listOf(envelope))
     }
 
     fun allow(address: String): ConsentListEntry {
