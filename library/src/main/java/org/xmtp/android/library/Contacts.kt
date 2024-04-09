@@ -69,7 +69,7 @@ class ConsentList(
             client.apiClient.envelopes(
                 Topic.preferenceList(identifier).description,
                 Pagination(
-                    before = lastFetched,
+                    after = lastFetched,
                     direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING
                 ),
             )
