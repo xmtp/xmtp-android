@@ -42,7 +42,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.cancellation.CancellationException
 
 interface ApiClient {
-    val environment: XMTPEnvironment
     fun setAuthToken(token: String)
     suspend fun query(
         topic: String,
@@ -58,8 +57,6 @@ interface ApiClient {
 }
 
 data class GRPCApiClient(
-    override val environment: XMTPEnvironment,
-    val secure: Boolean = true,
     val appVersion: String? = null,
     val rustV2Client: FfiV2ApiClient,
 ) :

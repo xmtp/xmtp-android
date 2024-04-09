@@ -153,11 +153,8 @@ class Client() {
                     isSecure = clientOptions.api.isSecure
                 )
             }
-            val api = GRPCApiClient(
-                environment = clientOptions.api.env,
-                secure = clientOptions.api.isSecure,
-                rustV2Client = v2Client
-            )
+            clientOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
+            val api = GRPCApiClient(rustV2Client = v2Client)
             return runBlocking {
                 val topics = api.queryTopic(Topic.contact(peerAddress)).envelopesList
                 topics.isNotEmpty()
@@ -197,12 +194,8 @@ class Client() {
                 isSecure = clientOptions.api.isSecure
             )
         }
-        val apiClient =
-            GRPCApiClient(
-                environment = clientOptions.api.env,
-                secure = clientOptions.api.isSecure,
-                rustV2Client = v2Client
-            )
+        clientOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
+        val apiClient = GRPCApiClient(rustV2Client = v2Client)
         val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
             runBlocking {
                 ffiXmtpClient(
@@ -237,12 +230,8 @@ class Client() {
                 isSecure = clientOptions.api.isSecure
             )
         }
-        val apiClient =
-            GRPCApiClient(
-                environment = clientOptions.api.env,
-                secure = clientOptions.api.isSecure,
-                rustV2Client = v2Client
-            )
+        clientOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
+        val apiClient = GRPCApiClient(rustV2Client = v2Client)
         return create(
             account = account,
             apiClient = apiClient,
@@ -310,12 +299,8 @@ class Client() {
                 isSecure = newOptions.api.isSecure
             )
         }
-        val apiClient =
-            GRPCApiClient(
-                environment = newOptions.api.env,
-                secure = newOptions.api.isSecure,
-                rustV2Client = v2Client
-            )
+        newOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
+        val apiClient = GRPCApiClient(rustV2Client = v2Client)
         val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
             runBlocking {
                 ffiXmtpClient(
