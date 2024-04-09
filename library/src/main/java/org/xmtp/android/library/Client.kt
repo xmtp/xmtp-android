@@ -154,7 +154,7 @@ class Client() {
                 )
             }
             clientOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
-            val api = GRPCApiClient(rustV2Client = v2Client)
+            val api = GRPCApiClient(environment = clientOptions.api.env, rustV2Client = v2Client)
             return runBlocking {
                 val topics = api.queryTopic(Topic.contact(peerAddress)).envelopesList
                 topics.isNotEmpty()
@@ -195,7 +195,7 @@ class Client() {
             )
         }
         clientOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
-        val apiClient = GRPCApiClient(rustV2Client = v2Client)
+        val apiClient = GRPCApiClient(environment = clientOptions.api.env, rustV2Client = v2Client)
         val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
             runBlocking {
                 ffiXmtpClient(
@@ -231,7 +231,7 @@ class Client() {
             )
         }
         clientOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
-        val apiClient = GRPCApiClient(rustV2Client = v2Client)
+        val apiClient = GRPCApiClient(environment = clientOptions.api.env, rustV2Client = v2Client)
         return create(
             account = account,
             apiClient = apiClient,
@@ -300,7 +300,7 @@ class Client() {
             )
         }
         newOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
-        val apiClient = GRPCApiClient(rustV2Client = v2Client)
+        val apiClient = GRPCApiClient(environment = newOptions.api.env, rustV2Client = v2Client)
         val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
             runBlocking {
                 ffiXmtpClient(
