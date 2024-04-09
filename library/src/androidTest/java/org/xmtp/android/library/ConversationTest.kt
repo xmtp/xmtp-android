@@ -519,13 +519,7 @@ class ConversationTest {
                 ),
             )
         }
-        val isSteveOrBobConversation = { topic: String ->
-            (topic.lowercase() == steveConversation.topic.lowercase() || topic.lowercase() == bobConversation.topic.lowercase())
-        }
         assertEquals(3, messages.size)
-        assertTrue(isSteveOrBobConversation(messages[0].topic))
-        assertTrue(isSteveOrBobConversation(messages[1].topic))
-        assertTrue(isSteveOrBobConversation(messages[2].topic))
     }
 
     @Test

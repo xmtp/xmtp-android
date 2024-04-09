@@ -69,10 +69,9 @@ class ConsentList(
             client.apiClient.envelopes(
                 Topic.preferenceList(identifier).description,
                 Pagination(
-                    after = lastFetched,
-                    direction = MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING
+                    after = lastFetched
                 ),
-            )
+            ).reversed()
         lastFetched = newDate
         val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
         for (envelope in envelopes) {
