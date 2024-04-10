@@ -149,39 +149,23 @@ data class GRPCApiClient(
         rustV2Client.publish(request = request, authToken = authToken ?: "")
     }
 
-    override suspend fun subscribe(topics: List<String>): Flow<Envelope> = callbackFlow {
-        val request = SubscribeRequest.newBuilder().apply {
-            addAllContentTopics(topics)
-        }.build()
-        val subscription = rustV2Client.subscribe(
-            FfiV2SubscribeRequest(contentTopics = request.contentTopicsList)
-        )
+    override suspend fun subscribe(topics: List<String>): Flow<Envelope> = flow {
         try {
-            // Launch a separate coroutine for subscription
-            val job = launch {
-                try {
-                    // Continuously emit envelopes received from the subscription.
-                    while (true) {
-                        val nextEnvelope = envelopeFromFFi(subscription.next())
-                        trySend(nextEnvelope).isSuccess
-                    }
-                } catch (e: Exception) {
-                    if (e !is CancellationException) {
-                        subscription.close()
-                        throw XMTPException("ApiClientError.subscribeError: ${e.message}", e)
-                    }
+            val subscription = rustV2Client.subscribe(FfiV2SubscribeRequest(topics))
+            try {
+                while (true) {
+                    val nextEnvelope = subscription.next()
+                    emit(envelopeFromFFi(nextEnvelope))
                 }
-            }
-            awaitClose {
-                job.cancel()
-                subscription.close()
+            } catch (e: Exception) {
+                throw e
+            } finally {
+                subscription.end()
             }
         } catch (e: Exception) {
-            subscription.close()
             throw e
         }
     }
-
     override fun close() {
         rustV2Client.close()
     }
