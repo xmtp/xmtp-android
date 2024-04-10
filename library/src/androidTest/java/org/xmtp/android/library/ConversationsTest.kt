@@ -79,7 +79,7 @@ class ConversationsTest {
     }
 
     @Test
-    @Ignore("CI Issues")
+//    @Ignore("CI Issues")
     fun testStreamAllMessages() {
         val bo = PrivateKeyBuilder()
         val alix = PrivateKeyBuilder()

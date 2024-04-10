@@ -5,11 +5,13 @@ import com.google.protobuf.kotlin.toByteString
 import io.grpc.StatusException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.job
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
@@ -629,7 +631,7 @@ data class Conversations(
                             val conversation = fromInvite(envelope = envelope)
                             conversationsByTopic[conversation.topic] = conversation
                             topics.add(conversation.topic)
-                            return@collect
+                            currentCoroutineContext().job.cancel()
                         }
 
                         envelope.contentTopic.startsWith("/xmtp/0/intro-") -> {
@@ -638,7 +640,7 @@ data class Conversations(
                             val decoded = conversation.decode(envelope)
                             emit(decoded)
                             topics.add(conversation.topic)
-                            return@collect
+                            currentCoroutineContext().job.cancel()
                         }
                         else -> {}
                     }
@@ -697,7 +699,7 @@ data class Conversations(
                             val conversation = fromInvite(envelope = envelope)
                             conversationsByTopic[conversation.topic] = conversation
                             topics.add(conversation.topic)
-                            return@collect
+                            currentCoroutineContext().job.cancel()
                         }
 
                         envelope.contentTopic.startsWith("/xmtp/0/intro-") -> {
@@ -706,7 +708,7 @@ data class Conversations(
                             val decrypted = conversation.decrypt(envelope)
                             emit(decrypted)
                             topics.add(conversation.topic)
-                            return@collect
+                            currentCoroutineContext().job.cancel()
                         }
 
                         else -> {}

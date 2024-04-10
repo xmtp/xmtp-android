@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import app.cash.turbine.test
 import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.cancel
@@ -612,19 +611,37 @@ class ConversationTest {
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
         val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
-        conversation.streamMessages().test {
-            conversation.send("hi alice")
-            assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
-        }
-    }
 
+        val flow = conversation.streamMessages()
+        val job = launch {
+            flow.catch { e ->
+                throw Exception("Error collecting flow: $e")
+            }.collect { message ->
+                assertEquals("hi alice", message.encodedContent.content.toStringUtf8())
+                this.cancel()
+            }
+        }
+
+        conversation.send("hi alice")
+
+        job.join()
+    }
     @Test
     fun testStreamingMessagesFromV2Conversations() = kotlinx.coroutines.test.runTest {
         val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
-        conversation.streamMessages().test {
-            conversation.send("hi alice")
-            assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
+        val flow = conversation.streamMessages()
+        val job = launch {
+            flow.catch { e ->
+                throw Exception("Error collecting flow: $e")
+            }.collect { message ->
+                assertEquals("hi alice", message.encodedContent.content.toStringUtf8())
+                this.cancel()
+            }
         }
+
+        conversation.send("hi alice")
+
+        job.join()
     }
 
     @Test
