@@ -233,7 +233,7 @@ class MessageTest {
                     }.build()
             }.build()
         }.build()
-        val client = Client().create(account = PrivateKeyBuilder(key) )
+        val client = Client().create(account = PrivateKeyBuilder(key))
         assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
         val conversations = runBlocking { client.conversations.list() }
         assertEquals(201, conversations.size)
