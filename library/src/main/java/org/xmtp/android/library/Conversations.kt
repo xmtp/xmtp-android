@@ -7,7 +7,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
@@ -642,6 +641,7 @@ data class Conversations(
                             topics.add(conversation.topic)
                             currentCoroutineContext().job.cancel()
                         }
+
                         else -> {}
                     }
                 }

@@ -1,31 +1,17 @@
 package org.xmtp.android.library
 
 import com.google.protobuf.kotlin.toByteString
-import io.grpc.Grpc
-import io.grpc.InsecureChannelCredentials
-import io.grpc.ManagedChannel
-import io.grpc.Metadata
-import io.grpc.TlsChannelCredentials
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
-import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Cursor
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PagingInfo
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishRequest
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SubscribeRequest
-import org.xmtp.proto.message.api.v1.queryResponse
 import uniffi.xmtpv3.FfiCursor
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiPagingInfo
@@ -38,8 +24,6 @@ import uniffi.xmtpv3.FfiV2QueryRequest
 import uniffi.xmtpv3.FfiV2QueryResponse
 import uniffi.xmtpv3.FfiV2SubscribeRequest
 import java.io.Closeable
-import java.util.concurrent.TimeUnit
-import kotlin.coroutines.cancellation.CancellationException
 
 interface ApiClient {
     val environment: XMTPEnvironment
