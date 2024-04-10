@@ -209,6 +209,7 @@ class MessageTest {
     }
 
     @Test
+    @Ignore("Dev network flaky should be moved to local")
     fun testCanLoadAllConversations() {
         val ints = arrayOf(
             105, 207, 193, 11, 240, 115, 115, 204,
@@ -232,7 +233,8 @@ class MessageTest {
                     }.build()
             }.build()
         }.build()
-        val client = Client().create(account = PrivateKeyBuilder(key))
+        val client = Client().create(account = PrivateKeyBuilder(key) )
+        assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
         val conversations = runBlocking { client.conversations.list() }
         assertEquals(201, conversations.size)
     }
