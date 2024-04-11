@@ -91,7 +91,7 @@ data class GRPCApiClient(
         ): SubscribeRequest = SubscribeRequest.newBuilder().addAllContentTopics(topics).build()
     }
 
-    private val channel: ManagedChannel by lazy {
+    private val channel: ManagedChannel =
         Grpc.newChannelBuilderForAddress(
             environment.getValue(),
             if (environment == XMTPEnvironment.LOCAL) 5556 else 443,
@@ -101,11 +101,9 @@ data class GRPCApiClient(
                 InsecureChannelCredentials.create()
             },
         ).build()
-    }
 
-    private val client: MessageApiGrpcKt.MessageApiCoroutineStub by lazy {
+    private val client: MessageApiGrpcKt.MessageApiCoroutineStub =
         MessageApiGrpcKt.MessageApiCoroutineStub(channel)
-    }
 
     private var authToken: String? = null
 

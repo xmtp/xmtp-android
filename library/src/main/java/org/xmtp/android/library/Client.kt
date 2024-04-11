@@ -9,6 +9,7 @@ import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -518,7 +519,7 @@ class Client() {
     }
 
     suspend fun subscribe(topics: List<String>): Flow<Envelope> {
-        return subscribe2(flowOf(makeSubscribeRequest(topics)))
+        return subscribe2(MutableStateFlow(makeSubscribeRequest(topics)))
     }
 
     suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<Envelope> {
