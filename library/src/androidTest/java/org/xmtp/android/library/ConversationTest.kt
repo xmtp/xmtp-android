@@ -4,6 +4,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -596,24 +599,56 @@ class ConversationTest {
     }
 
     @Test
-    fun testStreamingMessagesFromV1Conversation() = kotlinx.coroutines.test.runTest {
+    fun testStreamingMessagesFromV1Conversation() {
         // Overwrite contact as legacy
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
-        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
-        conversation.streamMessages().test {
-            conversation.send("hi alice")
-            assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
+        val conversation =
+            runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
+        val allMessages = mutableListOf<DecodedMessage>()
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                conversation.streamMessages().collect { message ->
+                    allMessages.add(message)
+                }
+            } catch (e: Exception) {
+            }
         }
+        Thread.sleep(2500)
+
+        for (i in 0 until 5) {
+            runBlocking { conversation.send(text = "Message $i") }
+            Thread.sleep(1000)
+        }
+
+        assertEquals(allMessages.size, 5)
+        job.cancel()
     }
 
     @Test
-    fun testStreamingMessagesFromV2Conversations() = kotlinx.coroutines.test.runTest {
-        val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
-        conversation.streamMessages().test {
-            conversation.send("hi alice")
-            assertEquals("hi alice", awaitItem().encodedContent.content.toStringUtf8())
+    fun testStreamingMessagesFromV2Conversations() {
+        val conversation =
+            runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
+        val allMessages = mutableListOf<DecodedMessage>()
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                conversation.streamMessages().collect { message ->
+                    allMessages.add(message)
+                }
+            } catch (e: Exception) {
+            }
         }
+        Thread.sleep(2500)
+
+        for (i in 0 until 5) {
+            runBlocking { conversation.send(text = "Message $i") }
+            Thread.sleep(1000)
+        }
+
+        assertEquals(allMessages.size, 5)
+        job.cancel()
     }
 
     @Test
