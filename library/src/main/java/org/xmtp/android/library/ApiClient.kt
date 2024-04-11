@@ -4,15 +4,20 @@ import com.google.protobuf.kotlin.toByteString
 import io.grpc.Grpc
 import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import org.xmtp.android.library.messages.Pagination
-import org.xmtp.android.library.messages.Topic
 import io.grpc.Metadata
 import io.grpc.TlsChannelCredentials
+import kotlinx.coroutines.flow.Flow
+import org.xmtp.android.library.messages.Pagination
+import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.*
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Cursor
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PagingInfo
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SubscribeRequest
 import uniffi.xmtpv3.FfiCursor
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiPagingInfo
@@ -23,7 +28,6 @@ import uniffi.xmtpv3.FfiV2BatchQueryRequest
 import uniffi.xmtpv3.FfiV2BatchQueryResponse
 import uniffi.xmtpv3.FfiV2QueryRequest
 import uniffi.xmtpv3.FfiV2QueryResponse
-import uniffi.xmtpv3.FfiV2SubscribeRequest
 import java.io.Closeable
 import java.util.concurrent.TimeUnit
 
