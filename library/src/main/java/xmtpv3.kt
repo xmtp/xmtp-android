@@ -417,6 +417,8 @@ internal interface _UniFFILib : Library {
     ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_method_ffigroup_group_metadata(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
     ): Pointer
+    fun uniffi_xmtpv3_fn_method_ffigroup_group_name(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
+    ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_method_ffigroup_id(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_method_ffigroup_is_active(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
@@ -432,6 +434,8 @@ internal interface _UniFFILib : Library {
     fun uniffi_xmtpv3_fn_method_ffigroup_stream(`ptr`: Pointer,`messageCallback`: Long,
     ): Pointer
     fun uniffi_xmtpv3_fn_method_ffigroup_sync(`ptr`: Pointer,
+    ): Pointer
+    fun uniffi_xmtpv3_fn_method_ffigroup_update_group_name(`ptr`: Pointer,`groupName`: RustBuffer.ByValue,
     ): Pointer
     fun uniffi_xmtpv3_fn_free_ffigroupmetadata(`ptr`: Pointer,_uniffi_out_err: RustCallStatus,
     ): Unit
@@ -679,6 +683,8 @@ internal interface _UniFFILib : Library {
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_group_metadata(
     ): Short
+    fun uniffi_xmtpv3_checksum_method_ffigroup_group_name(
+    ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_id(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_is_active(
@@ -694,6 +700,8 @@ internal interface _UniFFILib : Library {
     fun uniffi_xmtpv3_checksum_method_ffigroup_stream(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_sync(
+    ): Short
+    fun uniffi_xmtpv3_checksum_method_ffigroup_update_group_name(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroupmetadata_conversation_type(
     ): Short
@@ -832,6 +840,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_group_metadata() != 3690.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_group_name() != 3391.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_id() != 35243.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -854,6 +865,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_sync() != 9422.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_update_group_name() != 29940.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroupmetadata_conversation_type() != 37015.toShort()) {
@@ -1491,7 +1505,8 @@ public interface FfiGroupInterface {
     suspend fun `addMembers`(`accountAddresses`: List<String>)
     fun `createdAtNs`(): Long@Throws(GenericException::class)
     fun `findMessages`(`opts`: FfiListMessagesOptions): List<FfiMessage>@Throws(GenericException::class)
-    fun `groupMetadata`(): FfiGroupMetadata
+    fun `groupMetadata`(): FfiGroupMetadata@Throws(GenericException::class)
+    fun `groupName`(): String
     fun `id`(): ByteArray@Throws(GenericException::class)
     fun `isActive`(): Boolean@Throws(GenericException::class)
     fun `listMembers`(): List<FfiGroupMember>@Throws(GenericException::class)
@@ -1499,7 +1514,8 @@ public interface FfiGroupInterface {
     suspend fun `removeMembers`(`accountAddresses`: List<String>)@Throws(GenericException::class)
     suspend fun `send`(`contentBytes`: ByteArray)@Throws(GenericException::class)
     suspend fun `stream`(`messageCallback`: FfiMessageCallback): FfiStreamCloser@Throws(GenericException::class)
-    suspend fun `sync`()
+    suspend fun `sync`()@Throws(GenericException::class)
+    suspend fun `updateGroupName`(`groupName`: String)
     companion object
 }
 
@@ -1575,6 +1591,18 @@ class FfiGroup(
             }
         }.let {
             FfiConverterTypeFfiGroupMetadata.lift(it)
+        }
+
+
+    @Throws(GenericException::class)override fun `groupName`(): String =
+        callWithPointer {
+            rustCallWithError(GenericException) { _status ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_group_name(it,
+
+                    _status)
+            }
+        }.let {
+            FfiConverterString.lift(it)
         }
 
     override fun `id`(): ByteArray =
@@ -1704,6 +1732,27 @@ class FfiGroup(
                     thisPtr,
 
                     )
+            },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, continuation) },
+            { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+            // lift function
+            { Unit },
+
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `updateGroupName`(`groupName`: String) {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_update_group_name(
+                    thisPtr,
+                    FfiConverterString.lower(`groupName`),
+                )
             },
             { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, continuation) },
             { future, continuation -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
