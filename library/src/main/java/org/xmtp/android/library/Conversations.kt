@@ -320,11 +320,11 @@ data class Conversations(
             }.toMutableMap()
         }
 
-        topics.forEach {
+        topics.iterator().forEach {
             val conversation = it.value
             val hmacKeys = HmacKeys.newBuilder()
             if (conversation.keyMaterial != null) {
-                (thirtyDayPeriodsSinceEpoch - 1..thirtyDayPeriodsSinceEpoch + 1).forEach { value ->
+                (thirtyDayPeriodsSinceEpoch - 1..thirtyDayPeriodsSinceEpoch + 1).iterator().forEach { value ->
                     val info = "$value-${client.address}"
                     val hmacKey =
                         Crypto.deriveKey(

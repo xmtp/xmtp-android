@@ -822,8 +822,8 @@ class ConversationTest {
     fun testCanHaveConsentState() {
         val bobConversation =
             runBlocking { bobClient.conversations.newConversation(alice.walletAddress, null) }
+        Thread.sleep(1000)
         val isAllowed = bobConversation.consentState() == ConsentState.ALLOWED
-
         // Conversations you start should start as allowed
         assertTrue(isAllowed)
         assertTrue(bobClient.contacts.isAllowed(alice.walletAddress))
@@ -862,6 +862,7 @@ class ConversationTest {
     fun testCanHaveImplicitConsentOnMessageSend() {
         val bobConversation =
             runBlocking { bobClient.conversations.newConversation(alice.walletAddress, null) }
+        Thread.sleep(1000)
         val isAllowed = bobConversation.consentState() == ConsentState.ALLOWED
 
         // Conversations you start should start as allowed
@@ -890,11 +891,12 @@ class ConversationTest {
             val caroConversation =
                 bobClient.conversations.newConversation(fixtures.caro.walletAddress)
             bobClient.contacts.refreshConsentList()
-            assertEquals(bobClient.contacts.consentList.entries.size, 2)
+            Thread.sleep(1000)
+            assertEquals(2, bobClient.contacts.consentList.entries.size)
             assertTrue(bobConversation.consentState() == ConsentState.ALLOWED)
             assertTrue(caroConversation.consentState() == ConsentState.ALLOWED)
             bobClient.contacts.deny(listOf(alice.walletAddress, fixtures.caro.walletAddress))
-            assertEquals(bobClient.contacts.consentList.entries.size, 2)
+            assertEquals(2, bobClient.contacts.consentList.entries.size)
             assertTrue(bobConversation.consentState() == ConsentState.DENIED)
             assertTrue(caroConversation.consentState() == ConsentState.DENIED)
         }
