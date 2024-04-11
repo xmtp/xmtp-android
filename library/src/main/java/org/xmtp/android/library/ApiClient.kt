@@ -138,10 +138,6 @@ data class GRPCApiClient(
             envelopes.addAll(response.envelopesList)
             cursor = response.pagingInfo.cursor
             hasNextPage = response.envelopesList.isNotEmpty() && response.pagingInfo.hasCursor()
-            if (pagination?.limit != null && envelopes.size >= pagination.limit) {
-                envelopes = envelopes.take(pagination.limit).toMutableList()
-                break
-            }
         }
         return envelopes
     }
