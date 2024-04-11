@@ -507,32 +507,14 @@ class GroupTest {
 
     @Test
     fun testCanStreamGroupsAndConversations() = kotlinx.coroutines.test.runTest {
-        val flow = boClient.conversations.streamAll()
-        var counter = 0
-        val job = launch {
-            flow.catch { e ->
-                throw Exception("Error collecting flow: $e")
-            }.collect { convo ->
-                counter++
-                when (convo) {
-                    is Conversation.Group -> {
-                        assert(true)
-                    }
-                    is Conversation.V2 -> {
-                        assert(true)
-                    }
-                    else -> {
-                        assert(false)
-                    }
-                }
-                if (counter == 2) this.cancel()
-            }
+        boClient.conversations.streamAll().test {
+            val group =
+                caroClient.conversations.newGroup(listOf(bo.walletAddress))
+            assertEquals(group.topic, awaitItem().topic)
+            val conversation =
+                alixClient.conversations.newConversation(bo.walletAddress)
+            assertEquals(conversation.topic, awaitItem().topic)
         }
-
-        caroClient.conversations.newGroup(listOf(bo.walletAddress))
-        alixClient.conversations.newConversation(bo.walletAddress)
-
-        job.join()
     }
 
     @Test

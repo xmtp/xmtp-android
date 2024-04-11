@@ -1,17 +1,18 @@
 package org.xmtp.android.library
 
 import com.google.protobuf.kotlin.toByteString
+import io.grpc.Grpc
+import io.grpc.InsecureChannelCredentials
+import io.grpc.ManagedChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Cursor
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PagingInfo
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
+import io.grpc.Metadata
+import io.grpc.TlsChannelCredentials
+import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.*
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection
 import uniffi.xmtpv3.FfiCursor
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiPagingInfo
@@ -24,6 +25,7 @@ import uniffi.xmtpv3.FfiV2QueryRequest
 import uniffi.xmtpv3.FfiV2QueryResponse
 import uniffi.xmtpv3.FfiV2SubscribeRequest
 import java.io.Closeable
+import java.util.concurrent.TimeUnit
 
 interface ApiClient {
     val environment: XMTPEnvironment
@@ -38,7 +40,7 @@ interface ApiClient {
     suspend fun batchQuery(requests: List<QueryRequest>): BatchQueryResponse
     suspend fun envelopes(topic: String, pagination: Pagination? = null): List<Envelope>
     suspend fun publish(envelopes: List<Envelope>)
-    suspend fun subscribe(topics: List<String>): Flow<Envelope>
+    suspend fun subscribe(request: Flow<SubscribeRequest>): Flow<Envelope>
 }
 
 data class GRPCApiClient(
@@ -48,6 +50,13 @@ data class GRPCApiClient(
 ) :
     ApiClient, Closeable {
     companion object {
+
+        val CLIENT_VERSION_HEADER_KEY: Metadata.Key<String> =
+            Metadata.Key.of("X-Client-Version", Metadata.ASCII_STRING_MARSHALLER)
+
+        val APP_VERSION_HEADER_KEY: Metadata.Key<String> =
+            Metadata.Key.of("X-App-Version", Metadata.ASCII_STRING_MARSHALLER)
+
         fun makeQueryRequest(
             topic: String,
             pagination: Pagination? = null,
@@ -76,6 +85,26 @@ data class GRPCApiClient(
                         }.build()
                     }
                 }.build()
+
+        fun makeSubscribeRequest(
+            topics: List<String>,
+        ): SubscribeRequest = SubscribeRequest.newBuilder().addAllContentTopics(topics).build()
+    }
+
+    private val channel: ManagedChannel by lazy {
+        Grpc.newChannelBuilderForAddress(
+            environment.getValue(),
+            if (environment == XMTPEnvironment.LOCAL) 5556 else 443,
+            if (environment != XMTPEnvironment.LOCAL) {
+                TlsChannelCredentials.create()
+            } else {
+                InsecureChannelCredentials.create()
+            },
+        ).build()
+    }
+
+    private val client: MessageApiGrpcKt.MessageApiCoroutineStub by lazy {
+        MessageApiGrpcKt.MessageApiCoroutineStub(channel)
     }
 
     private var authToken: String? = null
@@ -133,25 +162,19 @@ data class GRPCApiClient(
         rustV2Client.publish(request = request, authToken = authToken ?: "")
     }
 
-    override suspend fun subscribe(topics: List<String>): Flow<Envelope> = flow {
-        try {
-            val subscription = rustV2Client.subscribe(FfiV2SubscribeRequest(topics))
-            try {
-                while (true) {
-                    val nextEnvelope = subscription.next()
-                    emit(envelopeFromFFi(nextEnvelope))
-                }
-            } catch (e: Exception) {
-                throw e
-            } finally {
-                subscription.end()
-            }
-        } catch (e: Exception) {
-            throw e
+    override suspend fun subscribe(request: Flow<SubscribeRequest>): Flow<Envelope> {
+        val headers = Metadata()
+        headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
+        if (appVersion != null) {
+            headers.put(APP_VERSION_HEADER_KEY, appVersion)
         }
+
+        return client.subscribe2(request, headers)
     }
+
     override fun close() {
         rustV2Client.close()
+        channel.shutdown().awaitTermination(5, TimeUnit.SECONDS)
     }
 
     private fun envelopeToFFi(envelope: Envelope): FfiEnvelope {
