@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
@@ -66,7 +65,6 @@ class ConsentList(
     @OptIn(ExperimentalUnsignedTypes::class)
     suspend fun load(): List<ConsentListEntry> {
         val newDate = Date()
-        val start = Date()
         val envelopes =
             client.apiClient.envelopes(
                 Topic.preferenceList(identifier).description,
@@ -76,8 +74,6 @@ class ConsentList(
                     limit = 500
                 ),
             )
-        val end = Date()
-        Log.d("LOPI", "Loaded ${envelopes.size} consent envelopes in ${(end.time - start.time) / 1000.0}s")
 
         lastFetched = newDate
         val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
