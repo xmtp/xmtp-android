@@ -87,16 +87,38 @@ data class GRPCApiClient(
         ): SubscribeRequest = SubscribeRequest.newBuilder().addAllContentTopics(topics).build()
     }
 
+    private val retryPolicy = mapOf(
+        "methodConfig" to listOf(
+            mapOf(
+                "retryPolicy" to mapOf(
+                    "maxAttempts" to 4.0,
+                    "initialBackoff" to "0.5s",
+                    "maxBackoff" to "30s",
+                    "backoffMultiplier" to 2.0,
+                    "retryableStatusCodes" to listOf(
+                        "UNAVAILABLE",
+                        "CANCELLED",
+                    )
+                )
+            )
+        )
+    )
+
     private val channel: ManagedChannel =
         OkHttpChannelBuilder.forAddress(
             environment.getValue(),
             if (environment == XMTPEnvironment.LOCAL) 5556 else 443,
-            if (secure) {
+            if (environment == XMTPEnvironment.LOCAL) {
                 TlsChannelCredentials.create()
             } else {
                 InsecureChannelCredentials.create()
             },
-        ).build()
+            ).defaultServiceConfig(retryPolicy)
+            .enableRetry()
+//            .keepAliveTime(1, TimeUnit.SECONDS)
+//            .keepAliveTimeout(1, TimeUnit.SECONDS)
+//            .keepAliveWithoutCalls(true)
+            .build()
 
     private val client: MessageApiGrpcKt.MessageApiCoroutineStub =
         MessageApiGrpcKt.MessageApiCoroutineStub(channel)
