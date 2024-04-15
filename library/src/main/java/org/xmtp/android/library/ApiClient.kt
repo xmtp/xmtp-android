@@ -1,10 +1,8 @@
 package org.xmtp.android.library
 
-import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
+import io.grpc.ManagedChannelBuilder
 import io.grpc.Metadata
-import io.grpc.TlsChannelCredentials
-import io.grpc.okhttp.OkHttpChannelBuilder
 import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
@@ -105,20 +103,21 @@ data class GRPCApiClient(
     )
 
     private val channel: ManagedChannel =
-        OkHttpChannelBuilder.forAddress(
+        ManagedChannelBuilder.forAddress(
             environment.getValue(),
-            if (environment == XMTPEnvironment.LOCAL) 5556 else 443,
-            if (environment == XMTPEnvironment.LOCAL) {
-                TlsChannelCredentials.create()
+            if (environment == XMTPEnvironment.LOCAL) 5556 else 443
+        ).apply {
+            keepAliveTime(30L, TimeUnit.SECONDS)
+            keepAliveTimeout(20L, TimeUnit.SECONDS)
+            keepAliveWithoutCalls(true)
+            if (environment != XMTPEnvironment.LOCAL) {
+                useTransportSecurity()
             } else {
-                InsecureChannelCredentials.create()
-            },
-            ).defaultServiceConfig(retryPolicy)
-            .enableRetry()
-//            .keepAliveTime(1, TimeUnit.SECONDS)
-//            .keepAliveTimeout(1, TimeUnit.SECONDS)
-//            .keepAliveWithoutCalls(true)
-            .build()
+                usePlaintext()
+            }
+            defaultServiceConfig(retryPolicy)
+            enableRetry()
+        }.build()
 
     private val client: MessageApiGrpcKt.MessageApiCoroutineStub =
         MessageApiGrpcKt.MessageApiCoroutineStub(channel)
