@@ -79,7 +79,6 @@ class ConversationsTest {
     }
 
     @Test
-    @Ignore("CI Issues")
     fun testStreamAllMessages() {
         val bo = PrivateKeyBuilder()
         val alix = PrivateKeyBuilder()
@@ -87,7 +86,8 @@ class ConversationsTest {
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
-        val boConversation = runBlocking { boClient.conversations.newConversation(alixClient.address) }
+        val boConversation =
+            runBlocking { boClient.conversations.newConversation(alixClient.address) }
 
         // Record message stream across all conversations
         val allMessages = mutableListOf<DecodedMessage>()
@@ -97,7 +97,8 @@ class ConversationsTest {
                 alixClient.conversations.streamAllMessages().collect { message ->
                     allMessages.add(message)
                 }
-            } catch (e: Exception) {}
+            } catch (e: Exception) {
+            }
         }
         sleep(2500)
 
@@ -109,7 +110,8 @@ class ConversationsTest {
 
         val caro = PrivateKeyBuilder()
         val caroClient = Client().create(caro, clientOptions)
-        val caroConversation = runBlocking { caroClient.conversations.newConversation(alixClient.address) }
+        val caroConversation =
+            runBlocking { caroClient.conversations.newConversation(alixClient.address) }
         sleep(2500)
 
         for (i in 0 until 5) {
@@ -137,5 +139,38 @@ class ConversationsTest {
         }
 
         assertEquals(allMessages.size, 15)
+    }
+
+    @Test
+    fun testStreamTimeOutsAllMessages() {
+        val bo = PrivateKeyBuilder()
+        val alix = PrivateKeyBuilder()
+        val clientOptions =
+            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.DEV, isSecure = true))
+        val boClient = Client().create(bo, clientOptions)
+        val alixClient = Client().create(alix, clientOptions)
+        val boConversation =
+            runBlocking { boClient.conversations.newConversation(alixClient.address) }
+
+        // Record message stream across all conversations
+        val allMessages = mutableListOf<DecodedMessage>()
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                alixClient.conversations.streamAllMessages().collect { message ->
+                    allMessages.add(message)
+                }
+            } catch (e: Exception) {
+            }
+        }
+        sleep(2500)
+
+        runBlocking { boConversation.send(text = "first message") }
+        sleep(2000)
+        assertEquals(allMessages.size, 1)
+        sleep(121000)
+        runBlocking { boConversation.send(text = "second message") }
+        sleep(2000)
+        assertEquals(allMessages.size, 2)
     }
 }
