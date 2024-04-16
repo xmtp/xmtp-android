@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.TextCodec
@@ -146,7 +145,7 @@ class ConversationsTest {
         val bo = PrivateKeyBuilder()
         val alix = PrivateKeyBuilder()
         val clientOptions =
-            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.DEV, isSecure = true))
+            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
         val boConversation =
