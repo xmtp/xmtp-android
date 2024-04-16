@@ -17,6 +17,7 @@ package uniffi.xmtpv3;
 // compile the Rust component. The easiest way to ensure this is to bundle the Kotlin
 // helpers directly inline like we're doing here.
 
+import RustBufferPool
 import com.sun.jna.Library
 import com.sun.jna.IntegerType
 import com.sun.jna.Native
@@ -135,6 +136,9 @@ public interface FfiConverter<KotlinType, FfiType> {
     // Convert an Kotlin type to an FFI type
     fun lower(value: KotlinType): FfiType
 
+    fun lower(value: KotlinType, buffer: RustBuffer.ByValue): FfiType
+
+
     // Read a Kotlin type from a `ByteBuffer`
     fun read(buf: ByteBuffer): KotlinType
 
@@ -157,17 +161,21 @@ public interface FfiConverter<KotlinType, FfiType> {
     // FfiType.  It's used by the callback interface code.  Callback interface
     // returns are always serialized into a `RustBuffer` regardless of their
     // normal FFI type.
-    fun lowerIntoRustBuffer(value: KotlinType): RustBuffer.ByValue {
-        val rbuf = RustBuffer.alloc(allocationSize(value))
+    fun lowerIntoRustBuffer(value: KotlinType, rbufPass: RustBuffer.ByValue? = null): RustBuffer.ByValue {
+        val isNull = rbufPass == null
+        val allocSize = allocationSize(value)
+        println("here11112 $isNull $allocSize")
+        val rbuf = rbufPass ?: RustBuffer.alloc(allocSize)
+//        val rbuf = RustBuffer.alloc(allocationSize(value))
         try {
-            val bbuf = rbuf.data!!.getByteBuffer(0, rbuf.capacity.toLong()).also {
+            val bbuf = rbuf.data!!.getByteBuffer(0, allocSize.toLong()).also {
                 it.order(ByteOrder.BIG_ENDIAN)
             }
             write(value, bbuf)
             rbuf.writeField("len", bbuf.position())
             return rbuf
         } catch (e: Throwable) {
-            RustBuffer.free(rbuf)
+//            bufferPool?.returnBuffer(rbuf)
             throw e
         }
     }
@@ -193,7 +201,8 @@ public interface FfiConverter<KotlinType, FfiType> {
 // FfiConverter that uses `RustBuffer` as the FfiType
 public interface FfiConverterRustBuffer<KotlinType>: FfiConverter<KotlinType, RustBuffer.ByValue> {
     override fun lift(value: RustBuffer.ByValue) = liftFromRustBuffer(value)
-    override fun lower(value: KotlinType) = lowerIntoRustBuffer(value)
+
+    override fun lower(value: KotlinType, buffer: RustBuffer.ByValue) = lowerIntoRustBuffer(value, buffer)
 }
 // A handful of classes and functions to support the generated data structures.
 // This would be a good candidate for isolating in its own ffi-support lib.
@@ -992,6 +1001,10 @@ public object FfiConverterUByte: FfiConverter<UByte, Byte> {
         return value.toByte()
     }
 
+    override fun lower(value: UByte, buffer: RustBuffer.ByValue): Byte {
+        return value.toByte()
+    }
+
     override fun allocationSize(value: UByte) = 1
 
     override fun write(value: UByte, buf: ByteBuffer) {
@@ -1009,6 +1022,10 @@ public object FfiConverterUInt: FfiConverter<UInt, Int> {
     }
 
     override fun lower(value: UInt): Int {
+        return value.toInt()
+    }
+
+    override fun lower(value: UInt, buffer: RustBuffer.ByValue): Int {
         return value.toInt()
     }
 
@@ -1032,6 +1049,10 @@ public object FfiConverterULong: FfiConverter<ULong, Long> {
         return value.toLong()
     }
 
+    override fun lower(value: ULong, buffer: RustBuffer.ByValue): Long {
+        return value.toLong()
+    }
+
     override fun allocationSize(value: ULong) = 8
 
     override fun write(value: ULong, buf: ByteBuffer) {
@@ -1052,6 +1073,10 @@ public object FfiConverterLong: FfiConverter<Long, Long> {
         return value
     }
 
+    override fun lower(value: Long, buffer: RustBuffer.ByValue): Long {
+        return value
+    }
+
     override fun allocationSize(value: Long) = 8
 
     override fun write(value: Long, buf: ByteBuffer) {
@@ -1069,6 +1094,10 @@ public object FfiConverterBoolean: FfiConverter<Boolean, Byte> {
     }
 
     override fun lower(value: Boolean): Byte {
+        return if (value) 1.toByte() else 0.toByte()
+    }
+
+    override fun lower(value: Boolean, buffer: RustBuffer.ByValue): Byte {
         return if (value) 1.toByte() else 0.toByte()
     }
 
@@ -1117,6 +1146,15 @@ public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
         return rbuf
     }
 
+    override fun lower(value: String, buffer: RustBuffer.ByValue): RustBuffer.ByValue {
+        val byteBuf = toUtf8(value)
+        // Ideally we'd pass these bytes to `ffi_bytebuffer_from_bytes`, but doing so would require us
+        // to copy them into a JNA `Memory`. So we might as well directly copy them into a `RustBuffer`.
+        val rbuf = RustBuffer.alloc(byteBuf.limit())
+        rbuf.asByteBuffer()!!.put(byteBuf)
+        return rbuf
+    }
+
     // We aren't sure exactly how many bytes our string will be once it's UTF-8
     // encoded.  Allocate 3 bytes per UTF-16 code unit which will always be
     // enough.
@@ -1146,6 +1184,14 @@ public object FfiConverterByteArray: FfiConverterRustBuffer<ByteArray> {
     override fun write(value: ByteArray, buf: ByteBuffer) {
         buf.putInt(value.size)
         buf.put(value)
+    }
+
+    override fun lower(value: ByteArray): RustBuffer.ByValue {
+        return lowerIntoRustBuffer(value)
+    }
+
+    override fun lower(value: ByteArray, buffer: RustBuffer.ByValue): RustBuffer.ByValue {
+        return lowerIntoRustBuffer(value, buffer)
     }
 }
 
@@ -1464,9 +1510,13 @@ class FfiConversations(
 public object FfiConverterTypeFfiConversations: FfiConverter<FfiConversations, Pointer> {
     override fun lower(value: FfiConversations): Pointer = value.callWithPointer { it }
 
+
+    override fun lower(value: FfiConversations, buffer: RustBuffer.ByValue): Pointer = value.callWithPointer { it }
+
     override fun lift(value: Pointer): FfiConversations {
         return FfiConversations(value)
     }
+
 
     override fun read(buf: ByteBuffer): FfiConversations {
         // The Rust code always writes pointers as 8 bytes, and will
@@ -1729,6 +1779,10 @@ public object FfiConverterTypeFfiGroup: FfiConverter<FfiGroup, Pointer> {
         return FfiGroup(value)
     }
 
+    override fun lower(value: FfiGroup, buffer: RustBuffer.ByValue): Pointer {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiGroup {
         // The Rust code always writes pointers as 8 bytes, and will
         // fail to compile if they don't fit.
@@ -1821,6 +1875,10 @@ public object FfiConverterTypeFfiGroupMetadata: FfiConverter<FfiGroupMetadata, P
         return FfiGroupMetadata(value)
     }
 
+    override fun lower(value: FfiGroupMetadata, buffer: RustBuffer.ByValue): Pointer {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiGroupMetadata {
         // The Rust code always writes pointers as 8 bytes, and will
         // fail to compile if they don't fit.
@@ -1897,6 +1955,10 @@ public object FfiConverterTypeFfiStreamCloser: FfiConverter<FfiStreamCloser, Poi
 
     override fun lift(value: Pointer): FfiStreamCloser {
         return FfiStreamCloser(value)
+    }
+
+    override fun lower(value: FfiStreamCloser, buffer: RustBuffer.ByValue): Pointer {
+        TODO("Not yet implemented")
     }
 
     override fun read(buf: ByteBuffer): FfiStreamCloser {
@@ -2046,9 +2108,13 @@ class FfiV2ApiClient(
 public object FfiConverterTypeFfiV2ApiClient: FfiConverter<FfiV2ApiClient, Pointer> {
     override fun lower(value: FfiV2ApiClient): Pointer = value.callWithPointer { it }
 
+    override fun lower(value: FfiV2ApiClient, buffer: RustBuffer.ByValue): Pointer = value.callWithPointer { it }
+
     override fun lift(value: Pointer): FfiV2ApiClient {
         return FfiV2ApiClient(value)
     }
+
+
 
     override fun read(buf: ByteBuffer): FfiV2ApiClient {
         // The Rust code always writes pointers as 8 bytes, and will
@@ -2164,6 +2230,9 @@ class FfiV2Subscription(
 
 public object FfiConverterTypeFfiV2Subscription: FfiConverter<FfiV2Subscription, Pointer> {
     override fun lower(value: FfiV2Subscription): Pointer = value.callWithPointer { it }
+
+    override fun lower(value: FfiV2Subscription, buffer: RustBuffer.ByValue): Pointer = value.callWithPointer { it }
+
 
     override fun lift(value: Pointer): FfiV2Subscription {
         return FfiV2Subscription(value)
@@ -2315,6 +2384,10 @@ public object FfiConverterTypeFfiXmtpClient: FfiConverter<FfiXmtpClient, Pointer
         return FfiXmtpClient(value)
     }
 
+    override fun lower(value: FfiXmtpClient, buffer: RustBuffer.ByValue): Pointer {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiXmtpClient {
         // The Rust code always writes pointers as 8 bytes, and will
         // fail to compile if they don't fit.
@@ -2342,6 +2415,10 @@ data class FfiCursor (
 }
 
 public object FfiConverterTypeFfiCursor: FfiConverterRustBuffer<FfiCursor> {
+    override fun lower(value: FfiCursor): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiCursor {
         return FfiCursor(
             FfiConverterByteArray.read(buf),
@@ -2373,6 +2450,10 @@ data class FfiEnvelope (
 }
 
 public object FfiConverterTypeFfiEnvelope: FfiConverterRustBuffer<FfiEnvelope> {
+    override fun lower(value: FfiEnvelope): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiEnvelope {
         return FfiEnvelope(
             FfiConverterString.read(buf),
@@ -2406,6 +2487,10 @@ data class FfiGroupMember (
 }
 
 public object FfiConverterTypeFfiGroupMember: FfiConverterRustBuffer<FfiGroupMember> {
+    override fun lower(value: FfiGroupMember): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiGroupMember {
         return FfiGroupMember(
             FfiConverterString.read(buf),
@@ -2437,6 +2522,10 @@ data class FfiListConversationsOptions (
 }
 
 public object FfiConverterTypeFfiListConversationsOptions: FfiConverterRustBuffer<FfiListConversationsOptions> {
+    override fun lower(value: FfiListConversationsOptions): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiListConversationsOptions {
         return FfiListConversationsOptions(
             FfiConverterOptionalLong.read(buf),
@@ -2471,6 +2560,10 @@ data class FfiListMessagesOptions (
 }
 
 public object FfiConverterTypeFfiListMessagesOptions: FfiConverterRustBuffer<FfiListMessagesOptions> {
+    override fun lower(value: FfiListMessagesOptions): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiListMessagesOptions {
         return FfiListMessagesOptions(
             FfiConverterOptionalLong.read(buf),
@@ -2508,6 +2601,10 @@ data class FfiMessage (
 }
 
 public object FfiConverterTypeFfiMessage: FfiConverterRustBuffer<FfiMessage> {
+    override fun lower(value: FfiMessage): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiMessage {
         return FfiMessage(
             FfiConverterByteArray.read(buf),
@@ -2551,6 +2648,10 @@ data class FfiPagingInfo (
 }
 
 public object FfiConverterTypeFfiPagingInfo: FfiConverterRustBuffer<FfiPagingInfo> {
+    override fun lower(value: FfiPagingInfo): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiPagingInfo {
         return FfiPagingInfo(
             FfiConverterUInt.read(buf),
@@ -2583,6 +2684,10 @@ data class FfiPublishRequest (
 }
 
 public object FfiConverterTypeFfiPublishRequest: FfiConverterRustBuffer<FfiPublishRequest> {
+    override fun lower(value: FfiPublishRequest): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiPublishRequest {
         return FfiPublishRequest(
             FfiConverterSequenceTypeFfiEnvelope.read(buf),
@@ -2609,6 +2714,10 @@ data class FfiV2BatchQueryRequest (
 }
 
 public object FfiConverterTypeFfiV2BatchQueryRequest: FfiConverterRustBuffer<FfiV2BatchQueryRequest> {
+    override fun lower(value: FfiV2BatchQueryRequest): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiV2BatchQueryRequest {
         return FfiV2BatchQueryRequest(
             FfiConverterSequenceTypeFfiV2QueryRequest.read(buf),
@@ -2635,6 +2744,10 @@ data class FfiV2BatchQueryResponse (
 }
 
 public object FfiConverterTypeFfiV2BatchQueryResponse: FfiConverterRustBuffer<FfiV2BatchQueryResponse> {
+    override fun lower(value: FfiV2BatchQueryResponse): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiV2BatchQueryResponse {
         return FfiV2BatchQueryResponse(
             FfiConverterSequenceTypeFfiV2QueryResponse.read(buf),
@@ -2664,6 +2777,10 @@ data class FfiV2QueryRequest (
 }
 
 public object FfiConverterTypeFfiV2QueryRequest: FfiConverterRustBuffer<FfiV2QueryRequest> {
+    override fun lower(value: FfiV2QueryRequest): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiV2QueryRequest {
         return FfiV2QueryRequest(
             FfiConverterSequenceString.read(buf),
@@ -2700,6 +2817,10 @@ data class FfiV2QueryResponse (
 }
 
 public object FfiConverterTypeFfiV2QueryResponse: FfiConverterRustBuffer<FfiV2QueryResponse> {
+    override fun lower(value: FfiV2QueryResponse): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiV2QueryResponse {
         return FfiV2QueryResponse(
             FfiConverterSequenceTypeFfiEnvelope.read(buf),
@@ -2729,6 +2850,10 @@ data class FfiV2SubscribeRequest (
 }
 
 public object FfiConverterTypeFfiV2SubscribeRequest: FfiConverterRustBuffer<FfiV2SubscribeRequest> {
+    override fun lower(value: FfiV2SubscribeRequest): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiV2SubscribeRequest {
         return FfiV2SubscribeRequest(
             FfiConverterSequenceString.read(buf),
@@ -2753,6 +2878,10 @@ enum class FfiGroupMessageKind {
 }
 
 public object FfiConverterTypeFfiGroupMessageKind: FfiConverterRustBuffer<FfiGroupMessageKind> {
+    override fun lower(value: FfiGroupMessageKind): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer) = try {
         FfiGroupMessageKind.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -2777,6 +2906,10 @@ enum class FfiSortDirection {
 }
 
 public object FfiConverterTypeFfiSortDirection: FfiConverterRustBuffer<FfiSortDirection> {
+    override fun lower(value: FfiSortDirection): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer) = try {
         FfiSortDirection.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -2815,6 +2948,10 @@ sealed class GenericException(message: String): Exception(message) {
 }
 
 public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericException> {
+    override fun lower(value: GenericException): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): GenericException {
 
         return when(buf.getInt()) {
@@ -2883,6 +3020,10 @@ enum class GroupPermissions {
 }
 
 public object FfiConverterTypeGroupPermissions: FfiConverterRustBuffer<GroupPermissions> {
+    override fun lower(value: GroupPermissions): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer) = try {
         GroupPermissions.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -2907,6 +3048,10 @@ enum class LegacyIdentitySource {
 }
 
 public object FfiConverterTypeLegacyIdentitySource: FfiConverterRustBuffer<LegacyIdentitySource> {
+    override fun lower(value: LegacyIdentitySource): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer) = try {
         LegacyIdentitySource.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -2938,6 +3083,10 @@ sealed class SigningException(message: String): Exception(message) {
 }
 
 public object FfiConverterTypeSigningError : FfiConverterRustBuffer<SigningException> {
+    override fun lower(value: SigningException): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): SigningException {
 
         return when(buf.getInt()) {
@@ -3123,6 +3272,10 @@ public object FfiConverterTypeFfiConversationCallback: FfiConverterCallbackInter
             lib.uniffi_xmtpv3_fn_init_callback_fficonversationcallback(this.foreignCallback, status)
         }
     }
+
+    override fun lower(value: FfiConversationCallback, buffer: RustBuffer.ByValue): Handle {
+        TODO("Not yet implemented")
+    }
 }
 
 
@@ -3247,6 +3400,10 @@ public object FfiConverterTypeFfiInboxOwner: FfiConverterCallbackInterface<FfiIn
             lib.uniffi_xmtpv3_fn_init_callback_ffiinboxowner(this.foreignCallback, status)
         }
     }
+
+    override fun lower(value: FfiInboxOwner, buffer: RustBuffer.ByValue): Handle {
+        TODO("Not yet implemented")
+    }
 }
 
 
@@ -3335,6 +3492,10 @@ public object FfiConverterTypeFfiLogger: FfiConverterCallbackInterface<FfiLogger
             lib.uniffi_xmtpv3_fn_init_callback_ffilogger(this.foreignCallback, status)
         }
     }
+
+    override fun lower(value: FfiLogger, buffer: RustBuffer.ByValue): Handle {
+        TODO("Not yet implemented")
+    }
 }
 
 
@@ -3421,12 +3582,20 @@ public object FfiConverterTypeFfiMessageCallback: FfiConverterCallbackInterface<
             lib.uniffi_xmtpv3_fn_init_callback_ffimessagecallback(this.foreignCallback, status)
         }
     }
+
+    override fun lower(value: FfiMessageCallback, buffer: RustBuffer.ByValue): Handle {
+        TODO("Not yet implemented")
+    }
 }
 
 
 
 
 public object FfiConverterOptionalLong: FfiConverterRustBuffer<Long?> {
+    override fun lower(value: Long?): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): Long? {
         if (buf.get().toInt() == 0) {
             return null
@@ -3456,6 +3625,10 @@ public object FfiConverterOptionalLong: FfiConverterRustBuffer<Long?> {
 
 
 public object FfiConverterOptionalString: FfiConverterRustBuffer<String?> {
+    override fun lower(value: String?): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): String? {
         if (buf.get().toInt() == 0) {
             return null
@@ -3485,6 +3658,10 @@ public object FfiConverterOptionalString: FfiConverterRustBuffer<String?> {
 
 
 public object FfiConverterOptionalByteArray: FfiConverterRustBuffer<ByteArray?> {
+    override fun lower(value: ByteArray?): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): ByteArray? {
         if (buf.get().toInt() == 0) {
             return null
@@ -3514,6 +3691,10 @@ public object FfiConverterOptionalByteArray: FfiConverterRustBuffer<ByteArray?> 
 
 
 public object FfiConverterOptionalTypeFfiCursor: FfiConverterRustBuffer<FfiCursor?> {
+    override fun lower(value: FfiCursor?): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiCursor? {
         if (buf.get().toInt() == 0) {
             return null
@@ -3543,6 +3724,10 @@ public object FfiConverterOptionalTypeFfiCursor: FfiConverterRustBuffer<FfiCurso
 
 
 public object FfiConverterOptionalTypeFfiPagingInfo: FfiConverterRustBuffer<FfiPagingInfo?> {
+    override fun lower(value: FfiPagingInfo?): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): FfiPagingInfo? {
         if (buf.get().toInt() == 0) {
             return null
@@ -3572,6 +3757,10 @@ public object FfiConverterOptionalTypeFfiPagingInfo: FfiConverterRustBuffer<FfiP
 
 
 public object FfiConverterOptionalTypeGroupPermissions: FfiConverterRustBuffer<GroupPermissions?> {
+    override fun lower(value: GroupPermissions?): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): GroupPermissions? {
         if (buf.get().toInt() == 0) {
             return null
@@ -3601,6 +3790,10 @@ public object FfiConverterOptionalTypeGroupPermissions: FfiConverterRustBuffer<G
 
 
 public object FfiConverterSequenceBoolean: FfiConverterRustBuffer<List<Boolean>> {
+    override fun lower(value: List<Boolean>): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): List<Boolean> {
         val len = buf.getInt()
         return List<Boolean>(len) {
@@ -3626,6 +3819,10 @@ public object FfiConverterSequenceBoolean: FfiConverterRustBuffer<List<Boolean>>
 
 
 public object FfiConverterSequenceString: FfiConverterRustBuffer<List<String>> {
+    override fun lower(value: List<String>): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): List<String> {
         val len = buf.getInt()
         return List<String>(len) {
@@ -3651,6 +3848,10 @@ public object FfiConverterSequenceString: FfiConverterRustBuffer<List<String>> {
 
 
 public object FfiConverterSequenceByteArray: FfiConverterRustBuffer<List<ByteArray>> {
+    override fun lower(value: List<ByteArray>): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): List<ByteArray> {
         val len = buf.getInt()
         return List<ByteArray>(len) {
@@ -3676,6 +3877,10 @@ public object FfiConverterSequenceByteArray: FfiConverterRustBuffer<List<ByteArr
 
 
 public object FfiConverterSequenceTypeFfiGroup: FfiConverterRustBuffer<List<FfiGroup>> {
+    override fun lower(value: List<FfiGroup>): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): List<FfiGroup> {
         val len = buf.getInt()
         return List<FfiGroup>(len) {
@@ -3701,6 +3906,10 @@ public object FfiConverterSequenceTypeFfiGroup: FfiConverterRustBuffer<List<FfiG
 
 
 public object FfiConverterSequenceTypeFfiEnvelope: FfiConverterRustBuffer<List<FfiEnvelope>> {
+    override fun lower(value: List<FfiEnvelope>): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): List<FfiEnvelope> {
         val len = buf.getInt()
         return List<FfiEnvelope>(len) {
@@ -3726,6 +3935,10 @@ public object FfiConverterSequenceTypeFfiEnvelope: FfiConverterRustBuffer<List<F
 
 
 public object FfiConverterSequenceTypeFfiGroupMember: FfiConverterRustBuffer<List<FfiGroupMember>> {
+    override fun lower(value: List<FfiGroupMember>): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): List<FfiGroupMember> {
         val len = buf.getInt()
         return List<FfiGroupMember>(len) {
@@ -3751,6 +3964,10 @@ public object FfiConverterSequenceTypeFfiGroupMember: FfiConverterRustBuffer<Lis
 
 
 public object FfiConverterSequenceTypeFfiMessage: FfiConverterRustBuffer<List<FfiMessage>> {
+    override fun lower(value: List<FfiMessage>): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): List<FfiMessage> {
         val len = buf.getInt()
         return List<FfiMessage>(len) {
@@ -3776,6 +3993,10 @@ public object FfiConverterSequenceTypeFfiMessage: FfiConverterRustBuffer<List<Ff
 
 
 public object FfiConverterSequenceTypeFfiV2QueryRequest: FfiConverterRustBuffer<List<FfiV2QueryRequest>> {
+    override fun lower(value: List<FfiV2QueryRequest>): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): List<FfiV2QueryRequest> {
         val len = buf.getInt()
         return List<FfiV2QueryRequest>(len) {
@@ -3801,6 +4022,10 @@ public object FfiConverterSequenceTypeFfiV2QueryRequest: FfiConverterRustBuffer<
 
 
 public object FfiConverterSequenceTypeFfiV2QueryResponse: FfiConverterRustBuffer<List<FfiV2QueryResponse>> {
+    override fun lower(value: List<FfiV2QueryResponse>): RustBuffer.ByValue {
+        TODO("Not yet implemented")
+    }
+
     override fun read(buf: ByteBuffer): List<FfiV2QueryResponse> {
         val len = buf.getInt()
         return List<FfiV2QueryResponse>(len) {
@@ -3935,11 +4160,22 @@ fun `sha256`(`input`: ByteArray): ByteArray {
 
 @Throws(GenericException::class)
 
-fun `userPreferencesDecrypt`(`publicKey`: ByteArray, `privateKey`: ByteArray, `message`: ByteArray): ByteArray {
-    return FfiConverterByteArray.lift(
+fun `userPreferencesDecrypt`(`publicKey`: ByteArray, `privateKey`: ByteArray, `message`: ByteArray, bufferPool: RustBufferPool): ByteArray {
+    val pubBuffer = bufferPool.borrowBuffer()
+//    val privBuffer = bufferPool.borrowBuffer()
+//    val messageBuffer = bufferPool.borrowBuffer()
+    val pub = FfiConverterByteArray.lower(`publicKey`, pubBuffer)
+    val priv = FfiConverterByteArray.lower(`privateKey`)
+    val mess = FfiConverterByteArray.lower(`message`)
+    println("here1115 before call")
+    val data =
         rustCallWithError(GenericException) { _status ->
-            _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_func_user_preferences_decrypt(FfiConverterByteArray.lower(`publicKey`),FfiConverterByteArray.lower(`privateKey`),FfiConverterByteArray.lower(`message`),_status)
-        })
+            _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_func_user_preferences_decrypt(pub,priv,mess,_status)
+        }
+    bufferPool.returnBuffer(pubBuffer)
+//    bufferPool.returnBuffer(privBuffer)
+//    bufferPool.returnBuffer(messageBuffer)
+    return FfiConverterByteArray.lift(data)
 }
 
 @Throws(GenericException::class)

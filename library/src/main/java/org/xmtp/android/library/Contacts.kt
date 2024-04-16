@@ -1,11 +1,13 @@
 package org.xmtp.android.library
 
+import RustBufferPool
 import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.ContactBundleBuilder
 import org.xmtp.android.library.messages.EnvelopeBuilder
 import org.xmtp.android.library.messages.Pagination
+import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
@@ -65,6 +67,7 @@ class ConsentList(
     @OptIn(ExperimentalUnsignedTypes::class)
     suspend fun load(): List<ConsentListEntry> {
         val newDate = Date()
+
         val envelopes =
             client.apiClient.envelopes(
                 Topic.preferenceList(identifier).description,
@@ -76,6 +79,7 @@ class ConsentList(
             )
 
         lastFetched = newDate
+        val bufferPool = RustBufferPool(bufferSize = 36, poolSize = envelopes.size)
         val preferences: MutableList<PrivatePreferencesAction> = mutableListOf()
         for (envelope in envelopes) {
             val payload =
@@ -83,15 +87,14 @@ class ConsentList(
                     publicKey.toByteArray(),
                     privateKey.toByteArray(),
                     envelope.message.toByteArray(),
+                    bufferPool
                 )
-
             preferences.add(
                 PrivatePreferencesAction.parseFrom(
                     payload.toUByteArray().toByteArray(),
                 )
             )
         }
-
         preferences.iterator().forEach { preference ->
             preference.allowAddress?.walletAddressesList?.forEach { address ->
                 allow(address)
@@ -106,7 +109,6 @@ class ConsentList(
                 denyGroup(groupId.toByteArray())
             }
         }
-
         return entries.values.toList()
     }
 
