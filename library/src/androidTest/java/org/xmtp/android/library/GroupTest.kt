@@ -267,7 +267,7 @@ class GroupTest {
         }
         runBlocking { boClient.conversations.syncGroups() }
         val boGroup = runBlocking { boClient.conversations.listGroups().first() }
-        assertEquals(boGroup.addedByAddress(), alix.walletAddress)
+        assertEquals(boGroup.addedByAddress().lowercase(), alix.walletAddress.lowercase())
     }
 
     @Test
