@@ -1250,6 +1250,7 @@ $dokka.location:org.xmtp.android.library/GRPCApiClient/subscribe/#kotlinx.corout
 $dokka.location:org.xmtp.android.library/Group///PointingToDeclaration/library/org.xmtp.android.library/-group/index.html
 $dokka.location:org.xmtp.android.library/Group/Group/#org.xmtp.android.library.Client#uniffi.xmtpv3.FfiGroup/PointingToDeclaration/library/org.xmtp.android.library/-group/-group.html
 $dokka.location:org.xmtp.android.library/Group/addMembers/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-group/add-members.html
+$dokka.location:org.xmtp.android.library/Group/addedByAddress/#/PointingToDeclaration/library/org.xmtp.android.library/-group/added-by-address.html
 $dokka.location:org.xmtp.android.library/Group/adminAddress/#/PointingToDeclaration/library/org.xmtp.android.library/-group/admin-address.html
 $dokka.location:org.xmtp.android.library/Group/client/#/PointingToDeclaration/library/org.xmtp.android.library/-group/client.html
 $dokka.location:org.xmtp.android.library/Group/createdAt/#/PointingToDeclaration/library/org.xmtp.android.library/-group/created-at.html
@@ -1624,6 +1625,7 @@ $dokka.location:uniffi.xmtpv3/FfiGroup.Companion///PointingToDeclaration/librar
 $dokka.location:uniffi.xmtpv3/FfiGroup///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/index.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/FfiGroup/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/-ffi-group.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/addMembers/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/add-members.html
+$dokka.location:uniffi.xmtpv3/FfiGroup/addedByAddress/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/added-by-address.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/createdAtNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/created-at-ns.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/findMessages/#uniffi.xmtpv3.FfiListMessagesOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/find-messages.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/groupMetadata/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/group-metadata.html
@@ -1638,6 +1640,7 @@ $dokka.location:uniffi.xmtpv3/FfiGroup/sync/#/PointingToDeclaration/library/uni
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/index.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/addMembers/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/add-members.html
+$dokka.location:uniffi.xmtpv3/FfiGroupInterface/addedByAddress/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/added-by-address.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/createdAtNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/created-at-ns.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/findMessages/#uniffi.xmtpv3.FfiListMessagesOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/find-messages.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/groupMetadata/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/group-metadata.html
