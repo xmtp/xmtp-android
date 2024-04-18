@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.TextCodec
@@ -171,5 +172,31 @@ class ConversationsTest {
         runBlocking { boConversation.send(text = "second message") }
         sleep(2000)
         assertEquals(allMessages.size, 2)
+    }
+
+    @Test
+    fun testSendConversationWithConsentSignature() {
+        val bo = PrivateKeyBuilder()
+        val alix = PrivateKeyBuilder()
+        val clientOptions =
+            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
+        val boClient = Client().create(bo, clientOptions)
+        val alixClient = Client().create(alix, clientOptions)
+        val signedBytes = byteArrayOf(1, 2, 3)
+        val privateKeyBundle = alixClient.keys
+        val signedPrivateKey =  privateKeyBundle.identityKey
+        val signature = runBlocking {
+            val privateKey = PrivateKeyBuilder.buildFromSignedPrivateKey(signedPrivateKey)
+            PrivateKeyBuilder(privateKey).sign(signedBytes)
+        }
+        val boConversation =
+            runBlocking { boClient.conversations.newConversation(alixClient.address, null, signature.toByteArray().toHex()) }
+        val alixConversations = runBlocking {
+            alixClient.conversations.list()
+        }
+        val alixConversation = alixConversations.find {
+            it.topic == boConversation.topic
+        }
+        assertNotNull(alixConversation)
     }
 }

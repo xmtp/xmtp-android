@@ -158,6 +158,7 @@ data class Conversations(
     suspend fun newConversation(
         peerAddress: String,
         context: Invitation.InvitationV1.Context? = null,
+        consentProofSignature: String? = null,
     ): Conversation {
         if (peerAddress.lowercase() == client.address.lowercase()) {
             throw XMTPException("Recipient is sender")
@@ -223,7 +224,7 @@ data class Conversations(
         // We don't have an existing conversation, make a v2 one
         val recipient = contact.toSignedPublicKeyBundle()
         val invitation = Invitation.InvitationV1.newBuilder().build()
-            .createDeterministic(client.keys, recipient, context)
+            .createDeterministic(client.keys, recipient, context, consentProofSignature)
         val sealedInvitation =
             sendInvitation(recipient = recipient, invitation = invitation, created = Date())
         val conversationV2 = ConversationV2.create(
@@ -260,7 +261,9 @@ data class Conversations(
         val invitations = listInvitations(pagination = pagination)
         for (sealedInvitation in invitations) {
             try {
+//                TODO: Verify Signature and approve
                 newConversations.add(Conversation.V2(conversation(sealedInvitation)))
+                if (sealedInvitation.)
             } catch (e: Exception) {
                 Log.d(TAG, e.message.toString())
             }
