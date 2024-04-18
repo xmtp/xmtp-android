@@ -330,7 +330,7 @@ class GroupTest {
     fun testCanSendMessageToGroup() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
         runBlocking { group.send("howdy") }
-        runBlocking { group.send("gm") }
+        val messageId = runBlocking { group.send("gm") }
         runBlocking { group.sync() }
         assertEquals(group.messages().first().body, "gm")
         assertEquals(group.messages().size, 3)
@@ -340,6 +340,7 @@ class GroupTest {
         runBlocking { sameGroup.sync() }
         assertEquals(sameGroup.messages().size, 2)
         assertEquals(sameGroup.messages().first().body, "gm")
+        assertEquals(sameGroup.messages().first().id, messageId)
     }
 
     @Test
