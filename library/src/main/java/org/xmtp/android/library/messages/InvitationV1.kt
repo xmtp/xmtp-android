@@ -66,7 +66,7 @@ fun InvitationV1.createDeterministic(
     sender: PrivateKeyBundleV2,
     recipient: SignedPublicKeyBundle,
     context: Context? = null,
-    consentProofSignature: String? = null
+    consentProof: ConsentProofPayload? = null
 ): InvitationV1 {
     val myAddress = sender.toV1().walletAddress
     val theirAddress = recipient.walletAddress
@@ -96,12 +96,6 @@ fun InvitationV1.createDeterministic(
     )
     val aes256GcmHkdfSha256 = Invitation.InvitationV1.Aes256gcmHkdfsha256.newBuilder().apply {
         this.keyMaterial = keyMaterial.toByteString()
-    }.build()
-
-    val consentProof = ConsentProofPayload.newBuilder().apply {
-        this.signature = consentProofSignature
-        this.timestamp = Date().time * 1_000_000
-        this.payloadVersion = Invitation.ConsentProofPayloadVersion.CONSENT_PROOF_PAYLOAD_VERSION_1
     }.build()
 
     return InvitationV1Builder.buildFromTopic(

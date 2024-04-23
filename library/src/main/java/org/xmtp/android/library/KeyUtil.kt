@@ -1,5 +1,7 @@
 package org.xmtp.android.library
 
+import org.web3j.crypto.ECDSASignature
+import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.web3j.crypto.Sign.SignatureData
 import java.math.BigInteger
@@ -7,6 +9,19 @@ import java.math.BigInteger
 object KeyUtil {
     fun getPublicKey(privateKey: ByteArray): ByteArray {
         return Sign.publicKeyFromPrivate(BigInteger(1, privateKey)).toByteArray()
+    }
+
+    fun recoverPublicKeyKeccak256(signature: ByteArray, digest: ByteArray): BigInteger? {
+        val signatureData = getSignatureData(signature)
+        return Sign.recoverFromSignature(
+            BigInteger(1, signatureData.v).toInt(),
+            ECDSASignature(BigInteger(1, signatureData.r), BigInteger(1, signatureData.s)),
+            digest,
+        )
+    }
+
+    fun publicKeyToAddress(publicKey: BigInteger): String {
+        return Keys.toChecksumAddress(Keys.getAddress(publicKey))
     }
 
     fun addUncompressedByte(publicKey: ByteArray): ByteArray {
