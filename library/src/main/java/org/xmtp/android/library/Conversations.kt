@@ -10,8 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.runBlocking
-import org.web3j.utils.Numeric
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
 import org.xmtp.android.library.libxmtp.MessageV3
@@ -23,16 +21,13 @@ import org.xmtp.android.library.messages.MessageV1Builder
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.SealedInvitation
 import org.xmtp.android.library.messages.SealedInvitationBuilder
-import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.SignedPublicKeyBundle
 import org.xmtp.android.library.messages.Topic
-import org.xmtp.android.library.messages.consentProofText
 import org.xmtp.android.library.messages.createDeterministic
 import org.xmtp.android.library.messages.decrypt
 import org.xmtp.android.library.messages.getInvitation
 import org.xmtp.android.library.messages.header
 import org.xmtp.android.library.messages.involves
-import org.xmtp.android.library.messages.rawData
 import org.xmtp.android.library.messages.recipientAddress
 import org.xmtp.android.library.messages.senderAddress
 import org.xmtp.android.library.messages.sentAt
@@ -153,28 +148,17 @@ data class Conversations(
         } ?: emptyList()
     }
 
-    private fun validateConsentSignature(signature: String, clientAddress: String, peerAddress: String, timestamp: Long): Boolean {
-        val messageData = Signature.newBuilder().build().consentProofText(peerAddress, timestamp).toByteArray()
-        val signatureData = Numeric.hexStringToByteArray(signature)
-        val sig = Signature.parseFrom(signatureData)
-        val recoveredPublicKey = KeyUtil.recoverPublicKeyKeccak256(sig.rawData.toByteString().toByteArray(), Util.keccak256(messageData))
-            ?: return false
-        return clientAddress == KeyUtil.publicKeyToAddress(recoveredPublicKey)
-    }
-
-    private fun handleConsentProof(consentProof: Invitation.ConsentProofPayload, peerAddress: String) {
+    private suspend fun handleConsentProof(consentProof: Invitation.ConsentProofPayload, peerAddress: String) {
         val signature = consentProof.signature
         val timestamp = consentProof.timestamp
 
-        if (!validateConsentSignature(signature, client.address, peerAddress, timestamp)) {
+        if (!KeyUtil.validateConsentSignature(signature, client.address, peerAddress, timestamp)) {
             return
         }
         val contacts = client.contacts
-        runBlocking {
-            contacts.refreshConsentList()
-            if (contacts.consentList.state(peerAddress) == ConsentState.UNKNOWN) {
-                contacts.allow(listOf(peerAddress))
-            }
+        contacts.refreshConsentList()
+        if (contacts.consentList.state(peerAddress) == ConsentState.UNKNOWN) {
+            contacts.allow(listOf(peerAddress))
         }
     }
 

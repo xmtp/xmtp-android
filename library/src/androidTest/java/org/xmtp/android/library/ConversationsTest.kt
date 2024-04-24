@@ -188,7 +188,7 @@ class ConversationsTest {
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
-        val timestamp =  System.currentTimeMillis()
+        val timestamp = System.currentTimeMillis()
         val signatureText = Signature.newBuilder().build().consentProofText(boClient.address, timestamp)
         val digest = signatureText.toByteArray()
         val signature = runBlocking { alix.sign(Util.keccak256(digest)) }
@@ -207,7 +207,7 @@ class ConversationsTest {
             it.topic == boConversation.topic
         }
         assertNotNull(alixConversation)
-        val isAllowed = runBlocking {   alixClient.contacts.isAllowed(boClient.address) }
+        val isAllowed = runBlocking { alixClient.contacts.isAllowed(boClient.address) }
         assertTrue(isAllowed)
     }
 
@@ -219,7 +219,7 @@ class ConversationsTest {
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
-        val timestamp =  System.currentTimeMillis()
+        val timestamp = System.currentTimeMillis()
         val signatureText = Signature.newBuilder().build().consentProofText(boClient.address, timestamp)
         val digest = signatureText.toByteArray()
 
@@ -231,11 +231,11 @@ class ConversationsTest {
             it.payloadVersion = Invitation.ConsentProofPayloadVersion.CONSENT_PROOF_PAYLOAD_VERSION_1
         }.build()
         runBlocking { alixClient.contacts.deny(listOf(boClient.address)) }
-        val boConversation = runBlocking {  boClient.conversations.newConversation(alixClient.address, null, consentProofPayload) }
-        val alixConversations = runBlocking {  alixClient.conversations.list() }
+        val boConversation = runBlocking { boClient.conversations.newConversation(alixClient.address, null, consentProofPayload) }
+        val alixConversations = runBlocking { alixClient.conversations.list() }
         val alixConversation = alixConversations.find { it.topic == boConversation.topic }
         assertNotNull(alixConversation)
-        val isDenied = runBlocking {   alixClient.contacts.isDenied(boClient.address) }
+        val isDenied = runBlocking { alixClient.contacts.isDenied(boClient.address) }
         assertTrue(isDenied)
     }
 
@@ -247,7 +247,7 @@ class ConversationsTest {
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
-        val timestamp =  System.currentTimeMillis()
+        val timestamp = System.currentTimeMillis()
         val signatureText = Signature.newBuilder().build().consentProofText(boClient.address, timestamp + 1)
         val digest = signatureText.toByteArray()
 
@@ -259,11 +259,11 @@ class ConversationsTest {
             it.payloadVersion = Invitation.ConsentProofPayloadVersion.CONSENT_PROOF_PAYLOAD_VERSION_1
         }.build()
 
-        val boConversation = runBlocking {  boClient.conversations.newConversation(alixClient.address, null, consentProofPayload) }
-        val alixConversations = runBlocking {  alixClient.conversations.list() }
+        val boConversation = runBlocking { boClient.conversations.newConversation(alixClient.address, null, consentProofPayload) }
+        val alixConversations = runBlocking { alixClient.conversations.list() }
         val alixConversation = alixConversations.find { it.topic == boConversation.topic }
         assertNotNull(alixConversation)
-        val isAllowed = runBlocking {   alixClient.contacts.isAllowed(boClient.address) }
+        val isAllowed = runBlocking { alixClient.contacts.isAllowed(boClient.address) }
         assertFalse(isAllowed)
     }
 }

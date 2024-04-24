@@ -3,7 +3,6 @@ package org.xmtp.android.library.messages
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.CipherText
 import org.xmtp.android.library.Crypto
-import org.xmtp.proto.message.contents.consentProofPayload
 import java.util.Date
 
 typealias SealedInvitation = org.xmtp.proto.message.contents.Invitation.SealedInvitation
@@ -37,9 +36,7 @@ class SealedInvitationBuilder {
                 v1 = v1.toBuilder().also {
                     it.headerBytes = headerBytes.toByteString()
                     it.ciphertext = ciphertext
-
                 }.build()
-                consentProofPayload {  }
             }.build()
         }
     }
