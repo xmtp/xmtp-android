@@ -1270,6 +1270,7 @@ $dokka.location:org.xmtp.android.library/Group/isActive/#/PointingToDeclaration/
 $dokka.location:org.xmtp.android.library/Group/isAdmin/#/PointingToDeclaration/library/org.xmtp.android.library/-group/is-admin.html
 $dokka.location:org.xmtp.android.library/Group/memberAddresses/#/PointingToDeclaration/library/org.xmtp.android.library/-group/member-addresses.html
 $dokka.location:org.xmtp.android.library/Group/messages/#kotlin.Int?#java.util.Date?#java.util.Date?#org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection#org.xmtp.android.library.messages.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-group/messages.html
+$dokka.location:org.xmtp.android.library/Group/name/#/PointingToDeclaration/library/org.xmtp.android.library/-group/name.html
 $dokka.location:org.xmtp.android.library/Group/peerAddresses/#/PointingToDeclaration/library/org.xmtp.android.library/-group/peer-addresses.html
 $dokka.location:org.xmtp.android.library/Group/permissionLevel/#/PointingToDeclaration/library/org.xmtp.android.library/-group/permission-level.html
 $dokka.location:org.xmtp.android.library/Group/prepareMessage/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-group/prepare-message.html
@@ -1282,6 +1283,7 @@ $dokka.location:org.xmtp.android.library/Group/streamDecryptedMessages/#/Pointin
 $dokka.location:org.xmtp.android.library/Group/streamMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-group/stream-messages.html
 $dokka.location:org.xmtp.android.library/Group/sync/#/PointingToDeclaration/library/org.xmtp.android.library/-group/sync.html
 $dokka.location:org.xmtp.android.library/Group/topic/#/PointingToDeclaration/library/org.xmtp.android.library/-group/topic.html
+$dokka.location:org.xmtp.android.library/Group/updateGroupName/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-group/update-group-name.html
 $dokka.location:org.xmtp.android.library/KeyUtil///PointingToDeclaration/library/org.xmtp.android.library/-key-util/index.html
 $dokka.location:org.xmtp.android.library/KeyUtil/addUncompressedByte/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-key-util/add-uncompressed-byte.html
 $dokka.location:org.xmtp.android.library/KeyUtil/getPublicKey/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-key-util/get-public-key.html
@@ -1654,6 +1656,7 @@ $dokka.location:uniffi.xmtpv3/FfiGroup/addedByAddress/#/PointingToDeclaration/l
 $dokka.location:uniffi.xmtpv3/FfiGroup/createdAtNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/created-at-ns.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/findMessages/#uniffi.xmtpv3.FfiListMessagesOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/find-messages.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/groupMetadata/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/group-metadata.html
+$dokka.location:uniffi.xmtpv3/FfiGroup/groupName/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/group-name.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/id/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/id.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/isActive/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/is-active.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/listMembers/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/list-members.html
@@ -1662,6 +1665,7 @@ $dokka.location:uniffi.xmtpv3/FfiGroup/removeMembers/#kotlin.collections.List[ko
 $dokka.location:uniffi.xmtpv3/FfiGroup/send/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/send.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/stream/#uniffi.xmtpv3.FfiMessageCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/stream.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/sync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/sync.html
+$dokka.location:uniffi.xmtpv3/FfiGroup/updateGroupName/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/update-group-name.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/index.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/addMembers/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/add-members.html
@@ -1669,6 +1673,7 @@ $dokka.location:uniffi.xmtpv3/FfiGroupInterface/addedByAddress/#/PointingToDecla
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/createdAtNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/created-at-ns.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/findMessages/#uniffi.xmtpv3.FfiListMessagesOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/find-messages.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/groupMetadata/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/group-metadata.html
+$dokka.location:uniffi.xmtpv3/FfiGroupInterface/groupName/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/group-name.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/id/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/id.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/isActive/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/is-active.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/listMembers/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/list-members.html
@@ -1677,6 +1682,7 @@ $dokka.location:uniffi.xmtpv3/FfiGroupInterface/removeMembers/#kotlin.collection
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/send/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/send.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/stream/#uniffi.xmtpv3.FfiMessageCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/stream.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/sync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/sync.html
+$dokka.location:uniffi.xmtpv3/FfiGroupInterface/updateGroupName/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/update-group-name.html
 $dokka.location:uniffi.xmtpv3/FfiGroupMember.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-member/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiGroupMember///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-member/index.html
 $dokka.location:uniffi.xmtpv3/FfiGroupMember/FfiGroupMember/#kotlin.String#kotlin.collections.List[kotlin.ByteArray]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-member/-ffi-group-member.html
