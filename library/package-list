@@ -1412,6 +1412,10 @@ $dokka.location:uniffi.xmtpv3/FfiConverterLong/lift/#kotlin.Long/PointingToDecla
 $dokka.location:uniffi.xmtpv3/FfiConverterLong/lower/#kotlin.Long/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-long/lower.html
 $dokka.location:uniffi.xmtpv3/FfiConverterLong/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-long/read.html
 $dokka.location:uniffi.xmtpv3/FfiConverterLong/write/#kotlin.Long#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-long/write.html
+$dokka.location:uniffi.xmtpv3/FfiConverterMapStringBoolean///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-map-string-boolean/index.html
+$dokka.location:uniffi.xmtpv3/FfiConverterMapStringBoolean/allocationSize/#kotlin.collections.Map[kotlin.String,kotlin.Boolean]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-map-string-boolean/allocation-size.html
+$dokka.location:uniffi.xmtpv3/FfiConverterMapStringBoolean/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-map-string-boolean/read.html
+$dokka.location:uniffi.xmtpv3/FfiConverterMapStringBoolean/write/#kotlin.collections.Map[kotlin.String,kotlin.Boolean]#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-map-string-boolean/write.html
 $dokka.location:uniffi.xmtpv3/FfiConverterOptionalByteArray///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-optional-byte-array/index.html
 $dokka.location:uniffi.xmtpv3/FfiConverterOptionalByteArray/allocationSize/#kotlin.ByteArray?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-optional-byte-array/allocation-size.html
 $dokka.location:uniffi.xmtpv3/FfiConverterOptionalByteArray/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-optional-byte-array/read.html
@@ -1443,10 +1447,6 @@ $dokka.location:uniffi.xmtpv3/FfiConverterOptionalTypeGroupPermissions/write/#un
 $dokka.location:uniffi.xmtpv3/FfiConverterRustBuffer///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-rust-buffer/index.html
 $dokka.location:uniffi.xmtpv3/FfiConverterRustBuffer/lift/#uniffi.xmtpv3.RustBuffer.ByValue/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-rust-buffer/lift.html
 $dokka.location:uniffi.xmtpv3/FfiConverterRustBuffer/lower/#TypeParam(bounds=[kotlin.Any?])/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-rust-buffer/lower.html
-$dokka.location:uniffi.xmtpv3/FfiConverterSequenceBoolean///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-boolean/index.html
-$dokka.location:uniffi.xmtpv3/FfiConverterSequenceBoolean/allocationSize/#kotlin.collections.List[kotlin.Boolean]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-boolean/allocation-size.html
-$dokka.location:uniffi.xmtpv3/FfiConverterSequenceBoolean/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-boolean/read.html
-$dokka.location:uniffi.xmtpv3/FfiConverterSequenceBoolean/write/#kotlin.collections.List[kotlin.Boolean]#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-boolean/write.html
 $dokka.location:uniffi.xmtpv3/FfiConverterSequenceByteArray///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-byte-array/index.html
 $dokka.location:uniffi.xmtpv3/FfiConverterSequenceByteArray/allocationSize/#kotlin.collections.List[kotlin.ByteArray]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-byte-array/allocation-size.html
 $dokka.location:uniffi.xmtpv3/FfiConverterSequenceByteArray/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-byte-array/read.html
