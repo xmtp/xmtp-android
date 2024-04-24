@@ -3,6 +3,7 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -10,6 +11,7 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
 import org.xmtp.android.library.messages.generate
+import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -203,8 +205,10 @@ class ClientTest {
     fun testDoesNotCreateAV3Client() {
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
-        runBlocking {
-            client.canMessageV3(listOf(client.address))[client.address]?.let { assert(!it) }
+        Assert.assertThrows("Error no V3 client initialized", XMTPException::class.java) {
+            runBlocking {
+                client.canMessageV3(listOf(client.address))[client.address]?.let { assert(!it) }
+            }
         }
     }
 
