@@ -1,10 +1,8 @@
 package org.xmtp.android.library
 
-import io.grpc.Grpc
-import io.grpc.InsecureChannelCredentials
 import io.grpc.ManagedChannel
+import io.grpc.ManagedChannelBuilder
 import io.grpc.Metadata
-import io.grpc.TlsChannelCredentials
 import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
@@ -87,16 +85,35 @@ data class GRPCApiClient(
         ): SubscribeRequest = SubscribeRequest.newBuilder().addAllContentTopics(topics).build()
     }
 
+    private val retryPolicy = mapOf(
+        "methodConfig" to listOf(
+            mapOf(
+                "retryPolicy" to mapOf(
+                    "maxAttempts" to 4.0,
+                    "initialBackoff" to "0.5s",
+                    "maxBackoff" to "30s",
+                    "backoffMultiplier" to 2.0,
+                    "retryableStatusCodes" to listOf(
+                        "UNAVAILABLE",
+                    )
+                )
+            )
+        )
+    )
+
     private val channel: ManagedChannel =
-        Grpc.newChannelBuilderForAddress(
+        ManagedChannelBuilder.forAddress(
             environment.getValue(),
-            if (environment == XMTPEnvironment.LOCAL) 5556 else 443,
-            if (secure) {
-                TlsChannelCredentials.create()
+            if (environment == XMTPEnvironment.LOCAL) 5556 else 443
+        ).apply {
+            if (environment != XMTPEnvironment.LOCAL) {
+                useTransportSecurity()
             } else {
-                InsecureChannelCredentials.create()
-            },
-        ).build()
+                usePlaintext()
+            }
+            defaultServiceConfig(retryPolicy)
+            enableRetry()
+        }.build()
 
     private val client: MessageApiGrpcKt.MessageApiCoroutineStub =
         MessageApiGrpcKt.MessageApiCoroutineStub(channel)
@@ -129,20 +146,25 @@ data class GRPCApiClient(
      * It yields all the envelopes in the query using the paging info
      * from the prior response to fetch the next page.
      */
-    override suspend fun envelopes(topic: String, pagination: Pagination?): List<Envelope> {
+    override suspend fun envelopes(
+        topic: String,
+        pagination: Pagination?,
+    ): List<Envelope> {
         var envelopes: MutableList<Envelope> = mutableListOf()
         var hasNextPage = true
         var cursor: Cursor? = null
         while (hasNextPage) {
-            val response = query(topic = topic, pagination = pagination, cursor = cursor)
+            val response =
+                query(topic = topic, pagination = pagination, cursor = cursor)
             envelopes.addAll(response.envelopesList)
             cursor = response.pagingInfo.cursor
             hasNextPage = response.envelopesList.isNotEmpty() && response.pagingInfo.hasCursor()
-            if (pagination?.limit != null && envelopes.size >= pagination.limit) {
+            if (pagination?.limit != null && pagination.limit <= 100 && envelopes.size >= pagination.limit) {
                 envelopes = envelopes.take(pagination.limit).toMutableList()
                 break
             }
         }
+
         return envelopes
     }
 
