@@ -11,7 +11,6 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
 import org.xmtp.android.library.messages.generate
-import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
