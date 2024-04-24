@@ -8,7 +8,6 @@ import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.proto.message.contents.Invitation.ConsentProofPayload
 import org.xmtp.proto.message.contents.Invitation.InvitationV1.Context
 import java.security.SecureRandom
-import java.util.Date
 
 typealias InvitationV1 = org.xmtp.proto.message.contents.Invitation.InvitationV1
 
