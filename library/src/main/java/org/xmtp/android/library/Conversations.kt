@@ -279,7 +279,7 @@ data class Conversations(
                 val newConversation = Conversation.V2(conversation(sealedInvitation))
                 newConversations.add(newConversation)
                 val consentProof = newConversation.consentProof
-                if (consentProof != null) {
+                if (consentProof != null && consentProof.signature != "") {
                     handleConsentProof(consentProof, newConversation.peerAddress)
                 }
             } catch (e: Exception) {
