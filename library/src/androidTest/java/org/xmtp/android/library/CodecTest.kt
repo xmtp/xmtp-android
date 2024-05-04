@@ -77,7 +77,7 @@ class CodecTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
+    @Ignore("Flaky: CI")
     fun testCanGetPushInfoBeforeDecoded() {
         val codec = NumberCodec()
         Client.register(codec = codec)

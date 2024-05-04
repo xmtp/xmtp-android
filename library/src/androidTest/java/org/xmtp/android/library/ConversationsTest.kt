@@ -35,7 +35,6 @@ import java.util.Date
 class ConversationsTest {
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanGetConversationFromIntroEnvelope() {
         val fixtures = fixtures()
         val client = fixtures.aliceClient

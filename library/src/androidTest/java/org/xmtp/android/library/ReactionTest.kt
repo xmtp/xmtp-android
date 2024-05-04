@@ -102,7 +102,7 @@ class ReactionTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
+    @Ignore("Flaky: CI")
     fun testShouldPushMustBeTrue() {
         Client.register(codec = ReactionCodec())
 
