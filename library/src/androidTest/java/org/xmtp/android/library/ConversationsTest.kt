@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Base64
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,10 +24,12 @@ import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.consentProofText
 import org.xmtp.android.library.messages.createDeterministic
 import org.xmtp.android.library.messages.getPublicKeyBundle
+import org.xmtp.android.library.messages.rawData
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.proto.message.contents.Invitation.ConsentProofPayload
+import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import java.lang.Thread.sleep
 import java.util.Date
 
@@ -189,10 +192,10 @@ class ConversationsTest {
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
         val timestamp = System.currentTimeMillis()
-        val signatureText = Signature.newBuilder().build().consentProofText(boClient.address, timestamp)
-        val digest = signatureText.toByteArray()
-        val signature = runBlocking { alix.sign(Util.keccak256(digest)) }
-        val hex = signature.toByteArray().toHex()
+        val signatureClass = Signature.newBuilder().build()
+        val signatureText = signatureClass.consentProofText(boClient.address, timestamp)
+        val signature = runBlocking { alix.sign(signatureText) }
+        val hex = signature.rawData.toHex()
         val consentProofPayload = ConsentProofPayload.newBuilder().also {
             it.signature = hex
             it.timestamp = timestamp
@@ -221,10 +224,8 @@ class ConversationsTest {
         val alixClient = Client().create(alix, clientOptions)
         val timestamp = System.currentTimeMillis()
         val signatureText = Signature.newBuilder().build().consentProofText(boClient.address, timestamp)
-        val digest = signatureText.toByteArray()
-
-        val signature = runBlocking { alix.sign(Util.keccak256(digest)) }
-        val hex = signature.toByteArray().toHex()
+        val signature = runBlocking { alix.sign(signatureText) }
+        val hex = signature.rawData.toHex()
         val consentProofPayload = ConsentProofPayload.newBuilder().also {
             it.signature = hex
             it.timestamp = timestamp
@@ -248,18 +249,24 @@ class ConversationsTest {
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
         val timestamp = System.currentTimeMillis()
-        val signatureText = Signature.newBuilder().build().consentProofText(boClient.address, timestamp + 1)
-        val digest = signatureText.toByteArray()
-
-        val signature = runBlocking { alix.sign(Util.keccak256(digest)) }
-        val hex = signature.toByteArray().toHex()
+        val signatureText =
+            Signature.newBuilder().build().consentProofText(boClient.address, timestamp + 1)
+        val signature = runBlocking { alix.sign(signatureText) }
+        val hex = signature.rawData.toHex()
         val consentProofPayload = ConsentProofPayload.newBuilder().also {
             it.signature = hex
             it.timestamp = timestamp
-            it.payloadVersion = Invitation.ConsentProofPayloadVersion.CONSENT_PROOF_PAYLOAD_VERSION_1
+            it.payloadVersion =
+                Invitation.ConsentProofPayloadVersion.CONSENT_PROOF_PAYLOAD_VERSION_1
         }.build()
 
-        val boConversation = runBlocking { boClient.conversations.newConversation(alixClient.address, null, consentProofPayload) }
+        val boConversation = runBlocking {
+            boClient.conversations.newConversation(
+                alixClient.address,
+                null,
+                consentProofPayload
+            )
+        }
         val alixConversations = runBlocking { alixClient.conversations.list() }
         val alixConversation = alixConversations.find { it.topic == boConversation.topic }
         assertNotNull(alixConversation)
