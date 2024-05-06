@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Base64
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,10 +25,12 @@ import org.xmtp.android.library.messages.consentProofText
 import org.xmtp.android.library.messages.createDeterministic
 import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.rawData
+import org.xmtp.android.library.messages.rawDataWithNormalizedRecovery
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.proto.message.contents.Invitation.ConsentProofPayload
+import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import java.lang.Thread.sleep
 import java.util.Date
 
@@ -189,11 +192,11 @@ class ConversationsTest {
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
-        val timestamp = System.currentTimeMillis()
+        val timestamp = Date().time
         val signatureClass = Signature.newBuilder().build()
         val signatureText = signatureClass.consentProofText(boClient.address, timestamp)
         val signature = runBlocking { alix.sign(signatureText) }
-        val hex = signature.rawData.toHex()
+        val hex = signature.rawDataWithNormalizedRecovery.toHex()
         val consentProofPayload = ConsentProofPayload.newBuilder().also {
             it.signature = hex
             it.timestamp = timestamp
@@ -221,10 +224,10 @@ class ConversationsTest {
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
-        val timestamp = System.currentTimeMillis()
+        val timestamp = Date().time
         val signatureText = Signature.newBuilder().build().consentProofText(boClient.address, timestamp)
         val signature = runBlocking { alix.sign(signatureText) }
-        val hex = signature.rawData.toHex()
+        val hex = signature.rawDataWithNormalizedRecovery.toHex()
         val consentProofPayload = ConsentProofPayload.newBuilder().also {
             it.signature = hex
             it.timestamp = timestamp
@@ -247,11 +250,11 @@ class ConversationsTest {
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
-        val timestamp = System.currentTimeMillis()
+        val timestamp = Date().time
         val signatureText =
             Signature.newBuilder().build().consentProofText(boClient.address, timestamp + 1)
         val signature = runBlocking { alix.sign(signatureText) }
-        val hex = signature.rawData.toHex()
+        val hex = signature.rawDataWithNormalizedRecovery.toHex()
         val consentProofPayload = ConsentProofPayload.newBuilder().also {
             it.signature = hex
             it.timestamp = timestamp
