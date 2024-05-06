@@ -68,7 +68,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testDoesNotAllowConversationWithSelf() {
         val client = Client().create(account = aliceWallet)
         assertThrows("Recipient is sender", XMTPException::class.java) {
@@ -77,7 +76,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanFindExistingV1Conversation() {
         val encoder = TextCodec()
         val encodedContent = encoder.encode(content = "hi alice")
@@ -135,7 +133,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanFindExistingV2Conversation() {
         val existingConversation = runBlocking {
             bobClient.conversations.newConversation(
@@ -160,7 +157,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanLoadV1Messages() {
         // Overwrite contact as legacy so we can get v1
         fixtures.publishLegacyContact(client = bobClient)
@@ -179,7 +175,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanLoadV2Messages() {
         val bobConversation = runBlocking {
             bobClient.conversations.newConversation(
@@ -202,7 +197,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testVerifiesV2MessageSignature() {
         val aliceConversation = runBlocking {
             aliceClient.conversations.newConversation(
@@ -273,7 +267,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanSendGzipCompressedV1Messages() {
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
@@ -293,7 +286,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanSendDeflateCompressedV1Messages() {
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
@@ -313,7 +305,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanSendGzipCompressedV2Messages() {
         val bobConversation = runBlocking {
             bobClient.conversations.newConversation(
@@ -340,7 +331,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanSendDeflateCompressedV2Messages() {
         val bobConversation = runBlocking {
             bobClient.conversations.newConversation(
@@ -367,7 +357,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testEndToEndConversation() {
         val fakeContactWallet = PrivateKeyBuilder()
         val fakeContactClient = Client().create(account = fakeContactWallet)
@@ -417,7 +406,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanUseCachedConversation() {
         runBlocking { bobClient.conversations.newConversation(alice.walletAddress) }
 
@@ -448,7 +436,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanPaginateV2Messages() {
         val bobConversation = runBlocking {
             bobClient.conversations.newConversation(
@@ -484,7 +471,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testListBatchMessages() {
         val bobConversation =
             runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
@@ -513,7 +499,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testListBatchDecryptedMessages() {
         val bobConversation =
             runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
@@ -538,7 +523,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testListBatchMessagesWithPagination() {
         val bobConversation =
             runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
@@ -573,7 +557,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testImportV1ConversationFromJS() {
         val jsExportJSONData =
             (""" { "version": "v1", "peerAddress": "0x5DAc8E2B64b8523C11AF3e5A2E087c2EA9003f14", "createdAt": "2022-09-20T09:32:50.329Z" } """).toByteArray(
@@ -584,7 +567,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testImportV2ConversationFromJS() {
         val jsExportJSONData =
             (""" {"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z","context":{"conversationId":"pat/messageid","metadata":{}}} """).toByteArray(
@@ -595,7 +577,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testImportV2ConversationWithNoContextFromJS() {
         val jsExportJSONData =
             (""" {"version":"v2","topic":"/xmtp/0/m-2SkdN5Qa0ZmiFI5t3RFbfwIS-OLv5jusqndeenTLvNg/proto","keyMaterial":"ATA1L0O2aTxHmskmlGKCudqfGqwA1H+bad3W/GpGOr8=","peerAddress":"0x436D906d1339fC4E951769b1699051f020373D04","createdAt":"2023-01-26T22:58:45.068Z"} """).toByteArray(
@@ -606,7 +587,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanStreamConversationsV2() = kotlinx.coroutines.test.runTest {
         bobClient.conversations.stream().test {
             val conversation = bobClient.conversations.newConversation(alice.walletAddress)
@@ -616,7 +596,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testStreamingMessagesFromV1Conversation() = kotlinx.coroutines.test.runTest {
         // Overwrite contact as legacy
         fixtures.publishLegacyContact(client = bobClient)
@@ -629,7 +608,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testStreamingMessagesFromV2Conversations() = kotlinx.coroutines.test.runTest {
         val conversation = aliceClient.conversations.newConversation(bob.walletAddress)
         conversation.streamMessages().test {
@@ -639,7 +617,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testV2RejectsSpoofedContactBundles() {
         val topic = "/xmtp/0/m-Gdb7oj5nNdfZ3MJFLAcS4WTABgr6al1hePy6JV1-QUE/proto"
         val envelopeMessage =
@@ -666,7 +643,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanPrepareV1Message() {
         // Publish legacy contacts so we can get v1 conversations
         fixtures.publishLegacyContact(client = bobClient)
@@ -684,7 +660,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanPrepareV2Message() {
         val conversation =
             runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
@@ -698,7 +673,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanSendPreparedMessageWithoutConversation() {
         val conversation =
             runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
@@ -716,7 +690,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testFetchConversation() {
         // Generated from JS script
         val ints = arrayOf(
@@ -785,7 +758,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanSendEncodedContentV1Message() {
         fixtures.publishLegacyContact(client = bobClient)
         fixtures.publishLegacyContact(client = aliceClient)
@@ -801,7 +773,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanSendEncodedContentV2Message() {
         val bobConversation =
             runBlocking { bobClient.conversations.newConversation(aliceWallet.address) }
@@ -813,7 +784,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanHaveConsentState() {
         val bobConversation =
             runBlocking { bobClient.conversations.newConversation(alice.walletAddress, null) }
@@ -854,7 +824,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanHaveImplicitConsentOnMessageSend() {
         val bobConversation =
             runBlocking { bobClient.conversations.newConversation(alice.walletAddress, null) }
@@ -880,7 +849,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanPublishMultipleAddressConsentState() {
         runBlocking {
             val bobConversation = bobClient.conversations.newConversation(alice.walletAddress)
@@ -899,7 +867,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanValidateTopicsInsideConversation() {
         val validId = "sdfsadf095b97a9284dcd82b2274856ccac8a21de57bebe34e7f9eeb855fb21126d3b8f"
 
@@ -923,7 +890,6 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCannotValidateTopicsInsideConversation() {
         val invalidId = "��\\u0005�!\\u000b���5\\u00001\\u0007�蛨\\u001f\\u00172��.����K9K`�"
 
