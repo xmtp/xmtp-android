@@ -29,7 +29,7 @@ class SignatureTest {
     @Test
     fun testConsentProofText() {
         val timestamp = 1581663600000
-        val exampleAddress = "0x1234567890abcdef";
+        val exampleAddress = "0x1234567890abcdef"
         val signatureClass = Signature.newBuilder().build()
         val text = signatureClass.consentProofText(exampleAddress, timestamp)
         val expected = "XMTP : Grant inbox consent to sender\n\nCurrent Time: Fri, 14 Feb 2020 07:00:00 GMT\nFrom Address: 0x1234567890abcdef\n\nFor more info: https://xmtp.org/signatures/"

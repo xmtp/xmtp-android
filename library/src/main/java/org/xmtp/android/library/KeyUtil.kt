@@ -9,6 +9,7 @@ import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.consentProofText
 import org.xmtp.android.library.messages.ethHash
 import java.math.BigInteger
+import java.util.Date
 
 object KeyUtil {
     fun getPublicKey(privateKey: ByteArray): ByteArray {
@@ -81,10 +82,10 @@ object KeyUtil {
     }
 
     fun validateConsentSignature(signature: String, clientAddress: String, peerAddress: String, timestamp: Long): Boolean {
-        if (timestamp > System.currentTimeMillis()) {
+        if (timestamp > Date().time) {
             return false
         }
-        val thirtyDaysAgo = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
+        val thirtyDaysAgo = Date().time - 30L * 24 * 60 * 60 * 1000
         if (timestamp < thirtyDaysAgo) {
             return false
         }
