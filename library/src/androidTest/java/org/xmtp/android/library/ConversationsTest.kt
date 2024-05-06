@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Base64
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,13 +23,11 @@ import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.consentProofText
 import org.xmtp.android.library.messages.createDeterministic
 import org.xmtp.android.library.messages.getPublicKeyBundle
-import org.xmtp.android.library.messages.rawData
 import org.xmtp.android.library.messages.rawDataWithNormalizedRecovery
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.proto.message.contents.Invitation.ConsentProofPayload
-import org.xmtp.proto.message.contents.PrivateKeyOuterClass
 import java.lang.Thread.sleep
 import java.util.Date
 
