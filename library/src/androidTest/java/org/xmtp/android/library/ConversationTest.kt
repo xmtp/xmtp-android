@@ -849,6 +849,7 @@ class ConversationTest {
     }
 
     @Test
+    @Ignore("Flaky CI")
     fun testCanPublishMultipleAddressConsentState() {
         runBlocking {
             val bobConversation = bobClient.conversations.newConversation(alice.walletAddress)

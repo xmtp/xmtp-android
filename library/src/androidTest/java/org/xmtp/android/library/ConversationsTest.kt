@@ -58,7 +58,6 @@ class ConversationsTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testCanGetConversationFromInviteEnvelope() {
         val fixtures = fixtures()
         val client = fixtures.aliceClient
@@ -87,7 +86,6 @@ class ConversationsTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testStreamAllMessages() {
         val bo = PrivateKeyBuilder()
         val alix = PrivateKeyBuilder()
@@ -151,7 +149,6 @@ class ConversationsTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testStreamTimeOutsAllMessages() {
         val bo = PrivateKeyBuilder()
         val alix = PrivateKeyBuilder()
@@ -185,7 +182,6 @@ class ConversationsTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testSendConversationWithConsentSignature() {
         val bo = PrivateKeyBuilder()
         val alix = PrivateKeyBuilder()
@@ -217,7 +213,6 @@ class ConversationsTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testNetworkConsentOverConsentProof() {
         val bo = PrivateKeyBuilder()
         val alix = PrivateKeyBuilder()
@@ -246,7 +241,6 @@ class ConversationsTest {
     }
 
     @Test
-    @Ignore("EM: Temporary ignore for failing test while fixing CI")
     fun testConsentProofInvalidSignature() {
         val bo = PrivateKeyBuilder()
         val alix = PrivateKeyBuilder()
