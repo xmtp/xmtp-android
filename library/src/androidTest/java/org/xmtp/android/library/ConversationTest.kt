@@ -493,7 +493,7 @@ class ConversationTest {
             (topic.equals(steveConversation.topic) || topic.equals(bobConversation.topic))
         }
         assertEquals(3, messages.size)
-        assertTrue("isSteveOrBobConversation message 0", isSteveOrBobConversation(messages[0].topic), )
+        assertTrue("isSteveOrBobConversation message 0", isSteveOrBobConversation(messages[0].topic))
         assertTrue("isSteveOrBobConversation message 1", isSteveOrBobConversation(messages[1].topic))
         assertTrue("isSteveOrBobConversation message 2", isSteveOrBobConversation(messages[2].topic))
     }
@@ -858,11 +858,11 @@ class ConversationTest {
             Thread.sleep(1000)
             assertEquals(bobClient.contacts.consentList.entries.size, 2)
             assertTrue("Bob convo should be allowed", bobConversation.consentState() == ConsentState.ALLOWED)
-            assertTrue("Caro convo should be allowed",caroConversation.consentState() == ConsentState.ALLOWED)
+            assertTrue("Caro convo should be allowed", caroConversation.consentState() == ConsentState.ALLOWED)
             bobClient.contacts.deny(listOf(alice.walletAddress, fixtures.caro.walletAddress))
             assertEquals(bobClient.contacts.consentList.entries.size, 2)
-            assertTrue("Bob convo should be denied",bobConversation.consentState() == ConsentState.DENIED)
-            assertTrue("Caro convo should be denied",caroConversation.consentState() == ConsentState.DENIED)
+            assertTrue("Bob convo should be denied", bobConversation.consentState() == ConsentState.DENIED)
+            assertTrue("Caro convo should be denied", caroConversation.consentState() == ConsentState.DENIED)
         }
     }
 
