@@ -785,6 +785,10 @@ class ConversationTest {
 
     @Test
     fun testCanHaveConsentState() {
+        runBlocking {
+            bobClient.contacts.refreshConsentList()
+            aliceClient.contacts.refreshConsentList()
+        }
         val bobConversation =
             runBlocking { bobClient.conversations.newConversation(alice.walletAddress, null) }
         val isAllowed = bobConversation.consentState() == ConsentState.ALLOWED
@@ -849,8 +853,11 @@ class ConversationTest {
     }
 
     @Test
-    @Ignore("Flaky CI")
     fun testCanPublishMultipleAddressConsentState() {
+        runBlocking {
+            bobClient.contacts.refreshConsentList()
+            aliceClient.contacts.refreshConsentList()
+        }
         runBlocking {
             val bobConversation = bobClient.conversations.newConversation(alice.walletAddress)
             val caroConversation =

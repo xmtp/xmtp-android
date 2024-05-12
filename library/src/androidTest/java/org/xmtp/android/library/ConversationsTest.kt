@@ -189,6 +189,10 @@ class ConversationsTest {
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
+        runBlocking {
+            boClient.contacts.refreshConsentList()
+            alixClient.contacts.refreshConsentList()
+        }
         val timestamp = System.currentTimeMillis()
         val signatureText = Signature.newBuilder().build().consentProofText(boClient.address, timestamp)
         val digest = signatureText.toByteArray()
@@ -248,6 +252,10 @@ class ConversationsTest {
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val boClient = Client().create(bo, clientOptions)
         val alixClient = Client().create(alix, clientOptions)
+        runBlocking {
+            boClient.contacts.refreshConsentList()
+            alixClient.contacts.refreshConsentList()
+        }
         val timestamp = System.currentTimeMillis()
         val signatureText = Signature.newBuilder().build().consentProofText(boClient.address, timestamp + 1)
         val digest = signatureText.toByteArray()
