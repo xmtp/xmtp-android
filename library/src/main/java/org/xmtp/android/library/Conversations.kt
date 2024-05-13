@@ -108,9 +108,6 @@ data class Conversations(
         accountAddresses: List<String>,
         permissions: GroupPermissions = GroupPermissions.EVERYONE_IS_ADMIN,
     ): Group {
-        if (accountAddresses.isEmpty()) {
-            throw XMTPException("Cannot start an empty group chat.")
-        }
         if (accountAddresses.size == 1 &&
             accountAddresses.first().lowercase() == client.address.lowercase()
         ) {
