@@ -114,7 +114,8 @@ data class Conversations(
             throw XMTPException("Recipient is sender")
         }
         val falseAddresses =
-            client.canMessageV3(accountAddresses).filter { !it.value }.map { it.key }
+            if (accountAddresses.isNotEmpty()) client.canMessageV3(accountAddresses)
+                .filter { !it.value }.map { it.key } else emptyList()
         if (falseAddresses.isNotEmpty()) {
             throw XMTPException("${falseAddresses.joinToString()} not on network")
         }
@@ -147,7 +148,10 @@ data class Conversations(
         } ?: emptyList()
     }
 
-    private suspend fun handleConsentProof(consentProof: Invitation.ConsentProofPayload, peerAddress: String) {
+    private suspend fun handleConsentProof(
+        consentProof: Invitation.ConsentProofPayload,
+        peerAddress: String,
+    ) {
         val signature = consentProof.signature
         val timestamp = consentProof.timestamp
 
