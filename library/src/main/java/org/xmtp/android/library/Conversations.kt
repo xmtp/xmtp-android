@@ -673,14 +673,6 @@ data class Conversations(
                 }
             } catch (error: CancellationException) {
                 break
-            } catch (error: StatusException) {
-                if (error.status.code == io.grpc.Status.Code.UNAVAILABLE) {
-                    continue
-                } else {
-                    break
-                }
-            } catch (error: Exception) {
-                continue
             }
         }
     }
@@ -744,14 +736,6 @@ data class Conversations(
                 }
             } catch (error: CancellationException) {
                 break
-            } catch (error: StatusException) {
-                if (error.status.code == io.grpc.Status.Code.UNAVAILABLE) {
-                    continue
-                } else {
-                    break
-                }
-            } catch (error: Exception) {
-                continue
             }
         }
     }
