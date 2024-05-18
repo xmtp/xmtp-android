@@ -116,10 +116,10 @@ class ConsentList(
             }
 
             preference.allowInboxId?.inboxIdsList?.forEach { inboxId ->
-                allowGroup(inboxId)
+                allowInboxId(inboxId)
             }
             preference.denyInboxId?.inboxIdsList?.forEach { inboxId ->
-                denyGroup(inboxId)
+                denyInboxId(inboxId)
             }
         }
 
