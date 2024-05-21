@@ -15,6 +15,7 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import uniffi.xmtpv3.FfiDeliveryStatus
 import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiGroupMetadata
+import uniffi.xmtpv3.FfiGroupPermissions
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
@@ -35,6 +36,9 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
 
     private val metadata: FfiGroupMetadata
         get() = libXMTPGroup.groupMetadata()
+
+    private val permissions: FfiGroupPermissions
+        get() = libXMTPGroup.groupPermissions()
 
     val name: String
         get() = libXMTPGroup.groupName()
@@ -158,14 +162,14 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     fun permissionLevel(): GroupPermissions {
-        return metadata.policyType()
+        return permissions.policyType()
     }
 
-    fun isAdmin(): Boolean {
+    fun isCreator(): Boolean {
         return metadata.creatorAccountAddress().lowercase() == client.address.lowercase()
     }
 
-    fun adminAddress(): String {
+    fun creatorAddress(): String {
         return metadata.creatorAccountAddress()
     }
 
@@ -197,6 +201,30 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
 
     suspend fun updateGroupName(name: String) {
         return libXMTPGroup.updateGroupName(name)
+    }
+
+    fun isAdmin(accountAddress: String): Boolean {
+        return libXMTPGroup.isAdmin(accountAddress.lowercase())
+    }
+
+    fun isSuperAdmin(accountAddress: String): Boolean {
+        return libXMTPGroup.isAdmin(accountAddress.lowercase())
+    }
+
+    suspend fun addAdmin(accountAddress: String) {
+        return libXMTPGroup.addAdmin(accountAddress)
+    }
+
+    suspend fun removeAdmin(accountAddress: String) {
+        return libXMTPGroup.removeAdmin(accountAddress)
+    }
+
+    suspend fun listAdmins(): List<String> {
+        return libXMTPGroup.adminList()
+    }
+
+    suspend fun listSuperAdmins(): List<String> {
+        return libXMTPGroup.superAdminList()
     }
 
     fun streamMessages(): Flow<DecodedMessage> = callbackFlow {

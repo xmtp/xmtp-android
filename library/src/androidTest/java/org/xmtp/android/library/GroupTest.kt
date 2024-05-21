@@ -92,12 +92,12 @@ class GroupTest {
         assertEquals(alixGroup.memberAddresses().size, 3)
         assertEquals(boGroup.memberAddresses().size, 3)
 
-        assertEquals(boGroup.permissionLevel(), GroupPermissions.EVERYONE_IS_ADMIN)
-        assertEquals(alixGroup.permissionLevel(), GroupPermissions.EVERYONE_IS_ADMIN)
-        assertEquals(boGroup.adminAddress().lowercase(), boClient.address.lowercase())
-        assertEquals(alixGroup.adminAddress().lowercase(), boClient.address.lowercase())
-        assert(boGroup.isAdmin())
-        assert(!alixGroup.isAdmin())
+        assertEquals(boGroup.permissionLevel(), GroupPermissions.ALL_MEMBERS)
+        assertEquals(alixGroup.permissionLevel(), GroupPermissions.ALL_MEMBERS)
+        assertEquals(boGroup.creatorAddress().lowercase(), boClient.address.lowercase())
+        assertEquals(alixGroup.creatorAddress().lowercase(), boClient.address.lowercase())
+        assert(boGroup.isCreator())
+        assert(!alixGroup.isCreator())
     }
 
     @Test
@@ -105,7 +105,7 @@ class GroupTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(alix.walletAddress),
-                permissions = GroupPermissions.GROUP_CREATOR_IS_ADMIN
+                permissions = GroupPermissions.ADMINS_ONLY
             )
         }
         runBlocking { alixClient.conversations.syncGroups() }
@@ -143,12 +143,12 @@ class GroupTest {
         assertEquals(alixGroup.memberAddresses().size, 2)
         assertEquals(boGroup.memberAddresses().size, 2)
 
-        assertEquals(boGroup.permissionLevel(), GroupPermissions.GROUP_CREATOR_IS_ADMIN)
-        assertEquals(alixGroup.permissionLevel(), GroupPermissions.GROUP_CREATOR_IS_ADMIN)
-        assertEquals(boGroup.adminAddress().lowercase(), boClient.address.lowercase())
-        assertEquals(alixGroup.adminAddress().lowercase(), boClient.address.lowercase())
-        assert(boGroup.isAdmin())
-        assert(!alixGroup.isAdmin())
+        assertEquals(boGroup.permissionLevel(), GroupPermissions.ADMINS_ONLY)
+        assertEquals(alixGroup.permissionLevel(), GroupPermissions.ADMINS_ONLY)
+        assertEquals(boGroup.creatorAddress().lowercase(), boClient.address.lowercase())
+        assertEquals(alixGroup.creatorAddress().lowercase(), boClient.address.lowercase())
+        assert(boGroup.isCreator())
+        assert(!alixGroup.isCreator())
     }
 
     @Test
