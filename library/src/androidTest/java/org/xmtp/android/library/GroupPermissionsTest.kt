@@ -2,30 +2,16 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import app.cash.turbine.test
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.codecs.ContentTypeReaction
-import org.xmtp.android.library.codecs.Reaction
-import org.xmtp.android.library.codecs.ReactionAction
-import org.xmtp.android.library.codecs.ReactionCodec
-import org.xmtp.android.library.codecs.ReactionSchema
-import org.xmtp.android.library.messages.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.GroupPermissions
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupMembershipChange
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChangeCodec
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
 
 @RunWith(AndroidJUnit4::class)
 class GroupPermissionsTest {
@@ -119,13 +105,13 @@ class GroupPermissionsTest {
                 alixGroup.updateGroupName("Alix group name")
             }
         }
-        assertEquals(exception.message,"Group error: Errors occurred during sync [CommitValidation(InsufficientPermissions)]")
+        assertEquals(exception.message, "Group error: Errors occurred during sync [CommitValidation(InsufficientPermissions)]")
         runBlocking {
             alixGroup.sync()
             boGroup.sync()
         }
-        assert(boGroup.name.equals("New Group"))
-        assert(alixGroup.name.equals("New Group"))
+        assert(boGroup.name == "New Group")
+        assert(alixGroup.name == "New Group")
 
         runBlocking {
             boGroup.addAdmin(alix.walletAddress.lowercase())
@@ -153,8 +139,8 @@ class GroupPermissionsTest {
             alixGroup.sync()
             boGroup.sync()
         }
-        assert(boGroup.name.equals("Alix group name"))
-        assert(alixGroup.name.equals("Alix group name"))
+        assert(boGroup.name == "Alix group name")
+        assert(alixGroup.name == "Alix group name")
 
         runBlocking {
             boGroup.removeAdmin(alix.walletAddress.lowercase())
@@ -180,6 +166,6 @@ class GroupPermissionsTest {
                 alixGroup.updateGroupName("Alix group name 2")
             }
         }
-        assertEquals(exception.message,"Group error: Errors occurred during sync [CommitValidation(InsufficientPermissions)]")
+        assertEquals(exception.message, "Group error: Errors occurred during sync [CommitValidation(InsufficientPermissions)]")
     }
 }
