@@ -78,6 +78,20 @@ class GroupTest {
         assertEquals(alixGroup.memberAddresses().size, 3)
         assertEquals(boGroup.memberAddresses().size, 3)
 
+        // New default is that only admins can remove members
+        val exception = assertThrows(XMTPException::class.java) {
+            runBlocking {
+                alixGroup.removeMembers(listOf(caro.walletAddress))
+            }
+        }
+        assertEquals(exception.message, "User does not have permissions")
+        // Add  alix as admin and rest of test should be the same
+        runBlocking {
+            boGroup.addAdmin(alix.walletAddress.lowercase())
+            boGroup.sync()
+            alixGroup.sync()
+        }
+
         runBlocking {
             alixGroup.removeMembers(listOf(caro.walletAddress))
             boGroup.sync()
@@ -230,7 +244,7 @@ class GroupTest {
 
     @Test
     fun testCanRemoveGroupMembersWhenNotCreator() {
-        runBlocking {
+        val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
                     alix.walletAddress,
@@ -240,6 +254,19 @@ class GroupTest {
         }
         runBlocking { alixClient.conversations.syncGroups() }
         val group = runBlocking { alixClient.conversations.listGroups().first() }
+        // New default is that only admins can remove members
+        val exception = assertThrows(XMTPException::class.java) {
+            runBlocking {
+                group.removeMembers(listOf(caro.walletAddress))
+            }
+        }
+        assertEquals(exception.message, "User does not have permissions")
+        // Add  alix as admin and rest of test should be the same
+        runBlocking {
+            boGroup.addAdmin(alix.walletAddress.lowercase())
+            boGroup.sync()
+            group.sync()
+        }
         runBlocking { group.removeMembers(listOf(caro.walletAddress)) }
         assertEquals(
             group.memberAddresses().sorted(),
