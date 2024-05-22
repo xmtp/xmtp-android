@@ -74,7 +74,7 @@ data class ClientOptions(
     val preEnableIdentityCallback: PreEventCallback? = null,
     val appContext: Context? = null,
     val enableAlphaMls: Boolean = false,
-    val dbPath: String? = null,
+    val dbDirectory: String? = null,
     val dbEncryptionKey: ByteArray? = null,
 ) {
     data class Api(
@@ -324,13 +324,14 @@ class Client() {
                 }
                 val alias = "xmtp-${options.api.env}-${inboxId.lowercase()}"
 
-                dbPath = if (options.dbPath == null) {
-                    val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
-                    dbDir.mkdir()
-                    dbDir.absolutePath + "/$alias.db3"
+                val dbDir = if (options.dbDirectory == null) {
+                     File(appContext?.filesDir?.absolutePath, "xmtp_db")
                 } else {
-                    options.dbPath
+                    File(appContext?.filesDir?.absolutePath, options.dbDirectory)
                 }
+
+                dbDir.mkdir()
+                dbPath = dbDir.absolutePath + "/$alias.db3"
 
                 val encryptionKey = if (options.dbEncryptionKey == null) {
                     val keyStore = KeyStore.getInstance("AndroidKeyStore")

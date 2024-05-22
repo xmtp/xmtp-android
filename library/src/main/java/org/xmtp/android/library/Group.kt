@@ -19,6 +19,7 @@ import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.GroupPermissions
+import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.Member
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -202,22 +203,14 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
     }
 
-    fun memberInboxIds(): List<String> {
-        return libXMTPGroup.listMembers().map { it.inboxId }
+    fun members(): List<Member> {
+        return libXMTPGroup.listMembers().map { Member(it) }
     }
 
     fun peerInboxIds(): List<String> {
-        val ids = memberInboxIds().map { it.lowercase() }.toMutableList()
+        val ids = members().map { it.inboxId.lowercase() }.toMutableList()
         ids.remove(client.inboxId.lowercase())
         return ids
-    }
-
-    fun peerAddresses(): List<String> {
-        val addresses =
-            libXMTPGroup.listMembers().map { it.accountAddresses.first() }.map { it.lowercase() }
-                .toMutableList()
-        addresses.remove(client.address.lowercase())
-        return addresses
     }
 
     suspend fun updateGroupName(name: String) {
