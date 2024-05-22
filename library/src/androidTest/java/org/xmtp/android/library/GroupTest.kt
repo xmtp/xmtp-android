@@ -173,6 +173,14 @@ class GroupTest {
         assertEquals(
             Conversation.Group(group).peerAddresses.sorted(),
             listOf(
+                caroClient.address.lowercase(),
+                alixClient.address.lowercase(),
+            ).sorted()
+        )
+
+        assertEquals(
+            group.peerInboxIds().sorted(),
+            listOf(
                 caroClient.inboxId.lowercase(),
                 alixClient.inboxId.lowercase(),
             ).sorted()
@@ -213,8 +221,8 @@ class GroupTest {
         val group = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alixClient.inboxId,
-                    caroClient.inboxId
+                    alixClient.address,
+                    caroClient.address
                 )
             )
         }
@@ -229,18 +237,52 @@ class GroupTest {
     }
 
     @Test
+    fun testCanAddGroupMemberIds() {
+        val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
+        runBlocking { group.addMembersByInboxId(listOf(caroClient.inboxId)) }
+        assertEquals(
+            group.memberInboxIds().sorted(),
+            listOf(
+                caroClient.inboxId.lowercase(),
+                alixClient.inboxId.lowercase(),
+                boClient.inboxId.lowercase()
+            ).sorted()
+        )
+    }
+
+    @Test
+    fun testCanRemoveGroupMemberIds() {
+        val group = runBlocking {
+            boClient.conversations.newGroup(
+                listOf(
+                    alixClient.address,
+                    caroClient.address
+                )
+            )
+        }
+        runBlocking { group.removeMembersByInboxId(listOf(caroClient.inboxId)) }
+        assertEquals(
+            group.memberInboxIds().sorted(),
+            listOf(
+                alixClient.inboxId.lowercase(),
+                boClient.inboxId.lowercase()
+            ).sorted()
+        )
+    }
+
+    @Test
     fun testCanRemoveGroupMembersWhenNotCreator() {
         runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alixClient.inboxId,
-                    caroClient.inboxId
+                    alixClient.address,
+                    caroClient.address
                 )
             )
         }
         runBlocking { alixClient.conversations.syncGroups() }
         val group = runBlocking { alixClient.conversations.listGroups().first() }
-        runBlocking { group.removeMembers(listOf(caroClient.inboxId)) }
+        runBlocking { group.removeMembers(listOf(caroClient.address)) }
         assertEquals(
             group.memberInboxIds().sorted(),
             listOf(
@@ -278,7 +320,7 @@ class GroupTest {
         val group = runBlocking {
             alixClient.conversations.newGroup(
                 listOf(
-                    boClient.inboxId,
+                    boClient.address,
                 )
             )
         }

@@ -186,13 +186,37 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
     }
 
+    suspend fun addMembersByInboxId(inboxIds: List<String>) {
+        try {
+            libXMTPGroup.addMembersByInboxId(inboxIds)
+        } catch (e: Exception) {
+            throw XMTPException("User does not have permissions", e)
+        }
+    }
+
+    suspend fun removeMembersByInboxId(inboxIds: List<String>) {
+        try {
+            libXMTPGroup.removeMembersByInboxId(inboxIds)
+        } catch (e: Exception) {
+            throw XMTPException("User does not have permissions", e)
+        }
+    }
+
     fun memberInboxIds(): List<String> {
         return libXMTPGroup.listMembers().map { it.inboxId }
     }
 
+    fun peerInboxIds(): List<String> {
+        val ids = memberInboxIds().map { it.lowercase() }.toMutableList()
+        ids.remove(client.inboxId.lowercase())
+        return ids
+    }
+
     fun peerAddresses(): List<String> {
-        val addresses = memberInboxIds().map { it.lowercase() }.toMutableList()
-        addresses.remove(client.inboxId.lowercase())
+        val addresses =
+            libXMTPGroup.listMembers().map { it.accountAddresses.first() }.map { it.lowercase() }
+                .toMutableList()
+        addresses.remove(client.address.lowercase())
         return addresses
     }
 

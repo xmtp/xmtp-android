@@ -39,6 +39,7 @@ import org.xmtp.proto.keystore.api.v1.Keystore.GetConversationHmacKeysResponse.H
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
+import org.xmtp.proto.mls.database.Intents.AccountAddresses
 import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiGroup
@@ -105,23 +106,23 @@ data class Conversations(
     }
 
     suspend fun newGroup(
-        inboxIds: List<String>,
+        accountAddresses: List<String>,
         permissions: GroupPermissions = GroupPermissions.EVERYONE_IS_ADMIN,
     ): Group {
-        if (inboxIds.size == 1 &&
-            inboxIds.first().lowercase() == client.inboxId.lowercase()
+        if (accountAddresses.size == 1 &&
+            accountAddresses.first().lowercase() == client.address.lowercase()
         ) {
             throw XMTPException("Recipient is sender")
         }
         val falseAddresses =
-            if (inboxIds.isNotEmpty()) client.canMessageV3(inboxIds)
+            if (accountAddresses.isNotEmpty()) client.canMessageV3(accountAddresses)
                 .filter { !it.value }.map { it.key } else emptyList()
         if (falseAddresses.isNotEmpty()) {
             throw XMTPException("${falseAddresses.joinToString()} not on network")
         }
 
         val group =
-            libXMTPConversations?.createGroup(inboxIds, permissions = permissions)
+            libXMTPConversations?.createGroup(accountAddresses, permissions = permissions)
                 ?: throw XMTPException("Client does not support Groups")
         client.contacts.allowGroup(groupIds = listOf(group.id()))
 

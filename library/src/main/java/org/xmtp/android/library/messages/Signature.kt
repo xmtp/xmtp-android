@@ -1,5 +1,6 @@
 package org.xmtp.android.library.messages
 
+import android.util.Log
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.Util
 import org.xmtp.android.library.toHex

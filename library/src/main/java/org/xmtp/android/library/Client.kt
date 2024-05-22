@@ -36,6 +36,7 @@ import org.xmtp.android.library.messages.ensureWalletSignature
 import org.xmtp.android.library.messages.generate
 import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.rawData
+import org.xmtp.android.library.messages.rawDataWithNormalizedRecovery
 import org.xmtp.android.library.messages.recoverWalletSignerPublicKey
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.toV2
@@ -115,6 +116,7 @@ class Client() {
          * The user will need to be prompted to sign to decrypt each bundle.
          */
         suspend fun authCheck(api: ApiClient, address: String): List<EncryptedPrivateKeyBundle> {
+            Log.d("LOPI", "authCheck")
             val topic = Topic.userPrivateStoreKeyBundle(toChecksumAddress(address))
             val res = api.queryTopic(topic)
             return res.envelopesList.mapNotNull {
@@ -224,13 +226,14 @@ class Client() {
                     apiClient,
                     clientOptions
                 )
+
                 val (libXMTPClient, dbPath) =
                     ffiXmtpClient(
                         options,
                         account,
                         clientOptions.appContext,
                         privateKeyBundleV1,
-                        legacyIdentityKey,
+                        LegacyIdentitySource.NONE,
                         account.address
                     )
 
@@ -317,7 +320,7 @@ class Client() {
                     accountAddress = accountAddress
                 )
                 if (inboxId.isNullOrBlank()) {
-                    inboxId = generateInboxId(accountAddress, SecureRandom().nextLong().toULong())
+                    inboxId = generateInboxId(accountAddress, 0.toULong())
                 }
                 val alias = "xmtp-${options.api.env}-${inboxId.lowercase()}"
 
