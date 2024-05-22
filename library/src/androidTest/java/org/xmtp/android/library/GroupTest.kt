@@ -75,27 +75,27 @@ class GroupTest {
             alixGroup.addMembers(listOf(caro.walletAddress))
             boGroup.sync()
         }
-        assertEquals(alixGroup.memberAddresses().size, 3)
-        assertEquals(boGroup.memberAddresses().size, 3)
+        assertEquals(alixGroup.memberInboxIds().size, 3)
+        assertEquals(boGroup.memberInboxIds().size, 3)
 
         runBlocking {
             alixGroup.removeMembers(listOf(caro.walletAddress))
             boGroup.sync()
         }
-        assertEquals(alixGroup.memberAddresses().size, 2)
-        assertEquals(boGroup.memberAddresses().size, 2)
+        assertEquals(alixGroup.memberInboxIds().size, 2)
+        assertEquals(boGroup.memberInboxIds().size, 2)
 
         runBlocking {
             boGroup.addMembers(listOf(caro.walletAddress))
             alixGroup.sync()
         }
-        assertEquals(alixGroup.memberAddresses().size, 3)
-        assertEquals(boGroup.memberAddresses().size, 3)
+        assertEquals(alixGroup.memberInboxIds().size, 3)
+        assertEquals(boGroup.memberInboxIds().size, 3)
 
         assertEquals(boGroup.permissionLevel(), GroupPermissions.EVERYONE_IS_ADMIN)
         assertEquals(alixGroup.permissionLevel(), GroupPermissions.EVERYONE_IS_ADMIN)
-        assertEquals(boGroup.adminAddress().lowercase(), boClient.address.lowercase())
-        assertEquals(alixGroup.adminAddress().lowercase(), boClient.address.lowercase())
+        assertEquals(boGroup.adminInboxId().lowercase(), boClient.address.lowercase())
+        assertEquals(alixGroup.adminInboxId().lowercase(), boClient.address.lowercase())
         assert(boGroup.isAdmin())
         assert(!alixGroup.isAdmin())
     }
@@ -120,33 +120,33 @@ class GroupTest {
             boGroup.addMembers(listOf(caro.walletAddress))
             alixGroup.sync()
         }
-        assertEquals(alixGroup.memberAddresses().size, 3)
-        assertEquals(boGroup.memberAddresses().size, 3)
+        assertEquals(alixGroup.memberInboxIds().size, 3)
+        assertEquals(boGroup.memberInboxIds().size, 3)
 
         assertThrows(XMTPException::class.java) {
             runBlocking { alixGroup.removeMembers(listOf(caro.walletAddress)) }
         }
         runBlocking { boGroup.sync() }
-        assertEquals(alixGroup.memberAddresses().size, 3)
-        assertEquals(boGroup.memberAddresses().size, 3)
+        assertEquals(alixGroup.memberInboxIds().size, 3)
+        assertEquals(boGroup.memberInboxIds().size, 3)
         runBlocking {
             boGroup.removeMembers(listOf(caro.walletAddress))
             alixGroup.sync()
         }
-        assertEquals(alixGroup.memberAddresses().size, 2)
-        assertEquals(boGroup.memberAddresses().size, 2)
+        assertEquals(alixGroup.memberInboxIds().size, 2)
+        assertEquals(boGroup.memberInboxIds().size, 2)
 
         assertThrows(XMTPException::class.java) {
             runBlocking { alixGroup.addMembers(listOf(caro.walletAddress)) }
         }
         runBlocking { boGroup.sync() }
-        assertEquals(alixGroup.memberAddresses().size, 2)
-        assertEquals(boGroup.memberAddresses().size, 2)
+        assertEquals(alixGroup.memberInboxIds().size, 2)
+        assertEquals(boGroup.memberInboxIds().size, 2)
 
         assertEquals(boGroup.permissionLevel(), GroupPermissions.GROUP_CREATOR_IS_ADMIN)
         assertEquals(alixGroup.permissionLevel(), GroupPermissions.GROUP_CREATOR_IS_ADMIN)
-        assertEquals(boGroup.adminAddress().lowercase(), boClient.address.lowercase())
-        assertEquals(alixGroup.adminAddress().lowercase(), boClient.address.lowercase())
+        assertEquals(boGroup.adminInboxId().lowercase(), boClient.address.lowercase())
+        assertEquals(alixGroup.adminInboxId().lowercase(), boClient.address.lowercase())
         assert(boGroup.isAdmin())
         assert(!alixGroup.isAdmin())
     }
@@ -162,19 +162,19 @@ class GroupTest {
             )
         }
         assertEquals(
-            group.memberAddresses().sorted(),
+            group.memberInboxIds().sorted(),
             listOf(
-                caro.walletAddress.lowercase(),
-                alix.walletAddress.lowercase(),
-                bo.walletAddress.lowercase()
+                caroClient.inboxId.lowercase(),
+                alixClient.inboxId.lowercase(),
+                boClient.inboxId.lowercase()
             ).sorted()
         )
 
         assertEquals(
             Conversation.Group(group).peerAddresses.sorted(),
             listOf(
-                caro.walletAddress.lowercase(),
-                alix.walletAddress.lowercase(),
+                caroClient.inboxId.lowercase(),
+                alixClient.inboxId.lowercase(),
             ).sorted()
         )
     }
@@ -199,11 +199,11 @@ class GroupTest {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
         runBlocking { group.addMembers(listOf(caro.walletAddress)) }
         assertEquals(
-            group.memberAddresses().sorted(),
+            group.memberInboxIds().sorted(),
             listOf(
-                caro.walletAddress.lowercase(),
-                alix.walletAddress.lowercase(),
-                bo.walletAddress.lowercase()
+                caroClient.inboxId.lowercase(),
+                alixClient.inboxId.lowercase(),
+                boClient.inboxId.lowercase()
             ).sorted()
         )
     }
@@ -213,17 +213,17 @@ class GroupTest {
         val group = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 )
             )
         }
         runBlocking { group.removeMembers(listOf(caro.walletAddress)) }
         assertEquals(
-            group.memberAddresses().sorted(),
+            group.memberInboxIds().sorted(),
             listOf(
-                alix.walletAddress.lowercase(),
-                bo.walletAddress.lowercase()
+                alixClient.inboxId.lowercase(),
+                boClient.inboxId.lowercase()
             ).sorted()
         )
     }
@@ -233,19 +233,19 @@ class GroupTest {
         runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 )
             )
         }
         runBlocking { alixClient.conversations.syncGroups() }
         val group = runBlocking { alixClient.conversations.listGroups().first() }
-        runBlocking { group.removeMembers(listOf(caro.walletAddress)) }
+        runBlocking { group.removeMembers(listOf(caroClient.inboxId)) }
         assertEquals(
-            group.memberAddresses().sorted(),
+            group.memberInboxIds().sorted(),
             listOf(
-                alix.walletAddress.lowercase(),
-                bo.walletAddress.lowercase()
+                alixClient.inboxId.lowercase(),
+                boClient.inboxId.lowercase()
             ).sorted()
         )
     }
@@ -278,13 +278,13 @@ class GroupTest {
         val group = runBlocking {
             alixClient.conversations.newGroup(
                 listOf(
-                    bo.walletAddress,
+                    boClient.inboxId,
                 )
             )
         }
         runBlocking { boClient.conversations.syncGroups() }
         val boGroup = runBlocking { boClient.conversations.listGroups().first() }
-        assertEquals(boGroup.addedByAddress().lowercase(), alix.walletAddress.lowercase())
+        assertEquals(boGroup.addedByInboxId().lowercase(), alixClient.inboxId.lowercase())
     }
 
     @Test

@@ -105,23 +105,23 @@ data class Conversations(
     }
 
     suspend fun newGroup(
-        accountAddresses: List<String>,
+        inboxIds: List<String>,
         permissions: GroupPermissions = GroupPermissions.EVERYONE_IS_ADMIN,
     ): Group {
-        if (accountAddresses.size == 1 &&
-            accountAddresses.first().lowercase() == client.address.lowercase()
+        if (inboxIds.size == 1 &&
+            inboxIds.first().lowercase() == client.inboxId.lowercase()
         ) {
             throw XMTPException("Recipient is sender")
         }
         val falseAddresses =
-            if (accountAddresses.isNotEmpty()) client.canMessageV3(accountAddresses)
+            if (inboxIds.isNotEmpty()) client.canMessageV3(inboxIds)
                 .filter { !it.value }.map { it.key } else emptyList()
         if (falseAddresses.isNotEmpty()) {
             throw XMTPException("${falseAddresses.joinToString()} not on network")
         }
 
         val group =
-            libXMTPConversations?.createGroup(accountAddresses, permissions = permissions)
+            libXMTPConversations?.createGroup(inboxIds, permissions = permissions)
                 ?: throw XMTPException("Client does not support Groups")
         client.contacts.allowGroup(groupIds = listOf(group.id()))
 

@@ -24,7 +24,7 @@ data class MessageV3(val client: Client, private val libXMTPMessage: FfiMessage)
         get() = libXMTPMessage.convoId
 
     val senderAddress: String
-        get() = libXMTPMessage.addrFrom
+        get() = libXMTPMessage.senderInboxId
 
     val sentAt: Date
         get() = Date(libXMTPMessage.sentAtNs / 1_000_000)
