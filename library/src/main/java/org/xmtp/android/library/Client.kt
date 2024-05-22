@@ -43,18 +43,23 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
+import org.xmtp.proto.message.contents.signature
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.LegacyIdentitySource
 import uniffi.xmtpv3.createClient
+import uniffi.xmtpv3.generateInboxId
+import uniffi.xmtpv3.getInboxIdForAddress
 import uniffi.xmtpv3.getVersionInfo
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore
+import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.UUID
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
@@ -89,6 +94,7 @@ class Client() {
     var installationId: String = ""
     private var libXMTPClient: FfiXmtpClient? = null
     private var dbPath: String = ""
+    var inboxId: String = ""
 
     companion object {
         private const val TAG = "Client"
@@ -166,6 +172,7 @@ class Client() {
         libXMTPClient: FfiXmtpClient? = null,
         dbPath: String = "",
         installationId: String = "",
+        inboxId: String = "",
     ) : this() {
         this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
@@ -176,6 +183,7 @@ class Client() {
             Conversations(client = this, libXMTPConversations = libXMTPClient?.conversations())
         this.dbPath = dbPath
         this.installationId = installationId
+        this.inboxId = inboxId
     }
 
     fun buildFrom(
@@ -233,7 +241,8 @@ class Client() {
                         apiClient,
                         libXMTPClient,
                         dbPath,
-                        libXMTPClient?.installationId()?.toHex() ?: ""
+                        libXMTPClient?.installationId()?.toHex() ?: "",
+                        libXMTPClient?.inboxId() ?: ""
                     )
                 client.ensureUserContactPublished()
                 client
@@ -281,7 +290,8 @@ class Client() {
             apiClient = apiClient,
             libXMTPClient = v3Client,
             dbPath = dbPath,
-            installationId = v3Client?.installationId()?.toHex() ?: ""
+            installationId = v3Client?.installationId()?.toHex() ?: "",
+            inboxId = v3Client?.inboxId() ?: ""
         )
     }
 
@@ -300,7 +310,16 @@ class Client() {
         var dbPath = ""
         val v3Client: FfiXmtpClient? =
             if (isAlphaMlsEnabled(options)) {
-                val alias = "xmtp-${options!!.api.env}-${accountAddress.lowercase()}"
+                var inboxId = getInboxIdForAddress(
+                    logger = logger,
+                    host = options!!.api.env.getUrl(),
+                    isSecure = options.api.isSecure,
+                    accountAddress = accountAddress
+                )
+                if (inboxId.isNullOrBlank()) {
+                    inboxId = generateInboxId(accountAddress, SecureRandom().nextLong().toULong())
+                }
+                val alias = "xmtp-${options.api.env}-${inboxId.lowercase()}"
 
                 dbPath = if (options.dbPath == null) {
                     val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
@@ -357,14 +376,15 @@ class Client() {
             }
 
         if (v3Client != null) {
-            if (v3Client.textToSign() == null) {
-                v3Client.registerIdentity(null)
-            } else if (account != null) {
-                v3Client.textToSign()?.let {
-                    v3Client.registerIdentity(account.sign(it)?.rawData)
+            v3Client.signatureRequest()?.let { signatureRequest ->
+                if (account != null) {
+                    account.sign(signatureRequest.signatureText())?.let {
+                        signatureRequest.addEcdsaSignature(it.rawData)
+                    }
+                    v3Client.registerIdentity(signatureRequest)
+                } else {
+                    throw XMTPException("No signer passed but signer was required.")
                 }
-            } else {
-                throw XMTPException("No signer passed but signer was required.")
             }
         }
         Log.i(TAG, "LibXMTP $libXMTPVersion")
@@ -415,7 +435,8 @@ class Client() {
         val encryptedBundles = authCheck(apiClient, account.address)
         for (encryptedBundle in encryptedBundles) {
             try {
-                val bundle = encryptedBundle.decrypted(account, options?.preEnableIdentityCallback)
+                val bundle =
+                    encryptedBundle.decrypted(account, options?.preEnableIdentityCallback)
                 return bundle.v1
             } catch (e: Throwable) {
                 print("Error decoding encrypted private key bundle: $e")
@@ -448,10 +469,11 @@ class Client() {
             }.build()
             it.v2 = it.v2.toBuilder().also { v2Builder ->
                 v2Builder.keyBundle = v2Builder.keyBundle.toBuilder().also { keyBuilder ->
-                    keyBuilder.identityKey = keyBuilder.identityKey.toBuilder().also { idBuilder ->
-                        idBuilder.signature =
-                            it.v2.keyBundle.identityKey.signature.ensureWalletSignature()
-                    }.build()
+                    keyBuilder.identityKey =
+                        keyBuilder.identityKey.toBuilder().also { idBuilder ->
+                            idBuilder.signature =
+                                it.v2.keyBundle.identityKey.signature.ensureWalletSignature()
+                        }.build()
                 }.build()
             }.build()
         }.build()
@@ -484,7 +506,10 @@ class Client() {
         return apiClient.subscribe(request = request)
     }
 
-    suspend fun fetchConversation(topic: String?, includeGroups: Boolean = false): Conversation? {
+    suspend fun fetchConversation(
+        topic: String?,
+        includeGroups: Boolean = false,
+    ): Conversation? {
         if (topic.isNullOrBlank()) return null
         return conversations.list(includeGroups = includeGroups).firstOrNull {
             it.topic == topic

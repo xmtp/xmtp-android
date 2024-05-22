@@ -446,7 +446,11 @@ internal interface _UniFFILib : Library {
         `ptr`: Pointer, `accountAddresses`: RustBuffer.ByValue,
     ): Pointer
 
-    fun uniffi_xmtpv3_fn_method_ffigroup_added_by_address(
+    fun uniffi_xmtpv3_fn_method_ffigroup_add_members_by_inbox_id(
+        `ptr`: Pointer, `inboxIds`: RustBuffer.ByValue,
+    ): Pointer
+
+    fun uniffi_xmtpv3_fn_method_ffigroup_added_by_inbox_id(
         `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
 
@@ -486,6 +490,10 @@ internal interface _UniFFILib : Library {
         `ptr`: Pointer, `accountAddresses`: RustBuffer.ByValue,
     ): Pointer
 
+    fun uniffi_xmtpv3_fn_method_ffigroup_remove_members_by_inbox_id(
+        `ptr`: Pointer, `inboxIds`: RustBuffer.ByValue,
+    ): Pointer
+
     fun uniffi_xmtpv3_fn_method_ffigroup_send(
         `ptr`: Pointer, `contentBytes`: RustBuffer.ByValue,
     ): Pointer
@@ -510,13 +518,40 @@ internal interface _UniFFILib : Library {
         `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
 
-    fun uniffi_xmtpv3_fn_method_ffigroupmetadata_creator_account_address(
+    fun uniffi_xmtpv3_fn_method_ffigroupmetadata_creator_inbox_id(
         `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
 
-    fun uniffi_xmtpv3_fn_method_ffigroupmetadata_policy_type(
+    fun uniffi_xmtpv3_fn_free_ffigrouppermissions(
+        `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
+    ): Unit
+
+    fun uniffi_xmtpv3_fn_method_ffigrouppermissions_policy_type(
         `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
+
+    fun uniffi_xmtpv3_fn_free_ffisignaturerequest(
+        `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
+    ): Unit
+
+    fun uniffi_xmtpv3_fn_method_ffisignaturerequest_add_ecdsa_signature(
+        `ptr`: Pointer, `signatureBytes`: RustBuffer.ByValue,
+    ): Pointer
+
+    fun uniffi_xmtpv3_fn_method_ffisignaturerequest_add_erc1271_signature(
+        `ptr`: Pointer,
+        `signatureBytes`: RustBuffer.ByValue,
+        `address`: RustBuffer.ByValue,
+        `chainRpcUrl`: RustBuffer.ByValue,
+    ): Pointer
+
+    fun uniffi_xmtpv3_fn_method_ffisignaturerequest_missing_address_signatures(
+        `ptr`: Pointer,
+    ): Pointer
+
+    fun uniffi_xmtpv3_fn_method_ffisignaturerequest_signature_text(
+        `ptr`: Pointer,
+    ): Pointer
 
     fun uniffi_xmtpv3_fn_free_ffistreamcloser(
         `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
@@ -574,10 +609,6 @@ internal interface _UniFFILib : Library {
         `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
     ): Unit
 
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_account_address(
-        `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
-    ): RustBuffer.ByValue
-
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_can_message(
         `ptr`: Pointer, `accountAddresses`: RustBuffer.ByValue,
     ): Pointer
@@ -586,15 +617,19 @@ internal interface _UniFFILib : Library {
         `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
     ): Pointer
 
+    fun uniffi_xmtpv3_fn_method_ffixmtpclient_inbox_id(
+        `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
+    ): RustBuffer.ByValue
+
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_installation_id(
         `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
 
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_register_identity(
-        `ptr`: Pointer, `recoverableWalletSignature`: RustBuffer.ByValue,
+        `ptr`: Pointer, `signatureRequest`: Pointer,
     ): Pointer
 
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_text_to_sign(
+    fun uniffi_xmtpv3_fn_method_ffixmtpclient_signature_request(
         `ptr`: Pointer, _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
 
@@ -635,9 +670,20 @@ internal interface _UniFFILib : Library {
         _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
 
+    fun uniffi_xmtpv3_fn_func_generate_inbox_id(
+        `accountAddress`: RustBuffer.ByValue, `nonce`: Long, _uniffi_out_err: RustCallStatus,
+    ): RustBuffer.ByValue
+
     fun uniffi_xmtpv3_fn_func_generate_private_preferences_topic_identifier(
         `privateKey`: RustBuffer.ByValue, _uniffi_out_err: RustCallStatus,
     ): RustBuffer.ByValue
+
+    fun uniffi_xmtpv3_fn_func_get_inbox_id_for_address(
+        `logger`: Long,
+        `host`: RustBuffer.ByValue,
+        `isSecure`: Byte,
+        `accountAddress`: RustBuffer.ByValue,
+    ): Pointer
 
     fun uniffi_xmtpv3_fn_func_get_version_info(
         _uniffi_out_err: RustCallStatus,
@@ -932,7 +978,13 @@ internal interface _UniFFILib : Library {
     fun uniffi_xmtpv3_checksum_func_diffie_hellman_k256(
     ): Short
 
+    fun uniffi_xmtpv3_checksum_func_generate_inbox_id(
+    ): Short
+
     fun uniffi_xmtpv3_checksum_func_generate_private_preferences_topic_identifier(
+    ): Short
+
+    fun uniffi_xmtpv3_checksum_func_get_inbox_id_for_address(
     ): Short
 
     fun uniffi_xmtpv3_checksum_func_get_version_info(
@@ -986,7 +1038,10 @@ internal interface _UniFFILib : Library {
     fun uniffi_xmtpv3_checksum_method_ffigroup_add_members(
     ): Short
 
-    fun uniffi_xmtpv3_checksum_method_ffigroup_added_by_address(
+    fun uniffi_xmtpv3_checksum_method_ffigroup_add_members_by_inbox_id(
+    ): Short
+
+    fun uniffi_xmtpv3_checksum_method_ffigroup_added_by_inbox_id(
     ): Short
 
     fun uniffi_xmtpv3_checksum_method_ffigroup_created_at_ns(
@@ -1016,6 +1071,9 @@ internal interface _UniFFILib : Library {
     fun uniffi_xmtpv3_checksum_method_ffigroup_remove_members(
     ): Short
 
+    fun uniffi_xmtpv3_checksum_method_ffigroup_remove_members_by_inbox_id(
+    ): Short
+
     fun uniffi_xmtpv3_checksum_method_ffigroup_send(
     ): Short
 
@@ -1031,10 +1089,22 @@ internal interface _UniFFILib : Library {
     fun uniffi_xmtpv3_checksum_method_ffigroupmetadata_conversation_type(
     ): Short
 
-    fun uniffi_xmtpv3_checksum_method_ffigroupmetadata_creator_account_address(
+    fun uniffi_xmtpv3_checksum_method_ffigroupmetadata_creator_inbox_id(
     ): Short
 
-    fun uniffi_xmtpv3_checksum_method_ffigroupmetadata_policy_type(
+    fun uniffi_xmtpv3_checksum_method_ffigrouppermissions_policy_type(
+    ): Short
+
+    fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_ecdsa_signature(
+    ): Short
+
+    fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_erc1271_signature(
+    ): Short
+
+    fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_missing_address_signatures(
+    ): Short
+
+    fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_signature_text(
     ): Short
 
     fun uniffi_xmtpv3_checksum_method_ffistreamcloser_end(
@@ -1067,13 +1137,13 @@ internal interface _UniFFILib : Library {
     fun uniffi_xmtpv3_checksum_method_ffiv2subscription_update(
     ): Short
 
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_account_address(
-    ): Short
-
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_can_message(
     ): Short
 
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_conversations(
+    ): Short
+
+    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_inbox_id(
     ): Short
 
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_installation_id(
@@ -1082,7 +1152,7 @@ internal interface _UniFFILib : Library {
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_register_identity(
     ): Short
 
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_text_to_sign(
+    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_signature_request(
     ): Short
 
     fun uniffi_xmtpv3_checksum_method_ffiinboxowner_get_address(
@@ -1126,7 +1196,13 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_xmtpv3_checksum_func_diffie_hellman_k256() != 23225.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_func_generate_inbox_id() != 33147.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_func_generate_private_preferences_topic_identifier() != 5952.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_get_inbox_id_for_address() != 64805.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_func_get_version_info() != 3533.toShort()) {
@@ -1180,7 +1256,10 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_add_members() != 24978.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_added_by_address() != 5368.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_add_members_by_inbox_id() != 29157.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_added_by_inbox_id() != 33387.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_created_at_ns() != 58515.toShort()) {
@@ -1210,6 +1289,9 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_remove_members() != 1645.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_remove_members_by_inbox_id() != 17163.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_send() != 2523.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -1225,10 +1307,22 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffigroupmetadata_conversation_type() != 37015.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffigroupmetadata_creator_account_address() != 1906.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroupmetadata_creator_inbox_id() != 60403.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffigroupmetadata_policy_type() != 22845.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffigrouppermissions_policy_type() != 43161.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_ecdsa_signature() != 46967.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_erc1271_signature() != 50986.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffisignaturerequest_missing_address_signatures() != 49441.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffisignaturerequest_signature_text() != 41509.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffistreamcloser_end() != 47211.toShort()) {
@@ -1261,22 +1355,22 @@ private fun uniffiCheckApiChecksums(lib: _UniFFILib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffiv2subscription_update() != 52988.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_account_address() != 65151.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_can_message() != 28768.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_conversations() != 31628.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_inbox_id() != 39525.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_installation_id() != 62523.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_register_identity() != 64634.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_register_identity() != 19607.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_text_to_sign() != 25727.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_signature_request() != 24449.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffiinboxowner_get_address() != 2205.toShort()) {
@@ -1928,7 +2022,10 @@ public interface FfiGroupInterface {
     suspend fun `addMembers`(`accountAddresses`: List<String>)
 
     @Throws(GenericException::class)
-    fun `addedByAddress`(): String
+    suspend fun `addMembersByInboxId`(`inboxIds`: List<String>)
+
+    @Throws(GenericException::class)
+    fun `addedByInboxId`(): String
     fun `createdAtNs`(): Long
 
     @Throws(GenericException::class)
@@ -1952,6 +2049,9 @@ public interface FfiGroupInterface {
 
     @Throws(GenericException::class)
     suspend fun `removeMembers`(`accountAddresses`: List<String>)
+
+    @Throws(GenericException::class)
+    suspend fun `removeMembersByInboxId`(`inboxIds`: List<String>)
 
     @Throws(GenericException::class)
     suspend fun `send`(`contentBytes`: ByteArray): ByteArray
@@ -2019,10 +2119,41 @@ class FfiGroup(
     }
 
     @Throws(GenericException::class)
-    override fun `addedByAddress`(): String =
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `addMembersByInboxId`(`inboxIds`: List<String>) {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_add_members_by_inbox_id(
+                    thisPtr,
+                    FfiConverterSequenceString.lower(`inboxIds`),
+                )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+            // lift function
+            { Unit },
+
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+    @Throws(GenericException::class)
+    override fun `addedByInboxId`(): String =
         callWithPointer {
             rustCallWithError(GenericException) { _status ->
-                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_added_by_address(
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_added_by_inbox_id(
                     it,
 
                     _status
@@ -2172,6 +2303,37 @@ class FfiGroup(
                 _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_remove_members(
                     thisPtr,
                     FfiConverterSequenceString.lower(`accountAddresses`),
+                )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+            // lift function
+            { Unit },
+
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `removeMembersByInboxId`(`inboxIds`: List<String>) {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_remove_members_by_inbox_id(
+                    thisPtr,
+                    FfiConverterSequenceString.lower(`inboxIds`),
                 )
             },
             { future, continuation ->
@@ -2348,10 +2510,7 @@ public object FfiConverterTypeFfiGroup : FfiConverter<FfiGroup, Pointer> {
 public interface FfiGroupMetadataInterface {
 
     fun `conversationType`(): String
-    fun `creatorAccountAddress`(): String
-
-    @Throws(GenericException::class)
-    fun `policyType`(): GroupPermissions
+    fun `creatorInboxId`(): String
 
     companion object
 }
@@ -2387,10 +2546,10 @@ class FfiGroupMetadata(
             FfiConverterString.lift(it)
         }
 
-    override fun `creatorAccountAddress`(): String =
+    override fun `creatorInboxId`(): String =
         callWithPointer {
             rustCall() { _status ->
-                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroupmetadata_creator_account_address(
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroupmetadata_creator_inbox_id(
                     it,
 
                     _status
@@ -2398,21 +2557,6 @@ class FfiGroupMetadata(
             }
         }.let {
             FfiConverterString.lift(it)
-        }
-
-
-    @Throws(GenericException::class)
-    override fun `policyType`(): GroupPermissions =
-        callWithPointer {
-            rustCallWithError(GenericException) { _status ->
-                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroupmetadata_policy_type(
-                    it,
-
-                    _status
-                )
-            }
-        }.let {
-            FfiConverterTypeGroupPermissions.lift(it)
         }
 
 
@@ -2436,6 +2580,269 @@ public object FfiConverterTypeFfiGroupMetadata : FfiConverter<FfiGroupMetadata, 
     override fun allocationSize(value: FfiGroupMetadata) = 8
 
     override fun write(value: FfiGroupMetadata, buf: ByteBuffer) {
+        // The Rust code always expects pointers written as 8 bytes,
+        // and will fail to compile if they don't fit.
+        buf.putLong(Pointer.nativeValue(lower(value)))
+    }
+}
+
+
+public interface FfiGroupPermissionsInterface {
+    @Throws(GenericException::class)
+    fun `policyType`(): GroupPermissions
+
+    companion object
+}
+
+class FfiGroupPermissions(
+    pointer: Pointer,
+) : FFIObject(pointer), FfiGroupPermissionsInterface {
+
+    /**
+     * Disconnect the object from the underlying Rust object.
+     *
+     * It can be called more than once, but once called, interacting with the object
+     * causes an `IllegalStateException`.
+     *
+     * Clients **must** call this method once done with the object, or cause a memory leak.
+     */
+    override protected fun freeRustArcPtr() {
+        rustCall() { status ->
+            _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_free_ffigrouppermissions(this.pointer, status)
+        }
+    }
+
+
+    @Throws(GenericException::class)
+    override fun `policyType`(): GroupPermissions =
+        callWithPointer {
+            rustCallWithError(GenericException) { _status ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffigrouppermissions_policy_type(
+                    it,
+
+                    _status
+                )
+            }
+        }.let {
+            FfiConverterTypeGroupPermissions.lift(it)
+        }
+
+
+    companion object
+
+}
+
+public object FfiConverterTypeFfiGroupPermissions : FfiConverter<FfiGroupPermissions, Pointer> {
+    override fun lower(value: FfiGroupPermissions): Pointer = value.callWithPointer { it }
+
+    override fun lift(value: Pointer): FfiGroupPermissions {
+        return FfiGroupPermissions(value)
+    }
+
+    override fun read(buf: ByteBuffer): FfiGroupPermissions {
+        // The Rust code always writes pointers as 8 bytes, and will
+        // fail to compile if they don't fit.
+        return lift(Pointer(buf.getLong()))
+    }
+
+    override fun allocationSize(value: FfiGroupPermissions) = 8
+
+    override fun write(value: FfiGroupPermissions, buf: ByteBuffer) {
+        // The Rust code always expects pointers written as 8 bytes,
+        // and will fail to compile if they don't fit.
+        buf.putLong(Pointer.nativeValue(lower(value)))
+    }
+}
+
+
+public interface FfiSignatureRequestInterface {
+    @Throws(GenericException::class)
+    suspend fun `addEcdsaSignature`(`signatureBytes`: ByteArray)
+
+    @Throws(GenericException::class)
+    suspend fun `addErc1271Signature`(
+        `signatureBytes`: ByteArray,
+        `address`: String,
+        `chainRpcUrl`: String,
+    )
+
+    @Throws(GenericException::class)
+    suspend fun `missingAddressSignatures`(): List<String>
+
+    @Throws(GenericException::class)
+    suspend fun `signatureText`(): String
+
+    companion object
+}
+
+class FfiSignatureRequest(
+    pointer: Pointer,
+) : FFIObject(pointer), FfiSignatureRequestInterface {
+
+    /**
+     * Disconnect the object from the underlying Rust object.
+     *
+     * It can be called more than once, but once called, interacting with the object
+     * causes an `IllegalStateException`.
+     *
+     * Clients **must** call this method once done with the object, or cause a memory leak.
+     */
+    override protected fun freeRustArcPtr() {
+        rustCall() { status ->
+            _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_free_ffisignaturerequest(this.pointer, status)
+        }
+    }
+
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `addEcdsaSignature`(`signatureBytes`: ByteArray) {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_add_ecdsa_signature(
+                    thisPtr,
+                    FfiConverterByteArray.lower(`signatureBytes`),
+                )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+            // lift function
+            { Unit },
+
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `addErc1271Signature`(
+        `signatureBytes`: ByteArray,
+        `address`: String,
+        `chainRpcUrl`: String,
+    ) {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_add_erc1271_signature(
+                    thisPtr,
+                    FfiConverterByteArray.lower(`signatureBytes`),
+                    FfiConverterString.lower(`address`),
+                    FfiConverterString.lower(`chainRpcUrl`),
+                )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+            // lift function
+            { Unit },
+
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `missingAddressSignatures`(): List<String> {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_missing_address_signatures(
+                    thisPtr,
+
+                    )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+            // lift function
+            { FfiConverterSequenceString.lift(it) },
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `signatureText`(): String {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_signature_text(
+                    thisPtr,
+
+                    )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
+            { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+            // lift function
+            { FfiConverterString.lift(it) },
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+
+    companion object
+
+}
+
+public object FfiConverterTypeFfiSignatureRequest : FfiConverter<FfiSignatureRequest, Pointer> {
+    override fun lower(value: FfiSignatureRequest): Pointer = value.callWithPointer { it }
+
+    override fun lift(value: Pointer): FfiSignatureRequest {
+        return FfiSignatureRequest(value)
+    }
+
+    override fun read(buf: ByteBuffer): FfiSignatureRequest {
+        // The Rust code always writes pointers as 8 bytes, and will
+        // fail to compile if they don't fit.
+        return lift(Pointer(buf.getLong()))
+    }
+
+    override fun allocationSize(value: FfiSignatureRequest) = 8
+
+    override fun write(value: FfiSignatureRequest, buf: ByteBuffer) {
         // The Rust code always expects pointers written as 8 bytes,
         // and will fail to compile if they don't fit.
         buf.putLong(Pointer.nativeValue(lower(value)))
@@ -2872,17 +3279,15 @@ public object FfiConverterTypeFfiV2Subscription : FfiConverter<FfiV2Subscription
 
 
 public interface FfiXmtpClientInterface {
-
-    fun `accountAddress`(): String
-
     @Throws(GenericException::class)
     suspend fun `canMessage`(`accountAddresses`: List<String>): Map<String, Boolean>
     fun `conversations`(): FfiConversations
+    fun `inboxId`(): String
     fun `installationId`(): ByteArray
 
     @Throws(GenericException::class)
-    suspend fun `registerIdentity`(`recoverableWalletSignature`: ByteArray?)
-    fun `textToSign`(): String?
+    suspend fun `registerIdentity`(`signatureRequest`: FfiSignatureRequest)
+    fun `signatureRequest`(): FfiSignatureRequest?
 
     companion object
 }
@@ -2904,19 +3309,6 @@ class FfiXmtpClient(
             _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_free_ffixmtpclient(this.pointer, status)
         }
     }
-
-    override fun `accountAddress`(): String =
-        callWithPointer {
-            rustCall() { _status ->
-                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_account_address(
-                    it,
-
-                    _status
-                )
-            }
-        }.let {
-            FfiConverterString.lift(it)
-        }
 
 
     @Throws(GenericException::class)
@@ -2962,6 +3354,19 @@ class FfiXmtpClient(
             FfiConverterTypeFfiConversations.lift(it)
         }
 
+    override fun `inboxId`(): String =
+        callWithPointer {
+            rustCall() { _status ->
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_inbox_id(
+                    it,
+
+                    _status
+                )
+            }
+        }.let {
+            FfiConverterString.lift(it)
+        }
+
     override fun `installationId`(): ByteArray =
         callWithPointer {
             rustCall() { _status ->
@@ -2978,12 +3383,12 @@ class FfiXmtpClient(
 
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `registerIdentity`(`recoverableWalletSignature`: ByteArray?) {
+    override suspend fun `registerIdentity`(`signatureRequest`: FfiSignatureRequest) {
         return uniffiRustCallAsync(
             callWithPointer { thisPtr ->
                 _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_register_identity(
                     thisPtr,
-                    FfiConverterOptionalByteArray.lower(`recoverableWalletSignature`),
+                    FfiConverterTypeFfiSignatureRequest.lower(`signatureRequest`),
                 )
             },
             { future, continuation ->
@@ -3007,17 +3412,17 @@ class FfiXmtpClient(
         )
     }
 
-    override fun `textToSign`(): String? =
+    override fun `signatureRequest`(): FfiSignatureRequest? =
         callWithPointer {
             rustCall() { _status ->
-                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_text_to_sign(
+                _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_signature_request(
                     it,
 
                     _status
                 )
             }
         }.let {
-            FfiConverterOptionalString.lift(it)
+            FfiConverterOptionalTypeFfiSignatureRequest.lift(it)
         }
 
 
@@ -3109,7 +3514,8 @@ public object FfiConverterTypeFfiEnvelope : FfiConverterRustBuffer<FfiEnvelope> 
 
 
 data class FfiGroupMember(
-    var `accountAddress`: String,
+    var `inboxId`: String,
+    var `accountAddresses`: List<String>,
     var `installationIds`: List<ByteArray>,
 ) {
 
@@ -3120,17 +3526,20 @@ public object FfiConverterTypeFfiGroupMember : FfiConverterRustBuffer<FfiGroupMe
     override fun read(buf: ByteBuffer): FfiGroupMember {
         return FfiGroupMember(
             FfiConverterString.read(buf),
+            FfiConverterSequenceString.read(buf),
             FfiConverterSequenceByteArray.read(buf),
         )
     }
 
     override fun allocationSize(value: FfiGroupMember) = (
-            FfiConverterString.allocationSize(value.`accountAddress`) +
+            FfiConverterString.allocationSize(value.`inboxId`) +
+                    FfiConverterSequenceString.allocationSize(value.`accountAddresses`) +
                     FfiConverterSequenceByteArray.allocationSize(value.`installationIds`)
             )
 
     override fun write(value: FfiGroupMember, buf: ByteBuffer) {
-        FfiConverterString.write(value.`accountAddress`, buf)
+        FfiConverterString.write(value.`inboxId`, buf)
+        FfiConverterSequenceString.write(value.`accountAddresses`, buf)
         FfiConverterSequenceByteArray.write(value.`installationIds`, buf)
     }
 }
@@ -3210,7 +3619,7 @@ data class FfiMessage(
     var `id`: ByteArray,
     var `sentAtNs`: Long,
     var `convoId`: ByteArray,
-    var `addrFrom`: String,
+    var `senderInboxId`: String,
     var `content`: ByteArray,
     var `kind`: FfiGroupMessageKind,
     var `deliveryStatus`: FfiDeliveryStatus,
@@ -3236,7 +3645,7 @@ public object FfiConverterTypeFfiMessage : FfiConverterRustBuffer<FfiMessage> {
             FfiConverterByteArray.allocationSize(value.`id`) +
                     FfiConverterLong.allocationSize(value.`sentAtNs`) +
                     FfiConverterByteArray.allocationSize(value.`convoId`) +
-                    FfiConverterString.allocationSize(value.`addrFrom`) +
+                    FfiConverterString.allocationSize(value.`senderInboxId`) +
                     FfiConverterByteArray.allocationSize(value.`content`) +
                     FfiConverterTypeFfiGroupMessageKind.allocationSize(value.`kind`) +
                     FfiConverterTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`)
@@ -3246,7 +3655,7 @@ public object FfiConverterTypeFfiMessage : FfiConverterRustBuffer<FfiMessage> {
         FfiConverterByteArray.write(value.`id`, buf)
         FfiConverterLong.write(value.`sentAtNs`, buf)
         FfiConverterByteArray.write(value.`convoId`, buf)
-        FfiConverterString.write(value.`addrFrom`, buf)
+        FfiConverterString.write(value.`senderInboxId`, buf)
         FfiConverterByteArray.write(value.`content`, buf)
         FfiConverterTypeFfiGroupMessageKind.write(value.`kind`, buf)
         FfiConverterTypeFfiDeliveryStatus.write(value.`deliveryStatus`, buf)
@@ -3522,7 +3931,10 @@ sealed class GenericException(message: String) : Exception(message) {
     class GroupException(message: String) : GenericException(message)
     class Signature(message: String) : GenericException(message)
     class GroupMetadata(message: String) : GenericException(message)
+    class GroupMutablePermissions(message: String) : GenericException(message)
     class Generic(message: String) : GenericException(message)
+    class SignatureRequestException(message: String) : GenericException(message)
+    class Erc1271SignatureException(message: String) : GenericException(message)
 
 
     companion object ErrorHandler : CallStatusErrorHandler<GenericException> {
@@ -3542,7 +3954,10 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
             5 -> GenericException.GroupException(FfiConverterString.read(buf))
             6 -> GenericException.Signature(FfiConverterString.read(buf))
             7 -> GenericException.GroupMetadata(FfiConverterString.read(buf))
-            8 -> GenericException.Generic(FfiConverterString.read(buf))
+            8 -> GenericException.GroupMutablePermissions(FfiConverterString.read(buf))
+            9 -> GenericException.Generic(FfiConverterString.read(buf))
+            10 -> GenericException.SignatureRequestException(FfiConverterString.read(buf))
+            11 -> GenericException.Erc1271SignatureException(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
 
@@ -3589,8 +4004,23 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
                 Unit
             }
 
-            is GenericException.Generic -> {
+            is GenericException.GroupMutablePermissions -> {
                 buf.putInt(8)
+                Unit
+            }
+
+            is GenericException.Generic -> {
+                buf.putInt(9)
+                Unit
+            }
+
+            is GenericException.SignatureRequestException -> {
+                buf.putInt(10)
+                Unit
+            }
+
+            is GenericException.Erc1271SignatureException -> {
+                buf.putInt(11)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -4280,6 +4710,34 @@ public object FfiConverterOptionalByteArray : FfiConverterRustBuffer<ByteArray?>
 }
 
 
+public object FfiConverterOptionalTypeFfiSignatureRequest :
+    FfiConverterRustBuffer<FfiSignatureRequest?> {
+    override fun read(buf: ByteBuffer): FfiSignatureRequest? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeFfiSignatureRequest.read(buf)
+    }
+
+    override fun allocationSize(value: FfiSignatureRequest?): Int {
+        if (value == null) {
+            return 1
+        } else {
+            return 1 + FfiConverterTypeFfiSignatureRequest.allocationSize(value)
+        }
+    }
+
+    override fun write(value: FfiSignatureRequest?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeFfiSignatureRequest.write(value, buf)
+        }
+    }
+}
+
+
 public object FfiConverterOptionalTypeFfiCursor : FfiConverterRustBuffer<FfiCursor?> {
     override fun read(buf: ByteBuffer): FfiCursor? {
         if (buf.get().toInt() == 0) {
@@ -4405,7 +4863,7 @@ public object FfiConverterSequenceString : FfiConverterRustBuffer<List<String>> 
 
     override fun write(value: List<String>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.iterator().forEach {
+        value.forEach {
             FfiConverterString.write(it, buf)
         }
     }
@@ -4428,7 +4886,7 @@ public object FfiConverterSequenceByteArray : FfiConverterRustBuffer<List<ByteAr
 
     override fun write(value: List<ByteArray>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.iterator().forEach {
+        value.forEach {
             FfiConverterByteArray.write(it, buf)
         }
     }
@@ -4451,7 +4909,7 @@ public object FfiConverterSequenceTypeFfiGroup : FfiConverterRustBuffer<List<Ffi
 
     override fun write(value: List<FfiGroup>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.iterator().forEach {
+        value.forEach {
             FfiConverterTypeFfiGroup.write(it, buf)
         }
     }
@@ -4474,7 +4932,7 @@ public object FfiConverterSequenceTypeFfiEnvelope : FfiConverterRustBuffer<List<
 
     override fun write(value: List<FfiEnvelope>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.iterator().forEach {
+        value.forEach {
             FfiConverterTypeFfiEnvelope.write(it, buf)
         }
     }
@@ -4498,7 +4956,7 @@ public object FfiConverterSequenceTypeFfiGroupMember :
 
     override fun write(value: List<FfiGroupMember>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.iterator().forEach {
+        value.forEach {
             FfiConverterTypeFfiGroupMember.write(it, buf)
         }
     }
@@ -4521,7 +4979,7 @@ public object FfiConverterSequenceTypeFfiMessage : FfiConverterRustBuffer<List<F
 
     override fun write(value: List<FfiMessage>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.iterator().forEach {
+        value.forEach {
             FfiConverterTypeFfiMessage.write(it, buf)
         }
     }
@@ -4545,7 +5003,7 @@ public object FfiConverterSequenceTypeFfiV2QueryRequest :
 
     override fun write(value: List<FfiV2QueryRequest>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.iterator().forEach {
+        value.forEach {
             FfiConverterTypeFfiV2QueryRequest.write(it, buf)
         }
     }
@@ -4569,7 +5027,7 @@ public object FfiConverterSequenceTypeFfiV2QueryResponse :
 
     override fun write(value: List<FfiV2QueryResponse>, buf: ByteBuffer) {
         buf.putInt(value.size)
-        value.iterator().forEach {
+        value.forEach {
             FfiConverterTypeFfiV2QueryResponse.write(it, buf)
         }
     }
@@ -4602,7 +5060,7 @@ public object FfiConverterMapStringBoolean : FfiConverterRustBuffer<Map<String, 
         // The parens on `(k, v)` here ensure we're calling the right method,
         // which is important for compatibility with older android devices.
         // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
-        value.iterator().forEach { (k, v) ->
+        value.forEach { (k, v) ->
             FfiConverterString.write(k, buf)
             FfiConverterBoolean.write(v, buf)
         }
@@ -4698,6 +5156,18 @@ fun `diffieHellmanK256`(`privateKeyBytes`: ByteArray, `publicKeyBytes`: ByteArra
         })
 }
 
+
+fun `generateInboxId`(`accountAddress`: String, `nonce`: ULong): String {
+    return FfiConverterString.lift(
+        rustCall() { _status ->
+            _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_func_generate_inbox_id(
+                FfiConverterString.lower(
+                    `accountAddress`
+                ), FfiConverterULong.lower(`nonce`), _status
+            )
+        })
+}
+
 @Throws(GenericException::class)
 
 fun `generatePrivatePreferencesTopicIdentifier`(`privateKey`: ByteArray): String {
@@ -4710,6 +5180,43 @@ fun `generatePrivatePreferencesTopicIdentifier`(`privateKey`: ByteArray): String
         })
 }
 
+@Throws(GenericException::class)
+
+@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+suspend fun `getInboxIdForAddress`(
+    `logger`: FfiLogger,
+    `host`: String,
+    `isSecure`: Boolean,
+    `accountAddress`: String,
+): String? {
+    return uniffiRustCallAsync(
+        _UniFFILib.INSTANCE.uniffi_xmtpv3_fn_func_get_inbox_id_for_address(
+            FfiConverterTypeFfiLogger.lower(
+                `logger`
+            ),
+            FfiConverterString.lower(`host`),
+            FfiConverterBoolean.lower(`isSecure`),
+            FfiConverterString.lower(`accountAddress`),
+        ),
+        { future, continuation ->
+            _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                future,
+                continuation
+            )
+        },
+        { future, continuation ->
+            _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                future,
+                continuation
+            )
+        },
+        { future -> _UniFFILib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalString.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
+}
 
 fun `getVersionInfo`(): String {
     return FfiConverterString.lift(

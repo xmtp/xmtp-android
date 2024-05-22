@@ -153,20 +153,21 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         return libXMTPGroup.isActive()
     }
 
-    fun addedByAddress(): String {
-        return libXMTPGroup.addedByAddress()
+    fun addedByInboxId(): String {
+        return libXMTPGroup.addedByInboxId()
     }
 
     fun permissionLevel(): GroupPermissions {
-        return metadata.policyType()
+        TODO()
+//        return metadata.policyType()
     }
 
     fun isAdmin(): Boolean {
-        return metadata.creatorAccountAddress().lowercase() == client.address.lowercase()
+        return metadata.creatorInboxId().lowercase() == client.inboxId.lowercase()
     }
 
-    fun adminAddress(): String {
-        return metadata.creatorAccountAddress()
+    fun adminInboxId(): String {
+        return metadata.creatorInboxId()
     }
 
     suspend fun addMembers(addresses: List<String>) {
@@ -185,13 +186,13 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
     }
 
-    fun memberAddresses(): List<String> {
-        return libXMTPGroup.listMembers().map { it.accountAddress }
+    fun memberInboxIds(): List<String> {
+        return libXMTPGroup.listMembers().map { it.inboxId }
     }
 
     fun peerAddresses(): List<String> {
-        val addresses = memberAddresses().map { it.lowercase() }.toMutableList()
-        addresses.remove(client.address.lowercase())
+        val addresses = memberInboxIds().map { it.lowercase() }.toMutableList()
+        addresses.remove(client.inboxId.lowercase())
         return addresses
     }
 
