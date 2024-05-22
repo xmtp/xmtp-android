@@ -116,7 +116,6 @@ class Client() {
          * The user will need to be prompted to sign to decrypt each bundle.
          */
         suspend fun authCheck(api: ApiClient, address: String): List<EncryptedPrivateKeyBundle> {
-            Log.d("LOPI", "authCheck")
             val topic = Topic.userPrivateStoreKeyBundle(toChecksumAddress(address))
             val res = api.queryTopic(topic)
             return res.envelopesList.mapNotNull {
