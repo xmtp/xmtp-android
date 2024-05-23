@@ -157,9 +157,9 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         return libXMTPGroup.addedByAddress()
     }
 
-    fun permissionLevel(): GroupPermissions {
-        return metadata.policyType()
-    }
+//    fun permissionLevel(): GroupPermissions {
+//        return metadata.policyType()
+//    }
 
     fun isAdmin(): Boolean {
         return metadata.creatorAccountAddress().lowercase() == client.address.lowercase()
