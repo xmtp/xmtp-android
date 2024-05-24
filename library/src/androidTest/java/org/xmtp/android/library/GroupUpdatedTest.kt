@@ -11,12 +11,12 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupMembershipChange
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChangeCodec
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupUpdated
 import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupUpdatedCodec
 
 @RunWith(AndroidJUnit4::class)
-class GroupMembershipChangeTest {
+class GroupUpdatedTest {
     lateinit var alixWallet: PrivateKeyBuilder
     lateinit var boWallet: PrivateKeyBuilder
     lateinit var alix: PrivateKey
@@ -52,7 +52,7 @@ class GroupMembershipChangeTest {
 
     @Test
     fun testCanAddMembers() {
-        Client.register(codec = GroupMembershipChangeCodec())
+        Client.register(codec = GroupUpdatedCodec())
 
         val group = runBlocking {
             alixClient.conversations.newGroup(
@@ -66,15 +66,15 @@ class GroupMembershipChangeTest {
         assertEquals(messages.size, 1)
         val content: GroupMembershipChanges? = messages.first().content()
         assertEquals(
-            listOf(bo.walletAddress.lowercase(), caro.walletAddress.lowercase()).sorted(),
-            content?.membersAddedList?.map { it.accountAddress.lowercase() }?.sorted()
+            listOf(boClient.inboxId.lowercase(), caroClient.inboxId.lowercase()).sorted(),
+            content?.addedInboxesList?.map { it.inboxId.lowercase() }?.sorted()
         )
-        assert(content?.membersRemovedList.isNullOrEmpty())
+        assert(content?.removedInboxesList.isNullOrEmpty())
     }
 
     @Test
     fun testCanRemoveMembers() {
-        Client.register(codec = GroupMembershipChangeCodec())
+        Client.register(codec = GroupUpdatedCodec())
 
         val group = runBlocking {
             alixClient.conversations.newGroup(
@@ -94,15 +94,15 @@ class GroupMembershipChangeTest {
         val content: GroupMembershipChanges? = updatedMessages.first().content()
 
         assertEquals(
-            listOf(caro.walletAddress.lowercase()),
-            content?.membersRemovedList?.map { it.accountAddress.lowercase() }?.sorted()
+            listOf(caroClient.inboxId.lowercase()),
+            content?.removedInboxesList?.map { it.inboxId.lowercase() }?.sorted()
         )
-        assert(content?.membersAddedList.isNullOrEmpty())
+        assert(content?.addedInboxesList.isNullOrEmpty())
     }
 
     @Test
     fun testRemovesInvalidMessageKind() {
-        Client.register(codec = GroupMembershipChangeCodec())
+        Client.register(codec = GroupUpdatedCodec())
 
         val membershipChange = GroupMembershipChanges.newBuilder().build()
 
@@ -120,7 +120,7 @@ class GroupMembershipChangeTest {
         runBlocking {
             group.send(
                 content = membershipChange,
-                options = SendOptions(contentType = ContentTypeGroupMembershipChange),
+                options = SendOptions(contentType = ContentTypeGroupUpdated),
             )
             group.sync()
         }
