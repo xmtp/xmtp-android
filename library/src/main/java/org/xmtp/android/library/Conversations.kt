@@ -39,7 +39,6 @@ import org.xmtp.proto.keystore.api.v1.Keystore.GetConversationHmacKeysResponse.H
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
-import org.xmtp.proto.mls.database.Intents.AccountAddresses
 import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiGroup

@@ -36,7 +36,6 @@ import org.xmtp.android.library.messages.ensureWalletSignature
 import org.xmtp.android.library.messages.generate
 import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.rawData
-import org.xmtp.android.library.messages.rawDataWithNormalizedRecovery
 import org.xmtp.android.library.messages.recoverWalletSignerPublicKey
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.toV2
@@ -44,7 +43,6 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
-import org.xmtp.proto.message.contents.signature
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.LegacyIdentitySource
 import uniffi.xmtpv3.createClient
@@ -54,13 +52,11 @@ import uniffi.xmtpv3.getVersionInfo
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore
-import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import java.util.UUID
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
@@ -324,7 +320,7 @@ class Client() {
                 val alias = "xmtp-${options.api.env}-${inboxId.lowercase()}"
 
                 val dbDir = if (options.dbDirectory == null) {
-                     File(appContext?.filesDir?.absolutePath, "xmtp_db")
+                    File(appContext?.filesDir?.absolutePath, "xmtp_db")
                 } else {
                     File(appContext?.filesDir?.absolutePath, options.dbDirectory)
                 }
