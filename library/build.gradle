@@ -84,7 +84,7 @@ dependencies {
     implementation 'io.grpc:grpc-protobuf-lite:1.62.2'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     implementation 'org.web3j:crypto:5.0.0'
-    implementation "net.java.dev.jna:jna:5.13.0@aar"
+    implementation "net.java.dev.jna:jna:5.14.0@aar"
     api 'com.google.protobuf:protobuf-kotlin-lite:3.22.3'
     api 'org.xmtp:proto-kotlin:3.58.0'
 

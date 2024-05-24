@@ -18,7 +18,7 @@ import uniffi.xmtpv3.FfiGroupMetadata
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
-import uniffi.xmtpv3.GroupPermissions
+import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.Member
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -153,20 +153,20 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         return libXMTPGroup.isActive()
     }
 
-    fun addedByAddress(): String {
-        return libXMTPGroup.addedByAddress()
+    fun addedByInboxId(): String {
+        return libXMTPGroup.addedByInboxId()
     }
 
-    fun permissionLevel(): GroupPermissions {
-        return metadata.policyType()
-    }
+//    fun permissionLevel(): GroupPermissions {
+//        return metadata.policyType()
+//    }
 
     fun isAdmin(): Boolean {
-        return metadata.creatorAccountAddress().lowercase() == client.address.lowercase()
+        return metadata.creatorInboxId().lowercase() == client.inboxId.lowercase()
     }
 
-    fun adminAddress(): String {
-        return metadata.creatorAccountAddress()
+    fun adminInboxId(): String {
+        return metadata.creatorInboxId()
     }
 
     suspend fun addMembers(addresses: List<String>) {
@@ -185,14 +185,30 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
     }
 
-    fun memberAddresses(): List<String> {
-        return libXMTPGroup.listMembers().map { it.accountAddress }
+    suspend fun addMembersByInboxId(inboxIds: List<String>) {
+        try {
+            libXMTPGroup.addMembersByInboxId(inboxIds)
+        } catch (e: Exception) {
+            throw XMTPException("User does not have permissions", e)
+        }
     }
 
-    fun peerAddresses(): List<String> {
-        val addresses = memberAddresses().map { it.lowercase() }.toMutableList()
-        addresses.remove(client.address.lowercase())
-        return addresses
+    suspend fun removeMembersByInboxId(inboxIds: List<String>) {
+        try {
+            libXMTPGroup.removeMembersByInboxId(inboxIds)
+        } catch (e: Exception) {
+            throw XMTPException("User does not have permissions", e)
+        }
+    }
+
+    fun members(): List<Member> {
+        return libXMTPGroup.listMembers().map { Member(it) }
+    }
+
+    fun peerInboxIds(): List<String> {
+        val ids = members().map { it.inboxId.lowercase() }.toMutableList()
+        ids.remove(client.inboxId.lowercase())
+        return ids
     }
 
     suspend fun updateGroupName(name: String) {
