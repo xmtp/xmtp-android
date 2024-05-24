@@ -17,6 +17,7 @@ package uniffi.xmtpv3;
 // compile the Rust component. The easiest way to ensure this is to bundle the Kotlin
 // helpers directly inline like we're doing here.
 
+import android.annotation.SuppressLint
 import com.sun.jna.Library
 import com.sun.jna.IntegerType
 import com.sun.jna.Native
@@ -2262,6 +2263,7 @@ private fun UniffiCleaner.Companion.create(): UniffiCleaner =
     }
 
 private class JavaLangRefCleaner : UniffiCleaner {
+    @SuppressLint("NewApi")
     val cleaner = java.lang.ref.Cleaner.create()
 
     override fun register(value: Any, cleanUpTask: Runnable): UniffiCleaner.Cleanable =
