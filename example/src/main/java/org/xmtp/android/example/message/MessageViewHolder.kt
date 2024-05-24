@@ -53,7 +53,7 @@ class MessageViewHolder(
             val changes = item.message.content() as? GroupMembershipChanges
             binding.messageBody.text =
                 "Membership Changed ${
-                    changes?.membersAddedList?.mapNotNull { it.accountAddress }.toString()
+                    changes?.addedInboxesList?.mapNotNull { it.inboxId }.toString()
                 }"
         }
     }
