@@ -40,7 +40,7 @@ class ConversationViewHolder(
         } else if (item.mostRecentMessage?.content<Any>() is GroupMembershipChanges) {
             val changes = item.mostRecentMessage.content() as? GroupMembershipChanges
             "Membership Changed ${
-                changes?.membersAddedList?.mapNotNull { it.accountAddress }.toString()
+                changes?.addedInboxesList?.mapNotNull { it.inboxId }.toString()
             }"
         } else {
             ""

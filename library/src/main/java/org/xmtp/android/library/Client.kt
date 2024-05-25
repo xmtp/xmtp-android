@@ -228,7 +228,7 @@ class Client() {
                         account,
                         clientOptions.appContext,
                         privateKeyBundleV1,
-                        LegacyIdentitySource.NONE,
+                        legacyIdentityKey,
                         account.address
                     )
 

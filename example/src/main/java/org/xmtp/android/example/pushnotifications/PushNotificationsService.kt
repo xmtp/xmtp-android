@@ -104,7 +104,7 @@ class PushNotificationsService : FirebaseMessagingService() {
             } else if (decodedMessage.content<Any>() is GroupMembershipChanges) {
                 val changes = decodedMessage.content() as? GroupMembershipChanges
                 "Membership Changed ${
-                    changes?.membersAddedList?.mapNotNull { it.accountAddress }.toString()
+                    changes?.addedInboxesList?.mapNotNull { it.inboxId }.toString()
                 }"
             } else {
                 ""
