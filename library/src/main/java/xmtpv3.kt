@@ -2269,7 +2269,6 @@ private fun UniffiCleaner.Companion.create(): UniffiCleaner =
 private class JavaLangRefCleaner : UniffiCleaner {
     val cleaner = java.lang.ref.Cleaner.create()
 
-    @SuppressLint("NewApi")
     override fun register(value: Any, cleanUpTask: Runnable): UniffiCleaner.Cleanable =
         JavaLangRefCleanable(cleaner.register(value, cleanUpTask))
 }
