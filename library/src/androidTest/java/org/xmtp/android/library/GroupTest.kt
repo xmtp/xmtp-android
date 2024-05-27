@@ -13,7 +13,9 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.xmtp.android.library.codecs.ContentTypeGroupUpdated
 import org.xmtp.android.library.codecs.ContentTypeReaction
+import org.xmtp.android.library.codecs.GroupUpdatedCodec
 import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
@@ -22,9 +24,7 @@ import org.xmtp.android.library.messages.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupUpdated
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupUpdatedCodec
+import org.xmtp.proto.mls.message.contents.TranscriptMessages
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
@@ -459,7 +459,7 @@ class GroupTest {
     @Test
     fun testCanStreamGroupMessages() = kotlinx.coroutines.test.runTest {
         Client.register(codec = GroupUpdatedCodec())
-        val membershipChange = GroupMembershipChanges.newBuilder().build()
+        val membershipChange = TranscriptMessages.GroupUpdated.newBuilder().build()
 
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress.lowercase()))
         alixClient.conversations.syncGroups()
@@ -539,7 +539,7 @@ class GroupTest {
     @Ignore("TODO: Fix Flaky Test")
     fun testCanStreamAllDecryptedGroupMessages() = kotlinx.coroutines.test.runTest {
         Client.register(codec = GroupUpdatedCodec())
-        val membershipChange = GroupMembershipChanges.newBuilder().build()
+        val membershipChange = TranscriptMessages.GroupMembershipChanges.newBuilder().build()
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         alixClient.conversations.syncGroups()
 

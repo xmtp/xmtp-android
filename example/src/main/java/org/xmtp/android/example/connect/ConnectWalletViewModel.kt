@@ -19,9 +19,9 @@ import org.xmtp.android.example.ClientManager
 import org.xmtp.android.example.account.WalletConnectV2Account
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.XMTPException
+import org.xmtp.android.library.codecs.GroupUpdatedCodec
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupUpdatedCodec
 
 class ConnectWalletViewModel(application: Application) : AndroidViewModel(application) {
 

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
+import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.MessageDeliveryStatus
@@ -18,7 +19,6 @@ import uniffi.xmtpv3.FfiGroupMetadata
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.Member
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit

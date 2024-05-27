@@ -8,12 +8,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.xmtp.android.library.codecs.ContentTypeGroupUpdated
+import org.xmtp.android.library.codecs.GroupUpdatedCodec
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupUpdated
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupUpdatedCodec
+import org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupUpdated
 
 @RunWith(AndroidJUnit4::class)
 class GroupUpdatedTest {
@@ -64,7 +64,7 @@ class GroupUpdatedTest {
         }
         val messages = group.messages()
         assertEquals(messages.size, 1)
-        val content: GroupMembershipChanges? = messages.first().content()
+        val content: GroupUpdated? = messages.first().content()
         assertEquals(
             listOf(boClient.inboxId.lowercase(), caroClient.inboxId.lowercase()).sorted(),
             content?.addedInboxesList?.map { it.inboxId.lowercase() }?.sorted()
@@ -91,7 +91,7 @@ class GroupUpdatedTest {
         val updatedMessages = group.messages()
         assertEquals(updatedMessages.size, 2)
         assertEquals(group.members().size, 2)
-        val content: GroupMembershipChanges? = updatedMessages.first().content()
+        val content: GroupUpdated? = updatedMessages.first().content()
 
         assertEquals(
             listOf(caroClient.inboxId.lowercase()),
@@ -104,7 +104,7 @@ class GroupUpdatedTest {
     fun testRemovesInvalidMessageKind() {
         Client.register(codec = GroupUpdatedCodec())
 
-        val membershipChange = GroupMembershipChanges.newBuilder().build()
+        val membershipChange = GroupUpdated.newBuilder().build()
 
         val group = runBlocking {
             alixClient.conversations.newGroup(

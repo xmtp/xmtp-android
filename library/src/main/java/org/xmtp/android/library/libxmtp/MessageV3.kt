@@ -4,6 +4,7 @@ import android.util.Log
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.DecodedMessage
 import org.xmtp.android.library.XMTPException
+import org.xmtp.android.library.codecs.ContentTypeGroupUpdated
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.MessageDeliveryStatus
@@ -12,7 +13,6 @@ import org.xmtp.android.library.toHex
 import uniffi.xmtpv3.FfiDeliveryStatus
 import uniffi.xmtpv3.FfiGroupMessageKind
 import uniffi.xmtpv3.FfiMessage
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupUpdated
 import java.util.Date
 
 data class MessageV3(val client: Client, private val libXMTPMessage: FfiMessage) {
