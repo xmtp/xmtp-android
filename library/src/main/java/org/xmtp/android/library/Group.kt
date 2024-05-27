@@ -173,7 +173,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         try {
             libXMTPGroup.addMembers(addresses)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to add member", e)
         }
     }
 
@@ -181,7 +181,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         try {
             libXMTPGroup.removeMembers(addresses)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to remove member", e)
         }
     }
 
@@ -189,7 +189,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         try {
             libXMTPGroup.addMembersByInboxId(inboxIds)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to add member", e)
         }
     }
 
@@ -197,7 +197,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         try {
             libXMTPGroup.removeMembersByInboxId(inboxIds)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to remove member", e)
         }
     }
 
