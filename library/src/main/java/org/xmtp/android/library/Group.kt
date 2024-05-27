@@ -162,7 +162,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
 //    }
 
     fun isAdmin(): Boolean {
-        return metadata.creatorInboxId().lowercase() == client.inboxId.lowercase()
+        return metadata.creatorInboxId() == client.inboxId
     }
 
     fun adminInboxId(): String {
@@ -206,8 +206,8 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     fun peerInboxIds(): List<String> {
-        val ids = members().map { it.inboxId.lowercase() }.toMutableList()
-        ids.remove(client.inboxId.lowercase())
+        val ids = members().map { it.inboxId }.toMutableList()
+        ids.remove(client.inboxId)
         return ids
     }
 
