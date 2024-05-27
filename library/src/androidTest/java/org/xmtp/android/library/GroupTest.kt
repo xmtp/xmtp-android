@@ -163,25 +163,25 @@ class GroupTest {
         assertEquals(
             group.members().map { it.inboxId }.sorted(),
             listOf(
-                caroClient.inboxId.lowercase(),
-                alixClient.inboxId.lowercase(),
-                boClient.inboxId.lowercase()
+                caroClient.inboxId,
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
 
         assertEquals(
             Conversation.Group(group).peerAddresses.sorted(),
             listOf(
-                caroClient.inboxId.lowercase(),
-                alixClient.inboxId.lowercase(),
+                caroClient.inboxId,
+                alixClient.inboxId,
             ).sorted()
         )
 
         assertEquals(
             group.peerInboxIds().sorted(),
             listOf(
-                caroClient.inboxId.lowercase(),
-                alixClient.inboxId.lowercase(),
+                caroClient.inboxId,
+                alixClient.inboxId,
             ).sorted()
         )
     }
@@ -208,9 +208,9 @@ class GroupTest {
         assertEquals(
             group.members().map { it.inboxId }.sorted(),
             listOf(
-                caroClient.inboxId.lowercase(),
-                alixClient.inboxId.lowercase(),
-                boClient.inboxId.lowercase()
+                caroClient.inboxId,
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
     }
@@ -229,8 +229,8 @@ class GroupTest {
         assertEquals(
             group.members().map { it.inboxId }.sorted(),
             listOf(
-                alixClient.inboxId.lowercase(),
-                boClient.inboxId.lowercase()
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
     }
@@ -242,9 +242,9 @@ class GroupTest {
         assertEquals(
             group.members().map { it.inboxId }.sorted(),
             listOf(
-                caroClient.inboxId.lowercase(),
-                alixClient.inboxId.lowercase(),
-                boClient.inboxId.lowercase()
+                caroClient.inboxId,
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
     }
@@ -263,8 +263,8 @@ class GroupTest {
         assertEquals(
             group.members().map { it.inboxId }.sorted(),
             listOf(
-                alixClient.inboxId.lowercase(),
-                boClient.inboxId.lowercase()
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
     }
@@ -325,7 +325,7 @@ class GroupTest {
         }
         runBlocking { boClient.conversations.syncGroups() }
         val boGroup = runBlocking { boClient.conversations.listGroups().first() }
-        assertEquals(boGroup.addedByInboxId().lowercase(), alixClient.inboxId.lowercase())
+        assertEquals(boGroup.addedByInboxId(), alixClient.inboxId)
     }
 
     @Test
