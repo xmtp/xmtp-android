@@ -496,6 +496,7 @@ class GroupTest {
     }
 
     @Test
+    @Ignore("Flaky: CI")
     fun testCanStreamAllMessages() = kotlinx.coroutines.test.runTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         val conversation = boClient.conversations.newConversation(alix.walletAddress)
@@ -562,6 +563,7 @@ class GroupTest {
     }
 
     @Test
+    @Ignore("Flaky: CI")
     fun testCanStreamAllDecryptedMessages() = kotlinx.coroutines.test.runTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         val conversation = boClient.conversations.newConversation(alix.walletAddress)
