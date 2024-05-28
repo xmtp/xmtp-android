@@ -48,17 +48,17 @@ class IdentityTest {
 
     @Test
     fun testCanAllowAndDenyInboxId() {
-        assert(!boClient.contacts.isInboxIdAllowed(alix.inboxId))
-        assert(!boClient.contacts.isInboxIdDenied(alix.inboxId))
+        assert(!boClient.contacts.isInboxIdAllowed(alixClient.inboxId))
+        assert(!boClient.contacts.isInboxIdDenied(alixClient.inboxId))
 
-        runBlocking { boClient.contacts.allowInboxId(listOf(alix.inboxId)) }
+        runBlocking { boClient.contacts.allowInboxId(listOf(alixClient.inboxId)) }
 
-        assert(boClient.contacts.isInboxIdAllowed(alix.inboxId))
-        assert(!boClient.contacts.isInboxIdDenied(alix.inboxId))
+        assert(boClient.contacts.isInboxIdAllowed(alixClient.inboxId))
+        assert(!boClient.contacts.isInboxIdDenied(alixClient.inboxId))
 
-        runBlocking { boClient.contacts.denyInboxIds(listOf(alix.inboxId)) }
+        runBlocking { boClient.contacts.denyInboxIds(listOf(alixClient.inboxId)) }
 
-        assert(!boClient.contacts.isInboxIdAllowed(alix.inboxId))
-        assert(boClient.contacts.isInboxIdDenied(alix.inboxId))
+        assert(!boClient.contacts.isInboxIdAllowed(alixClient.inboxId))
+        assert(boClient.contacts.isInboxIdDenied(alixClient.inboxId))
     }
 }

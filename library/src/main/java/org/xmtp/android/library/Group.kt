@@ -19,7 +19,6 @@ import uniffi.xmtpv3.FfiGroupMetadata
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.Member
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit

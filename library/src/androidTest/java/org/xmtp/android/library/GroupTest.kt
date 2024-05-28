@@ -27,9 +27,7 @@ import org.xmtp.android.library.messages.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeGroupUpdated
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupMembershipChanges
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupUpdatedCodec
+import org.xmtp.proto.mls.message.contents.TranscriptMessages
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
