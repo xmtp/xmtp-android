@@ -16,7 +16,7 @@ import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 
 @RunWith(AndroidJUnit4::class)
-class GroupMembershipChangeTest {
+class GroupUpdatedTest {
     lateinit var alixWallet: PrivateKeyBuilder
     lateinit var boWallet: PrivateKeyBuilder
     lateinit var alix: PrivateKey
@@ -66,7 +66,7 @@ class GroupMembershipChangeTest {
         assertEquals(messages.size, 1)
         val content: GroupUpdated? = messages.first().content()
         assertEquals(
-            listOf(bo.walletAddress.lowercase(), caro.walletAddress.lowercase()).sorted(),
+            listOf(boClient.inboxId, caroClient.inboxId).sorted(),
             content?.addedInboxesList?.map { it.inboxId }?.sorted()
         )
         assert(content?.removedInboxesList.isNullOrEmpty())
@@ -94,7 +94,7 @@ class GroupMembershipChangeTest {
         val content: GroupUpdated? = updatedMessages.first().content()
 
         assertEquals(
-            listOf(caro.walletAddress.lowercase()),
+            listOf(caroClient.inboxId),
             content?.removedInboxesList?.map { it.inboxId }?.sorted()
         )
         assert(content?.addedInboxesList.isNullOrEmpty())
