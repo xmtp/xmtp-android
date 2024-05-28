@@ -3,10 +3,13 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -481,22 +484,26 @@ class GroupTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         alixClient.conversations.syncGroups()
         val flow = alixClient.conversations.streamAllGroupMessages()
-        val job = launch {
-            flow.catch { e ->
-                throw Exception("Error collecting flow: $e")
-            }.collect { message ->
-                assertEquals("hi", message.encodedContent.content.toStringUtf8())
-                this.cancel()
+
+        withContext(Dispatchers.Default.limitedParallelism(1)) {
+            withTimeout(5000) { // Set a timeout to avoid long running tests
+                val job = launch {
+                    flow.catch { e ->
+                        throw Exception("Error collecting flow: $e")
+                    }.collect { message ->
+                        assertEquals("hi", message.encodedContent.content.toStringUtf8())
+                        this.cancel() // Cancel the collection after the assertion
+                    }
+                }
+
+                group.send("hi")
+
+                job.join()
             }
         }
-
-        group.send("hi")
-
-        job.join()
     }
 
     @Test
-    @Ignore("Flaky: CI")
     fun testCanStreamAllMessages() = kotlinx.coroutines.test.runTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         val conversation = boClient.conversations.newConversation(alix.walletAddress)
@@ -504,20 +511,25 @@ class GroupTest {
 
         val flow = alixClient.conversations.streamAllMessages(includeGroups = true)
         var counter = 0
-        val job = launch {
-            flow.catch { e ->
-                throw Exception("Error collecting flow: $e")
-            }.collect { message ->
-                counter++
-                assertEquals("hi", message.encodedContent.content.toStringUtf8())
-                if (counter == 2) this.cancel()
+
+        withContext(Dispatchers.Default.limitedParallelism(1)) {
+            withTimeout(5000) { // Set a timeout to avoid long running tests
+                val job = launch {
+                    flow.catch { e ->
+                        throw Exception("Error collecting flow: $e")
+                    }.collect { message ->
+                        counter++
+                        assertEquals("hi", message.encodedContent.content.toStringUtf8())
+                        if (counter == 2) this.cancel() // Cancel the collection after receiving the second "hi"
+                    }
+                }
+
+                group.send("hi")
+                conversation.send("hi")
+
+                job.join()
             }
         }
-
-        group.send("hi")
-        conversation.send("hi")
-
-        job.join()
     }
 
     @Test
@@ -542,28 +554,32 @@ class GroupTest {
 
         val flow = alixClient.conversations.streamAllGroupDecryptedMessages()
         var counter = 0
-        val job = launch {
-            flow.catch { e ->
-                throw Exception("Error collecting flow: $e")
-            }.collect { message ->
-                counter++
-                assertEquals("hi", message.encodedContent.content.toStringUtf8())
-                if (counter == 2) this.cancel()
+
+        withContext(Dispatchers.Default.limitedParallelism(1)) {
+            withTimeout(5000) { // Set a timeout to avoid long running tests
+                val job = launch {
+                    flow.catch { e ->
+                        throw Exception("Error collecting flow: $e")
+                    }.collect { message ->
+                        counter++
+                        assertEquals("hi", message.encodedContent.content.toStringUtf8())
+                        if (counter == 2) this.cancel() // Cancel the collection after receiving the second "hi"
+                    }
+                }
+
+                group.send("hi")
+                group.send(
+                    content = membershipChange,
+                    options = SendOptions(contentType = ContentTypeGroupUpdated),
+                )
+                group.send("hi")
+
+                job.join()
             }
         }
-
-        group.send("hi")
-        group.send(
-            content = membershipChange,
-            options = SendOptions(contentType = ContentTypeGroupUpdated),
-        )
-        group.send("hi")
-
-        job.join()
     }
 
     @Test
-    @Ignore("Flaky: CI")
     fun testCanStreamAllDecryptedMessages() = kotlinx.coroutines.test.runTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         val conversation = boClient.conversations.newConversation(alix.walletAddress)
@@ -571,20 +587,25 @@ class GroupTest {
 
         val flow = alixClient.conversations.streamAllDecryptedMessages(includeGroups = true)
         var counter = 0
-        val job = launch {
-            flow.catch { e ->
-                throw Exception("Error collecting flow: $e")
-            }.collect { message ->
-                counter++
-                assertEquals("hi", message.encodedContent.content.toStringUtf8())
-                if (counter == 2) this.cancel()
+
+        withContext(Dispatchers.Default.limitedParallelism(1)) {
+            withTimeout(5000) { // Set a timeout to avoid long running tests
+                val job = launch {
+                    flow.catch { e ->
+                        throw Exception("Error collecting flow: $e")
+                    }.collect { message ->
+                        counter++
+                        assertEquals("hi", message.encodedContent.content.toStringUtf8())
+                        if (counter == 2) this.cancel() // Cancel the collection after receiving the second "hi"
+                    }
+                }
+
+                group.send("hi")
+                conversation.send("hi")
+
+                job.join()
             }
         }
-
-        group.send("hi")
-        conversation.send("hi")
-
-        job.join()
     }
 
     @Test
