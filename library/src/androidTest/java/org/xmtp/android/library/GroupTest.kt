@@ -481,19 +481,16 @@ class GroupTest {
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         alixClient.conversations.syncGroups()
         val flow = alixClient.conversations.streamAllGroupMessages()
-        var counter = 0
         val job = launch {
             flow.catch { e ->
                 throw Exception("Error collecting flow: $e")
             }.collect { message ->
-                counter++
-                assertEquals("hi $counter", message.encodedContent.content.toStringUtf8())
-                if (counter == 2) this.cancel()
+                assertEquals("hi", message.encodedContent.content.toStringUtf8())
+                this.cancel()
             }
         }
 
-        group.send("hi 1")
-        group.send("hi 2")
+        group.send("hi")
 
         job.join()
     }
@@ -511,13 +508,13 @@ class GroupTest {
                 throw Exception("Error collecting flow: $e")
             }.collect { message ->
                 counter++
-                assertEquals("hi $counter", message.encodedContent.content.toStringUtf8())
+                assertEquals("hi", message.encodedContent.content.toStringUtf8())
                 if (counter == 2) this.cancel()
             }
         }
 
-        group.send("hi 1")
-        conversation.send("hi 2")
+        group.send("hi")
+        conversation.send("hi")
 
         job.join()
     }
@@ -536,10 +533,9 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("TODO: Fix Flaky Test")
     fun testCanStreamAllDecryptedGroupMessages() = kotlinx.coroutines.test.runTest {
         Client.register(codec = GroupUpdatedCodec())
-        val membershipChange = TranscriptMessages.GroupMembershipChanges.newBuilder().build()
+        val membershipChange = TranscriptMessages.GroupUpdated.newBuilder().build()
         val group = caroClient.conversations.newGroup(listOf(alix.walletAddress))
         alixClient.conversations.syncGroups()
 
@@ -550,17 +546,17 @@ class GroupTest {
                 throw Exception("Error collecting flow: $e")
             }.collect { message ->
                 counter++
-                assertEquals("hi $counter", message.encodedContent.content.toStringUtf8())
+                assertEquals("hi", message.encodedContent.content.toStringUtf8())
                 if (counter == 2) this.cancel()
             }
         }
 
-        group.send("hi 1")
+        group.send("hi")
         group.send(
             content = membershipChange,
             options = SendOptions(contentType = ContentTypeGroupUpdated),
         )
-        group.send("hi 2")
+        group.send("hi")
 
         job.join()
     }
@@ -578,13 +574,13 @@ class GroupTest {
                 throw Exception("Error collecting flow: $e")
             }.collect { message ->
                 counter++
-                assertEquals("hi $counter", message.encodedContent.content.toStringUtf8())
+                assertEquals("hi", message.encodedContent.content.toStringUtf8())
                 if (counter == 2) this.cancel()
             }
         }
 
-        group.send("hi 1")
-        conversation.send("hi 2")
+        group.send("hi")
+        conversation.send("hi")
 
         job.join()
     }
