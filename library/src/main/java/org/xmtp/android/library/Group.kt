@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
+import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.MessageDeliveryStatus
@@ -162,7 +163,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
 //    }
 
     fun isAdmin(): Boolean {
-        return metadata.creatorInboxId().lowercase() == client.inboxId.lowercase()
+        return metadata.creatorInboxId() == client.inboxId
     }
 
     fun adminInboxId(): String {
@@ -173,7 +174,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         try {
             libXMTPGroup.addMembers(addresses)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to add member", e)
         }
     }
 
@@ -181,7 +182,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         try {
             libXMTPGroup.removeMembers(addresses)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to remove member", e)
         }
     }
 
@@ -189,7 +190,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         try {
             libXMTPGroup.addMembersByInboxId(inboxIds)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to add member", e)
         }
     }
 
@@ -197,7 +198,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         try {
             libXMTPGroup.removeMembersByInboxId(inboxIds)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to remove member", e)
         }
     }
 
@@ -206,8 +207,8 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     fun peerInboxIds(): List<String> {
-        val ids = members().map { it.inboxId.lowercase() }.toMutableList()
-        ids.remove(client.inboxId.lowercase())
+        val ids = members().map { it.inboxId }.toMutableList()
+        ids.remove(client.inboxId)
         return ids
     }
 

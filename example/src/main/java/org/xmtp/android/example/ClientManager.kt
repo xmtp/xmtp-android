@@ -10,8 +10,8 @@ import kotlinx.coroutines.launch
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.ClientOptions
 import org.xmtp.android.library.XMTPEnvironment
+import org.xmtp.android.library.codecs.GroupUpdatedCodec
 import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.GroupUpdatedCodec
 
 object ClientManager {
 

@@ -1,12 +1,8 @@
-package uniffi.xmtpv3.org.xmtp.android.library.codecs
+package org.xmtp.android.library.codecs
 
-import org.xmtp.android.library.codecs.ContentCodec
-import org.xmtp.android.library.codecs.ContentTypeId
-import org.xmtp.android.library.codecs.ContentTypeIdBuilder
-import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupUpdated
 
-typealias GroupMembershipChanges = org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupUpdated
+typealias GroupUpdated = org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupUpdated
 
 val ContentTypeGroupUpdated = ContentTypeIdBuilder.builderFromAuthorityId(
     "xmtp.org",
@@ -26,7 +22,7 @@ data class GroupUpdatedCodec(override var contentType: ContentTypeId = ContentTy
     }
 
     override fun decode(content: EncodedContent): GroupUpdated {
-        return GroupMembershipChanges.parseFrom(content.content)
+        return GroupUpdated.parseFrom(content.content)
     }
 
     override fun fallback(content: GroupUpdated): String? {

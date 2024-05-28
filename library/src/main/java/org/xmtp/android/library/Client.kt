@@ -317,7 +317,7 @@ class Client() {
                 if (inboxId.isNullOrBlank()) {
                     inboxId = generateInboxId(accountAddress, 0.toULong())
                 }
-                val alias = "xmtp-${options.api.env}-${inboxId.lowercase()}"
+                val alias = "xmtp-${options.api.env}-$inboxId"
 
                 val dbDir = if (options.dbDirectory == null) {
                     File(appContext?.filesDir?.absolutePath, "xmtp_db")
