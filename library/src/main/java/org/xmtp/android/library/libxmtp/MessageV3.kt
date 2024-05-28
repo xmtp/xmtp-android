@@ -23,7 +23,7 @@ data class MessageV3(val client: Client, private val libXMTPMessage: FfiMessage)
     val convoId: ByteArray
         get() = libXMTPMessage.convoId
 
-    val senderAddress: String
+    val senderInboxId: String
         get() = libXMTPMessage.senderInboxId
 
     val sentAt: Date
@@ -43,7 +43,7 @@ data class MessageV3(val client: Client, private val libXMTPMessage: FfiMessage)
                 client = client,
                 topic = Topic.groupMessage(convoId.toHex()).description,
                 encodedContent = EncodedContent.parseFrom(libXMTPMessage.content),
-                senderAddress = senderAddress,
+                senderAddress = senderInboxId,
                 sent = sentAt,
                 deliveryStatus = deliveryStatus
             )
@@ -79,7 +79,7 @@ data class MessageV3(val client: Client, private val libXMTPMessage: FfiMessage)
             id = id.toHex(),
             topic = Topic.groupMessage(convoId.toHex()).description,
             encodedContent = decode().encodedContent,
-            senderAddress = senderAddress,
+            senderAddress = senderInboxId,
             sentAt = Date(),
             deliveryStatus = deliveryStatus
         )
