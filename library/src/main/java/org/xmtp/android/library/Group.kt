@@ -229,19 +229,35 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     suspend fun addAdmin(inboxId: String) {
-        return libXMTPGroup.addAdmin(inboxId)
+        try {
+            libXMTPGroup.addAdmin(inboxId)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to add admin", e)
+        }
     }
 
     suspend fun removeAdmin(inboxId: String) {
-        return libXMTPGroup.removeAdmin(inboxId)
+        try {
+            libXMTPGroup.removeAdmin(inboxId)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to remove admin", e)
+        }
     }
 
     suspend fun addSuperAdmin(inboxId: String) {
-        return libXMTPGroup.addSuperAdmin(inboxId)
+        try {
+            libXMTPGroup.addSuperAdmin(inboxId)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to add super admin", e)
+        }
     }
 
     suspend fun removeSuperAdmin(inboxId: String) {
-        return libXMTPGroup.removeSuperAdmin(inboxId)
+        try {
+            libXMTPGroup.removeSuperAdmin(inboxId)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to remove super admin", e)
+        }
     }
 
     suspend fun listAdmins(): List<String> {
