@@ -613,6 +613,9 @@ class Client() {
         File(dbPath).delete()
     }
 
+    @Deprecated(
+        message = "This function is delicate and should be used with caution. App will error if database not properly reconnected. See: reconnectLocalDatabase()",
+    )
     fun dropLocalDatabaseConnection() {
         libXMTPClient?.releaseDbConnection()
     }
