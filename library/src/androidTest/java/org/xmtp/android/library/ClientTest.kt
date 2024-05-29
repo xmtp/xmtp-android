@@ -13,6 +13,7 @@ import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
 import org.xmtp.android.library.messages.generate
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
+import uniffi.xmtpv3.GenericException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -205,7 +206,7 @@ class ClientTest {
     fun testDoesNotCreateAV3Client() {
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
-        Assert.assertThrows("Error no V3 client initialized", XMTPException::class.java) {
+        assertThrows("Error no V3 client initialized", XMTPException::class.java) {
             runBlocking {
                 client.canMessageV3(listOf(client.address))[client.address]?.let { assert(!it) }
             }
@@ -286,7 +287,7 @@ class ClientTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fakeWallet = PrivateKeyBuilder()
         val fakeWallet2 = PrivateKeyBuilder()
-        var boClient =
+        val boClient =
             Client().create(
                 account = fakeWallet,
                 options = ClientOptions(
@@ -316,9 +317,9 @@ class ClientTest {
 
         boClient.dropLocalDatabaseConnection()
 
-        Assert.assertThrows(
-            "Error no V3 client initialized",
-            XMTPException::class.java
+        assertThrows(
+            "Client error: storage error: Pool needs to  reconnect before use",
+            GenericException::class.java
         ) { runBlocking { boClient.conversations.listGroups() } }
 
         runBlocking { boClient.reconnectLocalDatabase() }
@@ -327,5 +328,4 @@ class ClientTest {
             assertEquals(boClient.conversations.listGroups().size, 1)
         }
     }
-
 }
