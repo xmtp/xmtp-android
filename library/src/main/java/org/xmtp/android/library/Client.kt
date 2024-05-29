@@ -613,6 +613,14 @@ class Client() {
         File(dbPath).delete()
     }
 
+    fun dropLocalDatabaseConnection() {
+        libXMTPClient?.releaseDbConnection()
+    }
+
+    suspend fun reconnectLocalDatabase() {
+        libXMTPClient?.dbReconnect() ?: throw XMTPException("Error no V3 client initialized")
+    }
+
     val privateKeyBundle: PrivateKeyBundle
         get() = PrivateKeyBundleBuilder.buildFromV1Key(privateKeyBundleV1)
 

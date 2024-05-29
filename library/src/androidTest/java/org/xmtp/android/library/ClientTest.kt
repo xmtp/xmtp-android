@@ -5,6 +5,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -279,4 +280,52 @@ class ClientTest {
             fail("Error: $e")
         }
     }
+
+    @Test
+    fun testCanDropReconnectDatabase() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val fakeWallet2 = PrivateKeyBuilder()
+        var boClient =
+            Client().create(
+                account = fakeWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableAlphaMls = true,
+                    appContext = context
+                )
+            )
+        val alixClient =
+            Client().create(
+                account = fakeWallet2,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableAlphaMls = true,
+                    appContext = context
+                )
+            )
+
+        runBlocking {
+            boClient.conversations.newGroup(listOf(alixClient.address))
+            boClient.conversations.syncGroups()
+        }
+
+        runBlocking {
+            assertEquals(boClient.conversations.listGroups().size, 1)
+        }
+
+        boClient.dropLocalDatabaseConnection()
+
+        Assert.assertThrows(
+            "Error no V3 client initialized",
+            XMTPException::class.java
+        ) { runBlocking { boClient.conversations.listGroups() } }
+
+        runBlocking { boClient.reconnectLocalDatabase() }
+
+        runBlocking {
+            assertEquals(boClient.conversations.listGroups().size, 1)
+        }
+    }
+
 }
