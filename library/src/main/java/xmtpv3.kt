@@ -5143,7 +5143,8 @@ public object FfiConverterTypeFfiEnvelope: FfiConverterRustBuffer<FfiEnvelope> {
 data class FfiGroupMember (
     var `inboxId`: kotlin.String, 
     var `accountAddresses`: List<kotlin.String>, 
-    var `installationIds`: List<kotlin.ByteArray>
+    var `installationIds`: List<kotlin.ByteArray>, 
+    var `permissionLevel`: FfiPermissionLevel
 ) {
     
     companion object
@@ -5155,19 +5156,22 @@ public object FfiConverterTypeFfiGroupMember: FfiConverterRustBuffer<FfiGroupMem
             FfiConverterString.read(buf),
             FfiConverterSequenceString.read(buf),
             FfiConverterSequenceByteArray.read(buf),
+            FfiConverterTypeFfiPermissionLevel.read(buf),
         )
     }
 
     override fun allocationSize(value: FfiGroupMember) = (
             FfiConverterString.allocationSize(value.`inboxId`) +
             FfiConverterSequenceString.allocationSize(value.`accountAddresses`) +
-            FfiConverterSequenceByteArray.allocationSize(value.`installationIds`)
+            FfiConverterSequenceByteArray.allocationSize(value.`installationIds`) +
+            FfiConverterTypeFfiPermissionLevel.allocationSize(value.`permissionLevel`)
     )
 
     override fun write(value: FfiGroupMember, buf: ByteBuffer) {
             FfiConverterString.write(value.`inboxId`, buf)
             FfiConverterSequenceString.write(value.`accountAddresses`, buf)
             FfiConverterSequenceByteArray.write(value.`installationIds`, buf)
+            FfiConverterTypeFfiPermissionLevel.write(value.`permissionLevel`, buf)
     }
 }
 
@@ -5538,6 +5542,34 @@ public object FfiConverterTypeFfiGroupMessageKind: FfiConverterRustBuffer<FfiGro
     override fun allocationSize(value: FfiGroupMessageKind) = 4UL
 
     override fun write(value: FfiGroupMessageKind, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+
+enum class FfiPermissionLevel {
+    
+    MEMBER,
+    ADMIN,
+    SUPER_ADMIN;
+    companion object
+}
+
+
+public object FfiConverterTypeFfiPermissionLevel: FfiConverterRustBuffer<FfiPermissionLevel> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiPermissionLevel.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: FfiPermissionLevel) = 4UL
+
+    override fun write(value: FfiPermissionLevel, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
     }
 }

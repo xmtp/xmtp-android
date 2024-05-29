@@ -11,6 +11,7 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
+import uniffi.xmtpv3.FfiPermissionLevel
 import uniffi.xmtpv3.GroupPermissions
 
 @RunWith(AndroidJUnit4::class)
@@ -206,5 +207,54 @@ class GroupPermissionsTest {
 
         assert(!superAdminList.contains(boClient.inboxId))
         assert(superAdminList.contains(alixClient.inboxId))
+    }
+
+    @Test
+    fun testGroupMembersAndPermissionLevel() {
+        val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), GroupPermissions.ADMIN_ONLY) }
+        runBlocking { alixClient.conversations.syncGroups() }
+        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
+
+        // Initial checks for group members and their permissions
+        var members = runBlocking { group.members() }
+        var admins = members.filter { it.permissionLevel == FfiPermissionLevel.ADMIN }
+        var superAdmins = members.filter { it.permissionLevel == FfiPermissionLevel.SUPER_ADMIN }
+        var regularMembers = members.filter { it.permissionLevel == FfiPermissionLevel.MEMBER }
+
+        assert(admins.size == 0)
+        assert(superAdmins.size == 1)
+        assert(regularMembers.size == 2)
+
+        // Add alix as an admin
+        runBlocking {
+            group.addAdmin(alixClient.inboxId)
+            group.sync()
+            alixGroup.sync()
+        }
+
+        members = runBlocking { group.members() }
+        admins = members.filter { it.permissionLevel == FfiPermissionLevel.ADMIN }
+        superAdmins = members.filter { it.permissionLevel == FfiPermissionLevel.SUPER_ADMIN }
+        regularMembers = members.filter { it.permissionLevel == FfiPermissionLevel.MEMBER }
+
+        assert(admins.size == 1)
+        assert(superAdmins.size == 1)
+        assert(regularMembers.size == 1)
+
+        // Add caro as a super admin
+        runBlocking {
+            group.addSuperAdmin(caroClient.inboxId)
+            group.sync()
+            alixGroup.sync()
+        }
+
+        members = runBlocking { group.members() }
+        admins = members.filter { it.permissionLevel == FfiPermissionLevel.ADMIN }
+        superAdmins = members.filter { it.permissionLevel == FfiPermissionLevel.SUPER_ADMIN }
+        regularMembers = members.filter { it.permissionLevel == FfiPermissionLevel.MEMBER }
+
+        assert(admins.size == 1)
+        assert(superAdmins.size == 2)
+        assert(regularMembers.isEmpty())
     }
 }
