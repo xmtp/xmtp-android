@@ -13,7 +13,7 @@ class Member(private val ffiMember: FfiGroupMember) {
     val addresses: List<String>
         get() = ffiMember.accountAddresses
     val permissionLevel: PermissionLevel
-        get() =  when (ffiMember.permissionLevel) {
+        get() = when (ffiMember.permissionLevel) {
             FfiPermissionLevel.MEMBER -> PermissionLevel.MEMBER
             FfiPermissionLevel.ADMIN -> PermissionLevel.ADMIN
             FfiPermissionLevel.SUPER_ADMIN -> PermissionLevel.SUPER_ADMIN

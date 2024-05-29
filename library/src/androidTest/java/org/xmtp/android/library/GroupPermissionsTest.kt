@@ -12,7 +12,6 @@ import org.xmtp.android.library.libxmtp.PermissionLevel
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import uniffi.xmtpv3.FfiPermissionLevel
 import uniffi.xmtpv3.GroupPermissions
 
 @RunWith(AndroidJUnit4::class)
