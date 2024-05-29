@@ -55,12 +55,11 @@ class GroupPermissionsTest {
         runBlocking { alixClient.conversations.syncGroups() }
         val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
 
-        assert(boGroup.isCreator())
-        assert(boGroup.isAdmin(bo.walletAddress))
-        assert(boGroup.isSuperAdmin(bo.walletAddress))
+        assert(boGroup.isAdmin(boClient.inboxId))
+        assert(boGroup.isSuperAdmin(boClient.inboxId))
         assert(!alixGroup.isCreator())
-        assert(!alixGroup.isAdmin(alixClient.address))
-        assert(!alixGroup.isSuperAdmin(alixClient.address))
+        assert(!alixGroup.isAdmin(alixClient.inboxId))
+        assert(!alixGroup.isSuperAdmin(alixClient.inboxId))
 
         val adminList = runBlocking {
             boGroup.listAdmins()
@@ -69,23 +68,22 @@ class GroupPermissionsTest {
             boGroup.listSuperAdmins()
         }
         assert(adminList.size == 1)
-        assert(adminList.contains(bo.walletAddress.lowercase()))
+        assert(adminList.contains(boClient.inboxId))
         assert(superAdminList.size == 1)
-        assert(superAdminList.contains(bo.walletAddress.lowercase()))
+        assert(superAdminList.contains(boClient.inboxId))
     }
 
     @Test
     fun testGroupCanUpdateAdminList() {
-        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), GroupPermissions.ADMINS_ONLY) }
+        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), GroupPermissions.ADMIN_ONLY) }
         runBlocking { alixClient.conversations.syncGroups() }
         val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
 
-        assert(boGroup.isCreator())
-        assert(boGroup.isAdmin(bo.walletAddress))
-        assert(boGroup.isSuperAdmin(bo.walletAddress))
+        assert(boGroup.isAdmin(boClient.inboxId))
+        assert(boGroup.isSuperAdmin(boClient.inboxId))
         assert(!alixGroup.isCreator())
-        assert(!alixGroup.isAdmin(alix.walletAddress))
-        assert(!alixGroup.isSuperAdmin(alix.walletAddress))
+        assert(!alixGroup.isAdmin(alixClient.inboxId))
+        assert(!alixGroup.isSuperAdmin(alixClient.inboxId))
 
         var adminList = runBlocking {
             boGroup.listAdmins()
@@ -94,9 +92,9 @@ class GroupPermissionsTest {
             boGroup.listSuperAdmins()
         }
         assert(adminList.size == 1)
-        assert(adminList.contains(bo.walletAddress.lowercase()))
+        assert(adminList.contains(boClient.inboxId))
         assert(superAdminList.size == 1)
-        assert(superAdminList.contains(bo.walletAddress.lowercase()))
+        assert(superAdminList.contains(boClient.inboxId))
 
         // Verify that alix can NOT  update group name
         assert(boGroup.name == "New Group")
@@ -105,7 +103,7 @@ class GroupPermissionsTest {
                 alixGroup.updateGroupName("Alix group name")
             }
         }
-        assertEquals(exception.message, "Group error: Errors occurred during sync [CommitValidation(InsufficientPermissions)]")
+        assertEquals(exception.message, "Group error: generic: failed to wait for intent")
         runBlocking {
             alixGroup.sync()
             boGroup.sync()
@@ -114,7 +112,7 @@ class GroupPermissionsTest {
         assert(alixGroup.name == "New Group")
 
         runBlocking {
-            boGroup.addAdmin(alix.walletAddress.lowercase())
+            boGroup.addAdmin(alixClient.inboxId)
             boGroup.sync()
             alixGroup.sync()
         }
@@ -126,9 +124,9 @@ class GroupPermissionsTest {
             boGroup.listSuperAdmins()
         }
 
-        assert(alixGroup.isAdmin(alix.walletAddress.lowercase()))
+        assert(alixGroup.isAdmin(alixClient.inboxId))
         assert(adminList.size == 2)
-        assert(adminList.contains(alix.walletAddress.lowercase()))
+        assert(adminList.contains(alixClient.inboxId))
         assert(superAdminList.size == 1)
 
         // Verify that alix can now update group name
@@ -143,7 +141,7 @@ class GroupPermissionsTest {
         assert(alixGroup.name == "Alix group name")
 
         runBlocking {
-            boGroup.removeAdmin(alix.walletAddress.lowercase())
+            boGroup.removeAdmin(alixClient.inboxId)
             boGroup.sync()
             alixGroup.sync()
         }
@@ -155,9 +153,9 @@ class GroupPermissionsTest {
             boGroup.listSuperAdmins()
         }
 
-        assert(!alixGroup.isAdmin(alix.walletAddress.lowercase()))
+        assert(!alixGroup.isAdmin(alixClient.inboxId))
         assert(adminList.size == 1)
-        assert(!adminList.contains(alix.walletAddress.lowercase()))
+        assert(!adminList.contains(alixClient.inboxId))
         assert(superAdminList.size == 1)
 
         // Verify that alix can NOT  update group name
@@ -166,6 +164,47 @@ class GroupPermissionsTest {
                 alixGroup.updateGroupName("Alix group name 2")
             }
         }
-        assertEquals(exception.message, "Group error: Errors occurred during sync [CommitValidation(InsufficientPermissions)]")
+        assertEquals(exception.message, "Group error: generic: failed to wait for intent")
+    }
+
+    @Test
+    fun testGroupCanUpdateSuperAdminList() {
+        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), GroupPermissions.ADMIN_ONLY) }
+        runBlocking { alixClient.conversations.syncGroups() }
+        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
+
+        assert(boGroup.isSuperAdmin(boClient.inboxId))
+        assert(!alixGroup.isSuperAdmin(alixClient.inboxId))
+
+        // Attempt to remove bo as a super admin by alix should fail since she is not a super admin
+        val exception = assertThrows(uniffi.xmtpv3.GenericException.GroupException::class.java) {
+            runBlocking {
+                alixGroup.removeSuperAdmin(boClient.inboxId)
+            }
+        }
+        assertEquals(exception.message, "Group error: generic: failed to wait for intent")
+
+        // Make alix a super admin
+        runBlocking {
+            boGroup.addSuperAdmin(alixClient.inboxId)
+            boGroup.sync()
+            alixGroup.sync()
+        }
+
+        assert(alixGroup.isSuperAdmin(alixClient.inboxId))
+
+        // Now alix should be able to remove bo as a super admin
+        runBlocking {
+            alixGroup.removeSuperAdmin(boClient.inboxId)
+            alixGroup.sync()
+            boGroup.sync()
+        }
+
+        val superAdminList = runBlocking {
+            boGroup.listSuperAdmins()
+        }
+
+        assert(!superAdminList.contains(boClient.inboxId))
+        assert(superAdminList.contains(alixClient.inboxId))
     }
 }

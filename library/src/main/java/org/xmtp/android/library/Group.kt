@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
+import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.MessageDeliveryStatus
@@ -157,27 +158,27 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         return libXMTPGroup.isActive()
     }
 
-    fun addedByAddress(): String {
-        return libXMTPGroup.addedByAddress()
+    fun addedByInboxId(): String {
+        return libXMTPGroup.addedByInboxId()
     }
 
     fun permissionLevel(): GroupPermissions {
         return permissions.policyType()
     }
 
-    fun isCreator(): Boolean {
-        return metadata.creatorAccountAddress().lowercase() == client.address.lowercase()
+    fun creatorInboxId(): String {
+        return metadata.creatorInboxId()
     }
 
-    fun creatorAddress(): String {
-        return metadata.creatorAccountAddress()
+    fun isCreator(): Boolean {
+        return metadata.creatorInboxId() == client.inboxId
     }
 
     suspend fun addMembers(addresses: List<String>) {
         try {
             libXMTPGroup.addMembers(addresses)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to add member", e)
         }
     }
 
@@ -185,38 +186,62 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         try {
             libXMTPGroup.removeMembers(addresses)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to remove member", e)
         }
     }
 
-    fun memberAddresses(): List<String> {
-        return libXMTPGroup.listMembers().map { it.accountAddress }
+    suspend fun addMembersByInboxId(inboxIds: List<String>) {
+        try {
+            libXMTPGroup.addMembersByInboxId(inboxIds)
+        } catch (e: Exception) {
+            throw XMTPException("Unable to add member", e)
+        }
     }
 
-    fun peerAddresses(): List<String> {
-        val addresses = memberAddresses().map { it.lowercase() }.toMutableList()
-        addresses.remove(client.address.lowercase())
-        return addresses
+    suspend fun removeMembersByInboxId(inboxIds: List<String>) {
+        try {
+            libXMTPGroup.removeMembersByInboxId(inboxIds)
+        } catch (e: Exception) {
+            throw XMTPException("Unable to remove member", e)
+        }
+    }
+
+    fun members(): List<Member> {
+        return libXMTPGroup.listMembers().map { Member(it) }
+    }
+
+    fun peerInboxIds(): List<String> {
+        val ids = members().map { it.inboxId }.toMutableList()
+        ids.remove(client.inboxId)
+        return ids
     }
 
     suspend fun updateGroupName(name: String) {
         return libXMTPGroup.updateGroupName(name)
     }
 
-    fun isAdmin(accountAddress: String): Boolean {
-        return libXMTPGroup.isAdmin(accountAddress.lowercase())
+    fun isAdmin(inboxId: String): Boolean {
+        return libXMTPGroup.isAdmin(inboxId)
     }
 
-    fun isSuperAdmin(accountAddress: String): Boolean {
-        return libXMTPGroup.isAdmin(accountAddress.lowercase())
+    fun isSuperAdmin(inboxId: String): Boolean {
+        return libXMTPGroup.isSuperAdmin(inboxId)
     }
 
-    suspend fun addAdmin(accountAddress: String) {
-        return libXMTPGroup.addAdmin(accountAddress)
+    suspend fun addAdmin(inboxId: String) {
+        return libXMTPGroup.addAdmin(inboxId)
     }
 
-    suspend fun removeAdmin(accountAddress: String) {
-        return libXMTPGroup.removeAdmin(accountAddress)
+    suspend fun removeAdmin(inboxId: String) {
+        return libXMTPGroup.removeAdmin(inboxId)
+    }
+
+    suspend fun addSuperAdmin(inboxId: String) {
+        return libXMTPGroup.addSuperAdmin(inboxId)
+    }
+
+    suspend fun removeSuperAdmin(inboxId: String) {
+        return libXMTPGroup.removeSuperAdmin(inboxId)
     }
 
     suspend fun listAdmins(): List<String> {
