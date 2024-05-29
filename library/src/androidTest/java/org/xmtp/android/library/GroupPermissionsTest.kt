@@ -8,6 +8,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.xmtp.android.library.libxmtp.PermissionLevel
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
@@ -178,12 +179,12 @@ class GroupPermissionsTest {
         assert(!alixGroup.isSuperAdmin(alixClient.inboxId))
 
         // Attempt to remove bo as a super admin by alix should fail since she is not a super admin
-        val exception = assertThrows(uniffi.xmtpv3.GenericException.GroupException::class.java) {
+        val exception = assertThrows(XMTPException::class.java) {
             runBlocking {
                 alixGroup.removeSuperAdmin(boClient.inboxId)
             }
         }
-        assertEquals(exception.message, "Group error: generic: failed to wait for intent")
+        assertEquals(exception.message, "Permission denied: Unable to remove super admin")
 
         // Make alix a super admin
         runBlocking {
@@ -217,9 +218,9 @@ class GroupPermissionsTest {
 
         // Initial checks for group members and their permissions
         var members = runBlocking { group.members() }
-        var admins = members.filter { it.permissionLevel == FfiPermissionLevel.ADMIN }
-        var superAdmins = members.filter { it.permissionLevel == FfiPermissionLevel.SUPER_ADMIN }
-        var regularMembers = members.filter { it.permissionLevel == FfiPermissionLevel.MEMBER }
+        var admins = members.filter { it.permissionLevel == PermissionLevel.ADMIN }
+        var superAdmins = members.filter { it.permissionLevel == PermissionLevel.SUPER_ADMIN }
+        var regularMembers = members.filter { it.permissionLevel == PermissionLevel.MEMBER }
 
         assert(admins.size == 0)
         assert(superAdmins.size == 1)
@@ -233,9 +234,9 @@ class GroupPermissionsTest {
         }
 
         members = runBlocking { group.members() }
-        admins = members.filter { it.permissionLevel == FfiPermissionLevel.ADMIN }
-        superAdmins = members.filter { it.permissionLevel == FfiPermissionLevel.SUPER_ADMIN }
-        regularMembers = members.filter { it.permissionLevel == FfiPermissionLevel.MEMBER }
+        admins = members.filter { it.permissionLevel == PermissionLevel.ADMIN }
+        superAdmins = members.filter { it.permissionLevel == PermissionLevel.SUPER_ADMIN }
+        regularMembers = members.filter { it.permissionLevel == PermissionLevel.MEMBER }
 
         assert(admins.size == 1)
         assert(superAdmins.size == 1)
@@ -249,9 +250,9 @@ class GroupPermissionsTest {
         }
 
         members = runBlocking { group.members() }
-        admins = members.filter { it.permissionLevel == FfiPermissionLevel.ADMIN }
-        superAdmins = members.filter { it.permissionLevel == FfiPermissionLevel.SUPER_ADMIN }
-        regularMembers = members.filter { it.permissionLevel == FfiPermissionLevel.MEMBER }
+        admins = members.filter { it.permissionLevel == PermissionLevel.ADMIN }
+        superAdmins = members.filter { it.permissionLevel == PermissionLevel.SUPER_ADMIN }
+        regularMembers = members.filter { it.permissionLevel == PermissionLevel.MEMBER }
 
         assert(admins.size == 1)
         assert(superAdmins.size == 2)
