@@ -1002,6 +1002,7 @@ $dokka.location:org.xmtp.android.library/Client/conversations/#/PointingToDeclar
 $dokka.location:org.xmtp.android.library/Client/create/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.ApiClient#org.xmtp.android.library.ClientOptions?/PointingToDeclaration/library/org.xmtp.android.library/-client/create.html
 $dokka.location:org.xmtp.android.library/Client/create/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.ClientOptions?/PointingToDeclaration/library/org.xmtp.android.library/-client/create.html
 $dokka.location:org.xmtp.android.library/Client/deleteLocalDatabase/#/PointingToDeclaration/library/org.xmtp.android.library/-client/delete-local-database.html
+$dokka.location:org.xmtp.android.library/Client/dropLocalDatabaseConnection/#/PointingToDeclaration/library/org.xmtp.android.library/-client/drop-local-database-connection.html
 $dokka.location:org.xmtp.android.library/Client/ensureUserContactPublished/#/PointingToDeclaration/library/org.xmtp.android.library/-client/ensure-user-contact-published.html
 $dokka.location:org.xmtp.android.library/Client/fetchConversation/#kotlin.String?#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client/fetch-conversation.html
 $dokka.location:org.xmtp.android.library/Client/getUserContact/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/get-user-contact.html
@@ -1018,6 +1019,7 @@ $dokka.location:org.xmtp.android.library/Client/privateKeyBundleV1/#/PointingToD
 $dokka.location:org.xmtp.android.library/Client/publish/#kotlin.collections.List[org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope]/PointingToDeclaration/library/org.xmtp.android.library/-client/publish.html
 $dokka.location:org.xmtp.android.library/Client/publishUserContact/#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client/publish-user-contact.html
 $dokka.location:org.xmtp.android.library/Client/query/#org.xmtp.android.library.messages.Topic#org.xmtp.android.library.messages.Pagination?/PointingToDeclaration/library/org.xmtp.android.library/-client/query.html
+$dokka.location:org.xmtp.android.library/Client/reconnectLocalDatabase/#/PointingToDeclaration/library/org.xmtp.android.library/-client/reconnect-local-database.html
 $dokka.location:org.xmtp.android.library/Client/subscribe/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-client/subscribe.html
 $dokka.location:org.xmtp.android.library/Client/subscribe2/#kotlinx.coroutines.flow.Flow[org.xmtp.proto.message.api.v1.MessageApiOuterClass.SubscribeRequest]/PointingToDeclaration/library/org.xmtp.android.library/-client/subscribe2.html
 $dokka.location:org.xmtp.android.library/Client/v1keys/#/PointingToDeclaration/library/org.xmtp.android.library/-client/v1keys.html
