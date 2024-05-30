@@ -333,9 +333,13 @@ class GroupTest {
     fun testMessageTimeIsCorrect() {
         val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(boClient.address)) }
         runBlocking { alixGroup.send("Hello") }
-        val message1 = alixGroup.messages().last()
+        val messages1 = alixGroup.messages()
+        val message1 = messages1.last()
+        assertEquals(messages1.size, 2)
         runBlocking { alixGroup.sync() }
-        val message2 = alixGroup.messages().last()
+        val messages2 = alixGroup.messages()
+        val message2 = messages2.last()
+        assertEquals(messages2.size, 2)
         runBlocking { alixGroup.sync() }
         val message3 = alixGroup.messages().last()
         assertEquals(message1.id, message2.id)
@@ -724,17 +728,17 @@ class GroupTest {
 
     @Test
     fun testCanAllowAndDenyInboxId() {
-        assert(!boClient.contacts.isInboxIdAllowed(alixClient.inboxId))
-        assert(!boClient.contacts.isInboxIdDenied(alixClient.inboxId))
+        assert(!boClient.contacts.isInboxAllowed(alixClient.inboxId))
+        assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
 
-        runBlocking { boClient.contacts.allowInboxId(listOf(alixClient.inboxId)) }
+        runBlocking { boClient.contacts.allowInbox(listOf(alixClient.inboxId)) }
 
-        assert(boClient.contacts.isInboxIdAllowed(alixClient.inboxId))
-        assert(!boClient.contacts.isInboxIdDenied(alixClient.inboxId))
+        assert(boClient.contacts.isInboxAllowed(alixClient.inboxId))
+        assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
 
-        runBlocking { boClient.contacts.denyInboxIds(listOf(alixClient.inboxId)) }
+        runBlocking { boClient.contacts.denyInbox(listOf(alixClient.inboxId)) }
 
-        assert(!boClient.contacts.isInboxIdAllowed(alixClient.inboxId))
-        assert(boClient.contacts.isInboxIdDenied(alixClient.inboxId))
+        assert(!boClient.contacts.isInboxAllowed(alixClient.inboxId))
+        assert(boClient.contacts.isInboxDenied(alixClient.inboxId))
     }
 }

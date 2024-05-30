@@ -10,7 +10,6 @@ import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesAction
-import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesAction.AllowInboxId
 import java.util.Date
 
 enum class ConsentState {
@@ -304,14 +303,14 @@ data class Contacts(
         consentList.publish(entries)
     }
 
-    suspend fun allowInboxId(inboxIds: List<String>) {
+    suspend fun allowInbox(inboxIds: List<String>) {
         val entries = inboxIds.map {
             consentList.allowInboxId(it)
         }
         consentList.publish(entries)
     }
 
-    suspend fun denyInboxIds(inboxIds: List<String>) {
+    suspend fun denyInbox(inboxIds: List<String>) {
         val entries = inboxIds.map {
             consentList.denyInboxId(it)
         }
@@ -334,11 +333,11 @@ data class Contacts(
         return consentList.groupState(groupId) == ConsentState.DENIED
     }
 
-    fun isInboxIdAllowed(inboxId: String): Boolean {
+    fun isInboxAllowed(inboxId: String): Boolean {
         return consentList.inboxIdState(inboxId) == ConsentState.ALLOWED
     }
 
-    fun isInboxIdDenied(inboxId: String): Boolean {
+    fun isInboxDenied(inboxId: String): Boolean {
         return consentList.inboxIdState(inboxId) == ConsentState.DENIED
     }
 
