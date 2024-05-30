@@ -303,14 +303,14 @@ data class Contacts(
         consentList.publish(entries)
     }
 
-    suspend fun allowInbox(inboxIds: List<String>) {
+    suspend fun allowInboxes(inboxIds: List<String>) {
         val entries = inboxIds.map {
             consentList.allowInboxId(it)
         }
         consentList.publish(entries)
     }
 
-    suspend fun denyInbox(inboxIds: List<String>) {
+    suspend fun denyInboxes(inboxIds: List<String>) {
         val entries = inboxIds.map {
             consentList.denyInboxId(it)
         }

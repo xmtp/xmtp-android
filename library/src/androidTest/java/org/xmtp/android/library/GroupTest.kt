@@ -713,12 +713,12 @@ class GroupTest {
         assert(!boClient.contacts.isInboxAllowed(alixClient.inboxId))
         assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
 
-        runBlocking { boClient.contacts.allowInbox(listOf(alixClient.inboxId)) }
+        runBlocking { boClient.contacts.allowInboxes(listOf(alixClient.inboxId)) }
 
         assert(boClient.contacts.isInboxAllowed(alixClient.inboxId))
         assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
 
-        runBlocking { boClient.contacts.denyInbox(listOf(alixClient.inboxId)) }
+        runBlocking { boClient.contacts.denyInboxes(listOf(alixClient.inboxId)) }
 
         assert(!boClient.contacts.isInboxAllowed(alixClient.inboxId))
         assert(boClient.contacts.isInboxDenied(alixClient.inboxId))
