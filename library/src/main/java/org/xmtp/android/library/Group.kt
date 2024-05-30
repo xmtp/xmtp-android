@@ -95,10 +95,9 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
-        direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
     ): List<DecodedMessage> {
-        val messages = libXMTPGroup.findMessages(
+        return libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
@@ -113,21 +112,15 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         ).mapNotNull {
             MessageV3(client, it).decodeOrNull()
         }
-
-        return when (direction) {
-            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
-            else -> messages.reversed()
-        }
     }
 
     fun decryptedMessages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
-        direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
     ): List<DecryptedMessage> {
-        val messages = libXMTPGroup.findMessages(
+        return libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
@@ -141,11 +134,6 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
             )
         ).mapNotNull {
             MessageV3(client, it).decryptOrNull()
-        }
-
-        return when (direction) {
-            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
-            else -> messages.reversed()
         }
     }
 

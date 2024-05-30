@@ -257,7 +257,6 @@ sealed class Conversation {
                     limit = limit,
                     before = before,
                     after = after,
-                    direction = direction,
                 )
             }
         }
@@ -272,7 +271,7 @@ sealed class Conversation {
         return when (this) {
             is V1 -> conversationV1.decryptedMessages(limit, before, after, direction)
             is V2 -> conversationV2.decryptedMessages(limit, before, after, direction)
-            is Group -> group.decryptedMessages(limit, before, after, direction)
+            is Group -> group.decryptedMessages(limit, before, after)
         }
     }
 
