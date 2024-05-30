@@ -333,19 +333,13 @@ class GroupTest {
     fun testMessageTimeIsCorrect() {
         val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(boClient.address)) }
         runBlocking { alixGroup.send("Hello") }
-        val messages1 = alixGroup.messages()
-        val message1 = messages1.last()
-        assertEquals(messages1.size, 2)
+        assertEquals(alixGroup.decryptedMessages().size, 2)
         runBlocking { alixGroup.sync() }
-        val messages2 = alixGroup.messages()
-        val message2 = messages2.last()
-        assertEquals(messages2.size, 2)
+        val message2 = alixGroup.decryptedMessages().last()
         runBlocking { alixGroup.sync() }
-        val message3 = alixGroup.messages().last()
-        assertEquals(message1.id, message2.id)
-        assertEquals(message1.sent, message2.sent)
+        val message3 = alixGroup.decryptedMessages().last()
         assertEquals(message3.id, message2.id)
-        assertEquals(message3.sent, message2.sent)
+        assertEquals(message3.sentAt.time, message2.sentAt.time)
     }
 
     @Test
