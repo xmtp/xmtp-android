@@ -109,7 +109,7 @@ class GroupTest {
         assertEquals(alixGroup.isAdmin(alixClient.inboxId), false)
         // can not fetch creator ID. See https://github.com/xmtp/libxmtp/issues/788
 //       assert(boGroup.isCreator())
-       assert(!alixGroup.isCreator())
+        assert(!alixGroup.isCreator())
     }
 
     @Test
@@ -167,7 +167,7 @@ class GroupTest {
         assertEquals(alixGroup.isAdmin(alixClient.inboxId), false)
         // can not fetch creator ID. See https://github.com/xmtp/libxmtp/issues/788
 //       assert(boGroup.isCreator())
-       assert(!alixGroup.isCreator())
+        assert(!alixGroup.isCreator())
     }
 
     @Test
