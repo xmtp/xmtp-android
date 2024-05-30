@@ -683,7 +683,7 @@ class GroupTest {
         var result = boClient.contacts.isGroupAllowed(group.id)
         assert(result)
 
-        runBlocking { boClient.contacts.allowGroup(listOf(group.id)) }
+        runBlocking { boClient.contacts.allowGroups(listOf(group.id)) }
 
         result = boClient.contacts.isGroupAllowed(group.id)
         assert(result)
@@ -702,7 +702,7 @@ class GroupTest {
         var result = boClient.contacts.isGroupAllowed(group.id)
         assert(result)
 
-        runBlocking { boClient.contacts.denyGroup(listOf(group.id)) }
+        runBlocking { boClient.contacts.denyGroups(listOf(group.id)) }
 
         result = boClient.contacts.isGroupDenied(group.id)
         assert(result)

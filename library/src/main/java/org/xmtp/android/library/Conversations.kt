@@ -123,7 +123,7 @@ data class Conversations(
         val group =
             libXMTPConversations?.createGroup(accountAddresses, permissions = permissions)
                 ?: throw XMTPException("Client does not support Groups")
-        client.contacts.allowGroup(groupIds = listOf(group.id()))
+        client.contacts.allowGroups(groupIds = listOf(group.id()))
 
         return Group(client, group)
     }

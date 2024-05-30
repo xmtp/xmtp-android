@@ -289,14 +289,14 @@ data class Contacts(
         consentList.publish(entries)
     }
 
-    suspend fun allowGroup(groupIds: List<ByteArray>) {
+    suspend fun allowGroups(groupIds: List<ByteArray>) {
         val entries = groupIds.map {
             consentList.allowGroup(it)
         }
         consentList.publish(entries)
     }
 
-    suspend fun denyGroup(groupIds: List<ByteArray>) {
+    suspend fun denyGroups(groupIds: List<ByteArray>) {
         val entries = groupIds.map {
             consentList.denyGroup(it)
         }
