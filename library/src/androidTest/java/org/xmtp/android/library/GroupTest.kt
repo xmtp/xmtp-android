@@ -329,27 +329,20 @@ class GroupTest {
         )
     }
 
-//    @Test
-//    fun testCanRemoveGroupMembersWhenNotCreator() {
-//        runBlocking {
-//            boClient.conversations.newGroup(
-//                listOf(
-//                    alixClient.address,
-//                    caroClient.address
-//                )
-//            )
-//        }
-//        runBlocking { alixClient.conversations.syncGroups() }
-//        val group = runBlocking { alixClient.conversations.listGroups().first() }
-//        runBlocking { group.removeMembers(listOf(caroClient.address)) }
-//        assertEquals(
-//            group.members().map { it.inboxId }.sorted(),
-//            listOf(
-//                alixClient.inboxId.lowercase(),
-//                boClient.inboxId.lowercase()
-//            ).sorted()
-//        )
-//    }
+    @Test
+    fun testMessageTimeIsCorrect() {
+        val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(boClient.address)) }
+        runBlocking { alixGroup.send("Hello") }
+        val message1 = alixGroup.messages().last()
+        runBlocking { alixGroup.sync() }
+        val message2 = alixGroup.messages().last()
+        runBlocking { alixGroup.sync() }
+        val message3 = alixGroup.messages().last()
+        assertEquals(message1.id, message2.id)
+        assertEquals(message1.sent, message2.sent)
+        assertEquals(message3.id, message2.id)
+        assertEquals(message3.sent, message2.sent)
+    }
 
     @Test
     fun testIsActiveReturnsCorrectly() {
