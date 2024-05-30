@@ -83,27 +83,22 @@ class GroupTest {
             alixGroup.addMembers(listOf(caro.walletAddress))
             boGroup.sync()
         }
-        // Issue members is not returning correctly for non group creators:
-        // https://github.com/xmtp/libxmtp/issues/769
-//       assertEquals(alixGroup.members().size, 3)
+        assertEquals(alixGroup.members().size, 3)
         assertEquals(boGroup.members().size, 3)
 
         runBlocking {
             alixGroup.removeMembers(listOf(caro.walletAddress))
             boGroup.sync()
         }
-        // Issue members is not returning correctly for non group creators:
-        // https://github.com/xmtp/libxmtp/issues/769
-//       assertEquals(alixGroup.members().size, 2)
+
+        assertEquals(alixGroup.members().size, 2)
         assertEquals(boGroup.members().size, 2)
 
         runBlocking {
             boGroup.addMembers(listOf(caro.walletAddress))
             boGroup.sync()
         }
-        // Issue members is not returning correctly for non group creators:
-        // https://github.com/xmtp/libxmtp/issues/769
-//       assertEquals(alixGroup.members().size, 3)
+        assertEquals(alixGroup.members().size, 3)
         assertEquals(boGroup.members().size, 3)
 
         assertEquals(boGroup.permissionLevel(), GroupPermissions.ALL_MEMBERS)
@@ -138,35 +133,30 @@ class GroupTest {
             alixGroup.sync()
         }
 
-        // Issue members is not returning correctly for non group creators:
-        // https://github.com/xmtp/libxmtp/issues/769
-//        assertEquals(alixGroup.members().size, 3)
+        assertEquals(alixGroup.members().size, 3)
         assertEquals(boGroup.members().size, 3)
 
         assertThrows(XMTPException::class.java) {
             runBlocking { alixGroup.removeMembers(listOf(caro.walletAddress)) }
         }
         runBlocking { boGroup.sync() }
-        // Issue members is not returning correctly for non group creators:
-        // https://github.com/xmtp/libxmtp/issues/769
-//        assertEquals(alixGroup.members().size, 3)
+
+        assertEquals(alixGroup.members().size, 3)
         assertEquals(boGroup.members().size, 3)
         runBlocking {
             boGroup.removeMembers(listOf(caro.walletAddress))
             alixGroup.sync()
         }
-        // Issue members is not returning correctly for non group creators:
-        // https://github.com/xmtp/libxmtp/issues/769
-//        assertEquals(alixGroup.members().size, 2)
+
+        assertEquals(alixGroup.members().size, 2)
         assertEquals(boGroup.members().size, 2)
 
         assertThrows(XMTPException::class.java) {
             runBlocking { alixGroup.addMembers(listOf(caro.walletAddress)) }
         }
         runBlocking { boGroup.sync() }
-        // Issue members is not returning correctly for non group creators:
-        // https://github.com/xmtp/libxmtp/issues/769
-//        assertEquals(alixGroup.members().size, 2)
+
+        assertEquals(alixGroup.members().size, 2)
         assertEquals(boGroup.members().size, 2)
 
         assertEquals(boGroup.permissionLevel(), GroupPermissions.ADMIN_ONLY)
@@ -285,13 +275,11 @@ class GroupTest {
             group.sync()
             boGroup.sync()
         }
-        // Issue members is not returning correctly for non group creators:
-        // https://github.com/xmtp/libxmtp/issues/769
         assertEquals(
             boGroup.members().map { it.inboxId }.sorted(),
             listOf(
-                alixClient.inboxId.lowercase(),
-                boClient.inboxId.lowercase()
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
     }
