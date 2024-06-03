@@ -311,11 +311,13 @@ class Client() {
                     isSecure = options.api.isSecure,
                     accountAddress = accountAddress
                 )
+                Log.d("LOPI1", inboxId.toString())
 
-                val nonce = SecureRandom().nextLong().toULong()
                 if (inboxId.isNullOrBlank()) {
-                    inboxId = generateInboxId(accountAddress, nonce)
+                    inboxId = generateInboxId(accountAddress, 0.toULong())
                 }
+
+                Log.d("LOPI2", inboxId)
                 val alias = "xmtp-${options.api.env}-$inboxId"
 
                 val dbDir = if (options.dbDirectory == null) {
@@ -367,7 +369,7 @@ class Client() {
                     encryptionKey = encryptionKey,
                     accountAddress = accountAddress,
                     inboxId = inboxId,
-                    nonce = nonce,
+                    nonce = 0.toULong(),
                     legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
                 )
             } else {
@@ -376,13 +378,15 @@ class Client() {
 
         if (v3Client != null) {
             v3Client.signatureRequest()?.let { signatureRequest ->
-                if (account != null) {
-                    account.sign(signatureRequest.signatureText())?.let {
-                        signatureRequest.addEcdsaSignature(it.rawData)
+                if (!signatureRequest.isReady()) {
+                    if (account != null) {
+                        account.sign(signatureRequest.signatureText())?.let {
+                            signatureRequest.addEcdsaSignature(it.rawData)
+                        }
+                        v3Client.registerIdentity(signatureRequest)
+                    } else {
+                        throw XMTPException("No signer passed but signer was required.")
                     }
-                    v3Client.registerIdentity(signatureRequest)
-                } else {
-                    throw XMTPException("No signer passed but signer was required.")
                 }
             }
         }
