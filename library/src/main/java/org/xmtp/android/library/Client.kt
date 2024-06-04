@@ -376,15 +376,13 @@ class Client() {
 
         if (v3Client != null) {
             v3Client.signatureRequest()?.let { signatureRequest ->
-                if (!signatureRequest.isReady()) {
-                    if (account != null) {
-                        account.sign(signatureRequest.signatureText())?.let {
-                            signatureRequest.addEcdsaSignature(it.rawData)
-                        }
-                        v3Client.registerIdentity(signatureRequest)
-                    } else {
-                        throw XMTPException("No signer passed but signer was required.")
+                if (account != null) {
+                    account.sign(signatureRequest.signatureText())?.let {
+                        signatureRequest.addEcdsaSignature(it.rawData)
                     }
+                    v3Client.registerIdentity(signatureRequest)
+                } else {
+                    throw XMTPException("No signer passed but signer was required.")
                 }
             }
         }
