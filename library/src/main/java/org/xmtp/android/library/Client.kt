@@ -300,9 +300,10 @@ class Client() {
         account: SigningKey?,
         appContext: Context?,
         privateKeyBundleV1: PrivateKeyBundleV1,
-        accountAddress: String,
+        address: String,
     ): Pair<FfiXmtpClient?, String> {
         var dbPath = ""
+        val accountAddress = address.lowercase()
         val v3Client: FfiXmtpClient? =
             if (isAlphaMlsEnabled(options)) {
                 var inboxId = getInboxIdForAddress(
@@ -378,7 +379,7 @@ class Client() {
 
         if (v3Client != null) {
             v3Client.signatureRequest()?.let { signatureRequest ->
-                if (!signatureRequest.isReady()) {
+                if (signatureRequest.isReady()) {
                     if (account != null) {
                         account.sign(signatureRequest.signatureText())?.let {
                             signatureRequest.addEcdsaSignature(it.rawData)
