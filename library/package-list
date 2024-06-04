@@ -1371,7 +1371,7 @@ $dokka.location:org.xmtp.android.library/XMTPEnvironment/withValue/#kotlin.Strin
 $dokka.location:org.xmtp.android.library/XMTPException///PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/index.html
 $dokka.location:org.xmtp.android.library/XMTPException/XMTPException/#kotlin.String#java.lang.Exception?/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/-x-m-t-p-exception.html
 $dokka.location:uniffi.xmtpv3////PointingToDeclaration/library/uniffi.xmtpv3/index.html
-$dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.FfiLogger#kotlin.String#kotlin.Boolean#kotlin.String?#kotlin.ByteArray?#kotlin.String#uniffi.xmtpv3.LegacyIdentitySource#kotlin.ByteArray?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
+$dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.FfiLogger#kotlin.String#kotlin.Boolean#kotlin.String?#kotlin.ByteArray?#kotlin.String#kotlin.String#kotlin.ULong#kotlin.ByteArray?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
 $dokka.location:uniffi.xmtpv3//createV2Client/#kotlin.String#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtpv3/create-v2-client.html
 $dokka.location:uniffi.xmtpv3//diffieHellmanK256/#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/diffie-hellman-k256.html
 $dokka.location:uniffi.xmtpv3//generateInboxId/#kotlin.String#kotlin.ULong/PointingToDeclaration/library/uniffi.xmtpv3/generate-inbox-id.html
@@ -1659,10 +1659,6 @@ $dokka.location:uniffi.xmtpv3/FfiConverterTypeGroupPermissions///PointingToDecla
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeGroupPermissions/allocationSize/#uniffi.xmtpv3.GroupPermissions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-group-permissions/allocation-size.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeGroupPermissions/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-group-permissions/read.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeGroupPermissions/write/#uniffi.xmtpv3.GroupPermissions#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-group-permissions/write.html
-$dokka.location:uniffi.xmtpv3/FfiConverterTypeLegacyIdentitySource///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-legacy-identity-source/index.html
-$dokka.location:uniffi.xmtpv3/FfiConverterTypeLegacyIdentitySource/allocationSize/#uniffi.xmtpv3.LegacyIdentitySource/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-legacy-identity-source/allocation-size.html
-$dokka.location:uniffi.xmtpv3/FfiConverterTypeLegacyIdentitySource/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-legacy-identity-source/read.html
-$dokka.location:uniffi.xmtpv3/FfiConverterTypeLegacyIdentitySource/write/#uniffi.xmtpv3.LegacyIdentitySource#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-legacy-identity-source/write.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeSigningError///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-signing-error/index.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeSigningError/allocationSize/#uniffi.xmtpv3.SigningException/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-signing-error/allocation-size.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeSigningError/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-signing-error/read.html
@@ -1859,6 +1855,7 @@ $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/addEcdsaSignature/#kotlin.Byte
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/addErc1271Signature/#kotlin.ByteArray#kotlin.String#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/add-erc1271-signature.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/close.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/destroy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/destroy.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureRequest/isReady/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/is-ready.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/missingAddressSignatures/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/missing-address-signatures.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/signatureText/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/signature-text.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/uniffi-clone-pointer.html
@@ -1866,6 +1863,7 @@ $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface.Companion///PointingT
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/index.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/addEcdsaSignature/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/add-ecdsa-signature.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/addErc1271Signature/#kotlin.ByteArray#kotlin.String#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/add-erc1271-signature.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/isReady/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/is-ready.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/missingAddressSignatures/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/missing-address-signatures.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/signatureText/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/signature-text.html
 $dokka.location:uniffi.xmtpv3/FfiSortDirection.ASCENDING///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-sort-direction/-a-s-c-e-n-d-i-n-g/index.html
@@ -2010,14 +2008,6 @@ $dokka.location:uniffi.xmtpv3/GroupPermissions/valueOf/#kotlin.String/PointingTo
 $dokka.location:uniffi.xmtpv3/GroupPermissions/values/#/PointingToDeclaration/library/uniffi.xmtpv3/-group-permissions/values.html
 $dokka.location:uniffi.xmtpv3/InternalException///PointingToDeclaration/library/uniffi.xmtpv3/-internal-exception/index.html
 $dokka.location:uniffi.xmtpv3/InternalException/InternalException/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-internal-exception/-internal-exception.html
-$dokka.location:uniffi.xmtpv3/LegacyIdentitySource.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-legacy-identity-source/-companion/index.html
-$dokka.location:uniffi.xmtpv3/LegacyIdentitySource.KEY_GENERATOR///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-legacy-identity-source/-k-e-y_-g-e-n-e-r-a-t-o-r/index.html
-$dokka.location:uniffi.xmtpv3/LegacyIdentitySource.NETWORK///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-legacy-identity-source/-n-e-t-w-o-r-k/index.html
-$dokka.location:uniffi.xmtpv3/LegacyIdentitySource.NONE///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-legacy-identity-source/-n-o-n-e/index.html
-$dokka.location:uniffi.xmtpv3/LegacyIdentitySource.STATIC///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-legacy-identity-source/-s-t-a-t-i-c/index.html
-$dokka.location:uniffi.xmtpv3/LegacyIdentitySource///PointingToDeclaration/library/uniffi.xmtpv3/-legacy-identity-source/index.html
-$dokka.location:uniffi.xmtpv3/LegacyIdentitySource/valueOf/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-legacy-identity-source/value-of.html
-$dokka.location:uniffi.xmtpv3/LegacyIdentitySource/values/#/PointingToDeclaration/library/uniffi.xmtpv3/-legacy-identity-source/values.html
 $dokka.location:uniffi.xmtpv3/NoPointer///PointingToDeclaration/library/uniffi.xmtpv3/-no-pointer/index.html
 $dokka.location:uniffi.xmtpv3/RustBuffer.ByReference///PointingToDeclaration/library/uniffi.xmtpv3/-rust-buffer/-by-reference/index.html
 $dokka.location:uniffi.xmtpv3/RustBuffer.ByReference/ByReference/#/PointingToDeclaration/library/uniffi.xmtpv3/-rust-buffer/-by-reference/-by-reference.html
