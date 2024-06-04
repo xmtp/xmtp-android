@@ -51,7 +51,6 @@ import uniffi.xmtpv3.getVersionInfo
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore
-import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
@@ -312,13 +311,11 @@ class Client() {
                     isSecure = options.api.isSecure,
                     accountAddress = accountAddress
                 )
-                Log.d("LOPI1", inboxId.toString())
 
                 if (inboxId.isNullOrBlank()) {
                     inboxId = generateInboxId(accountAddress, 0.toULong())
                 }
 
-                Log.d("LOPI2", inboxId)
                 val alias = "xmtp-${options.api.env}-$inboxId"
 
                 val dbDir = if (options.dbDirectory == null) {
