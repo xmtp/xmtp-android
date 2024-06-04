@@ -376,7 +376,7 @@ class Client() {
 
         if (v3Client != null) {
             v3Client.signatureRequest()?.let { signatureRequest ->
-                if (signatureRequest.isReady()) {
+                if (!signatureRequest.isReady()) {
                     if (account != null) {
                         account.sign(signatureRequest.signatureText())?.let {
                             signatureRequest.addEcdsaSignature(it.rawData)
