@@ -319,23 +319,13 @@ class Client() {
                 val alias = "xmtp-${options.api.env}-$inboxId"
 
                 val mlsDbDirectory = options.dbDirectory
-                val dbDir = if (mlsDbDirectory != null) {
-                    val directoryFile = File(mlsDbDirectory)
-                    // Check if the directory exists, if not, create it
-                    if (!directoryFile.exists()) {
-                        try {
-                            directoryFile.mkdirs()
-                        } catch (e: Exception) {
-                            throw XMTPException("Failed to create db directory $mlsDbDirectory")
-                        }
-                    }
-                    directoryFile
+                val directoryFile = if (mlsDbDirectory != null) {
+                    File(mlsDbDirectory)
                 } else {
                     File(appContext?.filesDir?.absolutePath, "xmtp_db")
                 }
-
-                dbDir.mkdir()
-                dbPath = dbDir.absolutePath + "/$alias.db3"
+                directoryFile.mkdir()
+                dbPath = directoryFile.absolutePath + "/$alias.db3"
 
                 val encryptionKey = if (options.dbEncryptionKey == null) {
                     val keyStore = KeyStore.getInstance("AndroidKeyStore")
