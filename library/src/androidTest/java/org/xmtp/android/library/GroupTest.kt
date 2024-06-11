@@ -3,6 +3,7 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
@@ -538,6 +539,43 @@ class GroupTest {
             }
         }
     }
+
+    @Test
+    fun testStreamGroupsAndAllMessages() {
+        val alixGroups = runBlocking { alixClient.conversations.listGroups()}
+        assertEquals(0, alixGroups.size)
+
+        var groupCallbacks = 0
+        var messageCallbacks = 0
+
+        val job2 = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                alixClient.conversations.streamAllMessages(includeGroups = true).collect { message ->
+                    messageCallbacks++
+                }
+            } catch (e: Exception) {
+            }
+        }
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                alixClient.conversations.streamGroups().collect { message ->
+                    groupCallbacks++
+                }
+            } catch (e: Exception) {
+            }
+        }
+
+        val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.address)) }
+        runBlocking { group.send("hello") }
+
+        val alixGroups2 = runBlocking { alixClient.conversations.listGroups()}
+        assertEquals(1, alixGroups2.size)
+
+        assertEquals(1, messageCallbacks)
+        assertEquals(1, groupCallbacks)
+    }
+
 
     @Test
     fun testCanStreamAllMessages() = kotlinx.coroutines.test.runTest {
