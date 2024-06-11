@@ -288,5 +288,4 @@ class GroupPermissionsTest {
         assert(boGroup.name == "Alix group name")
         assert(alixGroup.name == "Alix group name")
     }
-
 }
