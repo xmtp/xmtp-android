@@ -257,4 +257,36 @@ class GroupPermissionsTest {
         assert(superAdmins.size == 2)
         assert(regularMembers.isEmpty())
     }
+
+    @Test
+    fun testCanCommitAfterInvalidPermissionsCommit() {
+        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), GroupPermissions.ALL_MEMBERS) }
+        runBlocking { alixClient.conversations.syncGroups() }
+        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
+
+        // Verify that alix can NOT  add an admin
+        assert(boGroup.name == "New Group")
+        val exception = assertThrows(XMTPException::class.java) {
+            runBlocking {
+                alixGroup.addAdmin(alixClient.inboxId)
+            }
+        }
+        assertEquals(exception.message, "Permission denied: Unable to add admin")
+        runBlocking {
+            alixGroup.sync()
+            boGroup.sync()
+        }
+
+        // Verify that alix can update group name
+        runBlocking {
+            boGroup.sync()
+            alixGroup.sync()
+            alixGroup.updateGroupName("Alix group name")
+            alixGroup.sync()
+            boGroup.sync()
+        }
+        assert(boGroup.name == "Alix group name")
+        assert(alixGroup.name == "Alix group name")
+    }
+
 }
