@@ -98,19 +98,19 @@ class GroupPermissionsTest {
         assert(superAdminList.contains(boClient.inboxId))
 
         // Verify that alix can NOT  update group name
-        assert(boGroup.name == "New Group")
+        assert(boGroup.name == "")
         val exception = assertThrows(uniffi.xmtpv3.GenericException.GroupException::class.java) {
             runBlocking {
                 alixGroup.updateGroupName("Alix group name")
             }
         }
-        assertEquals(exception.message, "Group error: generic: failed to wait for intent")
+        assertEquals(exception.message, "Group error: generic: Group intent could not be committed")
         runBlocking {
             alixGroup.sync()
             boGroup.sync()
         }
-        assert(boGroup.name == "New Group")
-        assert(alixGroup.name == "New Group")
+        assert(boGroup.name == "")
+        assert(alixGroup.name == "")
 
         runBlocking {
             boGroup.addAdmin(alixClient.inboxId)
@@ -165,7 +165,7 @@ class GroupPermissionsTest {
                 alixGroup.updateGroupName("Alix group name 2")
             }
         }
-        assertEquals(exception.message, "Group error: generic: failed to wait for intent")
+        assertEquals(exception.message, "Group error: generic: Group intent could not be committed")
     }
 
     @Test
@@ -265,7 +265,7 @@ class GroupPermissionsTest {
         val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
 
         // Verify that alix can NOT  add an admin
-        assert(boGroup.name == "New Group")
+        assert(boGroup.name == "")
         val exception = assertThrows(XMTPException::class.java) {
             runBlocking {
                 alixGroup.addAdmin(alixClient.inboxId)
