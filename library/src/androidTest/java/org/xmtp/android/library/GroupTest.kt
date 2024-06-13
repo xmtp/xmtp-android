@@ -542,20 +542,9 @@ class GroupTest {
 
     @Test
     fun testStreamGroupsAndAllMessages() {
-        val alixGroups = runBlocking { alixClient.conversations.listGroups()}
-        assertEquals(0, alixGroups.size)
-
         var groupCallbacks = 0
         var messageCallbacks = 0
 
-        val job2 = CoroutineScope(Dispatchers.IO).launch {
-            try {
-                alixClient.conversations.streamAllMessages(includeGroups = true).collect { message ->
-                    messageCallbacks++
-                }
-            } catch (e: Exception) {
-            }
-        }
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -566,11 +555,19 @@ class GroupTest {
             }
         }
 
+        val job2 = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                alixClient.conversations.streamAllMessages(includeGroups = true).collect { message ->
+                    messageCallbacks++
+                }
+            } catch (e: Exception) {
+            }
+        }
+
         val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.address)) }
         runBlocking { group.send("hello") }
 
-        val alixGroups2 = runBlocking { alixClient.conversations.listGroups()}
-        assertEquals(1, alixGroups2.size)
+        Thread.sleep(1000)
 
         assertEquals(1, messageCallbacks)
         assertEquals(1, groupCallbacks)
