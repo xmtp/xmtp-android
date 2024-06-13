@@ -378,7 +378,15 @@ class Client() {
             v3Client.signatureRequest()?.let { signatureRequest ->
                 if (account != null) {
                     account.sign(signatureRequest.signatureText())?.let {
-                        signatureRequest.addEcdsaSignature(it.rawData)
+                        if (account.chainRPCUrl.isNotEmpty()) {
+                            signatureRequest.addScwSignature(
+                                it.rawData,
+                                accountAddress,
+                                account.chainRPCUrl
+                            )
+                        } else {
+                            signatureRequest.addEcdsaSignature(it.rawData)
+                        }
                     }
                     v3Client.registerIdentity(signatureRequest)
                 } else {
