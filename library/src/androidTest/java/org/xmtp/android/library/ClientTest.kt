@@ -202,7 +202,7 @@ class ClientTest {
     }
 
     @Test
-    fun testCreatesAVProductionClient() {
+    fun testCreatesAV3ProductionClient() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fakeWallet = PrivateKeyBuilder()
         val client =
