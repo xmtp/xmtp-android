@@ -1041,7 +1041,7 @@ $dokka.location:org.xmtp.android.library/ClientOptions/api/#/PointingToDeclarati
 $dokka.location:org.xmtp.android.library/ClientOptions/appContext/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/app-context.html
 $dokka.location:org.xmtp.android.library/ClientOptions/dbDirectory/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/db-directory.html
 $dokka.location:org.xmtp.android.library/ClientOptions/dbEncryptionKey/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/db-encryption-key.html
-$dokka.location:org.xmtp.android.library/ClientOptions/enableAlphaMls/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/enable-alpha-mls.html
+$dokka.location:org.xmtp.android.library/ClientOptions/enableV3/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/enable-v3.html
 $dokka.location:org.xmtp.android.library/ClientOptions/preCreateIdentityCallback/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/pre-create-identity-callback.html
 $dokka.location:org.xmtp.android.library/ClientOptions/preEnableIdentityCallback/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/pre-enable-identity-callback.html
 $dokka.location:org.xmtp.android.library/CodecRegistry///PointingToDeclaration/library/org.xmtp.android.library/-codec-registry/index.html
