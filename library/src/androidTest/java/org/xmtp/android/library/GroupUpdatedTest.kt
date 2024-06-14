@@ -51,6 +51,37 @@ class GroupUpdatedTest {
     }
 
     @Test
+    fun testCanUpdateGroupName() {
+        Client.register(codec = GroupUpdatedCodec())
+
+        val group = runBlocking {
+            alixClient.conversations.newGroup(
+                listOf(
+                    bo.walletAddress,
+                    caro.walletAddress
+                ), groupName = "Start Name"
+            )
+        }
+        var messages = group.messages()
+        assertEquals(messages.size, 1)
+        runBlocking {
+            group.updateGroupName("Group Name")
+            messages = group.messages()
+            assertEquals(messages.size, 2)
+
+            val content: GroupUpdated? = messages.last().content()
+            assertEquals(
+                "Start Name",
+                content?.metadataFieldChangesList?.first()?.oldValue
+            )
+            assertEquals(
+                "Group Name",
+                content?.metadataFieldChangesList?.first()?.newValue
+            )
+        }
+    }
+
+    @Test
     fun testCanAddMembers() {
         Client.register(codec = GroupUpdatedCodec())
 
