@@ -24,11 +24,13 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
+import org.xmtp.android.library.codecs.id
 import org.xmtp.android.library.messages.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.mls.message.contents.TranscriptMessages
+import org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupUpdated.MetadataFieldChange
 import uniffi.xmtpv3.GroupPermissions
 
 @RunWith(AndroidJUnit4::class)
@@ -434,11 +436,9 @@ class GroupTest {
     }
 
     @Test
-    fun testCanStreamAndUpdateNameWithoutForkingGroup() {
-        val firstMsgCheck = 2
-        val secondMsgCheck = 5
+    fun testCanStreamGroupMessagesForUpdates() {
+        Client.register(codec = GroupUpdatedCodec())
         var messageCallbacks = 0
-
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 boClient.conversations.streamAllGroupMessages().collect { message ->
@@ -447,20 +447,50 @@ class GroupTest {
             } catch (e: Exception) {
             }
         }
+        Thread.sleep(1000)
+        val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(bo.walletAddress)) }
+        runBlocking { alixGroup.updateGroupName("Old Name") }
+        val boGroups = runBlocking { boClient.conversations.listGroups() }
+        val boGroup = boGroups[0]
+        runBlocking { boGroup.sync() }
+        runBlocking { boGroup.updateGroupName("Old Name2") }
+//        runBlocking { alixGroup.updateGroupName("Again Name") }
+//        runBlocking { boGroup.updateGroupName("Old Name2") }
+        Thread.sleep(1000)
 
-        val alixGroup = runBlocking {alixClient.conversations.newGroup(listOf(bo.walletAddress)) }
+        assertEquals(messageCallbacks, 3)
+    }
+
+    @Test
+    fun testCanStreamAndUpdateNameWithoutForkingGroup() {
+        val firstMsgCheck = 2
+        val secondMsgCheck = 5
+        var messageCallbacks = 0
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                boClient.conversations.streamAllGroupMessages().collect { message ->
+                    Log.d("LOPI", message.encodedContent.type.id)
+                    messageCallbacks++
+                }
+            } catch (e: Exception) {
+            }
+        }
+
+        val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(bo.walletAddress)) }
+
         runBlocking {
-            alixGroup.updateGroupName("hello")
             alixGroup.send("hello1")
-            boClient.conversations.syncGroups()
+            alixGroup.updateGroupName("hello")
+//            boClient.conversations.syncGroups()
         }
 
         val boGroups = runBlocking { boClient.conversations.listGroups() }
-        assertEquals(boGroups.size,1)
+        assertEquals(boGroups.size, 1)
         val boGroup = boGroups[0]
-        runBlocking {
-            boGroup.sync()
-        }
+//        runBlocking {
+//            boGroup.sync()
+//        }
 
         val boMessages1 = boGroup.messages()
         assertEquals(boMessages1.size, firstMsgCheck)
@@ -468,14 +498,14 @@ class GroupTest {
         runBlocking {
             boGroup.send("hello2")
             boGroup.send("hello3")
-            alixGroup.sync()
+//            alixGroup.sync()
         }
-
+        Thread.sleep(1000)
         val alixMessages = alixGroup.messages()
         assertEquals(alixMessages.size, secondMsgCheck)
         runBlocking {
             alixGroup.send("hello4")
-            boGroup.sync()
+//            boGroup.sync()
         }
 
         val boMessages2 = boGroup.messages()
