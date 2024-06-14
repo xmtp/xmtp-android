@@ -441,7 +441,7 @@ class GroupTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                alixClient.conversations.streamAllGroupMessages().collect { message ->
+                boClient.conversations.streamAllGroupMessages().collect { message ->
                     messageCallbacks++
                 }
             } catch (e: Exception) {
@@ -483,7 +483,7 @@ class GroupTest {
 
         Thread.sleep(1000)
 
-        assertEquals(1, messageCallbacks)
+        assertEquals(5, messageCallbacks)
     }
 
     @Test
