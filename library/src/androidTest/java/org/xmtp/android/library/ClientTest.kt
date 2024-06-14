@@ -202,6 +202,24 @@ class ClientTest {
     }
 
     @Test
+    fun testCreatesAVProductionClient() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val client =
+            Client().create(
+                account = fakeWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.PRODUCTION, true),
+                    enableV3 = true,
+                    appContext = context
+                )
+            )
+        runBlocking {
+            client.canMessageV3(listOf(client.address))[client.address]?.let { assert(it) }
+        }
+    }
+
+    @Test
     fun testDoesNotCreateAV3Client() {
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
