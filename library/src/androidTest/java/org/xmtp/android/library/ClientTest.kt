@@ -87,7 +87,7 @@ class ClientTest {
         val fakeWallet = PrivateKeyBuilder()
         val options = ClientOptions(
             ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-            enableAlphaMls = true,
+            enableV3 = true,
             appContext = context
         )
         val client =
@@ -125,7 +125,7 @@ class ClientTest {
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
@@ -145,7 +145,7 @@ class ClientTest {
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
@@ -154,7 +154,7 @@ class ClientTest {
                 account = fakeWallet2,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
@@ -172,7 +172,7 @@ class ClientTest {
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
@@ -192,7 +192,7 @@ class ClientTest {
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.DEV, true),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
@@ -291,7 +291,7 @@ class ClientTest {
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
@@ -300,7 +300,7 @@ class ClientTest {
                 account = fakeWallet2,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
