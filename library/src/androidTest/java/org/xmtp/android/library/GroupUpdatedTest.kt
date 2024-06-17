@@ -34,7 +34,7 @@ class GroupUpdatedTest {
         fixtures = fixtures(
             clientOptions = ClientOptions(
                 ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                enableAlphaMls = true,
+                enableV3 = true,
                 appContext = context,
             )
         )
@@ -172,5 +172,37 @@ class GroupUpdatedTest {
         val messages = group.messages()
         assertEquals(messages.size, 1)
         assert(messages.first().fallbackContent.isBlank())
+    }
+
+    @Test
+    fun testCanUpdateGroupName() {
+        Client.register(codec = GroupUpdatedCodec())
+
+        val group = runBlocking {
+            alixClient.conversations.newGroup(
+                listOf(
+                    bo.walletAddress,
+                    caro.walletAddress
+                ),
+                groupName = "Start Name"
+            )
+        }
+        var messages = group.messages()
+        assertEquals(messages.size, 1)
+        runBlocking {
+            group.updateGroupName("Group Name")
+            messages = group.messages()
+            assertEquals(messages.size, 2)
+
+            val content: GroupUpdated? = messages.first().content()
+            assertEquals(
+                "Start Name",
+                content?.metadataFieldChangesList?.first()?.oldValue
+            )
+            assertEquals(
+                "Group Name",
+                content?.metadataFieldChangesList?.first()?.newValue
+            )
+        }
     }
 }
