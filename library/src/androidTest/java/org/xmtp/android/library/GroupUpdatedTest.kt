@@ -152,7 +152,8 @@ class GroupUpdatedTest {
                 listOf(
                     bo.walletAddress,
                     caro.walletAddress
-                ), groupName = "Start Name"
+                ),
+                groupName = "Start Name"
             )
         }
         var messages = group.messages()
