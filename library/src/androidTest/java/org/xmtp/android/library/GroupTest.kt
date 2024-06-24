@@ -25,6 +25,7 @@ import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.codecs.id
+import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -788,5 +789,41 @@ class GroupTest {
 
         assert(!boClient.contacts.isInboxAllowed(alixClient.inboxId))
         assert(boClient.contacts.isInboxDenied(alixClient.inboxId))
+    }
+
+    @Test
+    fun testCanFetchGroupById() {
+        val boGroup = runBlocking {
+            boClient.conversations.newGroup(
+                listOf(
+                    alix.walletAddress,
+                    caro.walletAddress
+                )
+            )
+        }
+        runBlocking { alixClient.conversations.syncGroups() }
+        val alixGroup = alixClient.findGroup(boGroup.id)
+
+        assertEquals(alixGroup?.id?.toHex(), boGroup.id.toHex())
+    }
+
+    @Test
+    fun testCanFetchMessageById() {
+        val boGroup = runBlocking {
+            boClient.conversations.newGroup(
+                listOf(
+                    alix.walletAddress,
+                    caro.walletAddress
+                )
+            )
+        }
+        val boMessageId = runBlocking { boGroup.send("Hello") }
+        val message = boGroup.messages().first()
+        runBlocking { alixClient.conversations.syncGroups() }
+        val alixGroup = alixClient.findGroup(boGroup.id)
+        runBlocking { alixGroup?.sync() }
+        val alixMessage = alixClient.findMessage(message.id.toByteArray())
+
+        assertEquals(alixMessage?.id?.toHex(), boMessageId)
     }
 }
