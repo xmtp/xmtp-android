@@ -17,6 +17,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.web3j.utils.Numeric
 import org.xmtp.android.library.codecs.ContentTypeGroupUpdated
 import org.xmtp.android.library.codecs.ContentTypeReaction
 import org.xmtp.android.library.codecs.GroupUpdatedCodec
@@ -818,11 +819,10 @@ class GroupTest {
             )
         }
         val boMessageId = runBlocking { boGroup.send("Hello") }
-        val message = boGroup.messages().first()
         runBlocking { alixClient.conversations.syncGroups() }
         val alixGroup = alixClient.findGroup(boGroup.id)
         runBlocking { alixGroup?.sync() }
-        val alixMessage = alixClient.findMessage(message.id.toByteArray())
+        val alixMessage = alixClient.findMessage(Numeric.hexStringToByteArray(boMessageId))
 
         assertEquals(alixMessage?.id?.toHex(), boMessageId)
     }
