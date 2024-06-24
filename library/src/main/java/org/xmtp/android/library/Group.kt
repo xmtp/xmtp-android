@@ -6,13 +6,17 @@ import kotlinx.coroutines.flow.callbackFlow
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
+import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
+import org.xmtp.android.library.messages.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+import uniffi.xmtpv3.FfiDeliveryStatus
 import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiGroupMetadata
+import uniffi.xmtpv3.FfiGroupPermissions
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
@@ -34,6 +38,15 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     private val metadata: FfiGroupMetadata
         get() = libXMTPGroup.groupMetadata()
 
+    private val permissions: FfiGroupPermissions
+        get() = libXMTPGroup.groupPermissions()
+
+    val name: String
+        get() = libXMTPGroup.groupName()
+
+    val imageUrlSquare: String
+        get() = libXMTPGroup.groupImageUrlSquare()
+
     suspend fun send(text: String): String {
         return send(prepareMessage(content = text, options = null))
     }
@@ -45,10 +58,10 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
 
     suspend fun send(encodedContent: EncodedContent): String {
         if (client.contacts.consentList.groupState(groupId = id) == ConsentState.UNKNOWN) {
-            client.contacts.allowGroup(groupIds = listOf(id))
+            client.contacts.allowGroups(groupIds = listOf(id))
         }
-        libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
-        return id.toHex()
+        val messageId = libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
+        return messageId.toHex()
     }
 
     fun <T> prepareMessage(content: T, options: SendOptions?): EncodedContent {
@@ -86,12 +99,19 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         before: Date? = null,
         after: Date? = null,
         direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
+        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
     ): List<DecodedMessage> {
         val messages = libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit = limit?.toLong()
+                limit = limit?.toLong(),
+                deliveryStatus = when (deliveryStatus) {
+                    MessageDeliveryStatus.PUBLISHED -> FfiDeliveryStatus.PUBLISHED
+                    MessageDeliveryStatus.UNPUBLISHED -> FfiDeliveryStatus.UNPUBLISHED
+                    MessageDeliveryStatus.FAILED -> FfiDeliveryStatus.FAILED
+                    else -> null
+                }
             )
         ).mapNotNull {
             MessageV3(client, it).decodeOrNull()
@@ -108,12 +128,19 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         before: Date? = null,
         after: Date? = null,
         direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
+        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
     ): List<DecryptedMessage> {
         val messages = libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit = limit?.toLong()
+                limit = limit?.toLong(),
+                deliveryStatus = when (deliveryStatus) {
+                    MessageDeliveryStatus.PUBLISHED -> FfiDeliveryStatus.PUBLISHED
+                    MessageDeliveryStatus.UNPUBLISHED -> FfiDeliveryStatus.UNPUBLISHED
+                    MessageDeliveryStatus.FAILED -> FfiDeliveryStatus.FAILED
+                    else -> null
+                }
             )
         ).mapNotNull {
             MessageV3(client, it).decryptOrNull()
@@ -134,23 +161,27 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         return libXMTPGroup.isActive()
     }
 
+    fun addedByInboxId(): String {
+        return libXMTPGroup.addedByInboxId()
+    }
+
     fun permissionLevel(): GroupPermissions {
-        return metadata.policyType()
+        return permissions.policyType()
     }
 
-    fun isAdmin(): Boolean {
-        return metadata.creatorAccountAddress().lowercase() == client.address.lowercase()
+    fun creatorInboxId(): String {
+        return metadata.creatorInboxId()
     }
 
-    fun adminAddress(): String {
-        return metadata.creatorAccountAddress()
+    fun isCreator(): Boolean {
+        return metadata.creatorInboxId() == client.inboxId
     }
 
     suspend fun addMembers(addresses: List<String>) {
         try {
             libXMTPGroup.addMembers(addresses)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to add member", e)
         }
     }
 
@@ -158,18 +189,90 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         try {
             libXMTPGroup.removeMembers(addresses)
         } catch (e: Exception) {
-            throw XMTPException("User does not have permissions", e)
+            throw XMTPException("Unable to remove member", e)
         }
     }
 
-    fun memberAddresses(): List<String> {
-        return libXMTPGroup.listMembers().map { it.accountAddress }
+    suspend fun addMembersByInboxId(inboxIds: List<String>) {
+        try {
+            libXMTPGroup.addMembersByInboxId(inboxIds)
+        } catch (e: Exception) {
+            throw XMTPException("Unable to add member", e)
+        }
     }
 
-    fun peerAddresses(): List<String> {
-        val addresses = memberAddresses().map { it.lowercase() }.toMutableList()
-        addresses.remove(client.address.lowercase())
-        return addresses
+    suspend fun removeMembersByInboxId(inboxIds: List<String>) {
+        try {
+            libXMTPGroup.removeMembersByInboxId(inboxIds)
+        } catch (e: Exception) {
+            throw XMTPException("Unable to remove member", e)
+        }
+    }
+
+    fun members(): List<Member> {
+        return libXMTPGroup.listMembers().map { Member(it) }
+    }
+
+    fun peerInboxIds(): List<String> {
+        val ids = members().map { it.inboxId }.toMutableList()
+        ids.remove(client.inboxId)
+        return ids
+    }
+
+    suspend fun updateGroupName(name: String) {
+        return libXMTPGroup.updateGroupName(name)
+    }
+
+    suspend fun updateGroupImageUrlSquare(imageUrl: String) {
+        return libXMTPGroup.updateGroupImageUrlSquare(imageUrl)
+    }
+
+    fun isAdmin(inboxId: String): Boolean {
+        return libXMTPGroup.isAdmin(inboxId)
+    }
+
+    fun isSuperAdmin(inboxId: String): Boolean {
+        return libXMTPGroup.isSuperAdmin(inboxId)
+    }
+
+    suspend fun addAdmin(inboxId: String) {
+        try {
+            libXMTPGroup.addAdmin(inboxId)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to add admin", e)
+        }
+    }
+
+    suspend fun removeAdmin(inboxId: String) {
+        try {
+            libXMTPGroup.removeAdmin(inboxId)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to remove admin", e)
+        }
+    }
+
+    suspend fun addSuperAdmin(inboxId: String) {
+        try {
+            libXMTPGroup.addSuperAdmin(inboxId)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to add super admin", e)
+        }
+    }
+
+    suspend fun removeSuperAdmin(inboxId: String) {
+        try {
+            libXMTPGroup.removeSuperAdmin(inboxId)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to remove super admin", e)
+        }
+    }
+
+    suspend fun listAdmins(): List<String> {
+        return libXMTPGroup.adminList()
+    }
+
+    suspend fun listSuperAdmins(): List<String> {
+        return libXMTPGroup.superAdminList()
     }
 
     fun streamMessages(): Flow<DecodedMessage> = callbackFlow {

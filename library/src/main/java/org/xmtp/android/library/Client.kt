@@ -44,9 +44,10 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import uniffi.xmtpv3.FfiXmtpClient
-import uniffi.xmtpv3.LegacyIdentitySource
 import uniffi.xmtpv3.createClient
 import uniffi.xmtpv3.createV2Client
+import uniffi.xmtpv3.generateInboxId
+import uniffi.xmtpv3.getInboxIdForAddress
 import uniffi.xmtpv3.getVersionInfo
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -68,8 +69,8 @@ data class ClientOptions(
     val preCreateIdentityCallback: PreEventCallback? = null,
     val preEnableIdentityCallback: PreEventCallback? = null,
     val appContext: Context? = null,
-    val enableAlphaMls: Boolean = false,
-    val dbPath: String? = null,
+    val enableV3: Boolean = false,
+    val dbDirectory: String? = null,
     val dbEncryptionKey: ByteArray? = null,
 ) {
     data class Api(
@@ -88,8 +89,9 @@ class Client() {
     var logger: XMTPLogger = XMTPLogger()
     val libXMTPVersion: String = getVersionInfo()
     var installationId: String = ""
-    private var libXMTPClient: FfiXmtpClient? = null
+    private var v3Client: FfiXmtpClient? = null
     private var dbPath: String = ""
+    var inboxId: String = ""
 
     companion object {
         private const val TAG = "Client"
@@ -171,16 +173,18 @@ class Client() {
         libXMTPClient: FfiXmtpClient? = null,
         dbPath: String = "",
         installationId: String = "",
+        inboxId: String = "",
     ) : this() {
         this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
         this.contacts = Contacts(client = this)
-        this.libXMTPClient = libXMTPClient
+        this.v3Client = libXMTPClient
         this.conversations =
             Conversations(client = this, libXMTPConversations = libXMTPClient?.conversations())
         this.dbPath = dbPath
         this.installationId = installationId
+        this.inboxId = inboxId
     }
 
     fun buildFrom(
@@ -188,37 +192,7 @@ class Client() {
         options: ClientOptions? = null,
         account: SigningKey? = null,
     ): Client {
-        val address = bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
-        val clientOptions = options ?: ClientOptions()
-        val v2Client = runBlocking {
-            createV2Client(
-                host = clientOptions.api.env.getUrl(),
-                isSecure = clientOptions.api.isSecure
-            )
-        }
-        clientOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
-        val apiClient = GRPCApiClient(environment = clientOptions.api.env, rustV2Client = v2Client)
-        val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
-            runBlocking {
-                ffiXmtpClient(
-                    options,
-                    account,
-                    options?.appContext,
-                    bundle,
-                    LegacyIdentitySource.STATIC,
-                    address
-                )
-            }
-        } else Pair(null, " ")
-
-        return Client(
-            address = address,
-            privateKeyBundleV1 = bundle,
-            apiClient = apiClient,
-            libXMTPClient = v3Client,
-            dbPath = dbPath,
-            installationId = v3Client?.installationId()?.toHex() ?: ""
-        )
+        return buildFromV1Bundle(bundle, options, account)
     }
 
     fun create(
@@ -249,18 +223,18 @@ class Client() {
         val clientOptions = options ?: ClientOptions()
         return runBlocking {
             try {
-                val (privateKeyBundleV1, legacyIdentityKey) = loadOrCreateKeys(
+                val privateKeyBundleV1 = loadOrCreateKeys(
                     account,
                     apiClient,
                     clientOptions
                 )
+
                 val (libXMTPClient, dbPath) =
                     ffiXmtpClient(
                         options,
                         account,
                         clientOptions.appContext,
                         privateKeyBundleV1,
-                        legacyIdentityKey,
                         account.address
                     )
 
@@ -271,7 +245,8 @@ class Client() {
                         apiClient,
                         libXMTPClient,
                         dbPath,
-                        libXMTPClient?.installationId()?.toHex() ?: ""
+                        libXMTPClient?.installationId()?.toHex() ?: "",
+                        libXMTPClient?.inboxId() ?: ""
                     )
                 client.ensureUserContactPublished()
                 client
@@ -303,14 +278,13 @@ class Client() {
         }
         newOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
         val apiClient = GRPCApiClient(environment = newOptions.api.env, rustV2Client = v2Client)
-        val (v3Client, dbPath) = if (isAlphaMlsEnabled(options)) {
+        val (v3Client, dbPath) = if (isV3Enabled(options)) {
             runBlocking {
                 ffiXmtpClient(
                     options,
                     account,
                     options?.appContext,
                     v1Bundle,
-                    LegacyIdentitySource.STATIC,
                     address
                 )
             }
@@ -322,12 +296,13 @@ class Client() {
             apiClient = apiClient,
             libXMTPClient = v3Client,
             dbPath = dbPath,
-            installationId = v3Client?.installationId()?.toHex() ?: ""
+            installationId = v3Client?.installationId()?.toHex() ?: "",
+            inboxId = v3Client?.inboxId() ?: ""
         )
     }
 
-    private fun isAlphaMlsEnabled(options: ClientOptions?): Boolean {
-        return (options != null && options.enableAlphaMls && options.api.env != XMTPEnvironment.PRODUCTION && options.appContext != null)
+    private fun isV3Enabled(options: ClientOptions?): Boolean {
+        return (options != null && options.enableV3 && options.appContext != null)
     }
 
     private suspend fun ffiXmtpClient(
@@ -335,21 +310,33 @@ class Client() {
         account: SigningKey?,
         appContext: Context?,
         privateKeyBundleV1: PrivateKeyBundleV1,
-        legacyIdentitySource: LegacyIdentitySource,
-        accountAddress: String,
+        address: String,
     ): Pair<FfiXmtpClient?, String> {
         var dbPath = ""
+        val accountAddress = address.lowercase()
         val v3Client: FfiXmtpClient? =
-            if (isAlphaMlsEnabled(options)) {
-                val alias = "xmtp-${options!!.api.env}-${accountAddress.lowercase()}"
+            if (isV3Enabled(options)) {
+                var inboxId = getInboxIdForAddress(
+                    logger = logger,
+                    host = options!!.api.env.getUrl(),
+                    isSecure = options.api.isSecure,
+                    accountAddress = accountAddress
+                )
 
-                dbPath = if (options.dbPath == null) {
-                    val dbDir = File(appContext?.filesDir?.absolutePath, "xmtp_db")
-                    dbDir.mkdir()
-                    dbDir.absolutePath + "/$alias.db3"
-                } else {
-                    options.dbPath
+                if (inboxId.isNullOrBlank()) {
+                    inboxId = generateInboxId(accountAddress, 0.toULong())
                 }
+
+                val alias = "xmtp-${options.api.env}-$inboxId"
+
+                val mlsDbDirectory = options.dbDirectory
+                val directoryFile = if (mlsDbDirectory != null) {
+                    File(mlsDbDirectory)
+                } else {
+                    File(appContext?.filesDir?.absolutePath, "xmtp_db")
+                }
+                directoryFile.mkdir()
+                dbPath = directoryFile.absolutePath + "/$alias.db3"
 
                 val encryptionKey = if (options.dbEncryptionKey == null) {
                     val keyStore = KeyStore.getInstance("AndroidKeyStore")
@@ -390,7 +377,8 @@ class Client() {
                     db = dbPath,
                     encryptionKey = encryptionKey,
                     accountAddress = accountAddress,
-                    legacyIdentitySource = legacyIdentitySource,
+                    inboxId = inboxId,
+                    nonce = 0.toULong(),
                     legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
                 )
             } else {
@@ -398,14 +386,15 @@ class Client() {
             }
 
         if (v3Client != null) {
-            if (v3Client.textToSign() == null) {
-                v3Client.registerIdentity(null)
-            } else if (account != null) {
-                v3Client.textToSign()?.let {
-                    v3Client.registerIdentity(account.sign(it)?.rawData)
+            v3Client.signatureRequest()?.let { signatureRequest ->
+                if (account != null) {
+                    account.sign(signatureRequest.signatureText())?.let {
+                        signatureRequest.addEcdsaSignature(it.rawData)
+                    }
+                    v3Client.registerIdentity(signatureRequest)
+                } else {
+                    throw XMTPException("No signer passed but signer was required.")
                 }
-            } else {
-                throw XMTPException("No signer passed but signer was required.")
             }
         }
         Log.i(TAG, "LibXMTP $libXMTPVersion")
@@ -430,16 +419,16 @@ class Client() {
         account: SigningKey,
         apiClient: ApiClient,
         options: ClientOptions? = null,
-    ): Pair<PrivateKeyBundleV1, LegacyIdentitySource> {
+    ): PrivateKeyBundleV1 {
         val keys = loadPrivateKeys(account, apiClient, options)
         return if (keys != null) {
-            Pair(keys, LegacyIdentitySource.NETWORK)
+            keys
         } else {
             val v1Keys = PrivateKeyBundleV1.newBuilder().build().generate(account, options)
             val keyBundle = PrivateKeyBundleBuilder.buildFromV1Key(v1Keys)
             val encryptedKeys = keyBundle.encrypted(account, options?.preEnableIdentityCallback)
             authSave(apiClient, keyBundle.v1, encryptedKeys)
-            Pair(v1Keys, LegacyIdentitySource.KEY_GENERATOR)
+            v1Keys
         }
     }
 
@@ -456,7 +445,8 @@ class Client() {
         val encryptedBundles = authCheck(apiClient, account.address)
         for (encryptedBundle in encryptedBundles) {
             try {
-                val bundle = encryptedBundle.decrypted(account, options?.preEnableIdentityCallback)
+                val bundle =
+                    encryptedBundle.decrypted(account, options?.preEnableIdentityCallback)
                 return bundle.v1
             } catch (e: Throwable) {
                 print("Error decoding encrypted private key bundle: $e")
@@ -489,10 +479,11 @@ class Client() {
             }.build()
             it.v2 = it.v2.toBuilder().also { v2Builder ->
                 v2Builder.keyBundle = v2Builder.keyBundle.toBuilder().also { keyBuilder ->
-                    keyBuilder.identityKey = keyBuilder.identityKey.toBuilder().also { idBuilder ->
-                        idBuilder.signature =
-                            it.v2.keyBundle.identityKey.signature.ensureWalletSignature()
-                    }.build()
+                    keyBuilder.identityKey =
+                        keyBuilder.identityKey.toBuilder().also { idBuilder ->
+                            idBuilder.signature =
+                                it.v2.keyBundle.identityKey.signature.ensureWalletSignature()
+                        }.build()
                 }.build()
             }.build()
         }.build()
@@ -525,7 +516,10 @@ class Client() {
         return apiClient.subscribe(request = request)
     }
 
-    suspend fun fetchConversation(topic: String?, includeGroups: Boolean = false): Conversation? {
+    suspend fun fetchConversation(
+        topic: String?,
+        includeGroups: Boolean = false,
+    ): Conversation? {
         if (topic.isNullOrBlank()) return null
         return conversations.list(includeGroups = includeGroups).firstOrNull {
             it.topic == topic
@@ -619,16 +613,26 @@ class Client() {
         return runBlocking { query(Topic.contact(peerAddress)).envelopesList.size > 0 }
     }
 
-    fun canMessageV3(addresses: List<String>): Boolean {
-        if (libXMTPClient == null) return false
-        val statuses = runBlocking {
-            libXMTPClient!!.canMessage(addresses)
+    suspend fun canMessageV3(addresses: List<String>): Map<String, Boolean> {
+        v3Client?.let {
+            return it.canMessage(addresses)
         }
-        return !statuses.contains(false)
+        throw XMTPException("Error no V3 client initialized")
     }
 
     fun deleteLocalDatabase() {
         File(dbPath).delete()
+    }
+
+    @Deprecated(
+        message = "This function is delicate and should be used with caution. App will error if database not properly reconnected. See: reconnectLocalDatabase()",
+    )
+    fun dropLocalDatabaseConnection() {
+        v3Client?.releaseDbConnection()
+    }
+
+    suspend fun reconnectLocalDatabase() {
+        v3Client?.dbReconnect() ?: throw XMTPException("Error no V3 client initialized")
     }
 
     val privateKeyBundle: PrivateKeyBundle

@@ -4,6 +4,8 @@ import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.Util
 import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.contents.SignatureOuterClass
+import java.text.SimpleDateFormat
+import java.util.TimeZone
 
 typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
 
@@ -46,6 +48,13 @@ fun Signature.createIdentityText(key: ByteArray): String =
  */
 fun Signature.enableIdentityText(key: ByteArray): String =
     ("XMTP : Enable Identity\n" + "${key.toHex()}\n" + "\n" + "For more info: https://xmtp.org/signatures/")
+
+fun Signature.consentProofText(peerAddress: String, timestamp: Long): String {
+    val formatter = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
+    formatter.timeZone = TimeZone.getTimeZone("UTC")
+    val timestampString = formatter.format(timestamp)
+    return ("XMTP : Grant inbox consent to sender\n" + "\n" + "Current Time: ${timestampString}\n" + "From Address: ${peerAddress}\n" + "\n" + "For more info: https://xmtp.org/signatures/")
+}
 
 val Signature.rawData: ByteArray
     get() = if (hasEcdsaCompact()) {

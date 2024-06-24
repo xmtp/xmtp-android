@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -11,6 +12,7 @@ import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1Builder
 import org.xmtp.android.library.messages.generate
 import org.xmtp.proto.message.contents.PrivateKeyOuterClass
+import uniffi.xmtpv3.GenericException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -85,23 +87,28 @@ class ClientTest {
         val fakeWallet = PrivateKeyBuilder()
         val options = ClientOptions(
             ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-            enableAlphaMls = true,
+            enableV3 = true,
             appContext = context
         )
         val client =
             Client().create(account = fakeWallet, options = options)
-        assert(client.canMessageV3(listOf(client.address)))
+
+        runBlocking {
+            client.canMessageV3(listOf(client.address))[client.address]?.let { assert(it) }
+        }
 
         val bundle = client.privateKeyBundle
         val clientFromV1Bundle =
-            Client().buildFromBundle(bundle, account = fakeWallet, options = options)
+            Client().buildFromBundle(bundle, options = options)
         assertEquals(client.address, clientFromV1Bundle.address)
         assertEquals(
             client.privateKeyBundleV1.identityKey,
             clientFromV1Bundle.privateKeyBundleV1.identityKey,
         )
 
-        assert(clientFromV1Bundle.canMessageV3(listOf(client.address)))
+        runBlocking {
+            clientFromV1Bundle.canMessageV3(listOf(client.address))[client.address]?.let { assert(it) }
+        }
 
         assertEquals(
             client.address,
@@ -118,11 +125,13 @@ class ClientTest {
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
-        assert(client.canMessageV3(listOf(client.address)))
+        runBlocking {
+            client.canMessageV3(listOf(client.address))[client.address]?.let { assert(it) }
+        }
         assert(client.installationId.isNotEmpty())
     }
 
@@ -136,7 +145,7 @@ class ClientTest {
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
@@ -145,7 +154,7 @@ class ClientTest {
                 account = fakeWallet2,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
@@ -163,7 +172,7 @@ class ClientTest {
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
@@ -183,18 +192,42 @@ class ClientTest {
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.DEV, true),
-                    enableAlphaMls = true,
+                    enableV3 = true,
                     appContext = context
                 )
             )
-        assert(client.canMessageV3(listOf(client.address)))
+        runBlocking {
+            client.canMessageV3(listOf(client.address))[client.address]?.let { assert(it) }
+        }
+    }
+
+    @Test
+    fun testCreatesAV3ProductionClient() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val client =
+            Client().create(
+                account = fakeWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.PRODUCTION, true),
+                    enableV3 = true,
+                    appContext = context
+                )
+            )
+        runBlocking {
+            client.canMessageV3(listOf(client.address))[client.address]?.let { assert(it) }
+        }
     }
 
     @Test
     fun testDoesNotCreateAV3Client() {
         val fakeWallet = PrivateKeyBuilder()
         val client = Client().create(account = fakeWallet)
-        assert(!client.canMessageV3(listOf(client.address)))
+        assertThrows("Error no V3 client initialized", XMTPException::class.java) {
+            runBlocking {
+                client.canMessageV3(listOf(client.address))[client.address]?.let { assert(!it) }
+            }
+        }
     }
 
     @Test
@@ -263,6 +296,53 @@ class ClientTest {
             expectation.get(5, TimeUnit.SECONDS)
         } catch (e: Exception) {
             fail("Error: $e")
+        }
+    }
+
+    @Test
+    fun testCanDropReconnectDatabase() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val fakeWallet2 = PrivateKeyBuilder()
+        val boClient =
+            Client().create(
+                account = fakeWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    appContext = context
+                )
+            )
+        val alixClient =
+            Client().create(
+                account = fakeWallet2,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    appContext = context
+                )
+            )
+
+        runBlocking {
+            boClient.conversations.newGroup(listOf(alixClient.address))
+            boClient.conversations.syncGroups()
+        }
+
+        runBlocking {
+            assertEquals(boClient.conversations.listGroups().size, 1)
+        }
+
+        boClient.dropLocalDatabaseConnection()
+
+        assertThrows(
+            "Client error: storage error: Pool needs to  reconnect before use",
+            GenericException::class.java
+        ) { runBlocking { boClient.conversations.listGroups() } }
+
+        runBlocking { boClient.reconnectLocalDatabase() }
+
+        runBlocking {
+            assertEquals(boClient.conversations.listGroups().size, 1)
         }
     }
 }
