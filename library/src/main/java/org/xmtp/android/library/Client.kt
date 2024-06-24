@@ -649,6 +649,10 @@ class Client() {
         v3Client?.dbReconnect() ?: throw XMTPException("Error no V3 client initialized")
     }
 
+    suspend fun requestMessageHistorySync() {
+        v3Client?.requestHistorySync() ?: throw XMTPException("Error no V3 client initialized")
+    }
+
     val privateKeyBundle: PrivateKeyBundle
         get() = PrivateKeyBundleBuilder.buildFromV1Key(privateKeyBundleV1)
 
