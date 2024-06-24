@@ -17,6 +17,7 @@ import org.web3j.crypto.Keys.toChecksumAddress
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
+import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.libxmtp.XMTPLogger
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.EncryptedPrivateKeyBundle
@@ -71,6 +72,7 @@ data class ClientOptions(
     val enableV3: Boolean = false,
     val dbDirectory: String? = null,
     val dbEncryptionKey: ByteArray? = null,
+    val historySyncUrl: String? = null,
 ) {
     data class Api(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
@@ -368,7 +370,8 @@ class Client() {
                     accountAddress = accountAddress,
                     inboxId = inboxId,
                     nonce = 0.toULong(),
-                    legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray()
+                    legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray(),
+                    historySyncUrl = options.historySyncUrl
                 )
             } else {
                 null
@@ -515,6 +518,21 @@ class Client() {
         }
     }
 
+    fun findGroup(groupId: ByteArray): Group {
+        v3Client?.let {
+            return Group(this, it.group(groupId))
+        }
+        throw XMTPException("Error no V3 client initialized")
+    }
+
+    fun findMessage(messageId: ByteArray): MessageV3 {
+        v3Client?.let {
+            return MessageV3(this, it.message(messageId))
+
+        }
+        throw XMTPException("Error no V3 client initialized")
+    }
+
     suspend fun publish(envelopes: List<Envelope>): PublishResponse {
         val authorized = AuthorizedIdentity(
             address = address,
@@ -605,6 +623,13 @@ class Client() {
     suspend fun canMessageV3(addresses: List<String>): Map<String, Boolean> {
         v3Client?.let {
             return it.canMessage(addresses)
+        }
+        throw XMTPException("Error no V3 client initialized")
+    }
+
+    suspend fun inboxIdFromAddress(address: String): String? {
+        v3Client?.let {
+            return it.findInboxId(address.lowercase())
         }
         throw XMTPException("Error no V3 client initialized")
     }
