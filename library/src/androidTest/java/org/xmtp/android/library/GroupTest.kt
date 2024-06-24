@@ -25,8 +25,6 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
-import org.xmtp.android.library.codecs.id
-import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
