@@ -2031,6 +2031,7 @@ $dokka.location:uniffi.xmtpv3/GenericException.Storage/Storage/#kotlin.String/Po
 $dokka.location:uniffi.xmtpv3/GenericException///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/index.html
 $dokka.location:uniffi.xmtpv3/GroupPermissions.ADMIN_ONLY///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-group-permissions/-a-d-m-i-n_-o-n-l-y/index.html
 $dokka.location:uniffi.xmtpv3/GroupPermissions.ALL_MEMBERS///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-group-permissions/-a-l-l_-m-e-m-b-e-r-s/index.html
+$dokka.location:uniffi.xmtpv3/GroupPermissions.CUSTOM_POLICY///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-group-permissions/-c-u-s-t-o-m_-p-o-l-i-c-y/index.html
 $dokka.location:uniffi.xmtpv3/GroupPermissions.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-group-permissions/-companion/index.html
 $dokka.location:uniffi.xmtpv3/GroupPermissions///PointingToDeclaration/library/uniffi.xmtpv3/-group-permissions/index.html
 $dokka.location:uniffi.xmtpv3/GroupPermissions/valueOf/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-group-permissions/value-of.html
