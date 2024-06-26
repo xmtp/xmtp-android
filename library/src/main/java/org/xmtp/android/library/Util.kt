@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import org.bouncycastle.jcajce.provider.digest.Keccak
+import org.web3j.utils.Numeric
 
 class Util {
     companion object {
@@ -12,3 +13,5 @@ class Util {
 }
 
 fun ByteArray.toHex(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+fun String.hexToByteArray(): ByteArray = Numeric.hexStringToByteArray(this)
