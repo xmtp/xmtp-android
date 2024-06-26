@@ -819,8 +819,23 @@ class GroupTest {
         runBlocking { alixClient.conversations.syncGroups() }
         val alixGroup = alixClient.findGroup(boGroup.id)
         runBlocking { alixGroup?.sync() }
-        val alixMessage = alixClient.findMessage(Numeric.hexStringToByteArray(boMessageId))
+        val alixMessage = alixClient.findMessage(boMessageId.hexToByteArray())
 
         assertEquals(alixMessage?.id?.toHex(), boMessageId)
+    }
+
+    @Test
+    fun testTranslatingIds() {
+        val boGroup = runBlocking {
+            boClient.conversations.newGroup(
+                listOf(
+                    alix.walletAddress,
+                    caro.walletAddress
+                )
+            )
+        }
+        val hex = boGroup.id.toHex()
+
+        assert(hex.hexToByteArray().contentEquals(boGroup.id))
     }
 }
