@@ -1,13 +1,9 @@
 package org.xmtp.android.library
 
 import com.google.protobuf.kotlin.toByteString
-import io.grpc.ManagedChannel
-import io.grpc.ManagedChannelBuilder
-import io.grpc.Metadata
-import kotlinx.coroutines.flow.Flow
+import org.xmtp.android.library.Util.Companion.envelopeFromFFi
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.Topic
-import org.xmtp.proto.message.api.v1.MessageApiGrpcKt
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Cursor
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope
@@ -26,11 +22,12 @@ import uniffi.xmtpv3.FfiV2BatchQueryRequest
 import uniffi.xmtpv3.FfiV2BatchQueryResponse
 import uniffi.xmtpv3.FfiV2QueryRequest
 import uniffi.xmtpv3.FfiV2QueryResponse
+import uniffi.xmtpv3.FfiV2SubscribeRequest
+import uniffi.xmtpv3.FfiV2Subscription
+import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import java.io.Closeable
-import java.util.concurrent.TimeUnit
 
 interface ApiClient {
-    val environment: XMTPEnvironment
     fun setAuthToken(token: String)
     suspend fun query(
         topic: String,
@@ -42,22 +39,17 @@ interface ApiClient {
     suspend fun batchQuery(requests: List<QueryRequest>): BatchQueryResponse
     suspend fun envelopes(topic: String, pagination: Pagination? = null): List<Envelope>
     suspend fun publish(envelopes: List<Envelope>)
-    suspend fun subscribe(request: Flow<SubscribeRequest>): Flow<Envelope>
+    suspend fun subscribe(
+        request: SubscribeRequest,
+        callback: FfiV2SubscriptionCallback,
+    ): FfiV2Subscription
 }
 
 data class GRPCApiClient(
-    override val environment: XMTPEnvironment,
-    val appVersion: String? = null,
     val rustV2Client: FfiV2ApiClient,
 ) :
     ApiClient, Closeable {
     companion object {
-
-        val CLIENT_VERSION_HEADER_KEY: Metadata.Key<String> =
-            Metadata.Key.of("X-Client-Version", Metadata.ASCII_STRING_MARSHALLER)
-
-        val APP_VERSION_HEADER_KEY: Metadata.Key<String> =
-            Metadata.Key.of("X-App-Version", Metadata.ASCII_STRING_MARSHALLER)
 
         fun makeQueryRequest(
             topic: String,
@@ -92,39 +84,6 @@ data class GRPCApiClient(
             topics: List<String>,
         ): SubscribeRequest = SubscribeRequest.newBuilder().addAllContentTopics(topics).build()
     }
-
-    private val retryPolicy = mapOf(
-        "methodConfig" to listOf(
-            mapOf(
-                "retryPolicy" to mapOf(
-                    "maxAttempts" to 4.0,
-                    "initialBackoff" to "0.5s",
-                    "maxBackoff" to "30s",
-                    "backoffMultiplier" to 2.0,
-                    "retryableStatusCodes" to listOf(
-                        "UNAVAILABLE",
-                    )
-                )
-            )
-        )
-    )
-
-    private val channel: ManagedChannel =
-        ManagedChannelBuilder.forAddress(
-            environment.getValue(),
-            if (environment == XMTPEnvironment.LOCAL) 5556 else 443
-        ).apply {
-            if (environment != XMTPEnvironment.LOCAL) {
-                useTransportSecurity()
-            } else {
-                usePlaintext()
-            }
-            defaultServiceConfig(retryPolicy)
-            enableRetry()
-        }.build()
-
-    private val client: MessageApiGrpcKt.MessageApiCoroutineStub =
-        MessageApiGrpcKt.MessageApiCoroutineStub(channel)
 
     private var authToken: String? = null
 
@@ -186,19 +145,21 @@ data class GRPCApiClient(
         rustV2Client.publish(request = request, authToken = authToken ?: "")
     }
 
-    override suspend fun subscribe(request: Flow<SubscribeRequest>): Flow<Envelope> {
-        val headers = Metadata()
-        headers.put(CLIENT_VERSION_HEADER_KEY, Constants.VERSION)
-        if (appVersion != null) {
-            headers.put(APP_VERSION_HEADER_KEY, appVersion)
-        }
-
-        return client.subscribe2(request, headers)
+    override suspend fun subscribe(
+        request: SubscribeRequest,
+        callback: FfiV2SubscriptionCallback,
+    ): FfiV2Subscription {
+        return rustV2Client.subscribe(subscribeRequestToFFi(request), callback)
     }
 
     override fun close() {
         rustV2Client.close()
-        channel.shutdown().awaitTermination(5, TimeUnit.SECONDS)
+    }
+
+    private fun subscribeRequestToFFi(request: SubscribeRequest): FfiV2SubscribeRequest {
+        return FfiV2SubscribeRequest(
+            contentTopics = request.contentTopicsList,
+        )
     }
 
     private fun envelopeToFFi(envelope: Envelope): FfiEnvelope {
@@ -207,14 +168,6 @@ data class GRPCApiClient(
             timestampNs = envelope.timestampNs.toULong(),
             message = envelope.message.toByteArray()
         )
-    }
-
-    private fun envelopeFromFFi(envelope: FfiEnvelope): Envelope {
-        return Envelope.newBuilder().also {
-            it.contentTopic = envelope.contentTopic
-            it.timestampNs = envelope.timestampNs.toLong()
-            it.message = envelope.message.toByteString()
-        }.build()
     }
 
     private fun queryRequestToFFi(request: QueryRequest): FfiV2QueryRequest {

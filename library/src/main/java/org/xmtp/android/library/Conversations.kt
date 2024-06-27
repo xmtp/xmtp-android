@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
+import org.xmtp.android.library.Util.Companion.envelopeFromFFi
 import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
@@ -42,10 +44,12 @@ import org.xmtp.proto.message.contents.Invitation
 import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiCreateGroupOptions
+import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import uniffi.xmtpv3.GroupPermissions
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
@@ -358,19 +362,20 @@ data class Conversations(
             val conversation = it.value
             val hmacKeys = HmacKeys.newBuilder()
             if (conversation.keyMaterial != null) {
-                (thirtyDayPeriodsSinceEpoch - 1..thirtyDayPeriodsSinceEpoch + 1).iterator().forEach { value ->
-                    val info = "$value-${client.address}"
-                    val hmacKey =
-                        Crypto.deriveKey(
-                            conversation.keyMaterial!!,
-                            ByteArray(0),
-                            info.toByteArray(Charsets.UTF_8),
-                        )
-                    val hmacKeyData = HmacKeyData.newBuilder()
-                    hmacKeyData.hmacKey = hmacKey.toByteString()
-                    hmacKeyData.thirtyDayPeriodsSinceEpoch = value
-                    hmacKeys.addValues(hmacKeyData)
-                }
+                (thirtyDayPeriodsSinceEpoch - 1..thirtyDayPeriodsSinceEpoch + 1).iterator()
+                    .forEach { value ->
+                        val info = "$value-${client.address}"
+                        val hmacKey =
+                            Crypto.deriveKey(
+                                conversation.keyMaterial!!,
+                                ByteArray(0),
+                                info.toByteArray(Charsets.UTF_8),
+                            )
+                        val hmacKeyData = HmacKeyData.newBuilder()
+                        hmacKeyData.hmacKey = hmacKey.toByteString()
+                        hmacKeyData.thirtyDayPeriodsSinceEpoch = value
+                        hmacKeys.addValues(hmacKeyData)
+                    }
                 hmacKeysResponse.putHmacKeys(conversation.topic, hmacKeys.build())
             }
         }
@@ -555,30 +560,36 @@ data class Conversations(
      * of the information of those conversations according to the topics
      * @return Stream of data information for the conversations
      */
-    fun stream(): Flow<Conversation> = flow {
-        val streamedConversationTopics: MutableSet<String> = mutableSetOf()
-        client.subscribe(
-            listOf(
-                Topic.userIntro(client.address).description,
-                Topic.userInvite(client.address).description
-            )
-        ).collect { envelope ->
-            if (envelope.contentTopic == Topic.userIntro(client.address).description) {
-                val conversationV1 = fromIntro(envelope = envelope)
-                if (!streamedConversationTopics.contains(conversationV1.topic)) {
-                    streamedConversationTopics.add(conversationV1.topic)
-                    emit(conversationV1)
+    fun stream(): Flow<Conversation> = callbackFlow {
+        val subscriptionCallback = object : FfiV2SubscriptionCallback {
+            val streamedConversationTopics: MutableSet<String> = mutableSetOf()
+            override fun onMessage(message: FfiEnvelope) {
+                if (message.contentTopic == Topic.userIntro(client.address).description) {
+                    val conversationV1 = fromIntro(envelope = envelopeFromFFi(message))
+                    if (!streamedConversationTopics.contains(conversationV1.topic)) {
+                        streamedConversationTopics.add(conversationV1.topic)
+                        trySend(conversationV1)
+                    }
                 }
-            }
 
-            if (envelope.contentTopic == Topic.userInvite(client.address).description) {
-                val conversationV2 = fromInvite(envelope = envelope)
-                if (!streamedConversationTopics.contains(conversationV2.topic)) {
-                    streamedConversationTopics.add(conversationV2.topic)
-                    emit(conversationV2)
+                if (message.contentTopic == Topic.userInvite(client.address).description) {
+                    val conversationV2 = fromInvite(envelope = envelopeFromFFi(message))
+                    if (!streamedConversationTopics.contains(conversationV2.topic)) {
+                        streamedConversationTopics.add(conversationV2.topic)
+                        trySend(conversationV2)
+                    }
                 }
             }
         }
+
+        val stream = client.subscribe(
+            listOf(
+                Topic.userIntro(client.address).description,
+                Topic.userInvite(client.address).description
+            ), subscriptionCallback
+        )
+
+        awaitClose { runBlocking { stream.end() } }
     }
 
     fun streamAll(): Flow<Conversation> {

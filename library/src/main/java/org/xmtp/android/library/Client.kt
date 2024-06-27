@@ -44,6 +44,8 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
+import uniffi.xmtpv3.FfiV2Subscription
+import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.createClient
 import uniffi.xmtpv3.createV2Client
@@ -160,7 +162,7 @@ class Client() {
                 )
             }
             clientOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
-            val api = GRPCApiClient(environment = clientOptions.api.env, rustV2Client = v2Client)
+            val api = GRPCApiClient(rustV2Client = v2Client)
             return runBlocking {
                 val topics = api.queryTopic(Topic.contact(peerAddress)).envelopesList
                 topics.isNotEmpty()
@@ -209,7 +211,7 @@ class Client() {
             )
         }
         clientOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
-        val apiClient = GRPCApiClient(environment = clientOptions.api.env, rustV2Client = v2Client)
+        val apiClient = GRPCApiClient(rustV2Client = v2Client)
         return create(
             account = account,
             apiClient = apiClient,
@@ -279,7 +281,7 @@ class Client() {
             )
         }
         newOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
-        val apiClient = GRPCApiClient(environment = newOptions.api.env, rustV2Client = v2Client)
+        val apiClient = GRPCApiClient(rustV2Client = v2Client)
         val (v3Client, dbPath) = if (isV3Enabled(options)) {
             runBlocking {
                 ffiXmtpClient(
@@ -511,13 +513,13 @@ class Client() {
         return apiClient.batchQuery(requests)
     }
 
-    suspend fun subscribe(topics: List<String>): Flow<Envelope> {
-        return subscribe2(MutableStateFlow(makeSubscribeRequest(topics)))
+    suspend fun subscribe(
+        topics: List<String>,
+        callback: FfiV2SubscriptionCallback,
+    ): FfiV2Subscription {
+        return apiClient.subscribe(makeSubscribeRequest(topics), callback)
     }
 
-    suspend fun subscribe2(request: Flow<MessageApiOuterClass.SubscribeRequest>): Flow<Envelope> {
-        return apiClient.subscribe(request = request)
-    }
 
     suspend fun fetchConversation(
         topic: String?,
