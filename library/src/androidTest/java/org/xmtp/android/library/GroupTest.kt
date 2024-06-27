@@ -722,7 +722,6 @@ class GroupTest {
     }
 
     @Test
-    @Ignore("Flaky: CI")
     fun testCanStreamGroupsAndConversations() = kotlinx.coroutines.test.runTest {
         boClient.conversations.streamAll().test {
             val group =

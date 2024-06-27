@@ -1,12 +1,17 @@
 package org.xmtp.android.library
 
 import android.util.Log
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Hash
+import org.xmtp.android.library.Util.Companion.envelopeFromFFi
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
+import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
@@ -22,6 +27,10 @@ import org.xmtp.android.library.messages.sentAt
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+import uniffi.xmtpv3.FfiEnvelope
+import uniffi.xmtpv3.FfiMessage
+import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import java.util.Date
 
 data class ConversationV1(
@@ -39,10 +48,14 @@ data class ConversationV1(
      * current [Client] as userInvite and userIntro
      * @see Conversations.streamAllMessages
      */
-    fun streamMessages(): Flow<DecodedMessage> = flow {
-        client.subscribe(listOf(topic.description)).collect {
-            emit(decode(envelope = it))
+    fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
+        val streamCallback = object : FfiV2SubscriptionCallback {
+            override fun onMessage(message: FfiEnvelope) {
+                trySend(decode(envelope = envelopeFromFFi(message)))
+            }
         }
+        val stream = client.subscribe(listOf(topic.description), streamCallback)
+        awaitClose { runBlocking { stream.end() } }
     }
 
     /**
@@ -267,15 +280,23 @@ data class ConversationV1(
     val ephemeralTopic: String
         get() = topic.description.replace("/xmtp/0/dm-", "/xmtp/0/dmE-")
 
-    fun streamEphemeral(): Flow<Envelope> = flow {
-        client.subscribe(listOf(ephemeralTopic)).collect {
-            emit(it)
+    fun streamEphemeral(): Flow<Envelope> = callbackFlow {
+        val streamCallback = object : FfiV2SubscriptionCallback {
+            override fun onMessage(message: FfiEnvelope) {
+                trySend(envelopeFromFFi(message))
+            }
         }
+        val stream = client.subscribe(listOf(ephemeralTopic), streamCallback)
+        awaitClose { runBlocking { stream.end() } }
     }
 
-    fun streamDecryptedMessages(): Flow<DecryptedMessage> = flow {
-        client.subscribe(listOf(topic.description)).collect {
-            emit(decrypt(envelope = it))
+    fun streamDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
+        val streamCallback = object : FfiV2SubscriptionCallback {
+            override fun onMessage(message: FfiEnvelope) {
+                trySend(decrypt(envelope = envelopeFromFFi(message)))
+            }
         }
+        val stream = client.subscribe(listOf(topic.description), streamCallback)
+        awaitClose { runBlocking { stream.end() } }
     }
 }

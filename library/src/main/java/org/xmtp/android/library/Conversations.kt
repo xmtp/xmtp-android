@@ -561,8 +561,8 @@ data class Conversations(
      * @return Stream of data information for the conversations
      */
     fun stream(): Flow<Conversation> = callbackFlow {
+        val streamedConversationTopics: MutableSet<String> = mutableSetOf()
         val subscriptionCallback = object : FfiV2SubscriptionCallback {
-            val streamedConversationTopics: MutableSet<String> = mutableSetOf()
             override fun onMessage(message: FfiEnvelope) {
                 if (message.contentTopic == Topic.userIntro(client.address).description) {
                     val conversationV1 = fromIntro(envelope = envelopeFromFFi(message))
@@ -651,7 +651,7 @@ data class Conversations(
      * @return Flow object of [DecodedMessage] that represents all the messages of the
      * current [Client] as userInvite and userIntro
      */
-    private fun streamAllV2Messages(): Flow<DecodedMessage> = flow {
+    private fun streamAllV2Messages(): Flow<DecodedMessage> = callbackFlow {
         val topics = mutableListOf(
             Topic.userInvite(client.address).description,
             Topic.userIntro(client.address).description,
@@ -661,49 +661,35 @@ data class Conversations(
             topics.add(conversation.topic)
         }
 
-        val subscribeFlow = MutableStateFlow(makeSubscribeRequest(topics))
-
-        while (true) {
-            try {
-                client.subscribe2(request = subscribeFlow).collect { envelope ->
-                    when {
-                        conversationsByTopic.containsKey(envelope.contentTopic) -> {
-                            val conversation = conversationsByTopic[envelope.contentTopic]
-                            val decoded = conversation?.decode(envelope)
-                            decoded?.let { emit(it) }
-                        }
-
-                        envelope.contentTopic.startsWith("/xmtp/0/invite-") -> {
-                            val conversation = fromInvite(envelope = envelope)
-                            conversationsByTopic[conversation.topic] = conversation
-                            topics.add(conversation.topic)
-                            subscribeFlow.value = makeSubscribeRequest(topics)
-                        }
-
-                        envelope.contentTopic.startsWith("/xmtp/0/intro-") -> {
-                            val conversation = fromIntro(envelope = envelope)
-                            conversationsByTopic[conversation.topic] = conversation
-                            val decoded = conversation.decode(envelope)
-                            emit(decoded)
-                            topics.add(conversation.topic)
-                            subscribeFlow.value = makeSubscribeRequest(topics)
-                        }
-
-                        else -> {}
+        val subscriptionCallback = object : FfiV2SubscriptionCallback {
+            override fun onMessage(message: FfiEnvelope) {
+                when {
+                    conversationsByTopic.containsKey(message.contentTopic) -> {
+                        val conversation = conversationsByTopic[message.contentTopic]
+                        val decoded = conversation?.decode(envelopeFromFFi(message))
+                        decoded?.let { trySend(it) }
                     }
+
+                    message.contentTopic.startsWith("/xmtp/0/invite-") -> {
+                        val conversation = fromInvite(envelope = envelopeFromFFi(message))
+                        conversationsByTopic[conversation.topic] = conversation
+                        topics.add(conversation.topic)
+                    }
+
+                    message.contentTopic.startsWith("/xmtp/0/intro-") -> {
+                        val conversation = fromIntro(envelope = envelopeFromFFi(message))
+                        conversationsByTopic[conversation.topic] = conversation
+                        val decoded = conversation.decode(envelopeFromFFi(message))
+                        trySend(decoded)
+                        topics.add(conversation.topic)
+                    }
+
+                    else -> {}
                 }
-            } catch (error: CancellationException) {
-                break
-            } catch (error: StatusException) {
-                if (error.status.code == io.grpc.Status.Code.UNAVAILABLE) {
-                    continue
-                } else {
-                    break
-                }
-            } catch (error: Exception) {
-                continue
             }
         }
+
+        client.subscribe(topics, subscriptionCallback)
     }
 
     fun streamAllMessages(includeGroups: Boolean = false): Flow<DecodedMessage> {
@@ -722,7 +708,7 @@ data class Conversations(
         }
     }
 
-    private fun streamAllV2DecryptedMessages(): Flow<DecryptedMessage> = flow {
+    private fun streamAllV2DecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
         val topics = mutableListOf(
             Topic.userInvite(client.address).description,
             Topic.userIntro(client.address).description,
@@ -732,48 +718,34 @@ data class Conversations(
             topics.add(conversation.topic)
         }
 
-        val subscribeFlow = MutableStateFlow(makeSubscribeRequest(topics))
-
-        while (true) {
-            try {
-                client.subscribe2(request = subscribeFlow).collect { envelope ->
-                    when {
-                        conversationsByTopic.containsKey(envelope.contentTopic) -> {
-                            val conversation = conversationsByTopic[envelope.contentTopic]
-                            val decrypted = conversation?.decrypt(envelope)
-                            decrypted?.let { emit(it) }
-                        }
-
-                        envelope.contentTopic.startsWith("/xmtp/0/invite-") -> {
-                            val conversation = fromInvite(envelope = envelope)
-                            conversationsByTopic[conversation.topic] = conversation
-                            topics.add(conversation.topic)
-                            subscribeFlow.value = makeSubscribeRequest(topics)
-                        }
-
-                        envelope.contentTopic.startsWith("/xmtp/0/intro-") -> {
-                            val conversation = fromIntro(envelope = envelope)
-                            conversationsByTopic[conversation.topic] = conversation
-                            val decrypted = conversation.decrypt(envelope)
-                            emit(decrypted)
-                            topics.add(conversation.topic)
-                            subscribeFlow.value = makeSubscribeRequest(topics)
-                        }
-
-                        else -> {}
+        val subscriptionCallback = object : FfiV2SubscriptionCallback {
+            override fun onMessage(message: FfiEnvelope) {
+                when {
+                    conversationsByTopic.containsKey(message.contentTopic) -> {
+                        val conversation = conversationsByTopic[message.contentTopic]
+                        val decrypted = conversation?.decrypt(envelopeFromFFi(message))
+                        decrypted?.let { trySend(it) }
                     }
+
+                    message.contentTopic.startsWith("/xmtp/0/invite-") -> {
+                        val conversation = fromInvite(envelope = envelopeFromFFi(message))
+                        conversationsByTopic[conversation.topic] = conversation
+                        topics.add(conversation.topic)
+                    }
+
+                    message.contentTopic.startsWith("/xmtp/0/intro-") -> {
+                        val conversation = fromIntro(envelope = envelopeFromFFi(message))
+                        conversationsByTopic[conversation.topic] = conversation
+                        val decrypted = conversation.decrypt(envelopeFromFFi(message))
+                        trySend(decrypted)
+                        topics.add(conversation.topic)
+                    }
+
+                    else -> {}
                 }
-            } catch (error: CancellationException) {
-                break
-            } catch (error: StatusException) {
-                if (error.status.code == io.grpc.Status.Code.UNAVAILABLE) {
-                    continue
-                } else {
-                    break
-                }
-            } catch (error: Exception) {
-                continue
             }
         }
+
+        client.subscribe(topics, subscriptionCallback)
     }
 }
