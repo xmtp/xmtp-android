@@ -11,7 +11,6 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PagingInfo
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SubscribeRequest
 import uniffi.xmtpv3.FfiCursor
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiPagingInfo
@@ -79,10 +78,6 @@ data class GRPCApiClient(
                         }.build()
                     }
                 }.build()
-
-        fun makeSubscribeRequest(
-            topics: List<String>,
-        ): FfiV2SubscribeRequest = FfiV2SubscribeRequest(topics)
     }
 
     private var authToken: String? = null

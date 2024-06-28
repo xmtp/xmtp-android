@@ -8,13 +8,10 @@ import android.util.Log
 import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Keys.toChecksumAddress
-import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.MessageV3
@@ -518,7 +515,7 @@ class Client() {
         topics: List<String>,
         callback: FfiV2SubscriptionCallback,
     ): FfiV2Subscription {
-        return subscribe2(makeSubscribeRequest(topics), callback)
+        return subscribe2(FfiV2SubscribeRequest(topics), callback)
     }
 
     suspend fun subscribe2(
