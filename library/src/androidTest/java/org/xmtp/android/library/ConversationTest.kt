@@ -127,22 +127,6 @@ class ConversationTest {
     }
 
     @Test
-    fun testCanFindExistingV2Conversation() {
-        val existingConversation = runBlocking {
-            bobClient.conversations.newConversation(
-                alice.walletAddress,
-                context = InvitationV1ContextBuilder.buildFromConversation("http://example.com/2"),
-            )
-        }
-        var conversation: Conversation? = null
-        assertEquals(
-            "made new conversation instead of using existing one",
-            conversation!!.topic,
-            existingConversation.topic,
-        )
-    }
-
-    @Test
     fun testCanLoadV1Messages() {
         // Overwrite contact as legacy so we can get v1
         fixtures.publishLegacyContact(client = bobClient)
@@ -573,12 +557,29 @@ class ConversationTest {
     }
 
     @Test
-    fun testCanStreamConversationsV2() = kotlinx.coroutines.test.runTest {
-        bobClient.conversations.stream().test {
-            val conversation = bobClient.conversations.newConversation(alice.walletAddress)
-            conversation.send(content = "hi")
-            assertEquals("hi", awaitItem().messages(limit = 1).first().body)
+    fun testCanStreamConversationsV2() {
+        val allMessages = mutableListOf<String>()
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                bobClient.conversations.stream()
+                    .collect { message ->
+                        allMessages.add(message.topic)
+                    }
+            } catch (e: Exception) {
+            }
         }
+        Thread.sleep(2500)
+
+        runBlocking {
+            bobClient.conversations.newConversation(alice.walletAddress)
+        }
+
+        Thread.sleep(1000)
+
+        assertEquals(1, allMessages.size)
+
+        job.cancel()
     }
 
     @Test

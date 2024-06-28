@@ -525,7 +525,6 @@ class Client() {
         return apiClient.subscribe(request, callback)
     }
 
-
     suspend fun fetchConversation(
         topic: String?,
         includeGroups: Boolean = false,

@@ -1,34 +1,15 @@
 package org.xmtp.android.library
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
-import org.xmtp.android.library.codecs.Fetcher
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.Envelope
-import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass
-import uniffi.xmtpv3.FfiV2Subscription
-import uniffi.xmtpv3.FfiV2SubscriptionCallback
-import uniffi.xmtpv3.NoPointer
-import java.io.File
-import java.net.URL
 import java.util.Date
-
-class TestFetcher : Fetcher {
-    override fun fetch(url: URL): ByteArray {
-        return File(url.toString().replace("https://", "")).readBytes()
-    }
-}
 
 class FakeWallet : SigningKey {
     private var privateKey: PrivateKey
