@@ -70,6 +70,7 @@ class LocalInstrumentedTest {
             )
         }
         val api = GRPCApiClient(
+            environment = XMTPEnvironment.LOCAL,
             rustV2Client = v2Client
         )
         api.setAuthToken(authToken)
@@ -105,6 +106,7 @@ class LocalInstrumentedTest {
             )
         }
         val api = GRPCApiClient(
+            environment = XMTPEnvironment.LOCAL,
             rustV2Client = v2Client
         )
         api.setAuthToken(authToken)
@@ -770,6 +772,7 @@ class LocalInstrumentedTest {
             )
         }
         val api = GRPCApiClient(
+            environment = XMTPEnvironment.LOCAL,
             rustV2Client = v2Client
         )
         api.setAuthToken(authToken)
