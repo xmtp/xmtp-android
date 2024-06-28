@@ -44,6 +44,7 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
+import uniffi.xmtpv3.FfiV2SubscribeRequest
 import uniffi.xmtpv3.FfiV2Subscription
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import uniffi.xmtpv3.FfiXmtpClient
@@ -517,7 +518,14 @@ class Client() {
         topics: List<String>,
         callback: FfiV2SubscriptionCallback,
     ): FfiV2Subscription {
-        return apiClient.subscribe(makeSubscribeRequest(topics), callback)
+        return subscribe2(makeSubscribeRequest(topics), callback)
+    }
+
+    suspend fun subscribe2(
+        request: FfiV2SubscribeRequest,
+        callback: FfiV2SubscriptionCallback,
+    ): FfiV2Subscription {
+        return apiClient.subscribe(request, callback)
     }
 
 

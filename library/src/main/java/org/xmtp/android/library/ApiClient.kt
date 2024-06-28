@@ -40,7 +40,7 @@ interface ApiClient {
     suspend fun envelopes(topic: String, pagination: Pagination? = null): List<Envelope>
     suspend fun publish(envelopes: List<Envelope>)
     suspend fun subscribe(
-        request: SubscribeRequest,
+        request: FfiV2SubscribeRequest,
         callback: FfiV2SubscriptionCallback,
     ): FfiV2Subscription
 }
@@ -82,7 +82,7 @@ data class GRPCApiClient(
 
         fun makeSubscribeRequest(
             topics: List<String>,
-        ): SubscribeRequest = SubscribeRequest.newBuilder().addAllContentTopics(topics).build()
+        ): FfiV2SubscribeRequest = FfiV2SubscribeRequest(topics)
     }
 
     private var authToken: String? = null
@@ -146,20 +146,14 @@ data class GRPCApiClient(
     }
 
     override suspend fun subscribe(
-        request: SubscribeRequest,
+        request: FfiV2SubscribeRequest,
         callback: FfiV2SubscriptionCallback,
     ): FfiV2Subscription {
-        return rustV2Client.subscribe(subscribeRequestToFFi(request), callback)
+        return rustV2Client.subscribe(request, callback)
     }
 
     override fun close() {
         rustV2Client.close()
-    }
-
-    private fun subscribeRequestToFFi(request: SubscribeRequest): FfiV2SubscribeRequest {
-        return FfiV2SubscribeRequest(
-            contentTopics = request.contentTopicsList,
-        )
     }
 
     private fun envelopeToFFi(envelope: Envelope): FfiEnvelope {

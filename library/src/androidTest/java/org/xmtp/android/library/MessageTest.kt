@@ -161,7 +161,6 @@ class MessageTest {
         }.build()
 
         val client = Client().create(account = PrivateKeyBuilder(key))
-        assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
         runBlocking {
             val convo = client.conversations.list()[0]
             val message = convo.messages()[0]
@@ -196,7 +195,6 @@ class MessageTest {
         }.build()
 
         val client = Client().create(account = PrivateKeyBuilder(key))
-        assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
         runBlocking {
             val convo = client.conversations.list()[0]
             convo.send(
@@ -234,7 +232,6 @@ class MessageTest {
             }.build()
         }.build()
         val client = Client().create(account = PrivateKeyBuilder(key))
-        assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
         val conversations = runBlocking { client.conversations.list() }
         assertEquals(201, conversations.size)
     }

@@ -45,7 +45,6 @@ class LocalInstrumentedTest {
                 )
             )
         val client = Client().create(aliceWallet, clientOptions)
-        assertEquals(XMTPEnvironment.LOCAL, client.apiClient.environment)
         runBlocking {
             client.publishUserContact()
         }
@@ -71,7 +70,6 @@ class LocalInstrumentedTest {
             )
         }
         val api = GRPCApiClient(
-            environment = XMTPEnvironment.LOCAL,
             rustV2Client = v2Client
         )
         api.setAuthToken(authToken)
@@ -107,7 +105,6 @@ class LocalInstrumentedTest {
             )
         }
         val api = GRPCApiClient(
-            environment = XMTPEnvironment.LOCAL,
             rustV2Client = v2Client
         )
         api.setAuthToken(authToken)
@@ -126,7 +123,6 @@ class LocalInstrumentedTest {
         val clientOptions =
             ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
         val client = Client().create(account = aliceWallet, options = clientOptions)
-        assertEquals(XMTPEnvironment.LOCAL, client.apiClient.environment)
         val contact = client.getUserContact(peerAddress = aliceWallet.address)
         assertEquals(
             contact?.v2?.keyBundle?.identityKey?.secp256K1Uncompressed,
@@ -774,7 +770,6 @@ class LocalInstrumentedTest {
             )
         }
         val api = GRPCApiClient(
-            environment = XMTPEnvironment.LOCAL,
             rustV2Client = v2Client
         )
         api.setAuthToken(authToken)

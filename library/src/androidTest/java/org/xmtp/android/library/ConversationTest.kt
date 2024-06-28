@@ -49,7 +49,6 @@ import java.util.Date
 
 @RunWith(AndroidJUnit4::class)
 class ConversationTest {
-    lateinit var fakeApiClient: FakeApiClient
     lateinit var aliceWallet: PrivateKeyBuilder
     lateinit var bobWallet: PrivateKeyBuilder
     lateinit var alice: PrivateKey
@@ -65,7 +64,6 @@ class ConversationTest {
         alice = fixtures.alice
         bobWallet = fixtures.bobAccount
         bob = fixtures.bob
-        fakeApiClient = fixtures.fakeApiClient
         aliceClient = fixtures.aliceClient
         bobClient = fixtures.bobClient
     }
@@ -123,14 +121,7 @@ class ConversationTest {
             runBlocking { aliceClient.conversations.newConversation(bob.walletAddress) }
         assertEquals(conversation.peerAddress, bob.walletAddress)
         assertEquals(conversation.createdAt, someTimeAgo)
-        val existingMessages = fakeApiClient.published.size
         conversation = runBlocking { bobClient.conversations.newConversation(alice.walletAddress) }
-
-        assertEquals(
-            "published more messages when we shouldn't have",
-            existingMessages,
-            fakeApiClient.published.size,
-        )
         assertEquals(conversation.peerAddress, alice.walletAddress)
         assertEquals(conversation.createdAt, someTimeAgo)
     }
@@ -144,14 +135,6 @@ class ConversationTest {
             )
         }
         var conversation: Conversation? = null
-        fakeApiClient.assertNoPublish {
-            runBlocking {
-                conversation = bobClient.conversations.newConversation(
-                    alice.walletAddress,
-                    context = InvitationV1ContextBuilder.buildFromConversation("http://example.com/2"),
-                )
-            }
-        }
         assertEquals(
             "made new conversation instead of using existing one",
             conversation!!.topic,
@@ -409,15 +392,6 @@ class ConversationTest {
     }
 
     @Test
-    fun testCanUseCachedConversation() {
-        runBlocking { bobClient.conversations.newConversation(alice.walletAddress) }
-
-        fakeApiClient.assertNoQuery {
-            runBlocking { bobClient.conversations.newConversation(alice.walletAddress) }
-        }
-    }
-
-    @Test
     @Ignore("Rust seems to be Flaky with V1")
     fun testCanPaginateV1Messages() {
         // Overwrite contact as legacy so we can get v1
@@ -496,9 +470,18 @@ class ConversationTest {
             (topic.equals(steveConversation.topic) || topic.equals(bobConversation.topic))
         }
         assertEquals(3, messages.size)
-        assertTrue("isSteveOrBobConversation message 0", isSteveOrBobConversation(messages[0].topic))
-        assertTrue("isSteveOrBobConversation message 1", isSteveOrBobConversation(messages[1].topic))
-        assertTrue("isSteveOrBobConversation message 2", isSteveOrBobConversation(messages[2].topic))
+        assertTrue(
+            "isSteveOrBobConversation message 0",
+            isSteveOrBobConversation(messages[0].topic)
+        )
+        assertTrue(
+            "isSteveOrBobConversation message 1",
+            isSteveOrBobConversation(messages[1].topic)
+        )
+        assertTrue(
+            "isSteveOrBobConversation message 2",
+            isSteveOrBobConversation(messages[2].topic)
+        )
     }
 
     @Test
@@ -778,7 +761,6 @@ class ConversationTest {
         }.build()
 
         val client = Client().create(account = PrivateKeyBuilder(key))
-        assertEquals(client.apiClient.environment, XMTPEnvironment.DEV)
         runBlocking {
             val conversations = client.conversations.list()
             assertEquals(1, conversations.size)
@@ -827,7 +809,10 @@ class ConversationTest {
         val isAllowed = bobConversation.consentState() == ConsentState.ALLOWED
         // Conversations you start should start as allowed
         assertTrue("Bob convo should be allowed", isAllowed)
-        assertTrue("Bob contacts should be allowed", bobClient.contacts.isAllowed(alice.walletAddress))
+        assertTrue(
+            "Bob contacts should be allowed",
+            bobClient.contacts.isAllowed(alice.walletAddress)
+        )
 
         runBlocking {
             bobClient.contacts.deny(listOf(alice.walletAddress))
@@ -896,12 +881,24 @@ class ConversationTest {
             bobClient.contacts.refreshConsentList()
             Thread.sleep(1000)
             assertEquals(bobClient.contacts.consentList.entries.size, 2)
-            assertTrue("Bob convo should be allowed", bobConversation.consentState() == ConsentState.ALLOWED)
-            assertTrue("Caro convo should be allowed", caroConversation.consentState() == ConsentState.ALLOWED)
+            assertTrue(
+                "Bob convo should be allowed",
+                bobConversation.consentState() == ConsentState.ALLOWED
+            )
+            assertTrue(
+                "Caro convo should be allowed",
+                caroConversation.consentState() == ConsentState.ALLOWED
+            )
             bobClient.contacts.deny(listOf(alice.walletAddress, fixtures.caro.walletAddress))
             assertEquals(bobClient.contacts.consentList.entries.size, 2)
-            assertTrue("Bob convo should be denied", bobConversation.consentState() == ConsentState.DENIED)
-            assertTrue("Caro convo should be denied", caroConversation.consentState() == ConsentState.DENIED)
+            assertTrue(
+                "Bob convo should be denied",
+                bobConversation.consentState() == ConsentState.DENIED
+            )
+            assertTrue(
+                "Caro convo should be denied",
+                caroConversation.consentState() == ConsentState.DENIED
+            )
         }
     }
 

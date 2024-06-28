@@ -49,6 +49,7 @@ import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiV2SubscribeRequest
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import uniffi.xmtpv3.GroupPermissions
 import java.util.Date
@@ -661,6 +662,8 @@ data class Conversations(
             topics.add(conversation.topic)
         }
 
+        val subscriptionRequest = FfiV2SubscribeRequest(topics)
+
         val subscriptionCallback = object : FfiV2SubscriptionCallback {
             override fun onMessage(message: FfiEnvelope) {
                 when {
@@ -674,6 +677,7 @@ data class Conversations(
                         val conversation = fromInvite(envelope = envelopeFromFFi(message))
                         conversationsByTopic[conversation.topic] = conversation
                         topics.add(conversation.topic)
+                        subscriptionRequest.contentTopics = topics
                     }
 
                     message.contentTopic.startsWith("/xmtp/0/intro-") -> {
@@ -682,6 +686,7 @@ data class Conversations(
                         val decoded = conversation.decode(envelopeFromFFi(message))
                         trySend(decoded)
                         topics.add(conversation.topic)
+                        subscriptionRequest.contentTopics = topics
                     }
 
                     else -> {}
@@ -689,7 +694,8 @@ data class Conversations(
             }
         }
 
-        client.subscribe(topics, subscriptionCallback)
+        val stream = client.subscribe2(subscriptionRequest, subscriptionCallback)
+        awaitClose { runBlocking { stream.end() } }
     }
 
     fun streamAllMessages(includeGroups: Boolean = false): Flow<DecodedMessage> {
@@ -718,6 +724,8 @@ data class Conversations(
             topics.add(conversation.topic)
         }
 
+        val subscriptionRequest = FfiV2SubscribeRequest(topics)
+
         val subscriptionCallback = object : FfiV2SubscriptionCallback {
             override fun onMessage(message: FfiEnvelope) {
                 when {
@@ -731,6 +739,7 @@ data class Conversations(
                         val conversation = fromInvite(envelope = envelopeFromFFi(message))
                         conversationsByTopic[conversation.topic] = conversation
                         topics.add(conversation.topic)
+                        subscriptionRequest.contentTopics = topics
                     }
 
                     message.contentTopic.startsWith("/xmtp/0/intro-") -> {
@@ -739,6 +748,7 @@ data class Conversations(
                         val decrypted = conversation.decrypt(envelopeFromFFi(message))
                         trySend(decrypted)
                         topics.add(conversation.topic)
+                        subscriptionRequest.contentTopics = topics
                     }
 
                     else -> {}
@@ -746,6 +756,7 @@ data class Conversations(
             }
         }
 
-        client.subscribe(topics, subscriptionCallback)
+        val stream = client.subscribe2(subscriptionRequest, subscriptionCallback)
+        awaitClose { runBlocking { stream.end() } }
     }
 }
