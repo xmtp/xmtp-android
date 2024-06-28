@@ -564,8 +564,6 @@ data class Conversations(
         val subscriptionCallback = object : FfiV2SubscriptionCallback {
             override fun onMessage(message: FfiEnvelope) {
                 val envelope = envelopeFromFFi(message)
-                Log.d("LOPI", envelope.contentTopic)
-                Log.d("LOPI", Topic.userInvite(client.address).description)
                 if (envelope.contentTopic == Topic.userIntro(client.address).description) {
                     val conversationV1 = fromIntro(envelope = envelope)
                     if (!streamedConversationTopics.contains(conversationV1.topic)) {
@@ -578,14 +576,12 @@ data class Conversations(
                     val conversationV2 = fromInvite(envelope = envelope)
                     if (!streamedConversationTopics.contains(conversationV2.topic)) {
                         streamedConversationTopics.add(conversationV2.topic)
-                        Log.d("LOPI", "Try Send")
                         trySend(conversationV2)
                     }
                 }
             }
         }
 
-        Log.d("LOPI", "Start the stream")
         val stream = client.subscribe2(
             FfiV2SubscribeRequest(
                 listOf(
@@ -606,11 +602,9 @@ data class Conversations(
     private fun streamGroupConversations(): Flow<Conversation> = callbackFlow {
         val groupCallback = object : FfiConversationCallback {
             override fun onConversation(conversation: FfiGroup) {
-                Log.d("LOPI", "try send the group")
                 trySend(Conversation.Group(Group(client, conversation)))
             }
         }
-        Log.d("LOPI", "Start the group stream")
         val stream = libXMTPConversations?.stream(groupCallback)
             ?: throw XMTPException("Client does not support Groups")
         awaitClose { stream.end() }

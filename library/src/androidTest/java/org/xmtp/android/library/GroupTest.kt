@@ -749,17 +749,17 @@ class GroupTest {
                     .collect { message ->
                         allMessages.add(message.topic)
                     }
-            } catch (e: Exception) {
-            }
+            } catch (e: Exception) {}
         }
-        Thread.sleep(5000)
+        Thread.sleep(2500)
 
         runBlocking {
             alixClient.conversations.newConversation(bo.walletAddress)
-            caroClient.conversations.newGroup(listOf(bo.walletAddress))
+            Thread.sleep(2500)
+            caroClient.conversations.newGroup(listOf(alix.walletAddress))
         }
 
-        Thread.sleep(5000)
+        Thread.sleep(2500)
 
         assertEquals(2, allMessages.size)
 
