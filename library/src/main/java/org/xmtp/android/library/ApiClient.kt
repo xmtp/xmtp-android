@@ -27,6 +27,7 @@ import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import java.io.Closeable
 
 interface ApiClient {
+    val environment: XMTPEnvironment
     fun setAuthToken(token: String)
     suspend fun query(
         topic: String,
@@ -45,6 +46,7 @@ interface ApiClient {
 }
 
 data class GRPCApiClient(
+    override val environment: XMTPEnvironment,
     val rustV2Client: FfiV2ApiClient,
 ) :
     ApiClient, Closeable {
