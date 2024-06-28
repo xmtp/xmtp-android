@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.GRPCApiClient.Companion.makeSubscribeRequest
@@ -50,8 +51,10 @@ import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiV2SubscribeRequest
+import uniffi.xmtpv3.FfiV2Subscription
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import uniffi.xmtpv3.GroupPermissions
+import uniffi.xmtpv3.NoPointer
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -663,6 +666,7 @@ data class Conversations(
         }
 
         val subscriptionRequest = FfiV2SubscribeRequest(topics)
+        var stream = FfiV2Subscription(NoPointer)
 
         val subscriptionCallback = object : FfiV2SubscriptionCallback {
             override fun onMessage(message: FfiEnvelope) {
@@ -678,6 +682,7 @@ data class Conversations(
                         conversationsByTopic[conversation.topic] = conversation
                         topics.add(conversation.topic)
                         subscriptionRequest.contentTopics = topics
+                        launch { stream.update(subscriptionRequest) }
                     }
 
                     message.contentTopic.startsWith("/xmtp/0/intro-") -> {
@@ -687,6 +692,7 @@ data class Conversations(
                         trySend(decoded)
                         topics.add(conversation.topic)
                         subscriptionRequest.contentTopics = topics
+                        launch { stream.update(subscriptionRequest) }
                     }
 
                     else -> {}
@@ -694,7 +700,8 @@ data class Conversations(
             }
         }
 
-        val stream = client.subscribe2(subscriptionRequest, subscriptionCallback)
+        stream = client.subscribe2(subscriptionRequest, subscriptionCallback)
+
         awaitClose { runBlocking { stream.end() } }
     }
 
@@ -725,6 +732,7 @@ data class Conversations(
         }
 
         val subscriptionRequest = FfiV2SubscribeRequest(topics)
+        var stream = FfiV2Subscription(NoPointer)
 
         val subscriptionCallback = object : FfiV2SubscriptionCallback {
             override fun onMessage(message: FfiEnvelope) {
@@ -740,6 +748,7 @@ data class Conversations(
                         conversationsByTopic[conversation.topic] = conversation
                         topics.add(conversation.topic)
                         subscriptionRequest.contentTopics = topics
+                        launch { stream.update(subscriptionRequest) }
                     }
 
                     message.contentTopic.startsWith("/xmtp/0/intro-") -> {
@@ -749,6 +758,7 @@ data class Conversations(
                         trySend(decrypted)
                         topics.add(conversation.topic)
                         subscriptionRequest.contentTopics = topics
+                        launch { stream.update(subscriptionRequest) }
                     }
 
                     else -> {}
@@ -756,7 +766,8 @@ data class Conversations(
             }
         }
 
-        val stream = client.subscribe2(subscriptionRequest, subscriptionCallback)
+        stream = client.subscribe2(subscriptionRequest, subscriptionCallback)
+
         awaitClose { runBlocking { stream.end() } }
     }
 }
