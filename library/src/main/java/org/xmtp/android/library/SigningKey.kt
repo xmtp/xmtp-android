@@ -18,6 +18,7 @@ import java.util.Date
 
 interface SigningKey {
     val address: String
+    val chainRPCUrl: String
 
     suspend fun sign(data: ByteArray): SignatureOuterClass.Signature?
 
