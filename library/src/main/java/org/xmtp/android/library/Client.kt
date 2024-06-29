@@ -151,20 +151,17 @@ class Client() {
             )
         }
 
-        fun canMessage(peerAddress: String, options: ClientOptions? = null): Boolean {
+        suspend fun canMessage(peerAddress: String, options: ClientOptions? = null): Boolean {
             val clientOptions = options ?: ClientOptions()
-            val v2Client = runBlocking {
+            val v2Client =
                 createV2Client(
                     host = clientOptions.api.env.getUrl(),
                     isSecure = clientOptions.api.isSecure
                 )
-            }
             clientOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
             val api = GRPCApiClient(environment = clientOptions.api.env, rustV2Client = v2Client)
-            return runBlocking {
-                val topics = api.queryTopic(Topic.contact(peerAddress)).envelopesList
-                topics.isNotEmpty()
-            }
+            val topics = api.queryTopic(Topic.contact(peerAddress)).envelopesList
+            return topics.isNotEmpty()
         }
     }
 
@@ -640,8 +637,8 @@ class Client() {
      * @return false when [peerAddress] has never signed up for XMTP
      * or when the message is addressed to the sender (no self-messaging).
      */
-    fun canMessage(peerAddress: String): Boolean {
-        return runBlocking { query(Topic.contact(peerAddress)).envelopesList.size > 0 }
+    suspend fun canMessage(peerAddress: String): Boolean {
+        return query(Topic.contact(peerAddress)).envelopesList.size > 0
     }
 
     suspend fun canMessageV3(addresses: List<String>): Map<String, Boolean> {
