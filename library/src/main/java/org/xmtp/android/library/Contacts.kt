@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import com.google.protobuf.kotlin.toByteString
-import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.ContactBundleBuilder
