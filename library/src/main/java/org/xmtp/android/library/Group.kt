@@ -28,14 +28,6 @@ import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
 
-enum class PermissionUpdateType {
-    AddMember,
-    RemoveMember,
-    AddAdmin,
-    RemoveAdmin,
-    UpdateMetadata
-}
-
 class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     val id: ByteArray
         get() = libXMTPGroup.id()
