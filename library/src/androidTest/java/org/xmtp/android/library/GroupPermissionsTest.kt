@@ -13,6 +13,7 @@ import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
+import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionOption
 
 @RunWith(AndroidJUnit4::class)
 class GroupPermissionsTest {
@@ -287,5 +288,43 @@ class GroupPermissionsTest {
         }
         assert(boGroup.name == "Alix group name")
         assert(alixGroup.name == "Alix group name")
+    }
+
+    @Test
+    fun testCanUpdatePermissions() {
+        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), GroupPermissionPreconfiguration.ADMIN_ONLY) }
+        runBlocking { alixClient.conversations.syncGroups() }
+        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
+
+        // Verify that alix can NOT update group name
+        assert(boGroup.name == "")
+        val exception = assertThrows(XMTPException::class.java) {
+            runBlocking {
+                alixGroup.updateGroupDescription("new group description")
+            }
+        }
+        assertEquals(exception.message, "Permission denied: Unable to update group description")
+        runBlocking {
+            alixGroup.sync()
+            boGroup.sync()
+        }
+        assertEquals(boGroup.permissionPolicySet().updateGroupDescriptionPolicy, PermissionOption.Admin)
+
+        // Update group name permissions so Alix can update
+        runBlocking {
+            boGroup.updateGroupDescriptionPermission(PermissionOption.Allow)
+            boGroup.sync()
+            alixGroup.sync()
+        }
+        assertEquals(boGroup.permissionPolicySet().updateGroupDescriptionPolicy, PermissionOption.Allow)
+
+        // Verify that alix can now update group name
+        runBlocking {
+            alixGroup.updateGroupDescription("Alix group description")
+            alixGroup.sync()
+            boGroup.sync()
+        }
+        assert(boGroup.description == "Alix group description")
+        assert(alixGroup.description == "Alix group description")
     }
 }

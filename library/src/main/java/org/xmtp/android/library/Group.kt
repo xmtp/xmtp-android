@@ -234,15 +234,27 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     suspend fun updateGroupName(name: String) {
-        return libXMTPGroup.updateGroupName(name)
+        try {
+            return libXMTPGroup.updateGroupName(name)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to update group name", e)
+        }
     }
 
     suspend fun updateGroupImageUrlSquare(imageUrl: String) {
-        return libXMTPGroup.updateGroupImageUrlSquare(imageUrl)
+        try {
+            return libXMTPGroup.updateGroupImageUrlSquare(imageUrl)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to update image url", e)
+        }
     }
 
     suspend fun updateGroupDescription(description: String) {
-        return libXMTPGroup.updateGroupDescription(description)
+        try {
+            return libXMTPGroup.updateGroupDescription(description)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to update group description", e)
+        }
     }
 
     suspend fun updateAddMemberPermission(newPermissionOption: PermissionOption) {
