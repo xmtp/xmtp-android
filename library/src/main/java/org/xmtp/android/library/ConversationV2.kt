@@ -4,7 +4,7 @@ import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
@@ -149,7 +149,7 @@ data class ConversationV2(
             }
         }
         val stream = client.subscribe(listOf(topic), streamCallback)
-        awaitClose { runBlocking { stream.end() } }
+        awaitClose { launch { stream.end() } }
     }
 
     /**
@@ -284,7 +284,7 @@ data class ConversationV2(
             }
         }
         val stream = client.subscribe(listOf(ephemeralTopic), streamCallback)
-        awaitClose { runBlocking { stream.end() } }
+        awaitClose { launch { stream.end() } }
     }
 
     fun streamDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
@@ -294,6 +294,6 @@ data class ConversationV2(
             }
         }
         val stream = client.subscribe(listOf(topic), streamCallback)
-        awaitClose { runBlocking { stream.end() } }
+        awaitClose { launch { stream.end() } }
     }
 }

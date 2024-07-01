@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.Util.Companion.envelopeFromFFi
 import org.xmtp.android.library.libxmtp.MessageV3
@@ -592,7 +591,7 @@ data class Conversations(
             subscriptionCallback
         )
 
-        awaitClose { runBlocking { stream.end() } }
+        awaitClose { launch { stream.end() } }
     }
 
     fun streamAll(): Flow<Conversation> {
@@ -701,7 +700,7 @@ data class Conversations(
 
         stream = client.subscribe2(subscriptionRequest, subscriptionCallback)
 
-        awaitClose { runBlocking { stream.end() } }
+        awaitClose { launch { stream.end() } }
     }
 
     fun streamAllMessages(includeGroups: Boolean = false): Flow<DecodedMessage> {
@@ -767,6 +766,6 @@ data class Conversations(
 
         stream = client.subscribe2(subscriptionRequest, subscriptionCallback)
 
-        awaitClose { runBlocking { stream.end() } }
+        awaitClose { launch { stream.end() } }
     }
 }
