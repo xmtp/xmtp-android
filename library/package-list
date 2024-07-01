@@ -1059,11 +1059,11 @@ $dokka.location:org.xmtp.android.library/CodecRegistry/register/#org.xmtp.androi
 $dokka.location:org.xmtp.android.library/ConsentList///PointingToDeclaration/library/org.xmtp.android.library/-consent-list/index.html
 $dokka.location:org.xmtp.android.library/ConsentList/ConsentList/#org.xmtp.android.library.Client#kotlin.collections.MutableMap[kotlin.String,org.xmtp.android.library.ConsentListEntry]/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/-consent-list.html
 $dokka.location:org.xmtp.android.library/ConsentList/allow/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/allow.html
-$dokka.location:org.xmtp.android.library/ConsentList/allowGroup/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/allow-group.html
+$dokka.location:org.xmtp.android.library/ConsentList/allowGroup/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/allow-group.html
 $dokka.location:org.xmtp.android.library/ConsentList/allowInboxId/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/allow-inbox-id.html
 $dokka.location:org.xmtp.android.library/ConsentList/client/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/client.html
 $dokka.location:org.xmtp.android.library/ConsentList/deny/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/deny.html
-$dokka.location:org.xmtp.android.library/ConsentList/denyGroup/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/deny-group.html
+$dokka.location:org.xmtp.android.library/ConsentList/denyGroup/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/deny-group.html
 $dokka.location:org.xmtp.android.library/ConsentList/denyInboxId/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/deny-inbox-id.html
 $dokka.location:org.xmtp.android.library/ConsentList/entries/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/entries.html
 $dokka.location:org.xmtp.android.library/ConsentList/groupState/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/group-state.html
@@ -1073,7 +1073,7 @@ $dokka.location:org.xmtp.android.library/ConsentList/publish/#kotlin.collections
 $dokka.location:org.xmtp.android.library/ConsentList/state/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-consent-list/state.html
 $dokka.location:org.xmtp.android.library/ConsentListEntry.Companion///PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/-companion/index.html
 $dokka.location:org.xmtp.android.library/ConsentListEntry.Companion/address/#kotlin.String#org.xmtp.android.library.ConsentState/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/-companion/address.html
-$dokka.location:org.xmtp.android.library/ConsentListEntry.Companion/groupId/#kotlin.ByteArray#org.xmtp.android.library.ConsentState/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/-companion/group-id.html
+$dokka.location:org.xmtp.android.library/ConsentListEntry.Companion/groupId/#kotlin.String#org.xmtp.android.library.ConsentState/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/-companion/group-id.html
 $dokka.location:org.xmtp.android.library/ConsentListEntry.Companion/inboxId/#kotlin.String#org.xmtp.android.library.ConsentState/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/-companion/inbox-id.html
 $dokka.location:org.xmtp.android.library/ConsentListEntry.EntryType.ADDRESS///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-consent-list-entry/-entry-type/-a-d-d-r-e-s-s/index.html
 $dokka.location:org.xmtp.android.library/ConsentListEntry.EntryType.GROUP_ID///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-consent-list-entry/-entry-type/-g-r-o-u-p_-i-d/index.html
