@@ -41,13 +41,14 @@ import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiCreateGroupOptions
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiGroup
+import uniffi.xmtpv3.FfiGroupPermissions
+import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiV2SubscribeRequest
 import uniffi.xmtpv3.FfiV2Subscription
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
-import uniffi.xmtpv3.GroupPermissions
 import uniffi.xmtpv3.NoPointer
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
@@ -109,9 +110,10 @@ data class Conversations(
 
     suspend fun newGroup(
         accountAddresses: List<String>,
-        permissions: GroupPermissions = GroupPermissions.ALL_MEMBERS,
+        permissions: FfiGroupPermissionsOptions = FfiGroupPermissionsOptions.ALL_MEMBERS,
         groupName: String = "",
         groupImageUrlSquare: String = "",
+        groupDescription: String = "",
     ): Group {
         if (accountAddresses.size == 1 &&
             accountAddresses.first().lowercase() == client.address.lowercase()
@@ -131,7 +133,8 @@ data class Conversations(
                 opts = FfiCreateGroupOptions(
                     permissions = permissions,
                     groupName = groupName,
-                    groupImageUrlSquare = groupImageUrlSquare
+                    groupImageUrlSquare = groupImageUrlSquare,
+                    groupDescription = groupDescription
                 )
             ) ?: throw XMTPException("Client does not support Groups")
         client.contacts.allowGroups(groupIds = listOf(group.id()))
