@@ -49,6 +49,7 @@ import uniffi.xmtpv3.FfiV2SubscribeRequest
 import uniffi.xmtpv3.FfiV2Subscription
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import uniffi.xmtpv3.NoPointer
+import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -109,7 +110,7 @@ data class Conversations(
 
     suspend fun newGroup(
         accountAddresses: List<String>,
-        permissions: FfiGroupPermissionsOptions = FfiGroupPermissionsOptions.ALL_MEMBERS,
+        permissions: GroupPermissionPreconfiguration = GroupPermissionPreconfiguration.ALL_MEMBERS,
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
@@ -130,7 +131,7 @@ data class Conversations(
             libXMTPConversations?.createGroup(
                 accountAddresses,
                 opts = FfiCreateGroupOptions(
-                    permissions = permissions,
+                    permissions = GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(permissions),
                     groupName = groupName,
                     groupImageUrlSquare = groupImageUrlSquare,
                     groupDescription = groupDescription

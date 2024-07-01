@@ -1,5 +1,6 @@
 package uniffi.xmtpv3.org.xmtp.android.library.libxmtp
 
+import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiPermissionPolicy
 import uniffi.xmtpv3.FfiPermissionPolicySet
 enum class PermissionOption {
@@ -26,6 +27,20 @@ enum class PermissionOption {
                 FfiPermissionPolicy.SUPER_ADMIN -> SuperAdmin
                 FfiPermissionPolicy.DOES_NOT_EXIST -> Unknown
                 FfiPermissionPolicy.OTHER -> Unknown
+            }
+        }
+    }
+}
+
+enum class GroupPermissionPreconfiguration {
+    ALL_MEMBERS,
+    ADMIN_ONLY;
+
+    companion object {
+        fun toFfiGroupPermissionOptions(option: GroupPermissionPreconfiguration): FfiGroupPermissionsOptions {
+            return when (option) {
+                ALL_MEMBERS -> FfiGroupPermissionsOptions.ALL_MEMBERS
+                ADMIN_ONLY -> FfiGroupPermissionsOptions.ADMIN_ONLY
             }
         }
     }
