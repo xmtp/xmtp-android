@@ -53,6 +53,9 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     val description: String
         get() = libXMTPGroup.groupDescription()
 
+    val pinnedFrame: String
+        get() = libXMTPGroup.groupPinnedFrame()
+
     suspend fun send(text: String): String {
         return send(prepareMessage(content = text, options = null))
     }
@@ -249,6 +252,14 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
     }
 
+    suspend fun updatePinnedFrame(pinnedFrame: String) {
+        try {
+            return libXMTPGroup.updatePinnedFrame(pinnedFrame)
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to update pinned frame", e)
+        }
+    }
+
     suspend fun updateAddMemberPermission(newPermissionOption: PermissionOption) {
         return libXMTPGroup.updatePermissionPolicy(FfiPermissionUpdateType.ADD_MEMBER, PermissionOption.toFfiPermissionPolicy(newPermissionOption), null)
     }
@@ -275,6 +286,10 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
 
     suspend fun updateGroupImageUrlSquarePermission(newPermissionOption: PermissionOption) {
         return libXMTPGroup.updatePermissionPolicy(FfiPermissionUpdateType.UPDATE_METADATA, PermissionOption.toFfiPermissionPolicy(newPermissionOption), FfiMetadataField.IMAGE_URL_SQUARE)
+    }
+
+    suspend fun updateGroupPinnedFramePermission(newPermissionOption: PermissionOption) {
+        return libXMTPGroup.updatePermissionPolicy(FfiPermissionUpdateType.UPDATE_METADATA, PermissionOption.toFfiPermissionPolicy(newPermissionOption), FfiMetadataField.PINNED_FRAME)
     }
 
     fun isAdmin(inboxId: String): Boolean {

@@ -61,4 +61,6 @@ class PermissionPolicySet(private val ffiPermissionPolicySet: FfiPermissionPolic
         get() = PermissionOption.fromFfiPermissionPolicy(ffiPermissionPolicySet.updateGroupDescriptionPolicy)
     val updateGroupImagePolicy: PermissionOption
         get() = PermissionOption.fromFfiPermissionPolicy(ffiPermissionPolicySet.updateGroupImageUrlSquarePolicy)
+    val updatePinnedFramePolicy: PermissionOption
+        get() = PermissionOption.fromFfiPermissionPolicy(ffiPermissionPolicySet.updatePinnedFramePolicy)
 }

@@ -327,4 +327,42 @@ class GroupPermissionsTest {
         assert(boGroup.description == "Alix group description")
         assert(alixGroup.description == "Alix group description")
     }
+
+    @Test
+    fun testCanUpdatePinnedFrame() {
+        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), GroupPermissionPreconfiguration.ADMIN_ONLY) }
+        runBlocking { alixClient.conversations.syncGroups() }
+        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
+
+        // Verify that alix can NOT update pinned frame
+        assert(boGroup.pinnedFrame == "")
+        val exception = assertThrows(XMTPException::class.java) {
+            runBlocking {
+                alixGroup.updatePinnedFrame("new pinned frame url")
+            }
+        }
+        assertEquals(exception.message, "Permission denied: Unable to update pinned frame")
+        runBlocking {
+            alixGroup.sync()
+            boGroup.sync()
+        }
+        assertEquals(boGroup.permissionPolicySet().updatePinnedFramePolicy, PermissionOption.Admin)
+
+        // Update group name permissions so Alix can update
+        runBlocking {
+            boGroup.updateGroupPinnedFramePermission(PermissionOption.Allow)
+            boGroup.sync()
+            alixGroup.sync()
+        }
+        assertEquals(boGroup.permissionPolicySet().updatePinnedFramePolicy, PermissionOption.Allow)
+
+        // Verify that alix can now update group name
+        runBlocking {
+            alixGroup.updatePinnedFrame("new pinned frame url 2")
+            alixGroup.sync()
+            boGroup.sync()
+        }
+        assert(boGroup.pinnedFrame == "new pinned frame url 2")
+        assert(alixGroup.pinnedFrame == "new pinned frame url 2")
+    }
 }
