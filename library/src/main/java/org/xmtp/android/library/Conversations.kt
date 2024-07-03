@@ -113,7 +113,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        pinnedFrame: String = ""
+        groupPinnedFrameUrl: String = ""
     ): Group {
         if (accountAddresses.size == 1 &&
             accountAddresses.first().lowercase() == client.address.lowercase()
@@ -135,7 +135,7 @@ data class Conversations(
                     groupName = groupName,
                     groupImageUrlSquare = groupImageUrlSquare,
                     groupDescription = groupDescription,
-                    pinnedFrame = pinnedFrame
+                    groupPinnedFrameUrl = groupPinnedFrameUrl
                 )
             ) ?: throw XMTPException("Client does not support Groups")
         client.contacts.allowGroups(groupIds = listOf(group.id()))

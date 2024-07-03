@@ -1070,7 +1070,7 @@ internal interface UniffiLib : Library {
     ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_method_ffigroup_group_permissions(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): Pointer
-    fun uniffi_xmtpv3_fn_method_ffigroup_group_pinned_frame(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+    fun uniffi_xmtpv3_fn_method_ffigroup_group_pinned_frame_url(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_method_ffigroup_id(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -1106,9 +1106,9 @@ internal interface UniffiLib : Library {
     ): Long
     fun uniffi_xmtpv3_fn_method_ffigroup_update_group_name(`ptr`: Pointer,`groupName`: RustBuffer.ByValue,
     ): Long
-    fun uniffi_xmtpv3_fn_method_ffigroup_update_permission_policy(`ptr`: Pointer,`permissionUpdateType`: RustBuffer.ByValue,`permissionPolicyOption`: RustBuffer.ByValue,`metadataField`: RustBuffer.ByValue,
+    fun uniffi_xmtpv3_fn_method_ffigroup_update_group_pinned_frame_url(`ptr`: Pointer,`pinnedFrameUrl`: RustBuffer.ByValue,
     ): Long
-    fun uniffi_xmtpv3_fn_method_ffigroup_update_pinned_frame(`ptr`: Pointer,`pinnedFrame`: RustBuffer.ByValue,
+    fun uniffi_xmtpv3_fn_method_ffigroup_update_permission_policy(`ptr`: Pointer,`permissionUpdateType`: RustBuffer.ByValue,`permissionPolicyOption`: RustBuffer.ByValue,`metadataField`: RustBuffer.ByValue,
     ): Long
     fun uniffi_xmtpv3_fn_clone_ffigroupmetadata(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): Pointer
@@ -1424,7 +1424,7 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_group_permissions(
     ): Short
-    fun uniffi_xmtpv3_checksum_method_ffigroup_group_pinned_frame(
+    fun uniffi_xmtpv3_checksum_method_ffigroup_group_pinned_frame_url(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_id(
     ): Short
@@ -1460,9 +1460,9 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroup_update_group_name(
     ): Short
-    fun uniffi_xmtpv3_checksum_method_ffigroup_update_permission_policy(
+    fun uniffi_xmtpv3_checksum_method_ffigroup_update_group_pinned_frame_url(
     ): Short
-    fun uniffi_xmtpv3_checksum_method_ffigroup_update_pinned_frame(
+    fun uniffi_xmtpv3_checksum_method_ffigroup_update_permission_policy(
     ): Short
     fun uniffi_xmtpv3_checksum_method_ffigroupmetadata_conversation_type(
     ): Short
@@ -1660,7 +1660,7 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_group_permissions() != 15980.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_group_pinned_frame() != 14476.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_group_pinned_frame_url() != 29388.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_id() != 36764.toShort()) {
@@ -1714,10 +1714,10 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffigroup_update_group_name() != 550.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_update_permission_policy() != 51936.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_update_group_pinned_frame_url() != 37434.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_update_pinned_frame() != 18290.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffigroup_update_permission_policy() != 51936.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigroupmetadata_conversation_type() != 30827.toShort()) {
@@ -2624,7 +2624,7 @@ public interface FfiGroupInterface {
     
     fun `groupPermissions`(): FfiGroupPermissions
     
-    fun `groupPinnedFrame`(): kotlin.String
+    fun `groupPinnedFrameUrl`(): kotlin.String
     
     fun `id`(): kotlin.ByteArray
     
@@ -2660,9 +2660,9 @@ public interface FfiGroupInterface {
     
     suspend fun `updateGroupName`(`groupName`: kotlin.String)
     
-    suspend fun `updatePermissionPolicy`(`permissionUpdateType`: FfiPermissionUpdateType, `permissionPolicyOption`: FfiPermissionPolicy, `metadataField`: FfiMetadataField?)
+    suspend fun `updateGroupPinnedFrameUrl`(`pinnedFrameUrl`: kotlin.String)
     
-    suspend fun `updatePinnedFrame`(`pinnedFrame`: kotlin.String)
+    suspend fun `updatePermissionPolicy`(`permissionUpdateType`: FfiPermissionUpdateType, `permissionPolicyOption`: FfiPermissionPolicy, `metadataField`: FfiMetadataField?)
     
     companion object
 }
@@ -2953,11 +2953,11 @@ open class FfiGroup: Disposable, AutoCloseable, FfiGroupInterface {
     
 
     
-    @Throws(GenericException::class)override fun `groupPinnedFrame`(): kotlin.String {
+    @Throws(GenericException::class)override fun `groupPinnedFrameUrl`(): kotlin.String {
             return FfiConverterString.lift(
     callWithPointer {
     uniffiRustCallWithError(GenericException) { _status ->
-    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_group_pinned_frame(
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_group_pinned_frame_url(
         it, _status)
 }
     }
@@ -3284,12 +3284,12 @@ open class FfiGroup: Disposable, AutoCloseable, FfiGroupInterface {
     
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `updatePermissionPolicy`(`permissionUpdateType`: FfiPermissionUpdateType, `permissionPolicyOption`: FfiPermissionPolicy, `metadataField`: FfiMetadataField?) {
+    override suspend fun `updateGroupPinnedFrameUrl`(`pinnedFrameUrl`: kotlin.String) {
         return uniffiRustCallAsync(
         callWithPointer { thisPtr ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_update_permission_policy(
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_update_group_pinned_frame_url(
                 thisPtr,
-                FfiConverterTypeFfiPermissionUpdateType.lower(`permissionUpdateType`),FfiConverterTypeFfiPermissionPolicy.lower(`permissionPolicyOption`),FfiConverterOptionalTypeFfiMetadataField.lower(`metadataField`),
+                FfiConverterString.lower(`pinnedFrameUrl`),
             )
         },
         { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
@@ -3306,12 +3306,12 @@ open class FfiGroup: Disposable, AutoCloseable, FfiGroupInterface {
     
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `updatePinnedFrame`(`pinnedFrame`: kotlin.String) {
+    override suspend fun `updatePermissionPolicy`(`permissionUpdateType`: FfiPermissionUpdateType, `permissionPolicyOption`: FfiPermissionPolicy, `metadataField`: FfiMetadataField?) {
         return uniffiRustCallAsync(
         callWithPointer { thisPtr ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_update_pinned_frame(
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffigroup_update_permission_policy(
                 thisPtr,
-                FfiConverterString.lower(`pinnedFrame`),
+                FfiConverterTypeFfiPermissionUpdateType.lower(`permissionUpdateType`),FfiConverterTypeFfiPermissionPolicy.lower(`permissionPolicyOption`),FfiConverterOptionalTypeFfiMetadataField.lower(`metadataField`),
             )
         },
         { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
@@ -5512,7 +5512,7 @@ data class FfiCreateGroupOptions (
     var `groupName`: kotlin.String?, 
     var `groupImageUrlSquare`: kotlin.String?, 
     var `groupDescription`: kotlin.String?, 
-    var `pinnedFrame`: kotlin.String?
+    var `groupPinnedFrameUrl`: kotlin.String?
 ) {
     
     companion object
@@ -5534,7 +5534,7 @@ public object FfiConverterTypeFfiCreateGroupOptions: FfiConverterRustBuffer<FfiC
             FfiConverterOptionalString.allocationSize(value.`groupName`) +
             FfiConverterOptionalString.allocationSize(value.`groupImageUrlSquare`) +
             FfiConverterOptionalString.allocationSize(value.`groupDescription`) +
-            FfiConverterOptionalString.allocationSize(value.`pinnedFrame`)
+            FfiConverterOptionalString.allocationSize(value.`groupPinnedFrameUrl`)
     )
 
     override fun write(value: FfiCreateGroupOptions, buf: ByteBuffer) {
@@ -5542,7 +5542,7 @@ public object FfiConverterTypeFfiCreateGroupOptions: FfiConverterRustBuffer<FfiC
             FfiConverterOptionalString.write(value.`groupName`, buf)
             FfiConverterOptionalString.write(value.`groupImageUrlSquare`, buf)
             FfiConverterOptionalString.write(value.`groupDescription`, buf)
-            FfiConverterOptionalString.write(value.`pinnedFrame`, buf)
+            FfiConverterOptionalString.write(value.`groupPinnedFrameUrl`, buf)
     }
 }
 
@@ -5807,7 +5807,7 @@ data class FfiPermissionPolicySet (
     var `updateGroupNamePolicy`: FfiPermissionPolicy, 
     var `updateGroupDescriptionPolicy`: FfiPermissionPolicy, 
     var `updateGroupImageUrlSquarePolicy`: FfiPermissionPolicy, 
-    var `updatePinnedFramePolicy`: FfiPermissionPolicy
+    var `updateGroupPinnedFrameUrlPolicy`: FfiPermissionPolicy
 ) {
     
     companion object
@@ -5835,7 +5835,7 @@ public object FfiConverterTypeFfiPermissionPolicySet: FfiConverterRustBuffer<Ffi
             FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupNamePolicy`) +
             FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupDescriptionPolicy`) +
             FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupImageUrlSquarePolicy`) +
-            FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updatePinnedFramePolicy`)
+            FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupPinnedFrameUrlPolicy`)
     )
 
     override fun write(value: FfiPermissionPolicySet, buf: ByteBuffer) {
@@ -5846,7 +5846,7 @@ public object FfiConverterTypeFfiPermissionPolicySet: FfiConverterRustBuffer<Ffi
             FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupNamePolicy`, buf)
             FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupDescriptionPolicy`, buf)
             FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupImageUrlSquarePolicy`, buf)
-            FfiConverterTypeFfiPermissionPolicy.write(value.`updatePinnedFramePolicy`, buf)
+            FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupPinnedFrameUrlPolicy`, buf)
     }
 }
 
@@ -6107,7 +6107,7 @@ enum class FfiMetadataField {
     GROUP_NAME,
     DESCRIPTION,
     IMAGE_URL_SQUARE,
-    PINNED_FRAME;
+    PINNED_FRAME_URL;
     companion object
 }
 
