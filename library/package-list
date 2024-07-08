@@ -1304,6 +1304,7 @@ $dokka.location:org.xmtp.android.library/Group/createdAt/#/PointingToDeclaration
 $dokka.location:org.xmtp.android.library/Group/creatorInboxId/#/PointingToDeclaration/library/org.xmtp.android.library/-group/creator-inbox-id.html
 $dokka.location:org.xmtp.android.library/Group/decryptedMessages/#kotlin.Int?#java.util.Date?#java.util.Date?#org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection#org.xmtp.android.library.messages.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-group/decrypted-messages.html
 $dokka.location:org.xmtp.android.library/Group/description/#/PointingToDeclaration/library/org.xmtp.android.library/-group/description.html
+$dokka.location:org.xmtp.android.library/Group/encodeContent/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-group/encode-content.html
 $dokka.location:org.xmtp.android.library/Group/id/#/PointingToDeclaration/library/org.xmtp.android.library/-group/id.html
 $dokka.location:org.xmtp.android.library/Group/imageUrlSquare/#/PointingToDeclaration/library/org.xmtp.android.library/-group/image-url-square.html
 $dokka.location:org.xmtp.android.library/Group/isActive/#/PointingToDeclaration/library/org.xmtp.android.library/-group/is-active.html
@@ -1415,6 +1416,10 @@ $dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/PermissionPolicyS
 $dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroupImagePolicy/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-permission-policy-set/update-group-image-policy.html
 $dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroupNamePolicy/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-permission-policy-set/update-group-name-policy.html
 $dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroupPinnedFrameUrlPolicy/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-permission-policy-set/update-group-pinned-frame-url-policy.html
+$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/UnpublishedMessage///PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-unpublished-message/index.html
+$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/UnpublishedMessage/UnpublishedMessage/#uniffi.xmtpv3.FfiUnpublishedMessage/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-unpublished-message/-unpublished-message.html
+$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/UnpublishedMessage/messageId/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-unpublished-message/message-id.html
+$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/UnpublishedMessage/publish/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-unpublished-message/publish.html
 $dokka.location:uniffi.xmtpv3////PointingToDeclaration/library/uniffi.xmtpv3/index.html
 $dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.FfiLogger#kotlin.String#kotlin.Boolean#kotlin.String?#kotlin.ByteArray?#kotlin.String#kotlin.String#kotlin.ULong#kotlin.ByteArray?#kotlin.String?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
 $dokka.location:uniffi.xmtpv3//createV2Client/#kotlin.String#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtpv3/create-v2-client.html
@@ -1686,6 +1691,12 @@ $dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiStreamCloser/lift/#com.sun.jna.
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiStreamCloser/lower/#uniffi.xmtpv3.FfiStreamCloser/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-stream-closer/lower.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiStreamCloser/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-stream-closer/read.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiStreamCloser/write/#uniffi.xmtpv3.FfiStreamCloser#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-stream-closer/write.html
+$dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiUnpublishedMessage///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-unpublished-message/index.html
+$dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiUnpublishedMessage/allocationSize/#uniffi.xmtpv3.FfiUnpublishedMessage/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-unpublished-message/allocation-size.html
+$dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiUnpublishedMessage/lift/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-unpublished-message/lift.html
+$dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiUnpublishedMessage/lower/#uniffi.xmtpv3.FfiUnpublishedMessage/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-unpublished-message/lower.html
+$dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiUnpublishedMessage/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-unpublished-message/read.html
+$dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiUnpublishedMessage/write/#uniffi.xmtpv3.FfiUnpublishedMessage#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-unpublished-message/write.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiV2ApiClient///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-v2-api-client/index.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiV2ApiClient/allocationSize/#uniffi.xmtpv3.FfiV2ApiClient/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-v2-api-client/allocation-size.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiV2ApiClient/lift/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-v2-api-client/lift.html
@@ -1808,6 +1819,7 @@ $dokka.location:uniffi.xmtpv3/FfiGroup/removeMembers/#kotlin.collections.List[ko
 $dokka.location:uniffi.xmtpv3/FfiGroup/removeMembersByInboxId/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/remove-members-by-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/removeSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/remove-super-admin.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/send/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/send.html
+$dokka.location:uniffi.xmtpv3/FfiGroup/sendOptimistic/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/send-optimistic.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/stream/#uniffi.xmtpv3.FfiMessageCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/stream.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/superAdminList/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/super-admin-list.html
 $dokka.location:uniffi.xmtpv3/FfiGroup/sync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group/sync.html
@@ -1844,6 +1856,7 @@ $dokka.location:uniffi.xmtpv3/FfiGroupInterface/removeMembers/#kotlin.collection
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/removeMembersByInboxId/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/remove-members-by-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/removeSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/remove-super-admin.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/send/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/send.html
+$dokka.location:uniffi.xmtpv3/FfiGroupInterface/sendOptimistic/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/send-optimistic.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/stream/#uniffi.xmtpv3.FfiMessageCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/stream.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/superAdminList/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/super-admin-list.html
 $dokka.location:uniffi.xmtpv3/FfiGroupInterface/sync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-interface/sync.html
@@ -2025,6 +2038,19 @@ $dokka.location:uniffi.xmtpv3/FfiStreamCloserInterface.Companion///PointingToDec
 $dokka.location:uniffi.xmtpv3/FfiStreamCloserInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer-interface/index.html
 $dokka.location:uniffi.xmtpv3/FfiStreamCloserInterface/end/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer-interface/end.html
 $dokka.location:uniffi.xmtpv3/FfiStreamCloserInterface/isClosed/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer-interface/is-closed.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessage.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessage///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message/index.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessage/FfiUnpublishedMessage/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message/-ffi-unpublished-message.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessage/FfiUnpublishedMessage/#uniffi.xmtpv3.NoPointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message/-ffi-unpublished-message.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessage/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message/close.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessage/destroy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message/destroy.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessage/id/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message/id.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessage/publish/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message/publish.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessage/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message/uniffi-clone-pointer.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessageInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message-interface/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessageInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message-interface/index.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessageInterface/id/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message-interface/id.html
+$dokka.location:uniffi.xmtpv3/FfiUnpublishedMessageInterface/publish/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-unpublished-message-interface/publish.html
 $dokka.location:uniffi.xmtpv3/FfiV2ApiClient.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-v2-api-client/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiV2ApiClient///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-v2-api-client/index.html
 $dokka.location:uniffi.xmtpv3/FfiV2ApiClient/FfiV2ApiClient/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-v2-api-client/-ffi-v2-api-client.html
