@@ -871,4 +871,27 @@ class GroupTest {
 
         assert(hex.hexToByteArray().contentEquals(boGroup.id))
     }
+
+    @Test
+    fun testUnpublishedMessages() {
+        val boGroup = runBlocking {
+            boClient.conversations.newGroup(
+                listOf(
+                    alix.walletAddress,
+                    caro.walletAddress
+                )
+            )
+        }
+        val preparedMessage = boGroup.prepareMessage("Test text")
+        assertEquals(boGroup.messages().size, 1)
+
+        runBlocking { preparedMessage.publish() }
+
+        assertEquals(boGroup.messages().size, 2)
+
+        runBlocking { boGroup.sync() }
+        val message = boGroup.messages().last()
+
+        assertEquals(preparedMessage.messageId, message.id)
+    }
 }
