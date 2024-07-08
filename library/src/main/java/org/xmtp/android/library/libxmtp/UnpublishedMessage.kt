@@ -1,7 +1,5 @@
 package uniffi.xmtpv3.org.xmtp.android.library.libxmtp
 
-import org.web3j.crypto.Hash
-import org.xmtp.android.library.Client
 import org.xmtp.android.library.toHex
 import uniffi.xmtpv3.FfiUnpublishedMessage
 
