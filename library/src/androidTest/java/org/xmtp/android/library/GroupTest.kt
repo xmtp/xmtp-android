@@ -750,7 +750,8 @@ class GroupTest {
                     .collect { message ->
                         allMessages.add(message.topic)
                     }
-            } catch (e: Exception) {}
+            } catch (e: Exception) {
+            }
         }
         Thread.sleep(2500)
 
@@ -883,14 +884,20 @@ class GroupTest {
             )
         }
         val preparedMessage = boGroup.prepareMessage("Test text")
-        assertEquals(boGroup.messages().size, 1)
+        assertEquals(boGroup.messages().size, 2)
+        assertEquals(boGroup.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED).size, 1)
+        assertEquals(boGroup.messages(deliveryStatus = MessageDeliveryStatus.UNPUBLISHED).size, 1)
 
-        runBlocking { preparedMessage.publish() }
+        runBlocking {
+            preparedMessage.publish()
+            boGroup.sync()
+        }
 
+        assertEquals(boGroup.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED).size, 2)
+        assertEquals(boGroup.messages(deliveryStatus = MessageDeliveryStatus.UNPUBLISHED).size, 0)
         assertEquals(boGroup.messages().size, 2)
 
-        runBlocking { boGroup.sync() }
-        val message = boGroup.messages().last()
+        val message = boGroup.messages().first()
 
         assertEquals(preparedMessage.messageId, message.id)
     }
