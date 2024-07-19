@@ -2025,11 +2025,13 @@ $dokka.location:uniffi.xmtpv3/FfiStreamCloser/FfiStreamCloser/#uniffi.xmtpv3.NoP
 $dokka.location:uniffi.xmtpv3/FfiStreamCloser/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer/close.html
 $dokka.location:uniffi.xmtpv3/FfiStreamCloser/destroy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer/destroy.html
 $dokka.location:uniffi.xmtpv3/FfiStreamCloser/end/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer/end.html
+$dokka.location:uniffi.xmtpv3/FfiStreamCloser/endAndWait/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer/end-and-wait.html
 $dokka.location:uniffi.xmtpv3/FfiStreamCloser/isClosed/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer/is-closed.html
 $dokka.location:uniffi.xmtpv3/FfiStreamCloser/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer/uniffi-clone-pointer.html
 $dokka.location:uniffi.xmtpv3/FfiStreamCloserInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer-interface/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiStreamCloserInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer-interface/index.html
 $dokka.location:uniffi.xmtpv3/FfiStreamCloserInterface/end/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer-interface/end.html
+$dokka.location:uniffi.xmtpv3/FfiStreamCloserInterface/endAndWait/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer-interface/end-and-wait.html
 $dokka.location:uniffi.xmtpv3/FfiStreamCloserInterface/isClosed/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-stream-closer-interface/is-closed.html
 $dokka.location:uniffi.xmtpv3/FfiV2ApiClient.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-v2-api-client/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiV2ApiClient///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-v2-api-client/index.html
@@ -2096,6 +2098,8 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClient.Companion///PointingToDeclaration/l
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/index.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/FfiXmtpClient/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/-ffi-xmtp-client.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/FfiXmtpClient/#uniffi.xmtpv3.NoPointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/-ffi-xmtp-client.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClient/addWallet/#kotlin.String#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/add-wallet.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClient/applySignatureRequest/#uniffi.xmtpv3.FfiSignatureRequest/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/apply-signature-request.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/canMessage/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/can-message.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/close.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/conversations/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/conversations.html
@@ -2109,10 +2113,13 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClient/message/#kotlin.ByteArray/PointingTo
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/registerIdentity/#uniffi.xmtpv3.FfiSignatureRequest/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/register-identity.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/releaseDbConnection/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/release-db-connection.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/requestHistorySync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/request-history-sync.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClient/revokeWallet/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/revoke-wallet.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/signatureRequest/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/signature-request.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/uniffi-clone-pointer.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/index.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/addWallet/#kotlin.String#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/add-wallet.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/applySignatureRequest/#uniffi.xmtpv3.FfiSignatureRequest/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/apply-signature-request.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/canMessage/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/can-message.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/conversations/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/conversations.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/dbReconnect/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/db-reconnect.html
@@ -2124,6 +2131,7 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/message/#kotlin.ByteArray/P
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/registerIdentity/#uniffi.xmtpv3.FfiSignatureRequest/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/register-identity.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/releaseDbConnection/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/release-db-connection.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/requestHistorySync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/request-history-sync.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/revokeWallet/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/revoke-wallet.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/signatureRequest/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/signature-request.html
 $dokka.location:uniffi.xmtpv3/ForeignBytes.ByValue///PointingToDeclaration/library/uniffi.xmtpv3/-foreign-bytes/-by-value/index.html
 $dokka.location:uniffi.xmtpv3/ForeignBytes.ByValue/ByValue/#/PointingToDeclaration/library/uniffi.xmtpv3/-foreign-bytes/-by-value/-by-value.html
