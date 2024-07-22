@@ -1015,6 +1015,7 @@ $dokka.location:org.xmtp.android.library/Client/ensureUserContactPublished/#/Poi
 $dokka.location:org.xmtp.android.library/Client/fetchConversation/#kotlin.String?#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client/fetch-conversation.html
 $dokka.location:org.xmtp.android.library/Client/findGroup/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-group.html
 $dokka.location:org.xmtp.android.library/Client/findMessage/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-message.html
+$dokka.location:org.xmtp.android.library/Client/getOrCreateInboxId/#org.xmtp.android.library.ClientOptions#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/get-or-create-inbox-id.html
 $dokka.location:org.xmtp.android.library/Client/getUserContact/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/get-user-contact.html
 $dokka.location:org.xmtp.android.library/Client/importConversation/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-client/import-conversation.html
 $dokka.location:org.xmtp.android.library/Client/importV1Conversation/#org.xmtp.android.library.ConversationV1Export/PointingToDeclaration/library/org.xmtp.android.library/-client/import-v1-conversation.html
