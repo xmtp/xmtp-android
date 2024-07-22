@@ -217,7 +217,7 @@ class Client() {
                 apiClient,
                 clientOptions
             )
-            val inboxId = getOrCreateInboxId(clientOptions, address)
+            val inboxId = getOrCreateInboxId(clientOptions, account.address)
             val (libXMTPClient, dbPath) =
                 ffiXmtpClient(
                     clientOptions,
@@ -294,7 +294,7 @@ class Client() {
     }
 
     private suspend fun ffiXmtpClient(
-        options: ClientOptions?,
+        options: ClientOptions,
         account: SigningKey?,
         appContext: Context?,
         privateKeyBundleV1: PrivateKeyBundleV1,
@@ -305,7 +305,7 @@ class Client() {
         val accountAddress = address.lowercase()
         val v3Client: FfiXmtpClient? =
             if (isV3Enabled(options)) {
-                val alias = "xmtp-${options!!.api.env}-$inboxId"
+                val alias = "xmtp-${options.api.env}-$inboxId"
 
                 val mlsDbDirectory = options.dbDirectory
                 val directoryFile = if (mlsDbDirectory != null) {
