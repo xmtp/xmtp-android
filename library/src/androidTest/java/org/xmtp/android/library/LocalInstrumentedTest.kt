@@ -180,10 +180,17 @@ class LocalInstrumentedTest {
 
     @Test
     fun testListingConversations() {
-        val alice = runBlocking { Client().create(
-            PrivateKeyBuilder(),
-            ClientOptions(api = ClientOptions.Api(env = XMTPEnvironment.LOCAL, isSecure = false))
-        ) }
+        val alice = runBlocking {
+            Client().create(
+                PrivateKeyBuilder(),
+                ClientOptions(
+                    api = ClientOptions.Api(
+                        env = XMTPEnvironment.LOCAL,
+                        isSecure = false
+                    )
+                )
+            )
+        }
         val bob = runBlocking {
             Client().create(
                 PrivateKeyBuilder(),
