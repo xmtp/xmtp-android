@@ -115,7 +115,7 @@ data class Conversations(
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
         groupPinnedFrameUrl: String = "",
-        permissionPolicySet: PermissionPolicySet?
+        permissionPolicySet: PermissionPolicySet? = null
     ): Group {
         if (accountAddresses.size == 1 &&
             accountAddresses.first().lowercase() == client.address.lowercase()
