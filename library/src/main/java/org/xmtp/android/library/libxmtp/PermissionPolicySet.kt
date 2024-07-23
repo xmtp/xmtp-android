@@ -61,7 +61,7 @@ data class PermissionPolicySet(
     companion object {
         fun toFfiPermissionPolicySet(permissionPolicySet: PermissionPolicySet): FfiPermissionPolicySet {
             return FfiPermissionPolicySet(
-                addMemberPolicy =  PermissionOption.toFfiPermissionPolicy(permissionPolicySet.addMemberPolicy),
+                addMemberPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.addMemberPolicy),
                 removeMemberPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.removeMemberPolicy),
                 addAdminPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.addAdminPolicy),
                 removeAdminPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.removeAdminPolicy),
