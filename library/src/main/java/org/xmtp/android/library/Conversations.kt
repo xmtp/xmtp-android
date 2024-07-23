@@ -49,6 +49,7 @@ import uniffi.xmtpv3.FfiV2Subscription
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import uniffi.xmtpv3.NoPointer
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
+import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionPolicySet
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -113,7 +114,8 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        groupPinnedFrameUrl: String = ""
+        groupPinnedFrameUrl: String = "",
+        permissionPolicySet: PermissionPolicySet?
     ): Group {
         if (accountAddresses.size == 1 &&
             accountAddresses.first().lowercase() == client.address.lowercase()
@@ -135,7 +137,8 @@ data class Conversations(
                     groupName = groupName,
                     groupImageUrlSquare = groupImageUrlSquare,
                     groupDescription = groupDescription,
-                    groupPinnedFrameUrl = groupPinnedFrameUrl
+                    groupPinnedFrameUrl = groupPinnedFrameUrl,
+                    customPermissionPolicySet = if (permissionPolicySet == null) null else PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet)
                 )
             ) ?: throw XMTPException("Client does not support Groups")
         client.contacts.allowGroups(groupIds = listOf(group.id().toHex()))
