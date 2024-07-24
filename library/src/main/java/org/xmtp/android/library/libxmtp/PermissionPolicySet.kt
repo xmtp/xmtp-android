@@ -34,15 +34,13 @@ enum class PermissionOption {
 
 enum class GroupPermissionPreconfiguration {
     ALL_MEMBERS,
-    ADMIN_ONLY,
-    CUSTOM_POLICY;
+    ADMIN_ONLY;
 
     companion object {
         fun toFfiGroupPermissionOptions(option: GroupPermissionPreconfiguration): FfiGroupPermissionsOptions {
             return when (option) {
                 ALL_MEMBERS -> FfiGroupPermissionsOptions.ALL_MEMBERS
                 ADMIN_ONLY -> FfiGroupPermissionsOptions.ADMIN_ONLY
-                CUSTOM_POLICY -> FfiGroupPermissionsOptions.CUSTOM_POLICY
             }
         }
     }

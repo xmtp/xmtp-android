@@ -384,9 +384,8 @@ class GroupPermissionsTest {
             updateGroupPinnedFrameUrlPolicy = PermissionOption.Deny,
         )
         val boGroup = runBlocking {
-            boClient.conversations.newGroup(
+            boClient.conversations.newGroupCustomPermissions(
                 accountAddresses = listOf(alix.walletAddress, caro.walletAddress),
-                permissions = GroupPermissionPreconfiguration.CUSTOM_POLICY,
                 permissionPolicySet = permissionPolicySet,
             )
         }
@@ -421,9 +420,8 @@ class GroupPermissionsTest {
 
         assertThrows(GenericException.GroupMutablePermissions::class.java) {
             val boGroup = runBlocking {
-                boClient.conversations.newGroup(
+                boClient.conversations.newGroupCustomPermissions(
                     accountAddresses = listOf(alix.walletAddress, caro.walletAddress),
-                    permissions = GroupPermissionPreconfiguration.CUSTOM_POLICY,
                     permissionPolicySet = permissionPolicySetInvalid,
                 )
             }
@@ -440,35 +438,13 @@ class GroupPermissionsTest {
             updateGroupPinnedFrameUrlPolicy = PermissionOption.Deny,
         )
 
-        // Can not send permission policy set unless permissions set to CustomPolicy
-        assertThrows(GenericException.Generic::class.java) {
-            val boGroup = runBlocking {
-                boClient.conversations.newGroup(
-                    accountAddresses = listOf(alix.walletAddress, caro.walletAddress),
-                    permissions = GroupPermissionPreconfiguration.ADMIN_ONLY,
-                    permissionPolicySet = permissionPolicySetValid,
-                )
-            }
-        }
-
-        // CustomPolicy must also specify a policy set
-        assertThrows(GenericException.Generic::class.java) {
-            val boGroup = runBlocking {
-                boClient.conversations.newGroup(
-                    accountAddresses = listOf(alix.walletAddress, caro.walletAddress),
-                    permissions = GroupPermissionPreconfiguration.CUSTOM_POLICY,
-                )
-            }
-        }
-
         // Valid custom policy works as expected
         runBlocking { alixClient.conversations.syncGroups() }
-        assert(runBlocking { alixClient.conversations.listGroups() }.size == 0)
+        assert(runBlocking { alixClient.conversations.listGroups() }.isEmpty())
 
         val boGroup = runBlocking {
-            boClient.conversations.newGroup(
+            boClient.conversations.newGroupCustomPermissions(
                 accountAddresses = listOf(alix.walletAddress, caro.walletAddress),
-                permissions = GroupPermissionPreconfiguration.CUSTOM_POLICY,
                 permissionPolicySet = permissionPolicySetValid,
             )
         }
