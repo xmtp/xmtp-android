@@ -462,7 +462,6 @@ class GroupPermissionsTest {
         }
 
         // Valid custom policy works as expected
-        // Can not send permission policy set unless permissions set to CustomPolicy
         runBlocking { alixClient.conversations.syncGroups() }
         assert(runBlocking { alixClient.conversations.listGroups() }.size == 0)
 
