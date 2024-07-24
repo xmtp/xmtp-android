@@ -45,7 +45,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Explicitly install libatomic 
-        run: apt-get install -y libatomic1
+        run: sudo apt-get install -y libatomic1
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Start Docker containers
