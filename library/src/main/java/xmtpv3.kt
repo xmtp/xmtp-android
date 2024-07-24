@@ -275,7 +275,7 @@ interface UniffiRustCallStatusErrorHandler<E> {
 // Call a rust function that returns a Result<>.  Pass in the Error class companion that corresponds to the Err
 private inline fun <U, E : Exception> uniffiRustCallWithError(
     errorHandler: UniffiRustCallStatusErrorHandler<E>,
-    callback: (UniffiRustCallStatus) -> U,
+    callback: (UniffiRustCallStatus) -> U
 ): U {
     var status = UniffiRustCallStatus()
     val return_value = callback(status)
@@ -286,7 +286,7 @@ private inline fun <U, E : Exception> uniffiRustCallWithError(
 // Check UniffiRustCallStatus and throw an error if the call wasn't successful
 private fun <E : Exception> uniffiCheckCallStatus(
     errorHandler: UniffiRustCallStatusErrorHandler<E>,
-    status: UniffiRustCallStatus,
+    status: UniffiRustCallStatus
 ) {
     if (status.isSuccess()) {
         return
@@ -335,7 +335,7 @@ internal inline fun <T, reified E : Throwable> uniffiTraitInterfaceCallWithError
     callStatus: UniffiRustCallStatus,
     makeCall: () -> T,
     writeReturn: (T) -> Unit,
-    lowerError: (E) -> RustBuffer.ByValue,
+    lowerError: (E) -> RustBuffer.ByValue
 ) {
     try {
         writeReturn(makeCall())
@@ -2212,7 +2212,7 @@ internal suspend fun <T, F, E : Exception> uniffiRustCallAsync(
     completeFunc: (Long, UniffiRustCallStatus) -> F,
     freeFunc: (Long) -> Unit,
     liftFunc: (F) -> T,
-    errorHandler: UniffiRustCallStatusErrorHandler<E>,
+    errorHandler: UniffiRustCallStatusErrorHandler<E>
 ): T {
     try {
         do {
@@ -2595,7 +2595,7 @@ private class JavaLangRefCleaner : UniffiCleaner {
 }
 
 private class JavaLangRefCleanable(
-    val cleanable: java.lang.ref.Cleaner.Cleanable,
+    val cleanable: java.lang.ref.Cleaner.Cleanable
 ) : UniffiCleaner.Cleanable {
     override fun clean() = cleanable.clean()
 }
@@ -2603,7 +2603,7 @@ private class JavaLangRefCleanable(
 public interface FfiConversationsInterface {
     suspend fun `createGroup`(
         `accountAddresses`: List<kotlin.String>,
-        `opts`: FfiCreateGroupOptions,
+        `opts`: FfiCreateGroupOptions
     ): FfiGroup
 
     suspend fun `list`(`opts`: FfiListConversationsOptions): List<FfiGroup>
@@ -3025,7 +3025,7 @@ public interface FfiGroupInterface {
     suspend fun `updatePermissionPolicy`(
         `permissionUpdateType`: FfiPermissionUpdateType,
         `permissionPolicyOption`: FfiPermissionPolicy,
-        `metadataField`: FfiMetadataField?,
+        `metadataField`: FfiMetadataField?
     )
 
     companion object
@@ -4343,7 +4343,7 @@ public interface FfiSignatureRequestInterface {
     suspend fun `addScwSignature`(
         `signatureBytes`: kotlin.ByteArray,
         `address`: kotlin.String,
-        `chainRpcUrl`: kotlin.String,
+        `chainRpcUrl`: kotlin.String
     )
 
     suspend fun `isReady`(): kotlin.Boolean
@@ -4961,7 +4961,7 @@ public interface FfiV2ApiClientInterface {
 
     suspend fun `subscribe`(
         `request`: FfiV2SubscribeRequest,
-        `callback`: FfiV2SubscriptionCallback,
+        `callback`: FfiV2SubscriptionCallback
     ): FfiV2Subscription
 
     companion object
@@ -5580,7 +5580,7 @@ public interface FfiXmtpClientInterface {
      */
     suspend fun `addWallet`(
         `existingWalletAddress`: kotlin.String,
-        `newWalletAddress`: kotlin.String,
+        `newWalletAddress`: kotlin.String
     ): FfiSignatureRequest
 
     suspend fun `applySignatureRequest`(`signatureRequest`: FfiSignatureRequest)
@@ -5998,6 +5998,7 @@ data class FfiCreateGroupOptions(
     var `groupImageUrlSquare`: kotlin.String?,
     var `groupDescription`: kotlin.String?,
     var `groupPinnedFrameUrl`: kotlin.String?,
+    var `customPermissionPolicySet`: FfiPermissionPolicySet?
 ) {
     companion object
 }
@@ -6010,6 +6011,7 @@ public object FfiConverterTypeFfiCreateGroupOptions : FfiConverterRustBuffer<Ffi
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalTypeFfiPermissionPolicySet.read(buf),
         )
 
     override fun allocationSize(value: FfiCreateGroupOptions) =
@@ -6030,12 +6032,13 @@ public object FfiConverterTypeFfiCreateGroupOptions : FfiConverterRustBuffer<Ffi
         FfiConverterOptionalString.write(value.`groupImageUrlSquare`, buf)
         FfiConverterOptionalString.write(value.`groupDescription`, buf)
         FfiConverterOptionalString.write(value.`groupPinnedFrameUrl`, buf)
+        FfiConverterOptionalTypeFfiPermissionPolicySet.write(value.`customPermissionPolicySet`, buf)
     }
 }
 
 data class FfiCursor(
     var `digest`: kotlin.ByteArray,
-    var `senderTimeNs`: kotlin.ULong,
+    var `senderTimeNs`: kotlin.ULong
 ) {
     companion object
 }
@@ -6065,7 +6068,7 @@ public object FfiConverterTypeFfiCursor : FfiConverterRustBuffer<FfiCursor> {
 data class FfiEnvelope(
     var `contentTopic`: kotlin.String,
     var `timestampNs`: kotlin.ULong,
-    var `message`: kotlin.ByteArray,
+    var `message`: kotlin.ByteArray
 ) {
     companion object
 }
@@ -6099,7 +6102,7 @@ data class FfiGroupMember(
     var `inboxId`: kotlin.String,
     var `accountAddresses`: List<kotlin.String>,
     var `installationIds`: List<kotlin.ByteArray>,
-    var `permissionLevel`: FfiPermissionLevel,
+    var `permissionLevel`: FfiPermissionLevel
 ) {
     companion object
 }
@@ -6135,7 +6138,7 @@ public object FfiConverterTypeFfiGroupMember : FfiConverterRustBuffer<FfiGroupMe
 data class FfiListConversationsOptions(
     var `createdAfterNs`: kotlin.Long?,
     var `createdBeforeNs`: kotlin.Long?,
-    var `limit`: kotlin.Long?,
+    var `limit`: kotlin.Long?
 ) {
     companion object
 }
@@ -6169,7 +6172,7 @@ data class FfiListMessagesOptions(
     var `sentBeforeNs`: kotlin.Long?,
     var `sentAfterNs`: kotlin.Long?,
     var `limit`: kotlin.Long?,
-    var `deliveryStatus`: FfiDeliveryStatus?,
+    var `deliveryStatus`: FfiDeliveryStatus?
 ) {
     companion object
 }
@@ -6209,7 +6212,7 @@ data class FfiMessage(
     var `senderInboxId`: kotlin.String,
     var `content`: kotlin.ByteArray,
     var `kind`: FfiGroupMessageKind,
-    var `deliveryStatus`: FfiDeliveryStatus,
+    var `deliveryStatus`: FfiDeliveryStatus
 ) {
     companion object
 }
@@ -6254,7 +6257,7 @@ public object FfiConverterTypeFfiMessage : FfiConverterRustBuffer<FfiMessage> {
 data class FfiPagingInfo(
     var `limit`: kotlin.UInt,
     var `cursor`: FfiCursor?,
-    var `direction`: FfiSortDirection,
+    var `direction`: FfiSortDirection
 ) {
     companion object
 }
@@ -6292,7 +6295,7 @@ data class FfiPermissionPolicySet(
     var `updateGroupNamePolicy`: FfiPermissionPolicy,
     var `updateGroupDescriptionPolicy`: FfiPermissionPolicy,
     var `updateGroupImageUrlSquarePolicy`: FfiPermissionPolicy,
-    var `updateGroupPinnedFrameUrlPolicy`: FfiPermissionPolicy,
+    var `updateGroupPinnedFrameUrlPolicy`: FfiPermissionPolicy
 ) {
     companion object
 }
@@ -6338,7 +6341,7 @@ public object FfiConverterTypeFfiPermissionPolicySet : FfiConverterRustBuffer<Ff
 }
 
 data class FfiPublishRequest(
-    var `envelopes`: List<FfiEnvelope>,
+    var `envelopes`: List<FfiEnvelope>
 ) {
     companion object
 }
@@ -6363,7 +6366,7 @@ public object FfiConverterTypeFfiPublishRequest : FfiConverterRustBuffer<FfiPubl
 }
 
 data class FfiV2BatchQueryRequest(
-    var `requests`: List<FfiV2QueryRequest>,
+    var `requests`: List<FfiV2QueryRequest>
 ) {
     companion object
 }
@@ -6388,7 +6391,7 @@ public object FfiConverterTypeFfiV2BatchQueryRequest : FfiConverterRustBuffer<Ff
 }
 
 data class FfiV2BatchQueryResponse(
-    var `responses`: List<FfiV2QueryResponse>,
+    var `responses`: List<FfiV2QueryResponse>
 ) {
     companion object
 }
@@ -6416,7 +6419,7 @@ data class FfiV2QueryRequest(
     var `contentTopics`: List<kotlin.String>,
     var `startTimeNs`: kotlin.ULong,
     var `endTimeNs`: kotlin.ULong,
-    var `pagingInfo`: FfiPagingInfo?,
+    var `pagingInfo`: FfiPagingInfo?
 ) {
     companion object
 }
@@ -6451,7 +6454,7 @@ public object FfiConverterTypeFfiV2QueryRequest : FfiConverterRustBuffer<FfiV2Qu
 
 data class FfiV2QueryResponse(
     var `envelopes`: List<FfiEnvelope>,
-    var `pagingInfo`: FfiPagingInfo?,
+    var `pagingInfo`: FfiPagingInfo?
 ) {
     companion object
 }
@@ -6479,7 +6482,7 @@ public object FfiConverterTypeFfiV2QueryResponse : FfiConverterRustBuffer<FfiV2Q
 }
 
 data class FfiV2SubscribeRequest(
-    var `contentTopics`: List<kotlin.String>,
+    var `contentTopics`: List<kotlin.String>
 ) {
     companion object
 }
