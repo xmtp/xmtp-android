@@ -131,11 +131,12 @@ data class Conversations(
 
     suspend fun newGroupCustomPermissions(
         accountAddresses: List<String>,
+        permissionPolicySet: PermissionPolicySet,
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
         groupPinnedFrameUrl: String = "",
-        permissionPolicySet: PermissionPolicySet
+
     ): Group {
         return newGroupInternal(
             accountAddresses,
