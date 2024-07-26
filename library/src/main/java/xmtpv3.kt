@@ -8227,7 +8227,7 @@ public object FfiConverterMapStringBoolean :
         // The parens on `(k, v)` here ensure we're calling the right method,
         // which is important for compatibility with older android devices.
         // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
-        value.forEach { (k, v) ->
+        value.iterator().forEach { (k, v) ->
             FfiConverterString.write(k, buf)
             FfiConverterBoolean.write(v, buf)
         }
