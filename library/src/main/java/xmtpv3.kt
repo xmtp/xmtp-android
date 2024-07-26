@@ -376,7 +376,7 @@ private fun findLibraryName(componentName: String): String {
     if (libOverride != null) {
         return libOverride
     }
-    return "xmtpv3"
+    return "uniffi_xmtpv3"
 }
 
 private inline fun <reified Lib : Library> loadIndirect(
