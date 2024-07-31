@@ -181,6 +181,7 @@ class ClientTest {
             assertEquals(client.conversations.listGroups().size, 1)
         }
 
+        assert(client.dbPath.isNotEmpty())
         client.deleteLocalDatabase()
 
         client = runBlocking {
