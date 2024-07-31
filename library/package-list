@@ -993,6 +993,7 @@ $dokka.location:org.xmtp.android.library/Client.Companion/authCheck/#org.xmtp.an
 $dokka.location:org.xmtp.android.library/Client.Companion/authSave/#org.xmtp.android.library.ApiClient#org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV1#org.xmtp.proto.message.contents.PrivateKeyOuterClass.EncryptedPrivateKeyBundle/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/auth-save.html
 $dokka.location:org.xmtp.android.library/Client.Companion/canMessage/#kotlin.String#org.xmtp.android.library.ClientOptions?/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/can-message.html
 $dokka.location:org.xmtp.android.library/Client.Companion/codecRegistry/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/codec-registry.html
+$dokka.location:org.xmtp.android.library/Client.Companion/getOrCreateInboxId/#org.xmtp.android.library.ClientOptions#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/get-or-create-inbox-id.html
 $dokka.location:org.xmtp.android.library/Client.Companion/register/#org.xmtp.android.library.codecs.ContentCodec[*]/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/register.html
 $dokka.location:org.xmtp.android.library/Client///PointingToDeclaration/library/org.xmtp.android.library/-client/index.html
 $dokka.location:org.xmtp.android.library/Client/Client/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
@@ -1009,13 +1010,13 @@ $dokka.location:org.xmtp.android.library/Client/contacts/#/PointingToDeclaration
 $dokka.location:org.xmtp.android.library/Client/conversations/#/PointingToDeclaration/library/org.xmtp.android.library/-client/conversations.html
 $dokka.location:org.xmtp.android.library/Client/create/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.ApiClient#org.xmtp.android.library.ClientOptions?/PointingToDeclaration/library/org.xmtp.android.library/-client/create.html
 $dokka.location:org.xmtp.android.library/Client/create/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.ClientOptions?/PointingToDeclaration/library/org.xmtp.android.library/-client/create.html
+$dokka.location:org.xmtp.android.library/Client/dbPath/#/PointingToDeclaration/library/org.xmtp.android.library/-client/db-path.html
 $dokka.location:org.xmtp.android.library/Client/deleteLocalDatabase/#/PointingToDeclaration/library/org.xmtp.android.library/-client/delete-local-database.html
 $dokka.location:org.xmtp.android.library/Client/dropLocalDatabaseConnection/#/PointingToDeclaration/library/org.xmtp.android.library/-client/drop-local-database-connection.html
 $dokka.location:org.xmtp.android.library/Client/ensureUserContactPublished/#/PointingToDeclaration/library/org.xmtp.android.library/-client/ensure-user-contact-published.html
 $dokka.location:org.xmtp.android.library/Client/fetchConversation/#kotlin.String?#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client/fetch-conversation.html
 $dokka.location:org.xmtp.android.library/Client/findGroup/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-group.html
 $dokka.location:org.xmtp.android.library/Client/findMessage/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-message.html
-$dokka.location:org.xmtp.android.library/Client/getOrCreateInboxId/#org.xmtp.android.library.ClientOptions#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/get-or-create-inbox-id.html
 $dokka.location:org.xmtp.android.library/Client/getUserContact/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/get-user-contact.html
 $dokka.location:org.xmtp.android.library/Client/importConversation/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-client/import-conversation.html
 $dokka.location:org.xmtp.android.library/Client/importV1Conversation/#org.xmtp.android.library.ConversationV1Export/PointingToDeclaration/library/org.xmtp.android.library/-client/import-v1-conversation.html
