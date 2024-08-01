@@ -1043,13 +1043,14 @@ $dokka.location:org.xmtp.android.library/ClientOptions.Api/appVersion/#/Pointing
 $dokka.location:org.xmtp.android.library/ClientOptions.Api/env/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/env.html
 $dokka.location:org.xmtp.android.library/ClientOptions.Api/isSecure/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/is-secure.html
 $dokka.location:org.xmtp.android.library/ClientOptions///PointingToDeclaration/library/org.xmtp.android.library/-client-options/index.html
-$dokka.location:org.xmtp.android.library/ClientOptions/ClientOptions/#org.xmtp.android.library.ClientOptions.Api#kotlin.coroutines.SuspendFunction0[kotlin.Unit]?#kotlin.coroutines.SuspendFunction0[kotlin.Unit]?#android.content.Context?#kotlin.Boolean#kotlin.String?#kotlin.ByteArray?#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-client-options.html
+$dokka.location:org.xmtp.android.library/ClientOptions/ClientOptions/#org.xmtp.android.library.ClientOptions.Api#kotlin.coroutines.SuspendFunction0[kotlin.Unit]?#kotlin.coroutines.SuspendFunction0[kotlin.Unit]?#kotlin.coroutines.SuspendFunction0[kotlin.Unit]?#android.content.Context?#kotlin.Boolean#kotlin.String?#kotlin.ByteArray?#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-client-options.html
 $dokka.location:org.xmtp.android.library/ClientOptions/api/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/api.html
 $dokka.location:org.xmtp.android.library/ClientOptions/appContext/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/app-context.html
 $dokka.location:org.xmtp.android.library/ClientOptions/dbDirectory/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/db-directory.html
 $dokka.location:org.xmtp.android.library/ClientOptions/dbEncryptionKey/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/db-encryption-key.html
 $dokka.location:org.xmtp.android.library/ClientOptions/enableV3/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/enable-v3.html
 $dokka.location:org.xmtp.android.library/ClientOptions/historySyncUrl/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/history-sync-url.html
+$dokka.location:org.xmtp.android.library/ClientOptions/preAuthenticateToInboxCallback/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/pre-authenticate-to-inbox-callback.html
 $dokka.location:org.xmtp.android.library/ClientOptions/preCreateIdentityCallback/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/pre-create-identity-callback.html
 $dokka.location:org.xmtp.android.library/ClientOptions/preEnableIdentityCallback/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/pre-enable-identity-callback.html
 $dokka.location:org.xmtp.android.library/CodecRegistry///PointingToDeclaration/library/org.xmtp.android.library/-codec-registry/index.html
