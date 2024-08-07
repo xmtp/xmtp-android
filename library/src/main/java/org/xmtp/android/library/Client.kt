@@ -67,7 +67,7 @@ data class ClientOptions(
     val enableV3: Boolean = false,
     val dbDirectory: String? = null,
     val dbEncryptionKey: ByteArray? = null,
-    val historySyncUrl: String? = null,
+    val historySyncUrl: String = "https://message-history.dev.ephemera.network/",
 ) {
     data class Api(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
