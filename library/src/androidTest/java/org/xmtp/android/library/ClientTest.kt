@@ -494,4 +494,3 @@ class ClientTest {
         assertEquals(state.installationIds.size, 1)
     }
 }
-

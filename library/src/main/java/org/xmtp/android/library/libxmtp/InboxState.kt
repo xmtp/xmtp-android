@@ -14,5 +14,4 @@ class InboxState(private val ffiInboxState: FfiInboxState) {
 
     val recoveryAddress: String
         get() = ffiInboxState.recoveryAddress
-
 }
