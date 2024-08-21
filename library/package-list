@@ -1254,6 +1254,7 @@ $dokka.location:org.xmtp.android.library/Conversations/streamAllGroupDecryptedMe
 $dokka.location:org.xmtp.android.library/Conversations/streamAllGroupMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream-all-group-messages.html
 $dokka.location:org.xmtp.android.library/Conversations/streamAllMessages/#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream-all-messages.html
 $dokka.location:org.xmtp.android.library/Conversations/streamGroups/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream-groups.html
+$dokka.location:org.xmtp.android.library/Conversations/syncAllGroups/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/sync-all-groups.html
 $dokka.location:org.xmtp.android.library/Conversations/syncGroups/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/sync-groups.html
 $dokka.location:org.xmtp.android.library/Crypto.Companion///PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/index.html
 $dokka.location:org.xmtp.android.library/Crypto.Companion/calculateMac/#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/calculate-mac.html
