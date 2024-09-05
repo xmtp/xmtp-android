@@ -129,6 +129,11 @@ data class Conversations(
         )
     }
 
+    // mark this as private until we enable we sunset V2
+    private suspend fun newDm(accountAddress: String): Dm {
+        return newDmInternal(accountAddress)
+    }
+
     suspend fun newGroupCustomPermissions(
         accountAddresses: List<String>,
         permissionPolicySet: PermissionPolicySet,
@@ -184,6 +189,21 @@ data class Conversations(
         client.contacts.allowGroups(groupIds = listOf(group.id().toHex()))
 
         return Group(client, group)
+    }
+
+    private suspend fun newDmInternal(
+        accountAddress: String,
+    ): Dm {
+        if (accountAddress.lowercase() == client.address.lowercase()) {
+            throw XMTPException("Recipient is sender")
+        }
+        
+        val inboxId = client.inboxIdFromAddress(accountAddress) ?: throw XMTPException("Error getting inbox id, ${accountAddress} not on network")
+        val dm =
+            libXMTPConversations?.createDm(inboxId)?: throw XMTPException("Client does not support V3 Dms")
+        client.contacts.allowGroups(groupIds = listOf(dm.id().toHex()))
+
+        return Dm(client, dm)
     }
 
     // Sync from the network the latest list of groups
@@ -245,9 +265,9 @@ data class Conversations(
             throw XMTPException("Recipient is sender")
         }
         if (client.v3Client != null) {
-            val conversationV3 = libXMTPConversations?.createDm(peerAddress)
+            val conversationV3 = libXMTPConversations?.createDm(peerAddress) ?: throw XMTPException("Client does not support V3 Dms")
             if (!client.hasV2Client) {
-                val conversation = Conversation.V3(conversationV3)
+                val conversation = Conversation.Dm(Dm(client, conversationV3))
                 conversationsByTopic[conversation.topic] = conversation
                 return conversation
             }
