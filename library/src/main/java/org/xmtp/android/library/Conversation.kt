@@ -27,8 +27,9 @@ sealed class Conversation {
     data class V2(val conversationV2: ConversationV2) : Conversation()
 
     data class Group(val group: org.xmtp.android.library.Group) : Conversation()
+    data class Dm(val dm: org.xmtp.android.library.Dm) : Conversation()
 
-    enum class Version { V1, V2, GROUP }
+    enum class Version { V1, V2, GROUP, DM }
 
     // This indicates whether this a v1 or v2 conversation.
     val version: Version
@@ -37,6 +38,7 @@ sealed class Conversation {
                 is V1 -> Version.V1
                 is V2 -> Version.V2
                 is Group -> Version.GROUP
+                is Dm -> Version.DM
             }
         }
 
@@ -47,6 +49,7 @@ sealed class Conversation {
                 is V1 -> conversationV1.sentAt
                 is V2 -> conversationV2.createdAt
                 is Group -> group.createdAt
+                is Dm -> dm.createdAt
             }
         }
 
@@ -57,6 +60,7 @@ sealed class Conversation {
                 is V1 -> conversationV1.peerAddress
                 is V2 -> conversationV2.peerAddress
                 is Group -> group.peerInboxIds().joinToString(",")
+                is Dm -> dm.peerInboxIds().joinToString(",")
             }
         }
 
@@ -66,6 +70,7 @@ sealed class Conversation {
                 is V1 -> listOf(conversationV1.peerAddress)
                 is V2 -> listOf(conversationV2.peerAddress)
                 is Group -> group.peerInboxIds()
+                is Dm -> dm.peerInboxIds()
             }
         }
 
@@ -77,6 +82,7 @@ sealed class Conversation {
                 is V1 -> null
                 is V2 -> conversationV2.context.conversationId
                 is Group -> null
+                is Dm -> null
             }
         }
 
@@ -86,6 +92,7 @@ sealed class Conversation {
                 is V1 -> null
                 is V2 -> conversationV2.keyMaterial
                 is Group -> null
+                is Dm -> null
             }
         }
 
@@ -94,6 +101,7 @@ sealed class Conversation {
             is V1 -> conversationV1.client.contacts.consentList.state(address = peerAddress)
             is V2 -> conversationV2.client.contacts.consentList.state(address = peerAddress)
             is Group -> group.client.contacts.consentList.groupState(groupId = group.id)
+            is Dm -> dm.client.contacts.consentList.groupState(groupId = dm.id)
         }
     }
 
@@ -119,6 +127,7 @@ sealed class Conversation {
             ).build()
 
             is Group -> throw XMTPException("Groups do not support topics")
+            is Dm -> throw XMTPException("DMs do not support topics")
         }
     }
 
@@ -127,6 +136,7 @@ sealed class Conversation {
             is V1 -> conversationV1.decode(envelope)
             is V2 -> conversationV2.decodeEnvelope(envelope)
             is Group -> message?.decode() ?: throw XMTPException("Groups require message be passed")
+            is Dm -> throw XMTPException("DMs require message be passed")
         }
     }
 
@@ -150,6 +160,7 @@ sealed class Conversation {
             }
 
             is Group -> throw XMTPException("Groups do not support prepared messages") // We return a encoded content not a preparedmessage which requires a envelope
+            is Dm -> throw XMTPException("DMs do not support prepared messages")
         }
     }
 
@@ -167,6 +178,7 @@ sealed class Conversation {
             }
 
             is Group -> throw XMTPException("Groups do not support prepared messages") // We return a encoded content not a preparedmessage which requires a envelope
+            is Dm -> throw XMTPException("DMs do not support prepared messages")
         }
     }
 
@@ -175,6 +187,7 @@ sealed class Conversation {
             is V1 -> conversationV1.send(prepared = prepared)
             is V2 -> conversationV2.send(prepared = prepared)
             is Group -> throw XMTPException("Groups do not support prepared messages") // We return a encoded content not a prepared Message which requires a envelope
+            is Dm -> throw XMTPException("DMs do not support prepared messages")
         }
     }
 
@@ -183,6 +196,7 @@ sealed class Conversation {
             is V1 -> conversationV1.send(content = content, options = options)
             is V2 -> conversationV2.send(content = content, options = options)
             is Group -> group.send(content = content, options = options)
+            is Dm -> dm.send(content = content, options = options)
         }
     }
 
@@ -191,6 +205,7 @@ sealed class Conversation {
             is V1 -> conversationV1.send(text = text, sendOptions, sentAt)
             is V2 -> conversationV2.send(text = text, sendOptions, sentAt)
             is Group -> group.send(text)
+            is Dm -> dm.send(text)
         }
     }
 
@@ -199,6 +214,7 @@ sealed class Conversation {
             is V1 -> conversationV1.send(encodedContent = encodedContent, options = options)
             is V2 -> conversationV2.send(encodedContent = encodedContent, options = options)
             is Group -> group.send(encodedContent = encodedContent)
+            is Dm -> dm.send(encodedContent = encodedContent)
         }
     }
 
@@ -214,6 +230,7 @@ sealed class Conversation {
                 is V1 -> conversationV1.topic.description
                 is V2 -> conversationV2.topic
                 is Group -> group.topic
+                is Dm -> dm.topic
             }
         }
 
@@ -260,6 +277,7 @@ sealed class Conversation {
                     direction = direction,
                 )
             }
+            is Dm -> dm.messages(limit, before, after, direction)
         }
     }
 
@@ -273,6 +291,7 @@ sealed class Conversation {
             is V1 -> conversationV1.decryptedMessages(limit, before, after, direction)
             is V2 -> conversationV2.decryptedMessages(limit, before, after, direction)
             is Group -> group.decryptedMessages(limit, before, after, direction)
+            is Dm -> dm.decryptedMessages(limit, before, after, direction)
         }
     }
 
@@ -286,6 +305,9 @@ sealed class Conversation {
             is Group -> {
                 message?.decrypt() ?: throw XMTPException("Groups require message be passed")
             }
+            is Dm -> {
+                message?.decrypt() ?: throw XMTPException("DMs require message be passed")
+            }
         }
     }
 
@@ -295,6 +317,7 @@ sealed class Conversation {
                 is V1 -> return null
                 is V2 -> conversationV2.consentProof
                 is Group -> return null
+                is Dm -> return null
             }
         }
 
@@ -305,6 +328,7 @@ sealed class Conversation {
                 is V1 -> conversationV1.client
                 is V2 -> conversationV2.client
                 is Group -> group.client
+                is Dm -> dm.client
             }
         }
 
@@ -317,6 +341,7 @@ sealed class Conversation {
             is V1 -> conversationV1.streamMessages()
             is V2 -> conversationV2.streamMessages()
             is Group -> group.streamMessages()
+            is Dm -> dm.streamMessages()
         }
     }
 
@@ -325,6 +350,7 @@ sealed class Conversation {
             is V1 -> conversationV1.streamDecryptedMessages()
             is V2 -> conversationV2.streamDecryptedMessages()
             is Group -> group.streamDecryptedMessages()
+            is Dm -> dm.streamDecryptedMessages()
         }
     }
 
@@ -333,6 +359,7 @@ sealed class Conversation {
             is V1 -> return conversationV1.streamEphemeral()
             is V2 -> return conversationV2.streamEphemeral()
             is Group -> throw XMTPException("Groups do not support ephemeral messages")
+            is Dm -> throw XMTPException("DMs do not support ephemeral messages")
         }
     }
 }
