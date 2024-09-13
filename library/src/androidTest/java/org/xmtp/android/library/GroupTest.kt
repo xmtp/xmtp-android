@@ -122,8 +122,13 @@ class GroupTest {
         assert(boGroup.id.isNotEmpty())
         assert(alixGroup.id.isNotEmpty())
 
-        assertEquals(boClient.contacts.consentList.groupState(boGroup.id), ConsentState.ALLOWED)
-        assertEquals(alixClient.contacts.consentList.groupState(alixGroup.id), ConsentState.UNKNOWN)
+        runBlocking {
+            assertEquals(boClient.contacts.consentList.groupState(boGroup.id), ConsentState.ALLOWED)
+            assertEquals(
+                alixClient.contacts.consentList.groupState(alixGroup.id),
+                ConsentState.UNKNOWN
+            )
+        }
 
         runBlocking {
             boGroup.addMembers(listOf(caro.walletAddress))
@@ -424,12 +429,14 @@ class GroupTest {
 
     @Test
     fun testGroupStartsWithAllowedState() {
-        val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
-        runBlocking { group.send("howdy") }
-        runBlocking { group.send("gm") }
-        runBlocking { group.sync() }
-        assert(boClient.contacts.isGroupAllowed(group.id))
-        assertEquals(boClient.contacts.consentList.groupState(group.id), ConsentState.ALLOWED)
+        runBlocking {
+            val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
+            group.send("howdy")
+            group.send("gm")
+            group.sync()
+            assert(boClient.contacts.isGroupAllowed(group.id))
+            assertEquals(boClient.contacts.consentList.groupState(group.id), ConsentState.ALLOWED)
+        }
     }
 
     @Test
@@ -772,57 +779,77 @@ class GroupTest {
 
     @Test
     fun testCanAllowGroup() {
-        val group = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+        runBlocking {
+            val group =
+                boClient.conversations.newGroup(
+                    listOf(
+                        alix.walletAddress,
+                        caro.walletAddress
+                    )
                 )
-            )
+
+            var result = boClient.contacts.isGroupAllowed(group.id)
+            assert(result)
+
+            boClient.contacts.allowGroups(listOf(group.id))
+
+            result = boClient.contacts.isGroupAllowed(group.id)
+            assert(result)
         }
-
-        var result = boClient.contacts.isGroupAllowed(group.id)
-        assert(result)
-
-        runBlocking { boClient.contacts.allowGroups(listOf(group.id)) }
-
-        result = boClient.contacts.isGroupAllowed(group.id)
-        assert(result)
     }
 
     @Test
     fun testCanDenyGroup() {
-        val group = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+        runBlocking {
+            val group =
+                boClient.conversations.newGroup(
+                    listOf(
+                        alix.walletAddress,
+                        caro.walletAddress
+                    )
                 )
-            )
+            var result = boClient.contacts.isGroupAllowed(group.id)
+            assert(result)
+
+            boClient.contacts.denyGroups(listOf(group.id))
+
+            result = boClient.contacts.isGroupDenied(group.id)
+            assert(result)
         }
-        var result = boClient.contacts.isGroupAllowed(group.id)
-        assert(result)
-
-        runBlocking { boClient.contacts.denyGroups(listOf(group.id)) }
-
-        result = boClient.contacts.isGroupDenied(group.id)
-        assert(result)
     }
 
     @Test
     fun testCanAllowAndDenyInboxId() {
-        assert(!boClient.contacts.isInboxAllowed(alixClient.inboxId))
-        assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
+        runBlocking {
+            val boGroup = boClient.conversations.newGroup(listOf(alix.walletAddress))
+            assert(!boClient.contacts.isInboxAllowed(alixClient.inboxId))
+            assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
 
-        runBlocking { boClient.contacts.allowInboxes(listOf(alixClient.inboxId)) }
+            boClient.contacts.allowInboxes(listOf(alixClient.inboxId))
+            var alixMember = boGroup.members().firstOrNull { it.inboxId == alixClient.inboxId }
+            boGroup.sync()
+            assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
 
-        assert(boClient.contacts.isInboxAllowed(alixClient.inboxId))
-        assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
+            assert(boClient.contacts.isInboxAllowed(alixClient.inboxId))
+            assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
 
-        runBlocking { boClient.contacts.denyInboxes(listOf(alixClient.inboxId)) }
+            boClient.contacts.denyInboxes(listOf(alixClient.inboxId))
+            boGroup.sync()
+            alixMember = boGroup.members().firstOrNull { it.inboxId == alixClient.inboxId }
+            assertEquals(alixMember!!.consentState, ConsentState.DENIED)
 
-        assert(!boClient.contacts.isInboxAllowed(alixClient.inboxId))
-        assert(boClient.contacts.isInboxDenied(alixClient.inboxId))
+            assert(!boClient.contacts.isInboxAllowed(alixClient.inboxId))
+            assert(boClient.contacts.isInboxDenied(alixClient.inboxId))
+
+            boClient.contacts.allow(listOf(alixClient.address))
+            boGroup.sync()
+            alixMember = boGroup.members().firstOrNull { it.inboxId == alixClient.inboxId }
+            assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
+            assert(boClient.contacts.isInboxAllowed(alixClient.inboxId))
+            assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
+            assert(boClient.contacts.isAllowed(alixClient.address))
+            assert(!boClient.contacts.isDenied(alixClient.address))
+        }
     }
 
     @Test
@@ -872,9 +899,9 @@ class GroupTest {
         }
         runBlocking { alixClient.conversations.syncGroups() }
         val alixGroup: Group = alixClient.findGroup(boGroup.id)!!
-        assert(!alixClient.contacts.isGroupAllowed(boGroup.id))
+        runBlocking { assert(!alixClient.contacts.isGroupAllowed(boGroup.id)) }
         val preparedMessageId = runBlocking { alixGroup.prepareMessage("Test text") }
-        assert(alixClient.contacts.isGroupAllowed(boGroup.id))
+        runBlocking { assert(alixClient.contacts.isGroupAllowed(boGroup.id)) }
         assertEquals(alixGroup.messages().size, 1)
         assertEquals(alixGroup.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED).size, 0)
         assertEquals(alixGroup.messages(deliveryStatus = MessageDeliveryStatus.UNPUBLISHED).size, 1)

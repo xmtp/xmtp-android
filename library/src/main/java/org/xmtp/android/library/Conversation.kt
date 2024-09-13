@@ -89,7 +89,7 @@ sealed class Conversation {
             }
         }
 
-    fun consentState(): ConsentState {
+    suspend fun consentState(): ConsentState {
         return when (this) {
             is V1 -> conversationV1.client.contacts.consentList.state(address = peerAddress)
             is V2 -> conversationV2.client.contacts.consentList.state(address = peerAddress)
