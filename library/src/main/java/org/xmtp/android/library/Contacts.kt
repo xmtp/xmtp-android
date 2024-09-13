@@ -9,6 +9,7 @@ import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesAction
+import uniffi.xmtpv3.FfiConsentEntityType
 import uniffi.xmtpv3.FfiConsentState
 import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import java.util.Date
@@ -37,17 +38,35 @@ enum class ConsentState {
     }
 }
 
+enum class EntryType {
+    ADDRESS,
+    GROUP_ID,
+    INBOX_ID;
+    companion object {
+        fun toFfiConsentEntityType(option: EntryType): FfiConsentEntityType {
+            return when (option) {
+                EntryType.ADDRESS -> FfiConsentEntityType.ADDRESS
+                EntryType.GROUP_ID -> FfiConsentEntityType.GROUP_ID
+                EntryType.INBOX_ID -> FfiConsentEntityType.INBOX_ID
+            }
+        }
+
+        fun fromFfiConsentEntityType(option: FfiConsentEntityType): EntryType {
+            return when (option) {
+                FfiConsentEntityType.ADDRESS -> EntryType.ADDRESS
+                FfiConsentEntityType.GROUP_ID -> EntryType.GROUP_ID
+                FfiConsentEntityType.INBOX_ID -> EntryType.INBOX_ID
+            }
+        }
+    }
+}
+
+
 data class ConsentListEntry(
     val value: String,
     val entryType: EntryType,
     val consentType: ConsentState,
 ) {
-    enum class EntryType {
-        ADDRESS,
-        GROUP_ID,
-        INBOX_ID
-    }
-
     companion object {
         fun address(
             address: String,
@@ -145,80 +164,82 @@ class ConsentList(
     }
 
     suspend fun publish(entries: List<ConsentListEntry>) {
-        val payload = PrivatePreferencesAction.newBuilder().also {
-            entries.iterator().forEach { entry ->
-                when (entry.entryType) {
-                    ConsentListEntry.EntryType.ADDRESS -> {
-                        when (entry.consentType) {
-                            ConsentState.ALLOWED ->
-                                it.setAllowAddress(
-                                    PrivatePreferencesAction.AllowAddress.newBuilder()
-                                        .addWalletAddresses(entry.value),
-                                )
+        if (client.hasV2Client) {
+            val payload = PrivatePreferencesAction.newBuilder().also {
+                entries.iterator().forEach { entry ->
+                    when (entry.entryType) {
+                        EntryType.ADDRESS -> {
+                            when (entry.consentType) {
+                                ConsentState.ALLOWED ->
+                                    it.setAllowAddress(
+                                        PrivatePreferencesAction.AllowAddress.newBuilder()
+                                            .addWalletAddresses(entry.value),
+                                    )
 
-                            ConsentState.DENIED ->
-                                it.setDenyAddress(
-                                    PrivatePreferencesAction.DenyAddress.newBuilder()
-                                        .addWalletAddresses(entry.value),
-                                )
+                                ConsentState.DENIED ->
+                                    it.setDenyAddress(
+                                        PrivatePreferencesAction.DenyAddress.newBuilder()
+                                            .addWalletAddresses(entry.value),
+                                    )
 
-                            ConsentState.UNKNOWN -> it.clearMessageType()
+                                ConsentState.UNKNOWN -> it.clearMessageType()
+                            }
                         }
-                    }
 
-                    ConsentListEntry.EntryType.GROUP_ID -> {
-                        when (entry.consentType) {
-                            ConsentState.ALLOWED ->
-                                it.setAllowGroup(
-                                    PrivatePreferencesAction.AllowGroup.newBuilder()
-                                        .addGroupIds(entry.value),
-                                )
+                        EntryType.GROUP_ID -> {
+                            when (entry.consentType) {
+                                ConsentState.ALLOWED ->
+                                    it.setAllowGroup(
+                                        PrivatePreferencesAction.AllowGroup.newBuilder()
+                                            .addGroupIds(entry.value),
+                                    )
 
-                            ConsentState.DENIED ->
-                                it.setDenyGroup(
-                                    PrivatePreferencesAction.DenyGroup.newBuilder()
-                                        .addGroupIds(entry.value),
-                                )
+                                ConsentState.DENIED ->
+                                    it.setDenyGroup(
+                                        PrivatePreferencesAction.DenyGroup.newBuilder()
+                                            .addGroupIds(entry.value),
+                                    )
 
-                            ConsentState.UNKNOWN -> it.clearMessageType()
+                                ConsentState.UNKNOWN -> it.clearMessageType()
+                            }
                         }
-                    }
 
-                    ConsentListEntry.EntryType.INBOX_ID -> {
-                        when (entry.consentType) {
-                            ConsentState.ALLOWED ->
-                                it.setAllowInboxId(
-                                    PrivatePreferencesAction.AllowInboxId.newBuilder()
-                                        .addInboxIds(entry.value),
-                                )
+                        EntryType.INBOX_ID -> {
+                            when (entry.consentType) {
+                                ConsentState.ALLOWED ->
+                                    it.setAllowInboxId(
+                                        PrivatePreferencesAction.AllowInboxId.newBuilder()
+                                            .addInboxIds(entry.value),
+                                    )
 
-                            ConsentState.DENIED ->
-                                it.setDenyInboxId(
-                                    PrivatePreferencesAction.DenyInboxId.newBuilder()
-                                        .addInboxIds(entry.value),
-                                )
+                                ConsentState.DENIED ->
+                                    it.setDenyInboxId(
+                                        PrivatePreferencesAction.DenyInboxId.newBuilder()
+                                            .addInboxIds(entry.value),
+                                    )
 
-                            ConsentState.UNKNOWN -> it.clearMessageType()
+                                ConsentState.UNKNOWN -> it.clearMessageType()
+                            }
                         }
                     }
                 }
-            }
-        }.build()
+            }.build()
 
-        val message =
-            uniffi.xmtpv3.userPreferencesEncrypt(
-                publicKey.toByteArray(),
-                privateKey.toByteArray(),
-                payload.toByteArray(),
+            val message =
+                uniffi.xmtpv3.userPreferencesEncrypt(
+                    publicKey.toByteArray(),
+                    privateKey.toByteArray(),
+                    payload.toByteArray(),
+                )
+
+            val envelope = EnvelopeBuilder.buildFromTopic(
+                Topic.preferenceList(identifier),
+                Date(),
+                ByteArray(message.size) { message[it] },
             )
 
-        val envelope = EnvelopeBuilder.buildFromTopic(
-            Topic.preferenceList(identifier),
-            Date(),
-            ByteArray(message.size) { message[it] },
-        )
-
-        client.publish(listOf(envelope))
+            client.publish(listOf(envelope))
+        }
     }
 
     fun allow(address: String): ConsentListEntry {
@@ -296,13 +317,16 @@ data class Contacts(
 
     suspend fun allow(addresses: List<String>) {
         val entries = addresses.map {
+            client.v3Client?.setConsentState(FfiConsentState.ALLOWED, FfiConsentEntityType.ADDRESS, it)
             consentList.allow(it)
+
         }
         consentList.publish(entries)
     }
 
     suspend fun deny(addresses: List<String>) {
         val entries = addresses.map {
+            client.v3Client?.setConsentState(FfiConsentState.DENIED, FfiConsentEntityType.ADDRESS, it)
             consentList.deny(it)
         }
         consentList.publish(entries)
@@ -310,6 +334,7 @@ data class Contacts(
 
     suspend fun allowGroups(groupIds: List<String>) {
         val entries = groupIds.map {
+            client.v3Client?.setConsentState(FfiConsentState.ALLOWED, FfiConsentEntityType.GROUP_ID, it)
             consentList.allowGroup(it)
         }
         consentList.publish(entries)
@@ -317,6 +342,7 @@ data class Contacts(
 
     suspend fun denyGroups(groupIds: List<String>) {
         val entries = groupIds.map {
+            client.v3Client?.setConsentState(FfiConsentState.DENIED, FfiConsentEntityType.GROUP_ID, it)
             consentList.denyGroup(it)
         }
         consentList.publish(entries)
@@ -324,6 +350,7 @@ data class Contacts(
 
     suspend fun allowInboxes(inboxIds: List<String>) {
         val entries = inboxIds.map {
+            client.v3Client?.setConsentState(FfiConsentState.ALLOWED, FfiConsentEntityType.INBOX_ID, it)
             consentList.allowInboxId(it)
         }
         consentList.publish(entries)
@@ -331,32 +358,51 @@ data class Contacts(
 
     suspend fun denyInboxes(inboxIds: List<String>) {
         val entries = inboxIds.map {
+            client.v3Client?.setConsentState(FfiConsentState.DENIED, FfiConsentEntityType.INBOX_ID, it)
             consentList.denyInboxId(it)
         }
         consentList.publish(entries)
     }
 
-    fun isAllowed(address: String): Boolean {
+    suspend fun isAllowed(address: String): Boolean {
+        client.v3Client?.let {
+            return it.getConsentState(FfiConsentEntityType.ADDRESS, address) == FfiConsentState.ALLOWED
+        }
         return consentList.state(address) == ConsentState.ALLOWED
     }
 
-    fun isDenied(address: String): Boolean {
+    suspend fun isDenied(address: String): Boolean {
+        client.v3Client?.let {
+            return it.getConsentState(FfiConsentEntityType.ADDRESS, address) == FfiConsentState.DENIED
+        }
         return consentList.state(address) == ConsentState.DENIED
     }
 
-    fun isGroupAllowed(groupId: String): Boolean {
+    suspend fun isGroupAllowed(groupId: String): Boolean {
+        client.v3Client?.let {
+            return it.getConsentState(FfiConsentEntityType.GROUP_ID, groupId) == FfiConsentState.ALLOWED
+        }
         return consentList.groupState(groupId) == ConsentState.ALLOWED
     }
 
-    fun isGroupDenied(groupId: String): Boolean {
+    suspend fun isGroupDenied(groupId: String): Boolean {
+        client.v3Client?.let {
+            return it.getConsentState(FfiConsentEntityType.GROUP_ID, groupId) == FfiConsentState.DENIED
+        }
         return consentList.groupState(groupId) == ConsentState.DENIED
     }
 
-    fun isInboxAllowed(inboxId: String): Boolean {
+    suspend fun isInboxAllowed(inboxId: String): Boolean {
+        client.v3Client?.let {
+            return it.getConsentState(FfiConsentEntityType.INBOX_ID, inboxId) == FfiConsentState.ALLOWED
+        }
         return consentList.inboxIdState(inboxId) == ConsentState.ALLOWED
     }
 
-    fun isInboxDenied(inboxId: String): Boolean {
+    suspend fun isInboxDenied(inboxId: String): Boolean {
+        client.v3Client?.let {
+            return it.getConsentState(FfiConsentEntityType.INBOX_ID, inboxId) == FfiConsentState.DENIED
+        }
         return consentList.inboxIdState(inboxId) == ConsentState.DENIED
     }
 

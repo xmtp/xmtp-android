@@ -90,10 +90,9 @@ class Client() {
     var logger: XMTPLogger = XMTPLogger()
     val libXMTPVersion: String = getVersionInfo()
     var installationId: String = ""
-    private var v3Client: FfiXmtpClient? = null
+    var v3Client: FfiXmtpClient? = null
     var dbPath: String = ""
     lateinit var inboxId: String
-    var hasV3Client: Boolean = false
     var hasV2Client: Boolean = false
 
     companion object {
@@ -359,7 +358,6 @@ class Client() {
             }
 
         if (v3Client != null) {
-            hasV3Client = true
             options.preAuthenticateToInboxCallback?.let {
                 runBlocking {
                     it.invoke()

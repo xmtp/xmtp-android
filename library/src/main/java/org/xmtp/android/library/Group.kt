@@ -66,8 +66,8 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     suspend fun send(encodedContent: EncodedContent): String {
-        if (client.contacts.consentList.groupState(groupId = id) == ConsentState.UNKNOWN) {
-            client.contacts.allowGroups(groupIds = listOf(id))
+        if (consentState() == ConsentState.UNKNOWN) {
+            updateConsentState(ConsentState.ALLOWED)
         }
         val messageId = libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
         return messageId.toHex()
@@ -100,8 +100,8 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     suspend fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
-        if (client.contacts.consentList.groupState(groupId = id) == ConsentState.UNKNOWN) {
-            client.contacts.allowGroups(groupIds = listOf(id))
+        if (consentState() == ConsentState.UNKNOWN) {
+            updateConsentState(ConsentState.ALLOWED)
         }
         val encodeContent = encodeContent(content = content, options = options)
         return libXMTPGroup.sendOptimistic(encodeContent.toByteArray()).toHex()
