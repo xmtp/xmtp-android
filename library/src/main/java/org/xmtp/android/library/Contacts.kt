@@ -42,6 +42,7 @@ enum class EntryType {
     ADDRESS,
     GROUP_ID,
     INBOX_ID;
+
     companion object {
         fun toFfiConsentEntityType(option: EntryType): FfiConsentEntityType {
             return when (option) {
@@ -164,6 +165,9 @@ class ConsentList(
     }
 
     suspend fun publish(entries: List<ConsentListEntry>) {
+        if (client.v3Client != null) {
+            setV3ConsentState(entries)
+        }
         if (client.hasV2Client) {
             val payload = PrivatePreferencesAction.newBuilder().also {
                 entries.iterator().forEach { entry ->
@@ -242,6 +246,16 @@ class ConsentList(
         }
     }
 
+    suspend fun setV3ConsentState(entries: List<ConsentListEntry>) {
+        entries.forEach {
+            client.v3Client?.setConsentState(
+                ConsentState.toFfiConsentState(it.consentType),
+                EntryType.toFfiConsentEntityType(it.entryType),
+                it.value
+            )
+        }
+    }
+
     fun allow(address: String): ConsentListEntry {
         val entry = ConsentListEntry.address(address, ConsentState.ALLOWED)
         entries[entry.key] = entry
@@ -284,21 +298,42 @@ class ConsentList(
         return entry
     }
 
-    fun state(address: String): ConsentState {
+    suspend fun state(address: String): ConsentState {
+        client.v3Client?.let {
+            return ConsentState.fromFfiConsentState(
+                it.getConsentState(
+                    FfiConsentEntityType.ADDRESS,
+                    address
+                )
+            )
+        }
         val entry = entries[ConsentListEntry.address(address).key]
-
         return entry?.consentType ?: ConsentState.UNKNOWN
     }
 
-    fun groupState(groupId: String): ConsentState {
+    suspend fun groupState(groupId: String): ConsentState {
+        client.v3Client?.let {
+            return ConsentState.fromFfiConsentState(
+                it.getConsentState(
+                    FfiConsentEntityType.GROUP_ID,
+                    groupId
+                )
+            )
+        }
         val entry = entries[ConsentListEntry.groupId(groupId).key]
-
         return entry?.consentType ?: ConsentState.UNKNOWN
     }
 
-    fun inboxIdState(inboxId: String): ConsentState {
+    suspend fun inboxIdState(inboxId: String): ConsentState {
+        client.v3Client?.let {
+            return ConsentState.fromFfiConsentState(
+                it.getConsentState(
+                    FfiConsentEntityType.INBOX_ID,
+                    inboxId
+                )
+            )
+        }
         val entry = entries[ConsentListEntry.inboxId(inboxId).key]
-
         return entry?.consentType ?: ConsentState.UNKNOWN
     }
 }
@@ -311,22 +346,20 @@ data class Contacts(
 ) {
 
     suspend fun refreshConsentList(): ConsentList {
-        consentList.load()
+        val entries = consentList.load()
+        consentList.setV3ConsentState(entries)
         return consentList
     }
 
     suspend fun allow(addresses: List<String>) {
         val entries = addresses.map {
-            client.v3Client?.setConsentState(FfiConsentState.ALLOWED, FfiConsentEntityType.ADDRESS, it)
             consentList.allow(it)
-
         }
         consentList.publish(entries)
     }
 
     suspend fun deny(addresses: List<String>) {
         val entries = addresses.map {
-            client.v3Client?.setConsentState(FfiConsentState.DENIED, FfiConsentEntityType.ADDRESS, it)
             consentList.deny(it)
         }
         consentList.publish(entries)
@@ -334,7 +367,6 @@ data class Contacts(
 
     suspend fun allowGroups(groupIds: List<String>) {
         val entries = groupIds.map {
-            client.v3Client?.setConsentState(FfiConsentState.ALLOWED, FfiConsentEntityType.GROUP_ID, it)
             consentList.allowGroup(it)
         }
         consentList.publish(entries)
@@ -342,7 +374,6 @@ data class Contacts(
 
     suspend fun denyGroups(groupIds: List<String>) {
         val entries = groupIds.map {
-            client.v3Client?.setConsentState(FfiConsentState.DENIED, FfiConsentEntityType.GROUP_ID, it)
             consentList.denyGroup(it)
         }
         consentList.publish(entries)
@@ -350,7 +381,6 @@ data class Contacts(
 
     suspend fun allowInboxes(inboxIds: List<String>) {
         val entries = inboxIds.map {
-            client.v3Client?.setConsentState(FfiConsentState.ALLOWED, FfiConsentEntityType.INBOX_ID, it)
             consentList.allowInboxId(it)
         }
         consentList.publish(entries)
@@ -358,51 +388,32 @@ data class Contacts(
 
     suspend fun denyInboxes(inboxIds: List<String>) {
         val entries = inboxIds.map {
-            client.v3Client?.setConsentState(FfiConsentState.DENIED, FfiConsentEntityType.INBOX_ID, it)
             consentList.denyInboxId(it)
         }
         consentList.publish(entries)
     }
 
     suspend fun isAllowed(address: String): Boolean {
-        client.v3Client?.let {
-            return it.getConsentState(FfiConsentEntityType.ADDRESS, address) == FfiConsentState.ALLOWED
-        }
         return consentList.state(address) == ConsentState.ALLOWED
     }
 
     suspend fun isDenied(address: String): Boolean {
-        client.v3Client?.let {
-            return it.getConsentState(FfiConsentEntityType.ADDRESS, address) == FfiConsentState.DENIED
-        }
         return consentList.state(address) == ConsentState.DENIED
     }
 
     suspend fun isGroupAllowed(groupId: String): Boolean {
-        client.v3Client?.let {
-            return it.getConsentState(FfiConsentEntityType.GROUP_ID, groupId) == FfiConsentState.ALLOWED
-        }
         return consentList.groupState(groupId) == ConsentState.ALLOWED
     }
 
     suspend fun isGroupDenied(groupId: String): Boolean {
-        client.v3Client?.let {
-            return it.getConsentState(FfiConsentEntityType.GROUP_ID, groupId) == FfiConsentState.DENIED
-        }
         return consentList.groupState(groupId) == ConsentState.DENIED
     }
 
     suspend fun isInboxAllowed(inboxId: String): Boolean {
-        client.v3Client?.let {
-            return it.getConsentState(FfiConsentEntityType.INBOX_ID, inboxId) == FfiConsentState.ALLOWED
-        }
         return consentList.inboxIdState(inboxId) == ConsentState.ALLOWED
     }
 
     suspend fun isInboxDenied(inboxId: String): Boolean {
-        client.v3Client?.let {
-            return it.getConsentState(FfiConsentEntityType.INBOX_ID, inboxId) == FfiConsentState.DENIED
-        }
         return consentList.inboxIdState(inboxId) == ConsentState.DENIED
     }
 
