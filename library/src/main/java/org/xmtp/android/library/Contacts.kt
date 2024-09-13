@@ -11,7 +11,6 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesAction
 import uniffi.xmtpv3.FfiConsentEntityType
 import uniffi.xmtpv3.FfiConsentState
-import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import java.util.Date
 
 enum class ConsentState {
@@ -61,7 +60,6 @@ enum class EntryType {
         }
     }
 }
-
 
 data class ConsentListEntry(
     val value: String,
