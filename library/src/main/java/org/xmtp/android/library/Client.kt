@@ -93,6 +93,8 @@ class Client() {
     private var v3Client: FfiXmtpClient? = null
     var dbPath: String = ""
     lateinit var inboxId: String
+    var hasV3Client: Boolean = false
+    var hasV2Client: Boolean = false
 
     companion object {
         private const val TAG = "Client"
@@ -277,6 +279,7 @@ class Client() {
         options: ClientOptions? = null,
         account: SigningKey? = null,
     ): Client {
+        hasV2Client = true
         val address = v1Bundle.identityKey.publicKey.recoverWalletSignerPublicKey().walletAddress
         val newOptions = options ?: ClientOptions()
         val v2Client =
@@ -356,6 +359,7 @@ class Client() {
             }
 
         if (v3Client != null) {
+            hasV3Client = true
             options.preAuthenticateToInboxCallback?.let {
                 runBlocking {
                     it.invoke()
@@ -395,6 +399,7 @@ class Client() {
         apiClient: ApiClient,
         options: ClientOptions? = null,
     ): PrivateKeyBundleV1 {
+        hasV2Client = true
         val keys = loadPrivateKeys(account, apiClient, options)
         return if (keys != null) {
             keys
