@@ -778,7 +778,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanAllowGroup() {
+    fun testGroupConsent() {
         runBlocking {
             val group =
                 boClient.conversations.newGroup(
@@ -787,34 +787,16 @@ class GroupTest {
                         caro.walletAddress
                     )
                 )
-
-            var result = boClient.contacts.isGroupAllowed(group.id)
-            assert(result)
-
-            boClient.contacts.allowGroups(listOf(group.id))
-
-            result = boClient.contacts.isGroupAllowed(group.id)
-            assert(result)
-        }
-    }
-
-    @Test
-    fun testCanDenyGroup() {
-        runBlocking {
-            val group =
-                boClient.conversations.newGroup(
-                    listOf(
-                        alix.walletAddress,
-                        caro.walletAddress
-                    )
-                )
-            var result = boClient.contacts.isGroupAllowed(group.id)
-            assert(result)
+            assert(boClient.contacts.isGroupAllowed(group.id))
+            assertEquals(group.consentState(), ConsentState.ALLOWED)
 
             boClient.contacts.denyGroups(listOf(group.id))
+            assert(boClient.contacts.isGroupDenied(group.id))
+            assertEquals(group.consentState(), ConsentState.DENIED)
 
-            result = boClient.contacts.isGroupDenied(group.id)
-            assert(result)
+            group.updateConsentState(ConsentState.ALLOWED)
+            assert(boClient.contacts.isGroupAllowed(group.id))
+            assertEquals(group.consentState(), ConsentState.ALLOWED)
         }
     }
 
@@ -827,14 +809,12 @@ class GroupTest {
 
             boClient.contacts.allowInboxes(listOf(alixClient.inboxId))
             var alixMember = boGroup.members().firstOrNull { it.inboxId == alixClient.inboxId }
-            boGroup.sync()
             assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
 
             assert(boClient.contacts.isInboxAllowed(alixClient.inboxId))
             assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
 
             boClient.contacts.denyInboxes(listOf(alixClient.inboxId))
-            boGroup.sync()
             alixMember = boGroup.members().firstOrNull { it.inboxId == alixClient.inboxId }
             assertEquals(alixMember!!.consentState, ConsentState.DENIED)
 
@@ -842,7 +822,6 @@ class GroupTest {
             assert(boClient.contacts.isInboxDenied(alixClient.inboxId))
 
             boClient.contacts.allow(listOf(alixClient.address))
-            boGroup.sync()
             alixMember = boGroup.members().firstOrNull { it.inboxId == alixClient.inboxId }
             assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
             assert(boClient.contacts.isInboxAllowed(alixClient.inboxId))
