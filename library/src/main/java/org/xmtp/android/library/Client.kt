@@ -85,10 +85,10 @@ data class ClientOptions(
 
 class Client() {
     lateinit var address: String
-    lateinit var privateKeyBundleV1: PrivateKeyBundleV1
-    lateinit var apiClient: ApiClient
     lateinit var contacts: Contacts
     lateinit var conversations: Conversations
+    var privateKeyBundleV1: PrivateKeyBundleV1? = null
+    var apiClient: ApiClient? = null
     var logger: XMTPLogger = XMTPLogger()
     val libXMTPVersion: String = getVersionInfo()
     var installationId: String = ""
@@ -489,7 +489,7 @@ class Client() {
         if (legacy) {
             val contactBundle = ContactBundle.newBuilder().also {
                 it.v1 = it.v1.toBuilder().also { v1Builder ->
-                    v1Builder.keyBundle = privateKeyBundleV1.toPublicKeyBundle()
+                    v1Builder.keyBundle = v1keys.toPublicKeyBundle()
                 }.build()
             }.build()
 
@@ -529,11 +529,13 @@ class Client() {
     }
 
     suspend fun query(topic: Topic, pagination: Pagination? = null): QueryResponse {
-        return apiClient.queryTopic(topic = topic, pagination = pagination)
+        val client = apiClient ?: throw XMTPException("V2 only function")
+        return client.queryTopic(topic = topic, pagination = pagination)
     }
 
     suspend fun batchQuery(requests: List<QueryRequest>): BatchQueryResponse {
-        return apiClient.batchQuery(requests)
+        val client = apiClient ?: throw XMTPException("V2 only function")
+        return client.batchQuery(requests)
     }
 
     suspend fun subscribe(
@@ -547,7 +549,8 @@ class Client() {
         request: FfiV2SubscribeRequest,
         callback: FfiV2SubscriptionCallback,
     ): FfiV2Subscription {
-        return apiClient.subscribe(request, callback)
+        val client = apiClient ?: throw XMTPException("V2 only function")
+        return client.subscribe(request, callback)
     }
 
     suspend fun fetchConversation(
@@ -585,13 +588,14 @@ class Client() {
     suspend fun publish(envelopes: List<Envelope>) {
         val authorized = AuthorizedIdentity(
             address = address,
-            authorized = privateKeyBundleV1.identityKey.publicKey,
-            identity = privateKeyBundleV1.identityKey,
+            authorized = v1keys.identityKey.publicKey,
+            identity = v1keys.identityKey,
         )
+        val client = apiClient ?: throw XMTPException("V2 only function")
         val authToken = authorized.createAuthToken()
-        apiClient.setAuthToken(authToken)
+        client.setAuthToken(authToken)
 
-        apiClient.publish(envelopes = envelopes)
+        client.publish(envelopes = envelopes)
     }
 
     suspend fun ensureUserContactPublished() {
@@ -722,11 +726,11 @@ class Client() {
     }
 
     val privateKeyBundle: PrivateKeyBundle
-        get() = PrivateKeyBundleBuilder.buildFromV1Key(privateKeyBundleV1)
+        get() = PrivateKeyBundleBuilder.buildFromV1Key(v1keys)
 
     val v1keys: PrivateKeyBundleV1
-        get() = privateKeyBundleV1
+        get() = privateKeyBundleV1 ?: throw XMTPException("V2 only function")
 
     val keys: PrivateKeyBundleV2
-        get() = privateKeyBundleV1.toV2()
+        get() = v1keys.toV2()
 }
