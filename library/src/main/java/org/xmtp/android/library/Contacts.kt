@@ -222,7 +222,7 @@ class ConsentList(
     }
 
     suspend fun setV3ConsentState(entries: List<ConsentListEntry>) {
-        entries.forEach {
+        entries.iterator().forEach {
             client.v3Client?.setConsentState(
                 ConsentState.toFfiConsentState(it.consentType),
                 EntryType.toFfiConsentEntityType(it.entryType),
