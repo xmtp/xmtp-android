@@ -169,60 +169,37 @@ class ConsentList(
         if (client.hasV2Client) {
             val payload = PrivatePreferencesAction.newBuilder().also {
                 entries.iterator().forEach { entry ->
-                    when (entry.entryType) {
-                        EntryType.ADDRESS -> {
-                            when (entry.consentType) {
-                                ConsentState.ALLOWED ->
-                                    it.setAllowAddress(
-                                        PrivatePreferencesAction.AllowAddress.newBuilder()
-                                            .addWalletAddresses(entry.value),
-                                    )
+                    when (entry.entryType to entry.consentType) {
+                        EntryType.ADDRESS to ConsentState.ALLOWED -> it.setAllowAddress(
+                            PrivatePreferencesAction.AllowAddress.newBuilder()
+                                .addWalletAddresses(entry.value)
+                        )
 
-                                ConsentState.DENIED ->
-                                    it.setDenyAddress(
-                                        PrivatePreferencesAction.DenyAddress.newBuilder()
-                                            .addWalletAddresses(entry.value),
-                                    )
+                        EntryType.ADDRESS to ConsentState.DENIED -> it.setDenyAddress(
+                            PrivatePreferencesAction.DenyAddress.newBuilder()
+                                .addWalletAddresses(entry.value)
+                        )
 
-                                ConsentState.UNKNOWN -> it.clearMessageType()
-                            }
-                        }
+                        EntryType.GROUP_ID to ConsentState.ALLOWED -> it.setAllowGroup(
+                            PrivatePreferencesAction.AllowGroup.newBuilder()
+                                .addGroupIds(entry.value)
+                        )
 
-                        EntryType.GROUP_ID -> {
-                            when (entry.consentType) {
-                                ConsentState.ALLOWED ->
-                                    it.setAllowGroup(
-                                        PrivatePreferencesAction.AllowGroup.newBuilder()
-                                            .addGroupIds(entry.value),
-                                    )
+                        EntryType.GROUP_ID to ConsentState.DENIED -> it.setDenyGroup(
+                            PrivatePreferencesAction.DenyGroup.newBuilder().addGroupIds(entry.value)
+                        )
 
-                                ConsentState.DENIED ->
-                                    it.setDenyGroup(
-                                        PrivatePreferencesAction.DenyGroup.newBuilder()
-                                            .addGroupIds(entry.value),
-                                    )
+                        EntryType.INBOX_ID to ConsentState.ALLOWED -> it.setAllowInboxId(
+                            PrivatePreferencesAction.AllowInboxId.newBuilder()
+                                .addInboxIds(entry.value)
+                        )
 
-                                ConsentState.UNKNOWN -> it.clearMessageType()
-                            }
-                        }
+                        EntryType.INBOX_ID to ConsentState.DENIED -> it.setDenyInboxId(
+                            PrivatePreferencesAction.DenyInboxId.newBuilder()
+                                .addInboxIds(entry.value)
+                        )
 
-                        EntryType.INBOX_ID -> {
-                            when (entry.consentType) {
-                                ConsentState.ALLOWED ->
-                                    it.setAllowInboxId(
-                                        PrivatePreferencesAction.AllowInboxId.newBuilder()
-                                            .addInboxIds(entry.value),
-                                    )
-
-                                ConsentState.DENIED ->
-                                    it.setDenyInboxId(
-                                        PrivatePreferencesAction.DenyInboxId.newBuilder()
-                                            .addInboxIds(entry.value),
-                                    )
-
-                                ConsentState.UNKNOWN -> it.clearMessageType()
-                            }
-                        }
+                        else -> it.clearMessageType()
                     }
                 }
             }.build()
