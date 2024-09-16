@@ -178,7 +178,15 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         return MessageV3(client, message)
     }
 
-    fun updateConsentState(state: ConsentState) {
+    suspend fun updateConsentState(state: ConsentState) {
+        if (client.hasV2Client) {
+            when (state) {
+                ConsentState.ALLOWED -> client.contacts.allowGroups(groupIds = listOf(id))
+                ConsentState.DENIED -> client.contacts.denyGroups(groupIds = listOf(id))
+                ConsentState.UNKNOWN -> Unit
+            }
+        }
+
         val consentState = ConsentState.toFfiConsentState(state)
         libXMTPGroup.updateConsentState(consentState)
     }
