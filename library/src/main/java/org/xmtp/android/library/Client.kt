@@ -54,6 +54,8 @@ import java.time.Instant
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.random.Random
+import kotlin.random.nextULong
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
@@ -90,9 +92,10 @@ class Client() {
     var logger: XMTPLogger = XMTPLogger()
     val libXMTPVersion: String = getVersionInfo()
     var installationId: String = ""
-    private var v3Client: FfiXmtpClient? = null
+    var v3Client: FfiXmtpClient? = null
     var dbPath: String = ""
     lateinit var inboxId: String
+    var hasV2Client: Boolean = true
 
     companion object {
         private const val TAG = "Client"
@@ -198,6 +201,23 @@ class Client() {
         this.inboxId = inboxId
     }
 
+    constructor(
+        address: String,
+        libXMTPClient: FfiXmtpClient,
+        dbPath: String,
+        installationId: String,
+        inboxId: String,
+    ) : this() {
+        this.address = address
+        this.contacts = Contacts(client = this)
+        this.v3Client = libXMTPClient
+        this.conversations =
+            Conversations(client = this, libXMTPConversations = libXMTPClient.conversations())
+        this.dbPath = dbPath
+        this.installationId = installationId
+        this.inboxId = inboxId
+    }
+
     suspend fun buildFrom(
         bundle: PrivateKeyBundleV1,
         options: ClientOptions? = null,
@@ -265,6 +285,39 @@ class Client() {
         }
     }
 
+    // This is a V3 only feature
+    suspend fun createOrBuild(
+        account: SigningKey,
+        options: ClientOptions,
+    ): Client {
+        hasV2Client = false
+        val inboxId = getOrCreateInboxId(options, account.address)
+
+        return try {
+            val (libXMTPClient, dbPath) = ffiXmtpClient(
+                options,
+                account,
+                options.appContext,
+                null,
+                account.address,
+                inboxId
+            )
+
+            libXMTPClient?.let { client ->
+                Client(
+                    account.address,
+                    client,
+                    dbPath,
+                    client.installationId().toHex(),
+                    client.inboxId()
+                )
+            } ?: throw XMTPException("Error creating V3 client: libXMTPClient is null")
+
+        } catch (e: Exception) {
+            throw XMTPException("Error creating V3 client: ${e.message}", e)
+        }
+    }
+
     suspend fun buildFromBundle(
         bundle: PrivateKeyBundle,
         options: ClientOptions? = null,
@@ -317,7 +370,7 @@ class Client() {
         options: ClientOptions,
         account: SigningKey?,
         appContext: Context?,
-        privateKeyBundleV1: PrivateKeyBundleV1,
+        privateKeyBundleV1: PrivateKeyBundleV1?,
         address: String,
         inboxId: String,
     ): Pair<FfiXmtpClient?, String> {
@@ -338,6 +391,7 @@ class Client() {
 
                 val encryptionKey = options.dbEncryptionKey
                     ?: throw XMTPException("No encryption key passed for the database. Please store and provide a secure encryption key.")
+                val nonce = if (privateKeyBundleV1 != null) 0UL else Random.nextULong()
 
                 createClient(
                     logger = logger,
@@ -347,8 +401,8 @@ class Client() {
                     encryptionKey = encryptionKey,
                     accountAddress = accountAddress,
                     inboxId = inboxId,
-                    nonce = 0.toULong(),
-                    legacySignedPrivateKeyProto = privateKeyBundleV1.toV2().identityKey.toByteArray(),
+                    nonce = nonce,
+                    legacySignedPrivateKeyProto = privateKeyBundleV1?.toV2()?.identityKey?.toByteArray(),
                     historySyncUrl = options.historySyncUrl
                 )
             } else {
