@@ -29,8 +29,8 @@ class ClientTest {
     fun testHasPrivateKeyBundleV1() {
         val fakeWallet = PrivateKeyBuilder()
         val client = runBlocking { Client().create(account = fakeWallet) }
-        assertEquals(1, client.privateKeyBundleV1.preKeysList?.size)
-        val preKey = client.privateKeyBundleV1.preKeysList?.get(0)
+        assertEquals(1, client.v1keys.preKeysList?.size)
+        val preKey = client.v1keys.preKeysList?.get(0)
         assert(preKey?.publicKey?.hasSignature() ?: false)
     }
 
@@ -56,12 +56,12 @@ class ClientTest {
         val clientFromV1Bundle = runBlocking { Client().buildFromBundle(bundle) }
         assertEquals(client.address, clientFromV1Bundle.address)
         assertEquals(
-            client.privateKeyBundleV1.identityKey,
-            clientFromV1Bundle.privateKeyBundleV1.identityKey,
+            client.v1keys.identityKey,
+            clientFromV1Bundle.v1keys.identityKey,
         )
         assertEquals(
-            client.privateKeyBundleV1.preKeysList,
-            clientFromV1Bundle.privateKeyBundleV1.preKeysList,
+            client.v1keys.preKeysList,
+            clientFromV1Bundle.v1keys.preKeysList,
         )
     }
 
@@ -73,12 +73,12 @@ class ClientTest {
         val clientFromV1Bundle = runBlocking { Client().buildFromV1Bundle(bundleV1) }
         assertEquals(client.address, clientFromV1Bundle.address)
         assertEquals(
-            client.privateKeyBundleV1.identityKey,
-            clientFromV1Bundle.privateKeyBundleV1.identityKey,
+            client.v1keys.identityKey,
+            clientFromV1Bundle.v1keys.identityKey,
         )
         assertEquals(
-            client.privateKeyBundleV1.preKeysList,
-            clientFromV1Bundle.privateKeyBundleV1.preKeysList,
+            client.v1keys.preKeysList,
+            clientFromV1Bundle.v1keys.preKeysList,
         )
     }
 
@@ -107,8 +107,8 @@ class ClientTest {
         }
         assertEquals(client.address, clientFromV1Bundle.address)
         assertEquals(
-            client.privateKeyBundleV1.identityKey,
-            clientFromV1Bundle.privateKeyBundleV1.identityKey,
+            client.v1keys.identityKey,
+            clientFromV1Bundle.v1keys.identityKey,
         )
 
         runBlocking {

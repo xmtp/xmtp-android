@@ -63,7 +63,7 @@ class ConversationsTest {
         val newWallet = PrivateKeyBuilder()
         val newClient = runBlocking { Client().create(account = newWallet) }
         val message = MessageV1Builder.buildEncode(
-            sender = newClient.privateKeyBundleV1,
+            sender = newClient.v1keys,
             recipient = fixtures.aliceClient.v1keys.toPublicKeyBundle(),
             message = TextCodec().encode(content = "hello").toByteArray(),
             timestamp = created
