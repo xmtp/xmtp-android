@@ -391,7 +391,6 @@ class Client() {
 
                 val encryptionKey = options.dbEncryptionKey
                     ?: throw XMTPException("No encryption key passed for the database. Please store and provide a secure encryption key.")
-                val nonce = if (privateKeyBundleV1 != null) 0UL else Random.nextULong()
 
                 createClient(
                     logger = logger,
@@ -401,7 +400,7 @@ class Client() {
                     encryptionKey = encryptionKey,
                     accountAddress = accountAddress,
                     inboxId = inboxId,
-                    nonce = nonce,
+                    nonce = 0.toULong(),
                     legacySignedPrivateKeyProto = privateKeyBundleV1?.toV2()?.identityKey?.toByteArray(),
                     historySyncUrl = options.historySyncUrl
                 )
