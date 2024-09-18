@@ -2,7 +2,6 @@ package org.xmtp.android.library
 
 import android.content.Context
 import android.os.Build
-import android.os.Environment
 import android.util.Log
 import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
@@ -96,7 +95,6 @@ class Client() {
     lateinit var inboxId: String
     var hasV2Client: Boolean = true
     lateinit var environment: XMTPEnvironment
-
 
     companion object {
         private const val TAG = "Client"
@@ -210,7 +208,7 @@ class Client() {
         dbPath: String,
         installationId: String,
         inboxId: String,
-        environment: XMTPEnvironment
+        environment: XMTPEnvironment,
     ) : this() {
         this.address = address
         this.contacts = Contacts(client = this)
