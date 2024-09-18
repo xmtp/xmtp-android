@@ -19,15 +19,15 @@ import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
 class V3ClientTest {
-    private lateinit var alixWallet: PrivateKeyBuilder
-    private lateinit var boWallet: PrivateKeyBuilder
-    private lateinit var alix: PrivateKey
-    private lateinit var alixClient: Client
-    private lateinit var bo: PrivateKey
-    private lateinit var boClient: Client
-    private lateinit var caroWallet: PrivateKeyBuilder
-    private lateinit var caro: PrivateKey
-    private lateinit var caroClient: Client
+    private lateinit var alixV2Wallet: PrivateKeyBuilder
+    private lateinit var boV3Wallet: PrivateKeyBuilder
+    private lateinit var alixV2: PrivateKey
+    private lateinit var alixV2Client: Client
+    private lateinit var boV3: PrivateKey
+    private lateinit var boV3Client: Client
+    private lateinit var caroV2V3Wallet: PrivateKeyBuilder
+    private lateinit var caroV2V3: PrivateKey
+    private lateinit var caroV2V3Client: Client
 
     @Before
     fun setUp() {
@@ -35,11 +35,11 @@ class V3ClientTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
 
         // Pure V2
-        alixWallet = PrivateKeyBuilder()
-        alix = alixWallet.getPrivateKey()
-        alixClient = runBlocking {
+        alixV2Wallet = PrivateKeyBuilder()
+        alixV2 = alixV2Wallet.getPrivateKey()
+        alixV2Client = runBlocking {
             Client().create(
-                account = alixWallet,
+                account = alixV2Wallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, isSecure = false)
                 )
@@ -47,11 +47,11 @@ class V3ClientTest {
         }
 
         // Pure V3
-        boWallet = PrivateKeyBuilder()
-        bo = boWallet.getPrivateKey()
-        boClient = runBlocking {
+        boV3Wallet = PrivateKeyBuilder()
+        boV3 = boV3Wallet.getPrivateKey()
+        boV3Client = runBlocking {
             Client().createOrBuild(
-                account = boWallet,
+                account = boV3Wallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
                     enableV3 = true,
@@ -62,12 +62,12 @@ class V3ClientTest {
         }
 
         // Both V3 & V2
-        caroWallet = PrivateKeyBuilder()
-        caro = caroWallet.getPrivateKey()
-        caroClient =
+        caroV2V3Wallet = PrivateKeyBuilder()
+        caroV2V3 = caroV2V3Wallet.getPrivateKey()
+        caroV2V3Client =
             runBlocking {
                 Client().create(
-                    account = caroWallet,
+                    account = caroV2V3Wallet,
                     options = ClientOptions(
                         ClientOptions.Api(XMTPEnvironment.LOCAL, false),
                         enableV3 = true,
@@ -80,20 +80,20 @@ class V3ClientTest {
 
     @Test
     fun testsCanCreateGroup() {
-        val group = runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+        val group = runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
         assertEquals(
             group.members().map { it.inboxId }.sorted(),
-            listOf(caroClient.inboxId, boClient.inboxId).sorted()
+            listOf(caroV2V3Client.inboxId, boV3Client.inboxId).sorted()
         )
 
         Assert.assertThrows("Recipient not on network", XMTPException::class.java) {
-            runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
+            runBlocking { boV3Client.conversations.newGroup(listOf(alixV2.walletAddress)) }
         }
     }
 
     @Test
     fun testsCanSendMessages() {
-        val group = runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+        val group = runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
         runBlocking { group.send("howdy") }
         val messageId = runBlocking { group.send("gm") }
         runBlocking { group.sync() }
@@ -102,8 +102,8 @@ class V3ClientTest {
         assertEquals(group.messages().first().deliveryStatus, MessageDeliveryStatus.PUBLISHED)
         assertEquals(group.messages().size, 3)
 
-        runBlocking { caroClient.conversations.syncGroups() }
-        val sameGroup = runBlocking { caroClient.conversations.listGroups().last() }
+        runBlocking { caroV2V3Client.conversations.syncGroups() }
+        val sameGroup = runBlocking { caroV2V3Client.conversations.listGroups().last() }
         runBlocking { sameGroup.sync() }
         assertEquals(sameGroup.messages().size, 2)
         assertEquals(sameGroup.messages().first().body, "gm")
@@ -112,16 +112,16 @@ class V3ClientTest {
     @Test
     fun testGroupConsent() {
         runBlocking {
-            val group = boClient.conversations.newGroup(listOf(caro.walletAddress))
-            assert(boClient.contacts.isGroupAllowed(group.id))
+            val group = boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress))
+            assert(boV3Client.contacts.isGroupAllowed(group.id))
             assertEquals(group.consentState(), ConsentState.ALLOWED)
 
-            boClient.contacts.denyGroups(listOf(group.id))
-            assert(boClient.contacts.isGroupDenied(group.id))
+            boV3Client.contacts.denyGroups(listOf(group.id))
+            assert(boV3Client.contacts.isGroupDenied(group.id))
             assertEquals(group.consentState(), ConsentState.DENIED)
 
             group.updateConsentState(ConsentState.ALLOWED)
-            assert(boClient.contacts.isGroupAllowed(group.id))
+            assert(boV3Client.contacts.isGroupAllowed(group.id))
             assertEquals(group.consentState(), ConsentState.ALLOWED)
         }
     }
@@ -129,44 +129,45 @@ class V3ClientTest {
     @Test
     fun testCanAllowAndDenyInboxId() {
         runBlocking {
-            val boGroup = boClient.conversations.newGroup(listOf(caro.walletAddress))
-            assert(!boClient.contacts.isInboxAllowed(caroClient.inboxId))
-            assert(!boClient.contacts.isInboxDenied(caroClient.inboxId))
+            val boGroup = boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress))
+            assert(!boV3Client.contacts.isInboxAllowed(caroV2V3Client.inboxId))
+            assert(!boV3Client.contacts.isInboxDenied(caroV2V3Client.inboxId))
 
-            boClient.contacts.allowInboxes(listOf(caroClient.inboxId))
-            var caroMember = boGroup.members().firstOrNull { it.inboxId == caroClient.inboxId }
+            boV3Client.contacts.allowInboxes(listOf(caroV2V3Client.inboxId))
+            var caroMember = boGroup.members().firstOrNull { it.inboxId == caroV2V3Client.inboxId }
             assertEquals(caroMember!!.consentState, ConsentState.ALLOWED)
 
-            assert(boClient.contacts.isInboxAllowed(caroClient.inboxId))
-            assert(!boClient.contacts.isInboxDenied(caroClient.inboxId))
-            assert(boClient.contacts.isAllowed(caroClient.address))
-            assert(!boClient.contacts.isDenied(caroClient.address))
+            assert(boV3Client.contacts.isInboxAllowed(caroV2V3Client.inboxId))
+            assert(!boV3Client.contacts.isInboxDenied(caroV2V3Client.inboxId))
+            assert(boV3Client.contacts.isAllowed(caroV2V3Client.address))
+            assert(!boV3Client.contacts.isDenied(caroV2V3Client.address))
 
-            boClient.contacts.denyInboxes(listOf(caroClient.inboxId))
-            caroMember = boGroup.members().firstOrNull { it.inboxId == caroClient.inboxId }
+            boV3Client.contacts.denyInboxes(listOf(caroV2V3Client.inboxId))
+            caroMember = boGroup.members().firstOrNull { it.inboxId == caroV2V3Client.inboxId }
             assertEquals(caroMember!!.consentState, ConsentState.DENIED)
 
-            assert(!boClient.contacts.isInboxAllowed(caroClient.inboxId))
-            assert(boClient.contacts.isInboxDenied(caroClient.inboxId))
+            assert(!boV3Client.contacts.isInboxAllowed(caroV2V3Client.inboxId))
+            assert(boV3Client.contacts.isInboxDenied(caroV2V3Client.inboxId))
 
-            boClient.contacts.allow(listOf(alixClient.address))
-            assert(boClient.contacts.isAllowed(alixClient.address))
-            assert(!boClient.contacts.isDenied(alixClient.address))
+            // Cannot check inboxId for alix because they do not have an inboxID as V2 only client.
+            boV3Client.contacts.allow(listOf(alixV2Client.address))
+            assert(boV3Client.contacts.isAllowed(alixV2Client.address))
+            assert(!boV3Client.contacts.isDenied(alixV2Client.address))
         }
     }
 
     @Test
     fun testCanStreamAllMessagesFromV2andV3Users() {
-        val group = runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+        val group = runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
         val conversation =
-            runBlocking { alixClient.conversations.newConversation(caro.walletAddress) }
-        runBlocking { caroClient.conversations.syncGroups() }
+            runBlocking { alixV2Client.conversations.newConversation(caroV2V3.walletAddress) }
+        runBlocking { caroV2V3Client.conversations.syncGroups() }
 
         val allMessages = mutableListOf<DecodedMessage>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                caroClient.conversations.streamAllMessages(includeGroups = true)
+                caroV2V3Client.conversations.streamAllMessages(includeGroups = true)
                     .collect { message ->
                         allMessages.add(message)
                     }
@@ -189,7 +190,7 @@ class V3ClientTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                caroClient.conversations.streamAll()
+                caroV2V3Client.conversations.streamAll()
                     .collect { message ->
                         allMessages.add(message.topic)
                     }
@@ -199,9 +200,9 @@ class V3ClientTest {
         Thread.sleep(1000)
 
         runBlocking {
-            alixClient.conversations.newConversation(caro.walletAddress)
+            alixV2Client.conversations.newConversation(caroV2V3.walletAddress)
             Thread.sleep(1000)
-            boClient.conversations.newGroup(listOf(caro.walletAddress))
+            boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress))
         }
 
         Thread.sleep(2000)
