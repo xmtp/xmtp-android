@@ -999,6 +999,7 @@ $dokka.location:org.xmtp.android.library/Client.Companion/register/#org.xmtp.and
 $dokka.location:org.xmtp.android.library/Client///PointingToDeclaration/library/org.xmtp.android.library/-client/index.html
 $dokka.location:org.xmtp.android.library/Client/Client/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
 $dokka.location:org.xmtp.android.library/Client/Client/#kotlin.String#org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKeyBundleV1#org.xmtp.android.library.ApiClient#uniffi.xmtpv3.FfiXmtpClient?#kotlin.String#kotlin.String#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
+$dokka.location:org.xmtp.android.library/Client/Client/#kotlin.String#uniffi.xmtpv3.FfiXmtpClient#kotlin.String#kotlin.String#kotlin.String#org.xmtp.android.library.XMTPEnvironment/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
 $dokka.location:org.xmtp.android.library/Client/address/#/PointingToDeclaration/library/org.xmtp.android.library/-client/address.html
 $dokka.location:org.xmtp.android.library/Client/apiClient/#/PointingToDeclaration/library/org.xmtp.android.library/-client/api-client.html
 $dokka.location:org.xmtp.android.library/Client/batchQuery/#kotlin.collections.List[org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest]/PointingToDeclaration/library/org.xmtp.android.library/-client/batch-query.html
@@ -1011,10 +1012,12 @@ $dokka.location:org.xmtp.android.library/Client/contacts/#/PointingToDeclaration
 $dokka.location:org.xmtp.android.library/Client/conversations/#/PointingToDeclaration/library/org.xmtp.android.library/-client/conversations.html
 $dokka.location:org.xmtp.android.library/Client/create/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.ApiClient#org.xmtp.android.library.ClientOptions?/PointingToDeclaration/library/org.xmtp.android.library/-client/create.html
 $dokka.location:org.xmtp.android.library/Client/create/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.ClientOptions?/PointingToDeclaration/library/org.xmtp.android.library/-client/create.html
+$dokka.location:org.xmtp.android.library/Client/createOrBuild/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.ClientOptions/PointingToDeclaration/library/org.xmtp.android.library/-client/create-or-build.html
 $dokka.location:org.xmtp.android.library/Client/dbPath/#/PointingToDeclaration/library/org.xmtp.android.library/-client/db-path.html
 $dokka.location:org.xmtp.android.library/Client/deleteLocalDatabase/#/PointingToDeclaration/library/org.xmtp.android.library/-client/delete-local-database.html
 $dokka.location:org.xmtp.android.library/Client/dropLocalDatabaseConnection/#/PointingToDeclaration/library/org.xmtp.android.library/-client/drop-local-database-connection.html
 $dokka.location:org.xmtp.android.library/Client/ensureUserContactPublished/#/PointingToDeclaration/library/org.xmtp.android.library/-client/ensure-user-contact-published.html
+$dokka.location:org.xmtp.android.library/Client/environment/#/PointingToDeclaration/library/org.xmtp.android.library/-client/environment.html
 $dokka.location:org.xmtp.android.library/Client/fetchConversation/#kotlin.String?#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client/fetch-conversation.html
 $dokka.location:org.xmtp.android.library/Client/findGroup/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-group.html
 $dokka.location:org.xmtp.android.library/Client/findMessage/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-message.html
