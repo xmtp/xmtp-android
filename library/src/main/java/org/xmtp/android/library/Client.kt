@@ -54,8 +54,6 @@ import java.time.Instant
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import kotlin.random.Random
-import kotlin.random.nextULong
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
