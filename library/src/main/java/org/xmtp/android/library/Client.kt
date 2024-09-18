@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import android.content.Context
 import android.os.Build
+import android.os.Environment
 import android.util.Log
 import com.google.crypto.tink.subtle.Base64
 import com.google.gson.GsonBuilder
@@ -94,6 +95,8 @@ class Client() {
     var dbPath: String = ""
     lateinit var inboxId: String
     var hasV2Client: Boolean = true
+    lateinit var environment: XMTPEnvironment
+
 
     companion object {
         private const val TAG = "Client"
@@ -197,6 +200,8 @@ class Client() {
         this.dbPath = dbPath
         this.installationId = installationId
         this.inboxId = inboxId
+        this.hasV2Client = true
+        this.environment = apiClient.environment
     }
 
     constructor(
@@ -205,6 +210,7 @@ class Client() {
         dbPath: String,
         installationId: String,
         inboxId: String,
+        environment: XMTPEnvironment
     ) : this() {
         this.address = address
         this.contacts = Contacts(client = this)
@@ -215,6 +221,7 @@ class Client() {
         this.installationId = installationId
         this.inboxId = inboxId
         this.hasV2Client = false
+        this.environment = environment
     }
 
     suspend fun buildFrom(
@@ -308,7 +315,8 @@ class Client() {
                     client,
                     dbPath,
                     client.installationId().toHex(),
-                    client.inboxId()
+                    client.inboxId(),
+                    options.api.env
                 )
             } ?: throw XMTPException("Error creating V3 client: libXMTPClient is null")
         } catch (e: Exception) {
