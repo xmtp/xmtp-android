@@ -586,12 +586,12 @@ class Client() {
     }
 
     suspend fun publish(envelopes: List<Envelope>) {
+        val client = apiClient ?: throw XMTPException("V2 only function")
         val authorized = AuthorizedIdentity(
             address = address,
             authorized = v1keys.identityKey.publicKey,
             identity = v1keys.identityKey,
         )
-        val client = apiClient ?: throw XMTPException("V2 only function")
         val authToken = authorized.createAuthToken()
         client.setAuthToken(authToken)
 
