@@ -136,8 +136,7 @@ data class Conversations(
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
         groupPinnedFrameUrl: String = "",
-
-        ): Group {
+    ): Group {
         return newGroupInternal(
             accountAddresses,
             FfiGroupPermissionsOptions.CUSTOM_POLICY,

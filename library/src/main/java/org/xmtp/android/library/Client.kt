@@ -214,6 +214,7 @@ class Client() {
         this.dbPath = dbPath
         this.installationId = installationId
         this.inboxId = inboxId
+        this.hasV2Client = false
     }
 
     suspend fun buildFrom(
@@ -288,7 +289,7 @@ class Client() {
         account: SigningKey,
         options: ClientOptions,
     ): Client {
-        hasV2Client = false
+        this.hasV2Client = false
         val inboxId = getOrCreateInboxId(options, account.address)
 
         return try {
@@ -310,7 +311,6 @@ class Client() {
                     client.inboxId()
                 )
             } ?: throw XMTPException("Error creating V3 client: libXMTPClient is null")
-
         } catch (e: Exception) {
             throw XMTPException("Error creating V3 client: ${e.message}", e)
         }
