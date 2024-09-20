@@ -140,7 +140,7 @@ You can get a list of all conversations that have one or more messages.
 val allConversations = client.conversations.list()
 
 for (conversation in allConversations) {
-    print("Saying GM to ${conversation.peerAddress()}")
+    print("Saying GM to ${conversation.peerAddress}")
     conversation.send(text = "gm")
 }
 ```
@@ -153,7 +153,7 @@ You can also listen for new conversations being started in real-time. This will 
 
 ```kotlin
 client.conversations.stream().collect {
-    print("New conversation started with ${it.peerAddress()}")
+    print("New conversation started with ${it.peerAddress}")
     // Say hello to your new friend
     it.send(text = "Hi there!")
 }
