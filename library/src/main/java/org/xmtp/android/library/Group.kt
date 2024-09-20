@@ -248,7 +248,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     suspend fun members(): List<Member> {
-        return libXMTPGroup.listMembers(client).map { Member(it) }
+        return libXMTPGroup.listMembers().map { Member(it) }
     }
 
     suspend fun peerInboxIds(): List<String> {
