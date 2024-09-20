@@ -89,6 +89,14 @@ data class ConsentListEntry(
         }
     }
 
+    fun toFfiConsent(): FfiConsent {
+        return FfiConsent(
+            EntryType.toFfiConsentEntityType(entryType),
+            ConsentState.toFfiConsentState(consentType),
+            value
+        )
+    }
+
     val key: String
         get() = "${entryType.name}-$value"
 }
@@ -230,13 +238,7 @@ class ConsentList(
     }
 
     suspend fun setV3ConsentState(entries: List<ConsentListEntry>) {
-        entries.iterator().forEach {
-            client.v3Client?.setConsentState(
-                ConsentState.toFfiConsentState(it.consentType),
-                EntryType.toFfiConsentEntityType(it.entryType),
-                it.value
-            )
-        }
+        client.v3Client?.setConsentStates(entries.map { it.toFfiConsent() })
     }
 
     fun allow(address: String): ConsentListEntry {
