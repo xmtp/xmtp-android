@@ -9,6 +9,7 @@ import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.PrivatePreferences.PrivatePreferencesAction
+import uniffi.xmtpv3.FfiConsent
 import uniffi.xmtpv3.FfiConsentEntityType
 import uniffi.xmtpv3.FfiConsentState
 import java.util.Date

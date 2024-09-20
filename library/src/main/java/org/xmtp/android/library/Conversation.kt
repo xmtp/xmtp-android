@@ -3,6 +3,7 @@ package org.xmtp.android.library
 import android.util.Log
 import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
@@ -51,13 +52,14 @@ sealed class Conversation {
         }
 
     // This is the address of the peer that I am talking to.
-    suspend fun peerAddress(): String {
-        return when (this) {
-            is V1 -> conversationV1.peerAddress
-            is V2 -> conversationV2.peerAddress
-            is Group -> group.peerInboxIds().joinToString(",")
+    val peerAddress: String
+        get() {
+            return when (this) {
+                is V1 -> conversationV1.peerAddress
+                is V2 -> conversationV2.peerAddress
+                is Group -> runBlocking { group.peerInboxIds().joinToString(",") }
+            }
         }
-    }
 
     suspend fun peerAddresses(): List<String> {
         return when (this) {
@@ -89,8 +91,8 @@ sealed class Conversation {
 
     suspend fun consentState(): ConsentState {
         return when (this) {
-            is V1 -> conversationV1.client.contacts.consentList.state(address = peerAddress())
-            is V2 -> conversationV2.client.contacts.consentList.state(address = peerAddress())
+            is V1 -> conversationV1.client.contacts.consentList.state(address = peerAddress)
+            is V2 -> conversationV2.client.contacts.consentList.state(address = peerAddress)
             is Group -> group.consentState()
         }
     }
@@ -103,7 +105,7 @@ sealed class Conversation {
     suspend fun toTopicData(): TopicData {
         val data = TopicData.newBuilder()
             .setCreatedNs(createdAt.time * 1_000_000)
-            .setPeerAddress(peerAddress())
+            .setPeerAddress(peerAddress)
         return when (this) {
             is V1 -> data.build()
             is V2 -> data.setInvitation(
