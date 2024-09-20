@@ -42,11 +42,14 @@ import kotlin.coroutines.resume
 open class RustBuffer : Structure() {
     // Note: `capacity` and `len` are actually `ULong` values, but JVM only supports signed values.
     // When dealing with these fields, make sure to call `toULong()`.
-    @JvmField var capacity: Long = 0
+    @JvmField
+    var capacity: Long = 0
 
-    @JvmField var len: Long = 0
+    @JvmField
+    var len: Long = 0
 
-    @JvmField var data: Pointer? = null
+    @JvmField
+    var data: Pointer? = null
 
     class ByValue :
         RustBuffer(),
@@ -138,9 +141,11 @@ class RustBufferByReference : ByReference(16) {
 
 @Structure.FieldOrder("len", "data")
 open class ForeignBytes : Structure() {
-    @JvmField var len: Int = 0
+    @JvmField
+    var len: Int = 0
 
-    @JvmField var data: Pointer? = null
+    @JvmField
+    var data: Pointer? = null
 
     class ByValue :
         ForeignBytes(),
@@ -232,9 +237,11 @@ internal const val UNIFFI_CALL_UNEXPECTED_ERROR = 2.toByte()
 
 @Structure.FieldOrder("code", "error_buf")
 internal open class UniffiRustCallStatus : Structure() {
-    @JvmField var code: Byte = 0
+    @JvmField
+    var code: Byte = 0
 
-    @JvmField var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
+    @JvmField
+    var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
 
     class ByValue :
         UniffiRustCallStatus(),
@@ -370,10 +377,12 @@ internal class UniffiHandleMap<T : Any> {
     }
 
     // Get an object from the handle map
-    fun get(handle: Long): T = map.get(handle) ?: throw InternalException("UniffiHandleMap.get: Invalid handle")
+    fun get(handle: Long): T =
+        map.get(handle) ?: throw InternalException("UniffiHandleMap.get: Invalid handle")
 
     // Remove an entry from the handlemap and get the Kotlin object back
-    fun remove(handle: Long): T = map.remove(handle) ?: throw InternalException("UniffiHandleMap: Invalid handle")
+    fun remove(handle: Long): T =
+        map.remove(handle) ?: throw InternalException("UniffiHandleMap: Invalid handle")
 }
 
 // Contains loading, initialization code,
@@ -2793,8 +2802,19 @@ open class FfiConversations :
                     FfiConverterTypeFfiCreateGroupOptions.lower(`opts`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
             // lift function
             { FfiConverterTypeFfiGroup.lift(it) },
@@ -2817,9 +2837,18 @@ open class FfiConversations :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterSequenceTypeFfiGroup.lift(it) },
@@ -2837,8 +2866,19 @@ open class FfiConversations :
                     FfiConverterByteArray.lower(`envelopeBytes`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
             // lift function
             { FfiConverterTypeFfiGroup.lift(it) },
@@ -2855,8 +2895,19 @@ open class FfiConversations :
                     FfiConverterTypeFfiConversationCallback.lower(`callback`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
             // lift function
             { FfiConverterTypeFfiStreamCloser.lift(it) },
@@ -2873,8 +2924,19 @@ open class FfiConversations :
                     FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
             // lift function
             { FfiConverterTypeFfiStreamCloser.lift(it) },
@@ -2891,8 +2953,19 @@ open class FfiConversations :
                     thisPtr,
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -2909,8 +2982,19 @@ open class FfiConversations :
                     thisPtr,
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_u32(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_u32(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_u32(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_u32(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_u32(future) },
             // lift function
             { FfiConverterUInt.lift(it) },
@@ -3223,8 +3307,19 @@ open class FfiGroup :
                     FfiConverterString.lower(`inboxId`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3242,8 +3337,19 @@ open class FfiGroup :
                     FfiConverterSequenceString.lower(`accountAddresses`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3261,8 +3367,19 @@ open class FfiGroup :
                     FfiConverterSequenceString.lower(`inboxIds`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3280,8 +3397,19 @@ open class FfiGroup :
                     FfiConverterString.lower(`inboxId`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3499,9 +3627,18 @@ open class FfiGroup :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterSequenceTypeFfiGroupMember.lift(it) },
@@ -3524,9 +3661,18 @@ open class FfiGroup :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterTypeFfiMessage.lift(it) },
@@ -3546,8 +3692,19 @@ open class FfiGroup :
                     thisPtr,
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3565,8 +3722,19 @@ open class FfiGroup :
                     FfiConverterString.lower(`inboxId`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3584,8 +3752,19 @@ open class FfiGroup :
                     FfiConverterSequenceString.lower(`accountAddresses`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3603,8 +3782,19 @@ open class FfiGroup :
                     FfiConverterSequenceString.lower(`inboxIds`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3622,8 +3812,19 @@ open class FfiGroup :
                     FfiConverterString.lower(`inboxId`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3646,9 +3847,18 @@ open class FfiGroup :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterByteArray.lift(it) },
@@ -3682,8 +3892,19 @@ open class FfiGroup :
                     FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
             // lift function
             { FfiConverterTypeFfiStreamCloser.lift(it) },
@@ -3713,8 +3934,19 @@ open class FfiGroup :
                     thisPtr,
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3744,8 +3976,19 @@ open class FfiGroup :
                     FfiConverterString.lower(`groupDescription`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3763,8 +4006,19 @@ open class FfiGroup :
                     FfiConverterString.lower(`groupImageUrlSquare`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3782,8 +4036,19 @@ open class FfiGroup :
                     FfiConverterString.lower(`groupName`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3801,8 +4066,19 @@ open class FfiGroup :
                     FfiConverterString.lower(`pinnedFrameUrl`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -3825,8 +4101,19 @@ open class FfiGroup :
                 FfiConverterOptionalTypeFfiMetadataField.lower(`metadataField`),
             )
         },
-        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future, callback, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                future,
+                callback,
+                continuation
+            )
+        },
+        { future, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                future,
+                continuation
+            )
+        },
         { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
         // lift function
         { Unit },
@@ -4553,8 +4840,19 @@ open class FfiSignatureRequest :
                     FfiConverterByteArray.lower(`signatureBytes`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -4579,8 +4877,19 @@ open class FfiSignatureRequest :
                 FfiConverterULong.lower(`blockNumber`),
             )
         },
-        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future, callback, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                future,
+                callback,
+                continuation
+            )
+        },
+        { future, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                future,
+                continuation
+            )
+        },
         { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
         // lift function
         { Unit },
@@ -4596,8 +4905,19 @@ open class FfiSignatureRequest :
                     thisPtr,
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_i8(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_i8(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_i8(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_i8(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_i8(future) },
             // lift function
             { FfiConverterBoolean.lift(it) },
@@ -4622,9 +4942,18 @@ open class FfiSignatureRequest :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterSequenceString.lift(it) },
@@ -4646,9 +4975,18 @@ open class FfiSignatureRequest :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterString.lift(it) },
@@ -4906,8 +5244,19 @@ open class FfiStreamCloser :
                     thisPtr,
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -5169,9 +5518,18 @@ open class FfiV2ApiClient :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterTypeFfiV2BatchQueryResponse.lift(it) },
@@ -5192,8 +5550,19 @@ open class FfiV2ApiClient :
                 FfiConverterString.lower(`authToken`),
             )
         },
-        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future, callback, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                future,
+                callback,
+                continuation
+            )
+        },
+        { future, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                future,
+                continuation
+            )
+        },
         { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
         // lift function
         { Unit },
@@ -5216,9 +5585,18 @@ open class FfiV2ApiClient :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterTypeFfiV2QueryResponse.lift(it) },
@@ -5251,8 +5629,19 @@ open class FfiV2ApiClient :
                     FfiConverterTypeFfiV2SubscriptionCallback.lower(`callback`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
             // lift function
             { FfiConverterTypeFfiV2Subscription.lift(it) },
@@ -5508,8 +5897,19 @@ open class FfiV2Subscription :
                     thisPtr,
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -5545,8 +5945,19 @@ open class FfiV2Subscription :
                     FfiConverterTypeFfiV2SubscribeRequest.lower(`req`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -5843,8 +6254,19 @@ open class FfiXmtpClient :
                     FfiConverterString.lower(`newWalletAddress`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
             // lift function
             { FfiConverterTypeFfiSignatureRequest.lift(it) },
@@ -5862,8 +6284,19 @@ open class FfiXmtpClient :
                     FfiConverterTypeFfiSignatureRequest.lower(`signatureRequest`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -5886,9 +6319,18 @@ open class FfiXmtpClient :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterMapStringBoolean.lift(it) },
@@ -5917,8 +6359,19 @@ open class FfiXmtpClient :
                     thisPtr,
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -5941,9 +6394,18 @@ open class FfiXmtpClient :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterOptionalString.lift(it) },
@@ -5970,9 +6432,18 @@ open class FfiXmtpClient :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterTypeFfiConsentState.lift(it) },
@@ -5995,9 +6466,18 @@ open class FfiXmtpClient :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterTypeFfiInboxState.lift(it) },
@@ -6052,9 +6532,18 @@ open class FfiXmtpClient :
                     callback,
                     continuation,
                 ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation)
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
             },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterTypeFfiInboxState.lift(it) },
@@ -6098,8 +6587,19 @@ open class FfiXmtpClient :
                     FfiConverterTypeFfiSignatureRequest.lower(`signatureRequest`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -6127,8 +6627,19 @@ open class FfiXmtpClient :
                     thisPtr,
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -6148,8 +6659,19 @@ open class FfiXmtpClient :
                     thisPtr,
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
             // lift function
             { FfiConverterTypeFfiSignatureRequest.lift(it) },
@@ -6170,8 +6692,19 @@ open class FfiXmtpClient :
                     FfiConverterString.lower(`walletAddress`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
             // lift function
             { FfiConverterTypeFfiSignatureRequest.lift(it) },
@@ -6189,8 +6722,19 @@ open class FfiXmtpClient :
                     FfiConverterSequenceTypeFfiConsent.lower(`records`),
                 )
             },
-            { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-            { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
             // lift function
             { Unit },
@@ -6254,10 +6798,10 @@ public object FfiConverterTypeFfiConsent : FfiConverterRustBuffer<FfiConsent> {
 
     override fun allocationSize(value: FfiConsent) =
         (
-            FfiConverterTypeFfiConsentEntityType.allocationSize(value.`entityType`) +
-                FfiConverterTypeFfiConsentState.allocationSize(value.`state`) +
-                FfiConverterString.allocationSize(value.`entity`)
-        )
+                FfiConverterTypeFfiConsentEntityType.allocationSize(value.`entityType`) +
+                        FfiConverterTypeFfiConsentState.allocationSize(value.`state`) +
+                        FfiConverterString.allocationSize(value.`entity`)
+                )
 
     override fun write(
         value: FfiConsent,
@@ -6280,7 +6824,8 @@ data class FfiCreateGroupOptions(
     companion object
 }
 
-public object FfiConverterTypeFfiCreateGroupOptions : FfiConverterRustBuffer<FfiCreateGroupOptions> {
+public object FfiConverterTypeFfiCreateGroupOptions :
+    FfiConverterRustBuffer<FfiCreateGroupOptions> {
     override fun read(buf: ByteBuffer): FfiCreateGroupOptions =
         FfiCreateGroupOptions(
             FfiConverterOptionalTypeFfiGroupPermissionsOptions.read(buf),
@@ -6293,13 +6838,13 @@ public object FfiConverterTypeFfiCreateGroupOptions : FfiConverterRustBuffer<Ffi
 
     override fun allocationSize(value: FfiCreateGroupOptions) =
         (
-            FfiConverterOptionalTypeFfiGroupPermissionsOptions.allocationSize(value.`permissions`) +
-                FfiConverterOptionalString.allocationSize(value.`groupName`) +
-                FfiConverterOptionalString.allocationSize(value.`groupImageUrlSquare`) +
-                FfiConverterOptionalString.allocationSize(value.`groupDescription`) +
-                FfiConverterOptionalString.allocationSize(value.`groupPinnedFrameUrl`) +
-                FfiConverterOptionalTypeFfiPermissionPolicySet.allocationSize(value.`customPermissionPolicySet`)
-        )
+                FfiConverterOptionalTypeFfiGroupPermissionsOptions.allocationSize(value.`permissions`) +
+                        FfiConverterOptionalString.allocationSize(value.`groupName`) +
+                        FfiConverterOptionalString.allocationSize(value.`groupImageUrlSquare`) +
+                        FfiConverterOptionalString.allocationSize(value.`groupDescription`) +
+                        FfiConverterOptionalString.allocationSize(value.`groupPinnedFrameUrl`) +
+                        FfiConverterOptionalTypeFfiPermissionPolicySet.allocationSize(value.`customPermissionPolicySet`)
+                )
 
     override fun write(
         value: FfiCreateGroupOptions,
@@ -6330,9 +6875,9 @@ public object FfiConverterTypeFfiCursor : FfiConverterRustBuffer<FfiCursor> {
 
     override fun allocationSize(value: FfiCursor) =
         (
-            FfiConverterByteArray.allocationSize(value.`digest`) +
-                FfiConverterULong.allocationSize(value.`senderTimeNs`)
-        )
+                FfiConverterByteArray.allocationSize(value.`digest`) +
+                        FfiConverterULong.allocationSize(value.`senderTimeNs`)
+                )
 
     override fun write(
         value: FfiCursor,
@@ -6361,10 +6906,10 @@ public object FfiConverterTypeFfiEnvelope : FfiConverterRustBuffer<FfiEnvelope> 
 
     override fun allocationSize(value: FfiEnvelope) =
         (
-            FfiConverterString.allocationSize(value.`contentTopic`) +
-                FfiConverterULong.allocationSize(value.`timestampNs`) +
-                FfiConverterByteArray.allocationSize(value.`message`)
-        )
+                FfiConverterString.allocationSize(value.`contentTopic`) +
+                        FfiConverterULong.allocationSize(value.`timestampNs`) +
+                        FfiConverterByteArray.allocationSize(value.`message`)
+                )
 
     override fun write(
         value: FfiEnvelope,
@@ -6398,12 +6943,12 @@ public object FfiConverterTypeFfiGroupMember : FfiConverterRustBuffer<FfiGroupMe
 
     override fun allocationSize(value: FfiGroupMember) =
         (
-            FfiConverterString.allocationSize(value.`inboxId`) +
-                FfiConverterSequenceString.allocationSize(value.`accountAddresses`) +
-                FfiConverterSequenceByteArray.allocationSize(value.`installationIds`) +
-                FfiConverterTypeFfiPermissionLevel.allocationSize(value.`permissionLevel`) +
-                FfiConverterTypeFfiConsentState.allocationSize(value.`consentState`)
-        )
+                FfiConverterString.allocationSize(value.`inboxId`) +
+                        FfiConverterSequenceString.allocationSize(value.`accountAddresses`) +
+                        FfiConverterSequenceByteArray.allocationSize(value.`installationIds`) +
+                        FfiConverterTypeFfiPermissionLevel.allocationSize(value.`permissionLevel`) +
+                        FfiConverterTypeFfiConsentState.allocationSize(value.`consentState`)
+                )
 
     override fun write(
         value: FfiGroupMember,
@@ -6437,11 +6982,11 @@ public object FfiConverterTypeFfiInboxState : FfiConverterRustBuffer<FfiInboxSta
 
     override fun allocationSize(value: FfiInboxState) =
         (
-            FfiConverterString.allocationSize(value.`inboxId`) +
-                FfiConverterString.allocationSize(value.`recoveryAddress`) +
-                FfiConverterSequenceByteArray.allocationSize(value.`installationIds`) +
-                FfiConverterSequenceString.allocationSize(value.`accountAddresses`)
-        )
+                FfiConverterString.allocationSize(value.`inboxId`) +
+                        FfiConverterString.allocationSize(value.`recoveryAddress`) +
+                        FfiConverterSequenceByteArray.allocationSize(value.`installationIds`) +
+                        FfiConverterSequenceString.allocationSize(value.`accountAddresses`)
+                )
 
     override fun write(
         value: FfiInboxState,
@@ -6462,7 +7007,8 @@ data class FfiListConversationsOptions(
     companion object
 }
 
-public object FfiConverterTypeFfiListConversationsOptions : FfiConverterRustBuffer<FfiListConversationsOptions> {
+public object FfiConverterTypeFfiListConversationsOptions :
+    FfiConverterRustBuffer<FfiListConversationsOptions> {
     override fun read(buf: ByteBuffer): FfiListConversationsOptions =
         FfiListConversationsOptions(
             FfiConverterOptionalLong.read(buf),
@@ -6472,10 +7018,10 @@ public object FfiConverterTypeFfiListConversationsOptions : FfiConverterRustBuff
 
     override fun allocationSize(value: FfiListConversationsOptions) =
         (
-            FfiConverterOptionalLong.allocationSize(value.`createdAfterNs`) +
-                FfiConverterOptionalLong.allocationSize(value.`createdBeforeNs`) +
-                FfiConverterOptionalLong.allocationSize(value.`limit`)
-        )
+                FfiConverterOptionalLong.allocationSize(value.`createdAfterNs`) +
+                        FfiConverterOptionalLong.allocationSize(value.`createdBeforeNs`) +
+                        FfiConverterOptionalLong.allocationSize(value.`limit`)
+                )
 
     override fun write(
         value: FfiListConversationsOptions,
@@ -6496,7 +7042,8 @@ data class FfiListMessagesOptions(
     companion object
 }
 
-public object FfiConverterTypeFfiListMessagesOptions : FfiConverterRustBuffer<FfiListMessagesOptions> {
+public object FfiConverterTypeFfiListMessagesOptions :
+    FfiConverterRustBuffer<FfiListMessagesOptions> {
     override fun read(buf: ByteBuffer): FfiListMessagesOptions =
         FfiListMessagesOptions(
             FfiConverterOptionalLong.read(buf),
@@ -6507,11 +7054,11 @@ public object FfiConverterTypeFfiListMessagesOptions : FfiConverterRustBuffer<Ff
 
     override fun allocationSize(value: FfiListMessagesOptions) =
         (
-            FfiConverterOptionalLong.allocationSize(value.`sentBeforeNs`) +
-                FfiConverterOptionalLong.allocationSize(value.`sentAfterNs`) +
-                FfiConverterOptionalLong.allocationSize(value.`limit`) +
-                FfiConverterOptionalTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`)
-        )
+                FfiConverterOptionalLong.allocationSize(value.`sentBeforeNs`) +
+                        FfiConverterOptionalLong.allocationSize(value.`sentAfterNs`) +
+                        FfiConverterOptionalLong.allocationSize(value.`limit`) +
+                        FfiConverterOptionalTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`)
+                )
 
     override fun write(
         value: FfiListMessagesOptions,
@@ -6550,14 +7097,14 @@ public object FfiConverterTypeFfiMessage : FfiConverterRustBuffer<FfiMessage> {
 
     override fun allocationSize(value: FfiMessage) =
         (
-            FfiConverterByteArray.allocationSize(value.`id`) +
-                FfiConverterLong.allocationSize(value.`sentAtNs`) +
-                FfiConverterByteArray.allocationSize(value.`convoId`) +
-                FfiConverterString.allocationSize(value.`senderInboxId`) +
-                FfiConverterByteArray.allocationSize(value.`content`) +
-                FfiConverterTypeFfiGroupMessageKind.allocationSize(value.`kind`) +
-                FfiConverterTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`)
-        )
+                FfiConverterByteArray.allocationSize(value.`id`) +
+                        FfiConverterLong.allocationSize(value.`sentAtNs`) +
+                        FfiConverterByteArray.allocationSize(value.`convoId`) +
+                        FfiConverterString.allocationSize(value.`senderInboxId`) +
+                        FfiConverterByteArray.allocationSize(value.`content`) +
+                        FfiConverterTypeFfiGroupMessageKind.allocationSize(value.`kind`) +
+                        FfiConverterTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`)
+                )
 
     override fun write(
         value: FfiMessage,
@@ -6591,10 +7138,10 @@ public object FfiConverterTypeFfiPagingInfo : FfiConverterRustBuffer<FfiPagingIn
 
     override fun allocationSize(value: FfiPagingInfo) =
         (
-            FfiConverterUInt.allocationSize(value.`limit`) +
-                FfiConverterOptionalTypeFfiCursor.allocationSize(value.`cursor`) +
-                FfiConverterTypeFfiSortDirection.allocationSize(value.`direction`)
-        )
+                FfiConverterUInt.allocationSize(value.`limit`) +
+                        FfiConverterOptionalTypeFfiCursor.allocationSize(value.`cursor`) +
+                        FfiConverterTypeFfiSortDirection.allocationSize(value.`direction`)
+                )
 
     override fun write(
         value: FfiPagingInfo,
@@ -6619,7 +7166,8 @@ data class FfiPermissionPolicySet(
     companion object
 }
 
-public object FfiConverterTypeFfiPermissionPolicySet : FfiConverterRustBuffer<FfiPermissionPolicySet> {
+public object FfiConverterTypeFfiPermissionPolicySet :
+    FfiConverterRustBuffer<FfiPermissionPolicySet> {
     override fun read(buf: ByteBuffer): FfiPermissionPolicySet =
         FfiPermissionPolicySet(
             FfiConverterTypeFfiPermissionPolicy.read(buf),
@@ -6634,15 +7182,15 @@ public object FfiConverterTypeFfiPermissionPolicySet : FfiConverterRustBuffer<Ff
 
     override fun allocationSize(value: FfiPermissionPolicySet) =
         (
-            FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`addMemberPolicy`) +
-                FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`removeMemberPolicy`) +
-                FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`addAdminPolicy`) +
-                FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`removeAdminPolicy`) +
-                FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupNamePolicy`) +
-                FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupDescriptionPolicy`) +
-                FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupImageUrlSquarePolicy`) +
-                FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupPinnedFrameUrlPolicy`)
-        )
+                FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`addMemberPolicy`) +
+                        FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`removeMemberPolicy`) +
+                        FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`addAdminPolicy`) +
+                        FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`removeAdminPolicy`) +
+                        FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupNamePolicy`) +
+                        FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupDescriptionPolicy`) +
+                        FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupImageUrlSquarePolicy`) +
+                        FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupPinnedFrameUrlPolicy`)
+                )
 
     override fun write(
         value: FfiPermissionPolicySet,
@@ -6673,8 +7221,8 @@ public object FfiConverterTypeFfiPublishRequest : FfiConverterRustBuffer<FfiPubl
 
     override fun allocationSize(value: FfiPublishRequest) =
         (
-            FfiConverterSequenceTypeFfiEnvelope.allocationSize(value.`envelopes`)
-        )
+                FfiConverterSequenceTypeFfiEnvelope.allocationSize(value.`envelopes`)
+                )
 
     override fun write(
         value: FfiPublishRequest,
@@ -6690,7 +7238,8 @@ data class FfiV2BatchQueryRequest(
     companion object
 }
 
-public object FfiConverterTypeFfiV2BatchQueryRequest : FfiConverterRustBuffer<FfiV2BatchQueryRequest> {
+public object FfiConverterTypeFfiV2BatchQueryRequest :
+    FfiConverterRustBuffer<FfiV2BatchQueryRequest> {
     override fun read(buf: ByteBuffer): FfiV2BatchQueryRequest =
         FfiV2BatchQueryRequest(
             FfiConverterSequenceTypeFfiV2QueryRequest.read(buf),
@@ -6698,8 +7247,8 @@ public object FfiConverterTypeFfiV2BatchQueryRequest : FfiConverterRustBuffer<Ff
 
     override fun allocationSize(value: FfiV2BatchQueryRequest) =
         (
-            FfiConverterSequenceTypeFfiV2QueryRequest.allocationSize(value.`requests`)
-        )
+                FfiConverterSequenceTypeFfiV2QueryRequest.allocationSize(value.`requests`)
+                )
 
     override fun write(
         value: FfiV2BatchQueryRequest,
@@ -6715,7 +7264,8 @@ data class FfiV2BatchQueryResponse(
     companion object
 }
 
-public object FfiConverterTypeFfiV2BatchQueryResponse : FfiConverterRustBuffer<FfiV2BatchQueryResponse> {
+public object FfiConverterTypeFfiV2BatchQueryResponse :
+    FfiConverterRustBuffer<FfiV2BatchQueryResponse> {
     override fun read(buf: ByteBuffer): FfiV2BatchQueryResponse =
         FfiV2BatchQueryResponse(
             FfiConverterSequenceTypeFfiV2QueryResponse.read(buf),
@@ -6723,8 +7273,8 @@ public object FfiConverterTypeFfiV2BatchQueryResponse : FfiConverterRustBuffer<F
 
     override fun allocationSize(value: FfiV2BatchQueryResponse) =
         (
-            FfiConverterSequenceTypeFfiV2QueryResponse.allocationSize(value.`responses`)
-        )
+                FfiConverterSequenceTypeFfiV2QueryResponse.allocationSize(value.`responses`)
+                )
 
     override fun write(
         value: FfiV2BatchQueryResponse,
@@ -6754,11 +7304,11 @@ public object FfiConverterTypeFfiV2QueryRequest : FfiConverterRustBuffer<FfiV2Qu
 
     override fun allocationSize(value: FfiV2QueryRequest) =
         (
-            FfiConverterSequenceString.allocationSize(value.`contentTopics`) +
-                FfiConverterULong.allocationSize(value.`startTimeNs`) +
-                FfiConverterULong.allocationSize(value.`endTimeNs`) +
-                FfiConverterOptionalTypeFfiPagingInfo.allocationSize(value.`pagingInfo`)
-        )
+                FfiConverterSequenceString.allocationSize(value.`contentTopics`) +
+                        FfiConverterULong.allocationSize(value.`startTimeNs`) +
+                        FfiConverterULong.allocationSize(value.`endTimeNs`) +
+                        FfiConverterOptionalTypeFfiPagingInfo.allocationSize(value.`pagingInfo`)
+                )
 
     override fun write(
         value: FfiV2QueryRequest,
@@ -6787,9 +7337,9 @@ public object FfiConverterTypeFfiV2QueryResponse : FfiConverterRustBuffer<FfiV2Q
 
     override fun allocationSize(value: FfiV2QueryResponse) =
         (
-            FfiConverterSequenceTypeFfiEnvelope.allocationSize(value.`envelopes`) +
-                FfiConverterOptionalTypeFfiPagingInfo.allocationSize(value.`pagingInfo`)
-        )
+                FfiConverterSequenceTypeFfiEnvelope.allocationSize(value.`envelopes`) +
+                        FfiConverterOptionalTypeFfiPagingInfo.allocationSize(value.`pagingInfo`)
+                )
 
     override fun write(
         value: FfiV2QueryResponse,
@@ -6806,7 +7356,8 @@ data class FfiV2SubscribeRequest(
     companion object
 }
 
-public object FfiConverterTypeFfiV2SubscribeRequest : FfiConverterRustBuffer<FfiV2SubscribeRequest> {
+public object FfiConverterTypeFfiV2SubscribeRequest :
+    FfiConverterRustBuffer<FfiV2SubscribeRequest> {
     override fun read(buf: ByteBuffer): FfiV2SubscribeRequest =
         FfiV2SubscribeRequest(
             FfiConverterSequenceString.read(buf),
@@ -6814,8 +7365,8 @@ public object FfiConverterTypeFfiV2SubscribeRequest : FfiConverterRustBuffer<Ffi
 
     override fun allocationSize(value: FfiV2SubscribeRequest) =
         (
-            FfiConverterSequenceString.allocationSize(value.`contentTopics`)
-        )
+                FfiConverterSequenceString.allocationSize(value.`contentTopics`)
+                )
 
     override fun write(
         value: FfiV2SubscribeRequest,
@@ -6941,7 +7492,8 @@ enum class FfiGroupPermissionsOptions {
     companion object
 }
 
-public object FfiConverterTypeFfiGroupPermissionsOptions : FfiConverterRustBuffer<FfiGroupPermissionsOptions> {
+public object FfiConverterTypeFfiGroupPermissionsOptions :
+    FfiConverterRustBuffer<FfiGroupPermissionsOptions> {
     override fun read(buf: ByteBuffer) =
         try {
             FfiGroupPermissionsOptions.values()[buf.getInt() - 1]
@@ -7055,7 +7607,8 @@ enum class FfiPermissionUpdateType {
     companion object
 }
 
-public object FfiConverterTypeFfiPermissionUpdateType : FfiConverterRustBuffer<FfiPermissionUpdateType> {
+public object FfiConverterTypeFfiPermissionUpdateType :
+    FfiConverterRustBuffer<FfiPermissionUpdateType> {
     override fun read(buf: ByteBuffer) =
         try {
             FfiPermissionUpdateType.values()[buf.getInt() - 1]
@@ -7148,7 +7701,8 @@ sealed class GenericException(
     ) : GenericException(message)
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<GenericException> {
-        override fun lift(error_buf: RustBuffer.ByValue): GenericException = FfiConverterTypeGenericError.lift(error_buf)
+        override fun lift(error_buf: RustBuffer.ByValue): GenericException =
+            FfiConverterTypeGenericError.lift(error_buf)
     }
 }
 
@@ -7180,42 +7734,52 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
                 buf.putInt(1)
                 Unit
             }
+
             is GenericException.ClientBuilder -> {
                 buf.putInt(2)
                 Unit
             }
+
             is GenericException.Storage -> {
                 buf.putInt(3)
                 Unit
             }
+
             is GenericException.ApiException -> {
                 buf.putInt(4)
                 Unit
             }
+
             is GenericException.GroupException -> {
                 buf.putInt(5)
                 Unit
             }
+
             is GenericException.Signature -> {
                 buf.putInt(6)
                 Unit
             }
+
             is GenericException.GroupMetadata -> {
                 buf.putInt(7)
                 Unit
             }
+
             is GenericException.GroupMutablePermissions -> {
                 buf.putInt(8)
                 Unit
             }
+
             is GenericException.Generic -> {
                 buf.putInt(9)
                 Unit
             }
+
             is GenericException.SignatureRequestException -> {
                 buf.putInt(10)
                 Unit
             }
+
             is GenericException.Erc1271SignatureException -> {
                 buf.putInt(11)
                 Unit
@@ -7232,7 +7796,8 @@ sealed class SigningException(
     ) : SigningException(message)
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<SigningException> {
-        override fun lift(error_buf: RustBuffer.ByValue): SigningException = FfiConverterTypeSigningError.lift(error_buf)
+        override fun lift(error_buf: RustBuffer.ByValue): SigningException =
+            FfiConverterTypeSigningError.lift(error_buf)
     }
 }
 
@@ -7273,7 +7838,8 @@ internal const val UNIFFI_CALLBACK_SUCCESS = 0
 internal const val UNIFFI_CALLBACK_ERROR = 1
 internal const val UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
 
-public abstract class FfiConverterCallbackInterface<CallbackInterface : Any> : FfiConverter<CallbackInterface, Long> {
+public abstract class FfiConverterCallbackInterface<CallbackInterface : Any> :
+    FfiConverter<CallbackInterface, Long> {
     internal val handleMap = UniffiHandleMap<CallbackInterface>()
 
     internal fun drop(handle: Long) {
@@ -7306,9 +7872,10 @@ internal object uniffiCallbackInterfaceFfiConversationCallback {
             uniffiCallStatus: UniffiRustCallStatus,
         ) {
             val uniffiObj = FfiConverterTypeFfiConversationCallback.handleMap.get(uniffiHandle)
-            val makeCall = {  uniffiObj.`onConversation`(
-                FfiConverterTypeFfiGroup.lift(`conversation`),
-            )
+            val makeCall = {
+                uniffiObj.`onConversation`(
+                    FfiConverterTypeFfiGroup.lift(`conversation`),
+                )
             }
             val writeReturn = { _: Unit -> Unit }
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
@@ -7335,7 +7902,8 @@ internal object uniffiCallbackInterfaceFfiConversationCallback {
 }
 
 // The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
-public object FfiConverterTypeFfiConversationCallback : FfiConverterCallbackInterface<FfiConversationCallback>()
+public object FfiConverterTypeFfiConversationCallback :
+    FfiConverterCallbackInterface<FfiConversationCallback>()
 
 public interface FfiInboxOwner {
     fun `getAddress`(): kotlin.String
@@ -7355,7 +7923,8 @@ internal object uniffiCallbackInterfaceFfiInboxOwner {
         ) {
             val uniffiObj = FfiConverterTypeFfiInboxOwner.handleMap.get(uniffiHandle)
             val makeCall = { uniffiObj.`getAddress`() }
-            val writeReturn = { value: kotlin.String -> uniffiOutReturn.setValue(FfiConverterString.lower(value)) }
+            val writeReturn =
+                { value: kotlin.String -> uniffiOutReturn.setValue(FfiConverterString.lower(value)) }
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
@@ -7368,11 +7937,16 @@ internal object uniffiCallbackInterfaceFfiInboxOwner {
             uniffiCallStatus: UniffiRustCallStatus,
         ) {
             val uniffiObj = FfiConverterTypeFfiInboxOwner.handleMap.get(uniffiHandle)
-            val makeCall = {  uniffiObj.`sign`(
-                FfiConverterString.lift(`text`),
-            )
+            val makeCall = {
+                uniffiObj.`sign`(
+                    FfiConverterString.lift(`text`),
+                )
             }
-            val writeReturn = { value: kotlin.ByteArray -> uniffiOutReturn.setValue(FfiConverterByteArray.lower(value)) }
+            val writeReturn = { value: kotlin.ByteArray ->
+                uniffiOutReturn.setValue(
+                    FfiConverterByteArray.lower(value)
+                )
+            }
             uniffiTraitInterfaceCallWithError(
                 uniffiCallStatus,
                 makeCall,
@@ -7427,11 +8001,12 @@ internal object uniffiCallbackInterfaceFfiLogger {
             uniffiCallStatus: UniffiRustCallStatus,
         ) {
             val uniffiObj = FfiConverterTypeFfiLogger.handleMap.get(uniffiHandle)
-            val makeCall = {  uniffiObj.`log`(
-                FfiConverterUInt.lift(`level`),
-                FfiConverterString.lift(`levelLabel`),
-                FfiConverterString.lift(`message`),
-            )
+            val makeCall = {
+                uniffiObj.`log`(
+                    FfiConverterUInt.lift(`level`),
+                    FfiConverterString.lift(`levelLabel`),
+                    FfiConverterString.lift(`message`),
+                )
             }
             val writeReturn = { _: Unit -> Unit }
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
@@ -7476,9 +8051,10 @@ internal object uniffiCallbackInterfaceFfiMessageCallback {
             uniffiCallStatus: UniffiRustCallStatus,
         ) {
             val uniffiObj = FfiConverterTypeFfiMessageCallback.handleMap.get(uniffiHandle)
-            val makeCall = {  uniffiObj.`onMessage`(
-                FfiConverterTypeFfiMessage.lift(`message`),
-            )
+            val makeCall = {
+                uniffiObj.`onMessage`(
+                    FfiConverterTypeFfiMessage.lift(`message`),
+                )
             }
             val writeReturn = { _: Unit -> Unit }
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
@@ -7505,7 +8081,8 @@ internal object uniffiCallbackInterfaceFfiMessageCallback {
 }
 
 // The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
-public object FfiConverterTypeFfiMessageCallback : FfiConverterCallbackInterface<FfiMessageCallback>()
+public object FfiConverterTypeFfiMessageCallback :
+    FfiConverterCallbackInterface<FfiMessageCallback>()
 
 public interface FfiV2SubscriptionCallback {
     fun `onMessage`(`message`: FfiEnvelope)
@@ -7523,9 +8100,10 @@ internal object uniffiCallbackInterfaceFfiV2SubscriptionCallback {
             uniffiCallStatus: UniffiRustCallStatus,
         ) {
             val uniffiObj = FfiConverterTypeFfiV2SubscriptionCallback.handleMap.get(uniffiHandle)
-            val makeCall = {  uniffiObj.`onMessage`(
-                FfiConverterTypeFfiEnvelope.lift(`message`),
-            )
+            val makeCall = {
+                uniffiObj.`onMessage`(
+                    FfiConverterTypeFfiEnvelope.lift(`message`),
+                )
             }
             val writeReturn = { _: Unit -> Unit }
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
@@ -7552,7 +8130,8 @@ internal object uniffiCallbackInterfaceFfiV2SubscriptionCallback {
 }
 
 // The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
-public object FfiConverterTypeFfiV2SubscriptionCallback : FfiConverterCallbackInterface<FfiV2SubscriptionCallback>()
+public object FfiConverterTypeFfiV2SubscriptionCallback :
+    FfiConverterCallbackInterface<FfiV2SubscriptionCallback>()
 
 public object FfiConverterOptionalLong : FfiConverterRustBuffer<kotlin.Long?> {
     override fun read(buf: ByteBuffer): kotlin.Long? {
@@ -7641,7 +8220,8 @@ public object FfiConverterOptionalByteArray : FfiConverterRustBuffer<kotlin.Byte
     }
 }
 
-public object FfiConverterOptionalTypeFfiSignatureRequest : FfiConverterRustBuffer<FfiSignatureRequest?> {
+public object FfiConverterOptionalTypeFfiSignatureRequest :
+    FfiConverterRustBuffer<FfiSignatureRequest?> {
     override fun read(buf: ByteBuffer): FfiSignatureRequest? {
         if (buf.get().toInt() == 0) {
             return null
@@ -7728,7 +8308,8 @@ public object FfiConverterOptionalTypeFfiPagingInfo : FfiConverterRustBuffer<Ffi
     }
 }
 
-public object FfiConverterOptionalTypeFfiPermissionPolicySet : FfiConverterRustBuffer<FfiPermissionPolicySet?> {
+public object FfiConverterOptionalTypeFfiPermissionPolicySet :
+    FfiConverterRustBuffer<FfiPermissionPolicySet?> {
     override fun read(buf: ByteBuffer): FfiPermissionPolicySet? {
         if (buf.get().toInt() == 0) {
             return null
@@ -7757,7 +8338,8 @@ public object FfiConverterOptionalTypeFfiPermissionPolicySet : FfiConverterRustB
     }
 }
 
-public object FfiConverterOptionalTypeFfiDeliveryStatus : FfiConverterRustBuffer<FfiDeliveryStatus?> {
+public object FfiConverterOptionalTypeFfiDeliveryStatus :
+    FfiConverterRustBuffer<FfiDeliveryStatus?> {
     override fun read(buf: ByteBuffer): FfiDeliveryStatus? {
         if (buf.get().toInt() == 0) {
             return null
@@ -7786,7 +8368,8 @@ public object FfiConverterOptionalTypeFfiDeliveryStatus : FfiConverterRustBuffer
     }
 }
 
-public object FfiConverterOptionalTypeFfiGroupPermissionsOptions : FfiConverterRustBuffer<FfiGroupPermissionsOptions?> {
+public object FfiConverterOptionalTypeFfiGroupPermissionsOptions :
+    FfiConverterRustBuffer<FfiGroupPermissionsOptions?> {
     override fun read(buf: ByteBuffer): FfiGroupPermissionsOptions? {
         if (buf.get().toInt() == 0) {
             return null
@@ -7969,7 +8552,8 @@ public object FfiConverterSequenceTypeFfiEnvelope : FfiConverterRustBuffer<List<
     }
 }
 
-public object FfiConverterSequenceTypeFfiGroupMember : FfiConverterRustBuffer<List<FfiGroupMember>> {
+public object FfiConverterSequenceTypeFfiGroupMember :
+    FfiConverterRustBuffer<List<FfiGroupMember>> {
     override fun read(buf: ByteBuffer): List<FfiGroupMember> {
         val len = buf.getInt()
         return List<FfiGroupMember>(len) {
@@ -8019,7 +8603,8 @@ public object FfiConverterSequenceTypeFfiMessage : FfiConverterRustBuffer<List<F
     }
 }
 
-public object FfiConverterSequenceTypeFfiV2QueryRequest : FfiConverterRustBuffer<List<FfiV2QueryRequest>> {
+public object FfiConverterSequenceTypeFfiV2QueryRequest :
+    FfiConverterRustBuffer<List<FfiV2QueryRequest>> {
     override fun read(buf: ByteBuffer): List<FfiV2QueryRequest> {
         val len = buf.getInt()
         return List<FfiV2QueryRequest>(len) {
@@ -8044,7 +8629,8 @@ public object FfiConverterSequenceTypeFfiV2QueryRequest : FfiConverterRustBuffer
     }
 }
 
-public object FfiConverterSequenceTypeFfiV2QueryResponse : FfiConverterRustBuffer<List<FfiV2QueryResponse>> {
+public object FfiConverterSequenceTypeFfiV2QueryResponse :
+    FfiConverterRustBuffer<List<FfiV2QueryResponse>> {
     override fun read(buf: ByteBuffer): List<FfiV2QueryResponse> {
         val len = buf.getInt()
         return List<FfiV2QueryResponse>(len) {
@@ -8069,7 +8655,8 @@ public object FfiConverterSequenceTypeFfiV2QueryResponse : FfiConverterRustBuffe
     }
 }
 
-public object FfiConverterMapStringBoolean : FfiConverterRustBuffer<Map<kotlin.String, kotlin.Boolean>> {
+public object FfiConverterMapStringBoolean :
+    FfiConverterRustBuffer<Map<kotlin.String, kotlin.Boolean>> {
     override fun read(buf: ByteBuffer): Map<kotlin.String, kotlin.Boolean> {
         val len = buf.getInt()
         return buildMap<kotlin.String, kotlin.Boolean>(len) {
@@ -8087,7 +8674,7 @@ public object FfiConverterMapStringBoolean : FfiConverterRustBuffer<Map<kotlin.S
             value
                 .map { (k, v) ->
                     FfiConverterString.allocationSize(k) +
-                        FfiConverterBoolean.allocationSize(v)
+                            FfiConverterBoolean.allocationSize(v)
                 }.sum()
         return spaceForMapSize + spaceForChildren
     }
@@ -8155,8 +8742,19 @@ suspend fun `createClient`(
             FfiConverterOptionalByteArray.lower(`legacySignedPrivateKeyProto`),
             FfiConverterOptionalString.lower(`historySyncUrl`),
         ),
-        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
-        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future, callback, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
+                future,
+                callback,
+                continuation
+            )
+        },
+        { future, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
+                future,
+                continuation
+            )
+        },
         { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
         // lift function
         { FfiConverterTypeFfiXmtpClient.lift(it) },
@@ -8171,9 +8769,23 @@ suspend fun `createV2Client`(
     `isSecure`: kotlin.Boolean,
 ): FfiV2ApiClient =
     uniffiRustCallAsync(
-        UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_create_v2_client(FfiConverterString.lower(`host`), FfiConverterBoolean.lower(`isSecure`)),
-        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
-        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_create_v2_client(
+            FfiConverterString.lower(`host`),
+            FfiConverterBoolean.lower(`isSecure`)
+        ),
+        { future, callback, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
+                future,
+                callback,
+                continuation
+            )
+        },
+        { future, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
+                future,
+                continuation
+            )
+        },
         { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
         // lift function
         { FfiConverterTypeFfiV2ApiClient.lift(it) },
@@ -8236,8 +8848,19 @@ suspend fun `getInboxIdForAddress`(
             FfiConverterBoolean.lower(`isSecure`),
             FfiConverterString.lower(`accountAddress`),
         ),
-        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
-        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future, callback, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                future,
+                callback,
+                continuation
+            )
+        },
+        { future, continuation ->
+            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                future,
+                continuation
+            )
+        },
         { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterOptionalString.lift(it) },
