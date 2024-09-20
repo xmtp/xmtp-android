@@ -245,7 +245,7 @@ data class Conversations(
             throw XMTPException("Recipient is sender")
         }
         val existingConversation = conversationsByTopic.values.firstOrNull {
-            it.peerAddress == peerAddress && it.conversationId == context?.conversationId
+            it.peerAddress() == peerAddress && it.conversationId == context?.conversationId
         }
         if (existingConversation != null) {
             return existingConversation
@@ -347,7 +347,7 @@ data class Conversations(
                 newConversations.add(newConversation)
                 val consentProof = newConversation.consentProof
                 if (consentProof != null) {
-                    handleConsentProof(consentProof, newConversation.peerAddress)
+                    handleConsentProof(consentProof, newConversation.peerAddress())
                 }
             } catch (e: Exception) {
                 Log.d(TAG, e.message.toString())
@@ -355,7 +355,7 @@ data class Conversations(
         }
 
         conversationsByTopic += newConversations.filter {
-            it.peerAddress != client.address && Topic.isValidTopic(it.topic)
+            it.peerAddress() != client.address && Topic.isValidTopic(it.topic)
         }.map { Pair(it.topic, it) }
 
         if (includeGroups) {
