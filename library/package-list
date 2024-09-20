@@ -1092,6 +1092,7 @@ $dokka.location:org.xmtp.android.library/ConsentListEntry/ConsentListEntry/#kotl
 $dokka.location:org.xmtp.android.library/ConsentListEntry/consentType/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/consent-type.html
 $dokka.location:org.xmtp.android.library/ConsentListEntry/entryType/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/entry-type.html
 $dokka.location:org.xmtp.android.library/ConsentListEntry/key/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/key.html
+$dokka.location:org.xmtp.android.library/ConsentListEntry/toFfiConsent/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/to-ffi-consent.html
 $dokka.location:org.xmtp.android.library/ConsentListEntry/value/#/PointingToDeclaration/library/org.xmtp.android.library/-consent-list-entry/value.html
 $dokka.location:org.xmtp.android.library/ConsentState.ALLOWED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-consent-state/-a-l-l-o-w-e-d/index.html
 $dokka.location:org.xmtp.android.library/ConsentState.Companion///PointingToDeclaration/library/org.xmtp.android.library/-consent-state/-companion/index.html
@@ -1470,6 +1471,12 @@ $dokka.location:uniffi.xmtpv3/Disposable.Companion///PointingToDeclaration/libr
 $dokka.location:uniffi.xmtpv3/Disposable.Companion/destroy/#kotlin.Array[kotlin.Any?]/PointingToDeclaration/library/uniffi.xmtpv3/-disposable/-companion/destroy.html
 $dokka.location:uniffi.xmtpv3/Disposable///PointingToDeclaration/library/uniffi.xmtpv3/-disposable/index.html
 $dokka.location:uniffi.xmtpv3/Disposable/destroy/#/PointingToDeclaration/library/uniffi.xmtpv3/-disposable/destroy.html
+$dokka.location:uniffi.xmtpv3/FfiConsent.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-consent/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiConsent///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-consent/index.html
+$dokka.location:uniffi.xmtpv3/FfiConsent/FfiConsent/#uniffi.xmtpv3.FfiConsentEntityType#uniffi.xmtpv3.FfiConsentState#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-consent/-ffi-consent.html
+$dokka.location:uniffi.xmtpv3/FfiConsent/entity/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-consent/entity.html
+$dokka.location:uniffi.xmtpv3/FfiConsent/entityType/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-consent/entity-type.html
+$dokka.location:uniffi.xmtpv3/FfiConsent/state/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-consent/state.html
 $dokka.location:uniffi.xmtpv3/FfiConsentEntityType.ADDRESS///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-consent-entity-type/-a-d-d-r-e-s-s/index.html
 $dokka.location:uniffi.xmtpv3/FfiConsentEntityType.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-consent-entity-type/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiConsentEntityType.GROUP_ID///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-consent-entity-type/-g-r-o-u-p_-i-d/index.html
@@ -1596,6 +1603,10 @@ $dokka.location:uniffi.xmtpv3/FfiConverterSequenceString///PointingToDeclaration
 $dokka.location:uniffi.xmtpv3/FfiConverterSequenceString/allocationSize/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-string/allocation-size.html
 $dokka.location:uniffi.xmtpv3/FfiConverterSequenceString/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-string/read.html
 $dokka.location:uniffi.xmtpv3/FfiConverterSequenceString/write/#kotlin.collections.List[kotlin.String]#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-string/write.html
+$dokka.location:uniffi.xmtpv3/FfiConverterSequenceTypeFfiConsent///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-type-ffi-consent/index.html
+$dokka.location:uniffi.xmtpv3/FfiConverterSequenceTypeFfiConsent/allocationSize/#kotlin.collections.List[uniffi.xmtpv3.FfiConsent]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-type-ffi-consent/allocation-size.html
+$dokka.location:uniffi.xmtpv3/FfiConverterSequenceTypeFfiConsent/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-type-ffi-consent/read.html
+$dokka.location:uniffi.xmtpv3/FfiConverterSequenceTypeFfiConsent/write/#kotlin.collections.List[uniffi.xmtpv3.FfiConsent]#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-type-ffi-consent/write.html
 $dokka.location:uniffi.xmtpv3/FfiConverterSequenceTypeFfiEnvelope///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-type-ffi-envelope/index.html
 $dokka.location:uniffi.xmtpv3/FfiConverterSequenceTypeFfiEnvelope/allocationSize/#kotlin.collections.List[uniffi.xmtpv3.FfiEnvelope]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-type-ffi-envelope/allocation-size.html
 $dokka.location:uniffi.xmtpv3/FfiConverterSequenceTypeFfiEnvelope/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-sequence-type-ffi-envelope/read.html
@@ -1627,6 +1638,10 @@ $dokka.location:uniffi.xmtpv3/FfiConverterString/lower/#kotlin.String/PointingTo
 $dokka.location:uniffi.xmtpv3/FfiConverterString/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-string/read.html
 $dokka.location:uniffi.xmtpv3/FfiConverterString/toUtf8/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-string/to-utf8.html
 $dokka.location:uniffi.xmtpv3/FfiConverterString/write/#kotlin.String#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-string/write.html
+$dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiConsent///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-consent/index.html
+$dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiConsent/allocationSize/#uniffi.xmtpv3.FfiConsent/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-consent/allocation-size.html
+$dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiConsent/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-consent/read.html
+$dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiConsent/write/#uniffi.xmtpv3.FfiConsent#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-consent/write.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiConsentEntityType///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-consent-entity-type/index.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiConsentEntityType/allocationSize/#uniffi.xmtpv3.FfiConsentEntityType/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-consent-entity-type/allocation-size.html
 $dokka.location:uniffi.xmtpv3/FfiConverterTypeFfiConsentEntityType/read/#java.nio.ByteBuffer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-converter-type-ffi-consent-entity-type/read.html
@@ -2194,7 +2209,7 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClient/releaseDbConnection/#/PointingToDecl
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/requestHistorySync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/request-history-sync.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/revokeAllOtherInstallations/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/revoke-all-other-installations.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/revokeWallet/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/revoke-wallet.html
-$dokka.location:uniffi.xmtpv3/FfiXmtpClient/setConsentState/#uniffi.xmtpv3.FfiConsentState#uniffi.xmtpv3.FfiConsentEntityType#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/set-consent-state.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClient/setConsentStates/#kotlin.collections.List[uniffi.xmtpv3.FfiConsent]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/set-consent-states.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/signatureRequest/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/signature-request.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/uniffi-clone-pointer.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/-companion/index.html
@@ -2217,7 +2232,7 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/releaseDbConnection/#/Point
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/requestHistorySync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/request-history-sync.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/revokeAllOtherInstallations/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/revoke-all-other-installations.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/revokeWallet/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/revoke-wallet.html
-$dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/setConsentState/#uniffi.xmtpv3.FfiConsentState#uniffi.xmtpv3.FfiConsentEntityType#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/set-consent-state.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/setConsentStates/#kotlin.collections.List[uniffi.xmtpv3.FfiConsent]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/set-consent-states.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/signatureRequest/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/signature-request.html
 $dokka.location:uniffi.xmtpv3/ForeignBytes.ByValue///PointingToDeclaration/library/uniffi.xmtpv3/-foreign-bytes/-by-value/index.html
 $dokka.location:uniffi.xmtpv3/ForeignBytes.ByValue/ByValue/#/PointingToDeclaration/library/uniffi.xmtpv3/-foreign-bytes/-by-value/-by-value.html
