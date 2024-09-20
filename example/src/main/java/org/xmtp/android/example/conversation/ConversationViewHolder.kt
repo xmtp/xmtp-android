@@ -26,15 +26,15 @@ class ConversationViewHolder(
         }
     }
 
-    fun bind(item: MainViewModel.MainListItem.ConversationItem) {
+    suspend fun bind(item: MainViewModel.MainListItem.ConversationItem) {
         conversation = item.conversation
-        binding.peerAddress.text = if (item.conversation.peerAddress.contains(",")) {
-            val addresses = item.conversation.peerAddress.split(",")
+        binding.peerAddress().text = if (item.conversation.peerAddress().contains(",")) {
+            val addresses = item.conversation.peerAddress().split(",")
             addresses.joinToString(" & ") {
                 it.truncatedAddress()
             }
         } else {
-            item.conversation.peerAddress.truncatedAddress()
+            item.conversation.peerAddress().truncatedAddress()
         }
 
         val messageBody: String = if (item.mostRecentMessage?.content<Any>() is String) {

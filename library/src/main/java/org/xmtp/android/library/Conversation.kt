@@ -51,23 +51,21 @@ sealed class Conversation {
         }
 
     // This is the address of the peer that I am talking to.
-    val peerAddress: String
-        get() {
-            return when (this) {
-                is V1 -> conversationV1.peerAddress
-                is V2 -> conversationV2.peerAddress
-                is Group -> group.peerInboxIds().joinToString(",")
-            }
+    suspend fun peerAddress(): String {
+        return when (this) {
+            is V1 -> conversationV1.peerAddress
+            is V2 -> conversationV2.peerAddress
+            is Group -> group.peerInboxIds().joinToString(",")
         }
+    }
 
-    val peerAddresses: List<String>
-        get() {
-            return when (this) {
-                is V1 -> listOf(conversationV1.peerAddress)
-                is V2 -> listOf(conversationV2.peerAddress)
-                is Group -> group.peerInboxIds()
-            }
+    suspend fun peerAddresses(): List<String> {
+        return when (this) {
+            is V1 -> listOf(conversationV1.peerAddress)
+            is V2 -> listOf(conversationV2.peerAddress)
+            is Group -> group.peerInboxIds()
         }
+    }
 
     // This distinctly identifies between two addresses.
     // Note: this will be empty for older v1 conversations.
@@ -91,8 +89,8 @@ sealed class Conversation {
 
     suspend fun consentState(): ConsentState {
         return when (this) {
-            is V1 -> conversationV1.client.contacts.consentList.state(address = peerAddress)
-            is V2 -> conversationV2.client.contacts.consentList.state(address = peerAddress)
+            is V1 -> conversationV1.client.contacts.consentList.state(address = peerAddress())
+            is V2 -> conversationV2.client.contacts.consentList.state(address = peerAddress())
             is Group -> group.consentState()
         }
     }
@@ -102,10 +100,10 @@ sealed class Conversation {
      * @return [TopicData] that contains all the information about the Topic, the conversation
      * context and the necessary encryption data for it.
      */
-    fun toTopicData(): TopicData {
+    suspend fun toTopicData(): TopicData {
         val data = TopicData.newBuilder()
             .setCreatedNs(createdAt.time * 1_000_000)
-            .setPeerAddress(peerAddress)
+            .setPeerAddress(peerAddress())
         return when (this) {
             is V1 -> data.build()
             is V2 -> data.setInvitation(
