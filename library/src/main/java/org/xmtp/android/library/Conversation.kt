@@ -61,11 +61,11 @@ sealed class Conversation {
             }
         }
 
-    suspend fun peerAddresses(): List<String> {
+    fun peerAddresses(): List<String> {
         return when (this) {
             is V1 -> listOf(conversationV1.peerAddress)
             is V2 -> listOf(conversationV2.peerAddress)
-            is Group -> group.peerInboxIds()
+            is Group -> runBlocking { group.peerInboxIds() }
         }
     }
 
