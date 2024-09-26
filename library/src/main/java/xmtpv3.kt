@@ -7094,7 +7094,7 @@ public object FfiConverterTypeFfiGroupMember : FfiConverterRustBuffer<FfiGroupMe
 data class FfiInboxState(
     var `inboxId`: kotlin.String,
     var `recoveryAddress`: kotlin.String,
-    var `installationIds`: List<kotlin.ByteArray>,
+    var `installations`: List<FfiInstallation>,
     var `accountAddresses`: List<kotlin.String>,
 ) {
 
@@ -7106,7 +7106,7 @@ public object FfiConverterTypeFfiInboxState : FfiConverterRustBuffer<FfiInboxSta
         return FfiInboxState(
             FfiConverterString.read(buf),
             FfiConverterString.read(buf),
-            FfiConverterSequenceByteArray.read(buf),
+            FfiConverterSequenceTypeFfiInstallation.read(buf),
             FfiConverterSequenceString.read(buf),
         )
     }
@@ -7114,15 +7114,43 @@ public object FfiConverterTypeFfiInboxState : FfiConverterRustBuffer<FfiInboxSta
     override fun allocationSize(value: FfiInboxState) = (
             FfiConverterString.allocationSize(value.`inboxId`) +
                     FfiConverterString.allocationSize(value.`recoveryAddress`) +
-                    FfiConverterSequenceByteArray.allocationSize(value.`installationIds`) +
+                    FfiConverterSequenceTypeFfiInstallation.allocationSize(value.`installations`) +
                     FfiConverterSequenceString.allocationSize(value.`accountAddresses`)
             )
 
     override fun write(value: FfiInboxState, buf: ByteBuffer) {
         FfiConverterString.write(value.`inboxId`, buf)
         FfiConverterString.write(value.`recoveryAddress`, buf)
-        FfiConverterSequenceByteArray.write(value.`installationIds`, buf)
+        FfiConverterSequenceTypeFfiInstallation.write(value.`installations`, buf)
         FfiConverterSequenceString.write(value.`accountAddresses`, buf)
+    }
+}
+
+
+data class FfiInstallation(
+    var `id`: kotlin.ByteArray,
+    var `clientTimestampNs`: kotlin.ULong?,
+) {
+
+    companion object
+}
+
+public object FfiConverterTypeFfiInstallation : FfiConverterRustBuffer<FfiInstallation> {
+    override fun read(buf: ByteBuffer): FfiInstallation {
+        return FfiInstallation(
+            FfiConverterByteArray.read(buf),
+            FfiConverterOptionalULong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiInstallation) = (
+            FfiConverterByteArray.allocationSize(value.`id`) +
+                    FfiConverterOptionalULong.allocationSize(value.`clientTimestampNs`)
+            )
+
+    override fun write(value: FfiInstallation, buf: ByteBuffer) {
+        FfiConverterByteArray.write(value.`id`, buf)
+        FfiConverterOptionalULong.write(value.`clientTimestampNs`, buf)
     }
 }
 
@@ -8221,6 +8249,33 @@ public object FfiConverterTypeFfiV2SubscriptionCallback :
     FfiConverterCallbackInterface<FfiV2SubscriptionCallback>()
 
 
+public object FfiConverterOptionalULong : FfiConverterRustBuffer<kotlin.ULong?> {
+    override fun read(buf: ByteBuffer): kotlin.ULong? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterULong.read(buf)
+    }
+
+    override fun allocationSize(value: kotlin.ULong?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterULong.allocationSize(value)
+        }
+    }
+
+    override fun write(value: kotlin.ULong?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterULong.write(value, buf)
+        }
+    }
+}
+
+
 public object FfiConverterOptionalLong : FfiConverterRustBuffer<kotlin.Long?> {
     override fun read(buf: ByteBuffer): kotlin.Long? {
         if (buf.get().toInt() == 0) {
@@ -8629,6 +8684,30 @@ public object FfiConverterSequenceTypeFfiGroupMember :
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeFfiGroupMember.write(it, buf)
+        }
+    }
+}
+
+
+public object FfiConverterSequenceTypeFfiInstallation :
+    FfiConverterRustBuffer<List<FfiInstallation>> {
+    override fun read(buf: ByteBuffer): List<FfiInstallation> {
+        val len = buf.getInt()
+        return List<FfiInstallation>(len) {
+            FfiConverterTypeFfiInstallation.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<FfiInstallation>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeFfiInstallation.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<FfiInstallation>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeFfiInstallation.write(it, buf)
         }
     }
 }

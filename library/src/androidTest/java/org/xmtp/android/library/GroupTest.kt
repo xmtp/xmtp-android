@@ -84,8 +84,8 @@ class GroupTest {
             alixGroup.addMembers(listOf(caro.walletAddress))
             boGroup.sync()
         }
-        assertEquals(alixGroup.members(alixClient).size, 3)
-        assertEquals(boGroup.members(boClient).size, 3)
+        assertEquals(alixGroup.members().size, 3)
+        assertEquals(boGroup.members().size, 3)
 
         // All members also defaults remove to admin only now.
         assertThrows(XMTPException::class.java) {
@@ -95,8 +95,8 @@ class GroupTest {
             }
         }
 
-        assertEquals(alixGroup.members(alixClient).size, 3)
-        assertEquals(boGroup.members(boClient).size, 3)
+        assertEquals(alixGroup.members().size, 3)
+        assertEquals(boGroup.members().size, 3)
 
         assertEquals(boGroup.permissionPolicySet().addMemberPolicy, PermissionOption.Allow)
         assertEquals(alixGroup.permissionPolicySet().addMemberPolicy, PermissionOption.Allow)
@@ -135,31 +135,31 @@ class GroupTest {
             alixGroup.sync()
         }
 
-        assertEquals(alixGroup.members(alixClient).size, 3)
-        assertEquals(boGroup.members(boClient).size, 3)
+        assertEquals(alixGroup.members().size, 3)
+        assertEquals(boGroup.members().size, 3)
 
         assertThrows(XMTPException::class.java) {
             runBlocking { alixGroup.removeMembers(listOf(caro.walletAddress)) }
         }
         runBlocking { boGroup.sync() }
 
-        assertEquals(alixGroup.members(alixClient).size, 3)
-        assertEquals(boGroup.members(boClient).size, 3)
+        assertEquals(alixGroup.members().size, 3)
+        assertEquals(boGroup.members().size, 3)
         runBlocking {
             boGroup.removeMembers(listOf(caro.walletAddress))
             alixGroup.sync()
         }
 
-        assertEquals(alixGroup.members(alixClient).size, 2)
-        assertEquals(boGroup.members(boClient).size, 2)
+        assertEquals(alixGroup.members().size, 2)
+        assertEquals(boGroup.members().size, 2)
 
         assertThrows(XMTPException::class.java) {
             runBlocking { alixGroup.addMembers(listOf(caro.walletAddress)) }
         }
         runBlocking { boGroup.sync() }
 
-        assertEquals(alixGroup.members(alixClient).size, 2)
-        assertEquals(boGroup.members(boClient).size, 2)
+        assertEquals(alixGroup.members().size, 2)
+        assertEquals(boGroup.members().size, 2)
 
         assertEquals(boGroup.permissionPolicySet().addMemberPolicy, PermissionOption.Admin)
         assertEquals(alixGroup.permissionPolicySet().addMemberPolicy, PermissionOption.Admin)
@@ -183,7 +183,7 @@ class GroupTest {
             )
         }
         assertEquals(
-            group.members(boClient).map { it.inboxId }.sorted(),
+            group.members().map { it.inboxId }.sorted(),
             listOf(
                 caroClient.inboxId,
                 alixClient.inboxId,
@@ -291,7 +291,7 @@ class GroupTest {
             boGroup.sync()
         }
         assertEquals(
-            boGroup.members(boClient).map { it.inboxId }.sorted(),
+            boGroup.members().map { it.inboxId }.sorted(),
             listOf(
                 alixClient.inboxId,
                 boClient.inboxId
@@ -303,7 +303,7 @@ class GroupTest {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
         runBlocking { group.addMembersByInboxId(listOf(caroClient.inboxId)) }
         assertEquals(
-            group.members(boClient).map { it.inboxId }.sorted(),
+            group.members().map { it.inboxId }.sorted(),
             listOf(
                 caroClient.inboxId,
                 alixClient.inboxId,
@@ -324,7 +324,7 @@ class GroupTest {
         }
         runBlocking { group.removeMembersByInboxId(listOf(caroClient.inboxId)) }
         assertEquals(
-            group.members(boClient).map { it.inboxId }.sorted(),
+            group.members().map { it.inboxId }.sorted(),
             listOf(
                 alixClient.inboxId,
                 boClient.inboxId
