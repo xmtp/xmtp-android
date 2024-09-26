@@ -61,13 +61,14 @@ sealed class Conversation {
             }
         }
 
-    fun peerAddresses(): List<String> {
-        return when (this) {
-            is V1 -> listOf(conversationV1.peerAddress)
-            is V2 -> listOf(conversationV2.peerAddress)
-            is Group -> runBlocking { group.peerInboxIds() }
+    val peerAddresses: List<String>
+        get() {
+            return when (this) {
+                is V1 -> listOf(conversationV1.peerAddress)
+                is V2 -> listOf(conversationV2.peerAddress)
+                is Group -> runBlocking { group.peerInboxIds() }
+            }
         }
-    }
 
     // This distinctly identifies between two addresses.
     // Note: this will be empty for older v1 conversations.

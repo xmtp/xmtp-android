@@ -192,7 +192,7 @@ class GroupTest {
         )
 
         assertEquals(
-            Conversation.Group(group).peerAddresses().sorted(),
+            Conversation.Group(group).peerAddresses.sorted(),
             listOf(
                 caroClient.inboxId,
                 alixClient.inboxId,
