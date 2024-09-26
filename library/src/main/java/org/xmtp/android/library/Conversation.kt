@@ -102,7 +102,7 @@ sealed class Conversation {
      * @return [TopicData] that contains all the information about the Topic, the conversation
      * context and the necessary encryption data for it.
      */
-    suspend fun toTopicData(): TopicData {
+    fun toTopicData(): TopicData {
         val data = TopicData.newBuilder()
             .setCreatedNs(createdAt.time * 1_000_000)
             .setPeerAddress(peerAddress)
