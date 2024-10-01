@@ -1503,6 +1503,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversations///PointingToDeclaration/library/
 $dokka.location:uniffi.xmtpv3/FfiConversations/FfiConversations/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/-ffi-conversations.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/FfiConversations/#uniffi.xmtpv3.NoPointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/-ffi-conversations.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/close.html
+$dokka.location:uniffi.xmtpv3/FfiConversations/createDm/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/create-dm.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/createGroup/#kotlin.collections.List[kotlin.String]#uniffi.xmtpv3.FfiCreateGroupOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/create-group.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/destroy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/destroy.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/list/#uniffi.xmtpv3.FfiListConversationsOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/list.html
@@ -1514,6 +1515,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversations/syncAllGroups/#/PointingToDeclara
 $dokka.location:uniffi.xmtpv3/FfiConversations/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/uniffi-clone-pointer.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/index.html
+$dokka.location:uniffi.xmtpv3/FfiConversationsInterface/createDm/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/create-dm.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/createGroup/#kotlin.collections.List[kotlin.String]#uniffi.xmtpv3.FfiCreateGroupOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/create-group.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/list/#uniffi.xmtpv3.FfiListConversationsOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/list.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/processStreamedWelcomeMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/process-streamed-welcome-message.html
