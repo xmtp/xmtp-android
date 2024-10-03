@@ -18,6 +18,17 @@ import java.util.Date
 
 interface SigningKey {
     val address: String
+    /// If this signing key is a smart contract wallet
+    val isSmartContractWallet: Boolean
+        get() = false
+    // Default chainId value set to 1
+    var chainId: Long
+        get() = 1
+        set(_) {}
+    // Default blockNumber value set to null
+    var blockNumber: Long
+        get() = 1
+        set(_) {}
 
     suspend fun sign(data: ByteArray): SignatureOuterClass.Signature?
 

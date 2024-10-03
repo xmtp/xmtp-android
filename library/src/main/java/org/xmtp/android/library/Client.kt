@@ -421,8 +421,18 @@ class Client() {
             v3Client.signatureRequest()?.let { signatureRequest ->
                 if (account != null) {
                     account.sign(signatureRequest.signatureText())?.let {
-                        signatureRequest.addEcdsaSignature(it.rawData)
+                        if (account.isSmartContractWallet) {
+                            signatureRequest.addScwSignature(
+                                it.rawData,
+                                account.address,
+                                account.chainId.toULong(),
+                                account.blockNumber.toULong()
+                            )
+                        } else {
+                            signatureRequest.addEcdsaSignature(it.rawData)
+                        }
                     }
+
                     v3Client.registerIdentity(signatureRequest)
                 } else {
                     throw XMTPException("No signer passed but signer was required.")
