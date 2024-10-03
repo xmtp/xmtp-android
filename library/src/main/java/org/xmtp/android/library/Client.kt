@@ -426,7 +426,7 @@ class Client() {
                                 it.rawData,
                                 account.address,
                                 account.chainId.toULong(),
-                                account.blockNumber.toULong()
+                                account.blockNumber?.toULong()
                             )
                         } else {
                             signatureRequest.addEcdsaSignature(it.rawData)

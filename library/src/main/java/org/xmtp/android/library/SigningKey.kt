@@ -26,8 +26,8 @@ interface SigningKey {
         get() = 1
         set(_) {}
     // Default blockNumber value set to null
-    var blockNumber: Long
-        get() = 1
+    var blockNumber: Long?
+        get() = null
         set(_) {}
 
     suspend fun sign(data: ByteArray): SignatureOuterClass.Signature?
