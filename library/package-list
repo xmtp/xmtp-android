@@ -2111,7 +2111,7 @@ $dokka.location:uniffi.xmtpv3/FfiSignatureRequest///PointingToDeclaration/libra
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/FfiSignatureRequest/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/-ffi-signature-request.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/FfiSignatureRequest/#uniffi.xmtpv3.NoPointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/-ffi-signature-request.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/addEcdsaSignature/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/add-ecdsa-signature.html
-$dokka.location:uniffi.xmtpv3/FfiSignatureRequest/addScwSignature/#kotlin.ByteArray#kotlin.String#kotlin.ULong#kotlin.ULong/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/add-scw-signature.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureRequest/addScwSignature/#kotlin.ByteArray#kotlin.String#kotlin.ULong#kotlin.ULong?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/add-scw-signature.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/close.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/destroy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/destroy.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/isReady/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/is-ready.html
@@ -2121,7 +2121,7 @@ $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/uniffiClonePointer/#/PointingT
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/index.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/addEcdsaSignature/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/add-ecdsa-signature.html
-$dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/addScwSignature/#kotlin.ByteArray#kotlin.String#kotlin.ULong#kotlin.ULong/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/add-scw-signature.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/addScwSignature/#kotlin.ByteArray#kotlin.String#kotlin.ULong#kotlin.ULong?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/add-scw-signature.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/isReady/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/is-ready.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/missingAddressSignatures/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/missing-address-signatures.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/signatureText/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/signature-text.html
@@ -2287,6 +2287,8 @@ $dokka.location:uniffi.xmtpv3/GenericException.SignatureRequestException///Point
 $dokka.location:uniffi.xmtpv3/GenericException.SignatureRequestException/SignatureRequestException/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-signature-request-exception/-signature-request-exception.html
 $dokka.location:uniffi.xmtpv3/GenericException.Storage///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-storage/index.html
 $dokka.location:uniffi.xmtpv3/GenericException.Storage/Storage/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-storage/-storage.html
+$dokka.location:uniffi.xmtpv3/GenericException.Verifier///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-verifier/index.html
+$dokka.location:uniffi.xmtpv3/GenericException.Verifier/Verifier/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-verifier/-verifier.html
 $dokka.location:uniffi.xmtpv3/GenericException///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/index.html
 $dokka.location:uniffi.xmtpv3/InternalException///PointingToDeclaration/library/uniffi.xmtpv3/-internal-exception/index.html
 $dokka.location:uniffi.xmtpv3/InternalException/InternalException/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-internal-exception/-internal-exception.html
