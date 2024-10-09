@@ -30,7 +30,7 @@ import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionOption
 import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
-class GroupTest {
+class DmTest {
     private lateinit var alixWallet: PrivateKeyBuilder
     private lateinit var boWallet: PrivateKeyBuilder
     private lateinit var alix: PrivateKey
@@ -68,112 +68,11 @@ class GroupTest {
     }
 
     @Test
-    fun testCanCreateAGroupWithDefaultPermissions() {
-        val boGroup = runBlocking {
-            boClient.conversations.newGroup(listOf(alix.walletAddress))
-        }
-        runBlocking {
-            alixClient.conversations.syncGroups()
-            boGroup.sync()
-        }
-        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
-        assert(boGroup.id.isNotEmpty())
-        assert(alixGroup.id.isNotEmpty())
+    fun testCanCreateADm() {
 
-        runBlocking {
-            alixGroup.addMembers(listOf(caro.walletAddress))
-            boGroup.sync()
-        }
-        assertEquals(runBlocking { alixGroup.members().size }, 3)
-        assertEquals(runBlocking { boGroup.members().size }, 3)
-
-        // All members also defaults remove to admin only now.
-        assertThrows(XMTPException::class.java) {
-            runBlocking {
-                alixGroup.removeMembers(listOf(caro.walletAddress))
-                boGroup.sync()
-            }
-        }
-
-        assertEquals(runBlocking { alixGroup.members().size }, 3)
-        assertEquals(runBlocking { boGroup.members().size }, 3)
-
-        assertEquals(boGroup.permissionPolicySet().addMemberPolicy, PermissionOption.Allow)
-        assertEquals(alixGroup.permissionPolicySet().addMemberPolicy, PermissionOption.Allow)
-        assertEquals(boGroup.isSuperAdmin(boClient.inboxId), true)
-        assertEquals(boGroup.isSuperAdmin(alixClient.inboxId), false)
-        assertEquals(alixGroup.isSuperAdmin(boClient.inboxId), true)
-        assertEquals(alixGroup.isSuperAdmin(alixClient.inboxId), false)
-        // can not fetch creator ID. See https://github.com/xmtp/libxmtp/issues/788
-//       assert(boGroup.isCreator())
-        assert(!alixGroup.isCreator())
     }
-
     @Test
-    fun testCanCreateAGroupWithAdminPermissions() {
-        val boGroup = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(alix.walletAddress),
-                permissions = GroupPermissionPreconfiguration.ADMIN_ONLY
-            )
-        }
-        runBlocking { alixClient.conversations.syncGroups() }
-        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
-        assert(boGroup.id.isNotEmpty())
-        assert(alixGroup.id.isNotEmpty())
-
-        runBlocking {
-            assertEquals(boClient.contacts.consentList.groupState(boGroup.id), ConsentState.ALLOWED)
-            assertEquals(
-                alixClient.contacts.consentList.groupState(alixGroup.id),
-                ConsentState.UNKNOWN
-            )
-        }
-
-        runBlocking {
-            boGroup.addMembers(listOf(caro.walletAddress))
-            alixGroup.sync()
-        }
-
-        assertEquals(runBlocking { alixGroup.members().size }, 3)
-        assertEquals(runBlocking { boGroup.members().size }, 3)
-
-        assertThrows(XMTPException::class.java) {
-            runBlocking { alixGroup.removeMembers(listOf(caro.walletAddress)) }
-        }
-        runBlocking { boGroup.sync() }
-
-        assertEquals(runBlocking { alixGroup.members().size }, 3)
-        assertEquals(runBlocking { boGroup.members().size }, 3)
-        runBlocking {
-            boGroup.removeMembers(listOf(caro.walletAddress))
-            alixGroup.sync()
-        }
-
-        assertEquals(runBlocking { alixGroup.members().size }, 2)
-        assertEquals(runBlocking { boGroup.members().size }, 2)
-
-        assertThrows(XMTPException::class.java) {
-            runBlocking { alixGroup.addMembers(listOf(caro.walletAddress)) }
-        }
-        runBlocking { boGroup.sync() }
-
-        assertEquals(runBlocking { alixGroup.members().size }, 2)
-        assertEquals(runBlocking { boGroup.members().size }, 2)
-
-        assertEquals(boGroup.permissionPolicySet().addMemberPolicy, PermissionOption.Admin)
-        assertEquals(alixGroup.permissionPolicySet().addMemberPolicy, PermissionOption.Admin)
-        assertEquals(boGroup.isSuperAdmin(boClient.inboxId), true)
-        assertEquals(boGroup.isSuperAdmin(alixClient.inboxId), false)
-        assertEquals(alixGroup.isSuperAdmin(boClient.inboxId), true)
-        assertEquals(alixGroup.isSuperAdmin(alixClient.inboxId), false)
-        // can not fetch creator ID. See https://github.com/xmtp/libxmtp/issues/788
-//       assert(boGroup.isCreator())
-        assert(!alixGroup.isCreator())
-    }
-
-    @Test
-    fun testCanListGroupMembers() {
+    fun testCanListDmMembers() {
         val group = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
@@ -209,7 +108,7 @@ class GroupTest {
     }
 
     @Test
-    fun testGroupMetadata() {
+    fun testDmMetadata() {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(alix.walletAddress),
@@ -234,20 +133,6 @@ class GroupTest {
     }
 
     @Test
-    fun testCanAddGroupMembers() {
-        val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
-        runBlocking { group.addMembers(listOf(caro.walletAddress)) }
-        assertEquals(
-            runBlocking { group.members().map { it.inboxId }.sorted() },
-            listOf(
-                caroClient.inboxId,
-                alixClient.inboxId,
-                boClient.inboxId
-            ).sorted()
-        )
-    }
-
-    @Test
     fun testCanRemoveGroupMembers() {
         val group = runBlocking {
             boClient.conversations.newGroup(
@@ -268,122 +153,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanRemoveGroupMembersWhenNotCreator() {
-        val boGroup = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(
-                    alixClient.address,
-                    caroClient.address
-                )
-            )
-        }
-        runBlocking {
-            boGroup.addAdmin(alixClient.inboxId)
-            alixClient.conversations.syncGroups()
-        }
-        val group = runBlocking {
-            alixClient.conversations.syncGroups()
-            alixClient.conversations.listGroups().first()
-        }
-        runBlocking {
-            group.removeMembers(listOf(caroClient.address))
-            group.sync()
-            boGroup.sync()
-        }
-        assertEquals(
-            runBlocking { boGroup.members().map { it.inboxId }.sorted() },
-            listOf(
-                alixClient.inboxId,
-                boClient.inboxId
-            ).sorted()
-        )
-    }
-
-    fun testCanAddGroupMemberIds() {
-        val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
-        runBlocking { group.addMembersByInboxId(listOf(caroClient.inboxId)) }
-        assertEquals(
-            runBlocking { group.members().map { it.inboxId }.sorted() },
-            listOf(
-                caroClient.inboxId,
-                alixClient.inboxId,
-                boClient.inboxId
-            ).sorted()
-        )
-    }
-
-    @Test
-    fun testCanRemoveGroupMemberIds() {
-        val group = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(
-                    alixClient.address,
-                    caroClient.address
-                )
-            )
-        }
-        runBlocking { group.removeMembersByInboxId(listOf(caroClient.inboxId)) }
-        assertEquals(
-            runBlocking { group.members().map { it.inboxId }.sorted() },
-            listOf(
-                alixClient.inboxId,
-                boClient.inboxId
-            ).sorted()
-        )
-    }
-
-    @Test
-    fun testMessageTimeIsCorrect() {
-        val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(boClient.address)) }
-        runBlocking { alixGroup.send("Hello") }
-        assertEquals(alixGroup.decryptedMessages().size, 2)
-        runBlocking { alixGroup.sync() }
-        val message2 = alixGroup.decryptedMessages().last()
-        runBlocking { alixGroup.sync() }
-        val message3 = alixGroup.decryptedMessages().last()
-        assertEquals(message3.id, message2.id)
-        assertEquals(message3.sentAt.time, message2.sentAt.time)
-    }
-
-    @Test
-    fun testIsActiveReturnsCorrectly() {
-        val group = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
-                )
-            )
-        }
-        runBlocking { caroClient.conversations.syncGroups() }
-        val caroGroup = runBlocking { caroClient.conversations.listGroups().first() }
-        runBlocking { caroGroup.sync() }
-        assert(caroGroup.isActive())
-        assert(group.isActive())
-        runBlocking {
-            group.removeMembers(listOf(caro.walletAddress))
-            caroGroup.sync()
-        }
-        assert(group.isActive())
-        assert(!caroGroup.isActive())
-    }
-
-    @Test
-    fun testAddedByAddress() {
-        val group = runBlocking {
-            alixClient.conversations.newGroup(
-                listOf(
-                    boClient.address,
-                )
-            )
-        }
-        runBlocking { boClient.conversations.syncGroups() }
-        val boGroup = runBlocking { boClient.conversations.listGroups().first() }
-        assertEquals(boGroup.addedByInboxId(), alixClient.inboxId)
-    }
-
-    @Test
-    fun testCanListGroups() {
+    fun testCanListDms() {
         runBlocking {
             boClient.conversations.newGroup(listOf(alix.walletAddress))
             boClient.conversations.newGroup(listOf(caro.walletAddress))
@@ -393,7 +163,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanListGroupsAndConversations() {
+    fun testCanListAllConversations() {
         runBlocking {
             boClient.conversations.newGroup(listOf(alix.walletAddress))
             boClient.conversations.newGroup(listOf(caro.walletAddress))
@@ -404,7 +174,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCannotSendMessageToGroupMemberNotOnV3() {
+    fun testCannotCreateDmWithMemberNotOnV3() {
         val chuxAccount = PrivateKeyBuilder()
         val chux: PrivateKey = chuxAccount.getPrivateKey()
         runBlocking { Client().create(account = chuxAccount) }
@@ -415,20 +185,14 @@ class GroupTest {
     }
 
     @Test
-    fun testCannotStartGroupWithSelf() {
+    fun testCannotStartDmWithSelf() {
         assertThrows("Recipient is sender", XMTPException::class.java) {
             runBlocking { boClient.conversations.newGroup(listOf(bo.walletAddress)) }
         }
     }
 
     @Test
-    fun testCanStartEmptyGroupChat() {
-        val group = runBlocking { boClient.conversations.newGroup(listOf()) }
-        assert(group.id.isNotEmpty())
-    }
-
-    @Test
-    fun testGroupStartsWithAllowedState() {
+    fun testDmStartsWithAllowedState() {
         runBlocking {
             val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
             group.send("howdy")
@@ -440,62 +204,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanStreamAndUpdateNameWithoutForkingGroup() {
-        val firstMsgCheck = 2
-        val secondMsgCheck = 5
-        var messageCallbacks = 0
-
-        val job = CoroutineScope(Dispatchers.IO).launch {
-            try {
-                boClient.conversations.streamAllGroupMessages().collect { message ->
-                    messageCallbacks++
-                }
-            } catch (e: Exception) {
-            }
-        }
-        Thread.sleep(1000)
-
-        val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(bo.walletAddress)) }
-
-        runBlocking {
-            alixGroup.send("hello1")
-            alixGroup.updateGroupName("hello")
-            boClient.conversations.syncGroups()
-        }
-
-        val boGroups = runBlocking { boClient.conversations.listGroups() }
-        assertEquals(boGroups.size, 1)
-        val boGroup = boGroups[0]
-        runBlocking {
-            boGroup.sync()
-        }
-
-        val boMessages1 = boGroup.messages()
-        assertEquals(boMessages1.size, firstMsgCheck)
-
-        runBlocking {
-            boGroup.send("hello2")
-            boGroup.send("hello3")
-            alixGroup.sync()
-        }
-        Thread.sleep(1000)
-        val alixMessages = alixGroup.messages()
-        assertEquals(alixMessages.size, secondMsgCheck)
-        runBlocking {
-            alixGroup.send("hello4")
-            boGroup.sync()
-        }
-
-        val boMessages2 = boGroup.messages()
-        assertEquals(boMessages2.size, secondMsgCheck)
-
-        Thread.sleep(1000)
-
-        assertEquals(secondMsgCheck, messageCallbacks)
-    }
-
-    @Test
-    fun testCanSendMessageToGroup() {
+    fun testCanSendMessageToDm() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
         runBlocking { group.send("howdy") }
         val messageId = runBlocking { group.send("gm") }
@@ -513,7 +222,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanListGroupMessages() {
+    fun testCanListDmMessages() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
         runBlocking {
             group.send("howdy")
@@ -534,7 +243,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanSendContentTypesToGroup() {
+    fun testCanSendContentTypesToDm() {
         Client.register(codec = ReactionCodec())
 
         val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
@@ -567,7 +276,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanStreamGroupMessages() = kotlinx.coroutines.test.runTest {
+    fun testCanStreamDmMessages() = kotlinx.coroutines.test.runTest {
         Client.register(codec = GroupUpdatedCodec())
         val membershipChange = TranscriptMessages.GroupUpdated.newBuilder().build()
 
@@ -587,7 +296,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanStreamAllGroupMessages() {
+    fun testCanStreamAllDmMessages() {
         val group = runBlocking { caroClient.conversations.newGroup(listOf(alix.walletAddress)) }
         runBlocking { alixClient.conversations.syncGroups() }
 
@@ -656,7 +365,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanStreamDecryptedGroupMessages() = kotlinx.coroutines.test.runTest {
+    fun testCanStreamDecryptedDmMessages() = kotlinx.coroutines.test.runTest {
         val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
         alixClient.conversations.syncGroups()
         val alixGroup = alixClient.conversations.listGroups().first()
@@ -669,7 +378,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanStreamAllDecryptedGroupMessages() {
+    fun testCanStreamAllDecryptedDmMessages() {
         val group = runBlocking { caroClient.conversations.newGroup(listOf(alix.walletAddress)) }
         runBlocking { alixClient.conversations.syncGroups() }
 
@@ -738,7 +447,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanStreamGroups() = kotlinx.coroutines.test.runTest {
+    fun testCanStreamDms() = kotlinx.coroutines.test.runTest {
         boClient.conversations.streamGroups().test {
             val group =
                 alixClient.conversations.newGroup(listOf(bo.walletAddress))
@@ -746,12 +455,11 @@ class GroupTest {
             val group2 =
                 caroClient.conversations.newGroup(listOf(bo.walletAddress))
             assertEquals(group2.id, awaitItem().id)
-            //Does not stream DMs
         }
     }
 
     @Test
-    fun testCanStreamGroupsAndConversations() {
+    fun testCanStreamAllConversations() {
         val allMessages = mutableListOf<String>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
@@ -769,7 +477,6 @@ class GroupTest {
             alixClient.conversations.newConversation(bo.walletAddress)
             Thread.sleep(2500)
             caroClient.conversations.newGroup(listOf(alix.walletAddress))
-            //Does not stream DMs
         }
 
         Thread.sleep(2500)
@@ -780,7 +487,7 @@ class GroupTest {
     }
 
     @Test
-    fun testGroupConsent() {
+    fun testDmConsent() {
         runBlocking {
             val group =
                 boClient.conversations.newGroup(
@@ -834,7 +541,7 @@ class GroupTest {
     }
 
     @Test
-    fun testCanFetchGroupById() {
+    fun testCanFetchDmById() {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
@@ -902,7 +609,7 @@ class GroupTest {
     }
 
     @Test
-    fun testSyncsAllGroupsInParallel() {
+    fun testSyncsAllDmsInParallel() {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
