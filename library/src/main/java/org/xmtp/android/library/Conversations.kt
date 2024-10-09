@@ -244,6 +244,14 @@ data class Conversations(
         if (peerAddress.lowercase() == client.address.lowercase()) {
             throw XMTPException("Recipient is sender")
         }
+        if (client.v3Client != null) {
+            val conversationV3 = libXMTPConversations?.createDm(peerAddress)
+            if (!client.hasV2Client) {
+                val conversation = Conversation.V3(conversationV3)
+                conversationsByTopic[conversation.topic] = conversation
+                return conversation
+            }
+        }
         val existingConversation = conversationsByTopic.values.firstOrNull {
             it.peerAddress == peerAddress && it.conversationId == context?.conversationId
         }
