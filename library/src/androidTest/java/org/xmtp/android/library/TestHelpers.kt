@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.Envelope
@@ -10,6 +11,8 @@ import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import java.util.Date
+import java.util.*
+import kotlin.text.Charsets.UTF_8
 
 class FakeWallet : SigningKey {
     private var privateKey: PrivateKey
@@ -39,6 +42,51 @@ class FakeWallet : SigningKey {
 
     override val address: String
         get() = privateKey.walletAddress
+}
+
+class FakeSCWWallet : SigningKey {
+    var walletAddress: String
+    private var internalSignature: String
+
+    init {
+        // Simulate a wallet address (could be derived from a hash of some internal data)
+        walletAddress =
+            UUID.randomUUID().toString() // Using UUID for uniqueness in this fake example
+        internalSignature = ByteArray(64) { 0x01 }.toHex() // Fake internal signature
+    }
+
+    override val address: String
+        get() = walletAddress
+
+    override val isSmartContractWallet: Boolean
+        get() = true
+
+    override var chainId: Long = 1L
+
+    companion object {
+        @Throws(Exception::class)
+        fun generate(): FakeSCWWallet {
+            return FakeSCWWallet()
+        }
+    }
+
+    @Throws(Exception::class)
+    override suspend fun sign(data: ByteArray): Signature {
+        val signature = Signature.newBuilder()
+        signature.ecdsaCompact.toBuilder().bytes = internalSignature.hexToByteArray().toByteString()
+        return signature.build()
+    }
+
+    @Throws(Exception::class)
+    override suspend fun sign(message: String): Signature {
+        val digest = message.toByteArray(UTF_8).sha256()
+        return sign(digest)
+    }
+
+    private fun ByteArray.sha256(): ByteArray {
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+        return digest.digest(this)
+    }
 }
 
 data class Fixtures(

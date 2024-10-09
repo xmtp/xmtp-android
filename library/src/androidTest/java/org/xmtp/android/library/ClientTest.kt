@@ -519,4 +519,22 @@ class ClientTest {
         state = runBlocking { alixClient3.inboxState(true) }
         assertEquals(state.installations.size, 1)
     }
+
+    @Test
+    fun testCanCreateASCW() {
+        val key = SecureRandom().generateSeed(32)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val davonSCW = FakeSCWWallet.generate()
+        val davonSCWClient = runBlocking {
+            Client().createOrBuild(
+                account = davonSCW,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
+    }
 }
