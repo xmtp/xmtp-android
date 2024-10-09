@@ -250,6 +250,21 @@ data class Conversations(
         if (existingConversation != null) {
             return existingConversation
         }
+        if (client.v3Client != null) {
+            val falseAddresses =
+                client.canMessageV3(listOf(peerAddress)).filter { !it.value }.map { it.key }
+            if (falseAddresses.isNotEmpty()) {
+                throw XMTPException("${falseAddresses.joinToString()} not on network")
+            }
+            val dm = libXMTPConversations?.createDm(peerAddress)
+                ?: throw XMTPException("Client does not support V3 Dms")
+            client.contacts.allowGroups(groupIds = listOf(dm.id().toHex()))
+            val conversation = Conversation.Dm(Dm(client, dm))
+            conversationsByTopic[conversation.topic] = conversation
+            if (!client.hasV2Client) {
+                return conversation
+            }
+        }
         val contact = client.contacts.find(peerAddress)
             ?: throw XMTPException("Recipient not on network")
         // See if we have an existing v1 convo
