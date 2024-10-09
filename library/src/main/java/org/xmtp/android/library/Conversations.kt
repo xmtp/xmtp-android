@@ -129,11 +129,6 @@ data class Conversations(
         )
     }
 
-    // mark this as private until we enable we sunset V2
-    private suspend fun newDm(accountAddress: String): Dm {
-        return newDmInternal(accountAddress)
-    }
-
     suspend fun newGroupCustomPermissions(
         accountAddresses: List<String>,
         permissionPolicySet: PermissionPolicySet,
@@ -189,21 +184,6 @@ data class Conversations(
         client.contacts.allowGroups(groupIds = listOf(group.id().toHex()))
 
         return Group(client, group)
-    }
-
-    private suspend fun newDmInternal(
-        accountAddress: String,
-    ): Dm {
-        if (accountAddress.lowercase() == client.address.lowercase()) {
-            throw XMTPException("Recipient is sender")
-        }
-        
-        val inboxId = client.inboxIdFromAddress(accountAddress) ?: throw XMTPException("Error getting inbox id, ${accountAddress} not on network")
-        val dm =
-            libXMTPConversations?.createDm(inboxId)?: throw XMTPException("Client does not support V3 Dms")
-        client.contacts.allowGroups(groupIds = listOf(dm.id().toHex()))
-
-        return Dm(client, dm)
     }
 
     // Sync from the network the latest list of groups
@@ -264,19 +244,26 @@ data class Conversations(
         if (peerAddress.lowercase() == client.address.lowercase()) {
             throw XMTPException("Recipient is sender")
         }
-        if (client.v3Client != null) {
-            val conversationV3 = libXMTPConversations?.createDm(peerAddress) ?: throw XMTPException("Client does not support V3 Dms")
-            if (!client.hasV2Client) {
-                val conversation = Conversation.Dm(Dm(client, conversationV3))
-                conversationsByTopic[conversation.topic] = conversation
-                return conversation
-            }
-        }
         val existingConversation = conversationsByTopic.values.firstOrNull {
             it.peerAddress == peerAddress && it.conversationId == context?.conversationId
         }
         if (existingConversation != null) {
             return existingConversation
+        }
+        if (client.v3Client != null) {
+            val falseAddresses =
+                client.canMessageV3(listOf(peerAddress)).filter { !it.value }.map { it.key }
+            if (falseAddresses.isNotEmpty()) {
+                throw XMTPException("${falseAddresses.joinToString()} not on network")
+            }
+            val dm = libXMTPConversations?.createDm(peerAddress)
+                ?: throw XMTPException("Client does not support V3 Dms")
+            client.contacts.allowGroups(groupIds = listOf(dm.id().toHex()))
+            val conversation = Conversation.Dm(Dm(client, dm))
+            conversationsByTopic[conversation.topic] = conversation
+            if (!client.hasV2Client) {
+                return conversation
+            }
         }
         val contact = client.contacts.find(peerAddress)
             ?: throw XMTPException("Recipient not on network")

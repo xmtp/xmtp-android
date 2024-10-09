@@ -3,11 +3,6 @@ package org.xmtp.android.library
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import org.xmtp.android.library.Client
-import org.xmtp.android.library.ConsentState
-import org.xmtp.android.library.DecodedMessage
-import org.xmtp.android.library.SendOptions
-import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
@@ -17,7 +12,6 @@ import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.Topic
-import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import uniffi.xmtpv3.FfiDeliveryStatus
 import uniffi.xmtpv3.FfiGroup
