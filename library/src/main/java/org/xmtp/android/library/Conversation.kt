@@ -5,6 +5,7 @@ import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.EncodedContent
+import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.MessageV3
 import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.Envelope
@@ -32,7 +33,6 @@ sealed class Conversation {
 
     enum class Version { V1, V2, GROUP, DM }
 
-    // This indicates whether this a v1 or v2 conversation.
     val version: Version
         get() {
             return when (this) {
@@ -43,7 +43,26 @@ sealed class Conversation {
             }
         }
 
-    // When the conversation was first created.
+    val id: String
+        get() {
+            return when (this) {
+                is V1 -> throw XMTPException("Only supported for V3")
+                is V2 -> throw XMTPException("Only supported for V3")
+                is Group -> group.id
+                is Dm -> dm.id
+            }
+        }
+
+    val topic: String
+        get() {
+            return when (this) {
+                is V1 -> conversationV1.topic.description
+                is V2 -> conversationV2.topic
+                is Group -> group.topic
+                is Dm -> dm.topic
+            }
+        }
+
     val createdAt: Date
         get() {
             return when (this) {
@@ -54,141 +73,86 @@ sealed class Conversation {
             }
         }
 
-    // This is the address of the peer that I am talking to.
-    val peerAddress: String
+    val name: String
         get() {
             return when (this) {
-                is V1 -> conversationV1.peerAddress
-                is V2 -> conversationV2.peerAddress
-                is Group -> runBlocking { group.peerInboxIds().joinToString(",") }
-                is Dm -> runBlocking { dm.peerInboxIds().joinToString(",") }
+                is V1 -> throw XMTPException("Only supported for V3")
+                is V2 -> throw XMTPException("Only supported for V3")
+                is Group -> group.name
+                is Dm -> dm.name
             }
         }
 
-    val peerAddresses: List<String>
+    val imageUrlSquare: String
         get() {
             return when (this) {
-                is V1 -> listOf(conversationV1.peerAddress)
-                is V2 -> listOf(conversationV2.peerAddress)
-                is Group -> runBlocking { group.peerInboxIds() }
-                is Dm -> runBlocking { dm.peerInboxIds() }
+                is V1 -> throw XMTPException("Only supported for V3")
+                is V2 -> throw XMTPException("Only supported for V3")
+                is Group -> group.imageUrlSquare
+                is Dm -> dm.imageUrlSquare
+            }
+        }
+    val description: String
+        get() {
+            return when (this) {
+                is V1 -> throw XMTPException("Only supported for V3")
+                is V2 -> throw XMTPException("Only supported for V3")
+                is Group -> group.description
+                is Dm -> dm.description
+            }
+        }
+    val pinnedFrameUrl: String
+        get() {
+            return when (this) {
+                is V1 -> throw XMTPException("Only supported for V3")
+                is V2 -> throw XMTPException("Only supported for V3")
+                is Group -> group.pinnedFrameUrl
+                is Dm -> dm.pinnedFrameUrl
             }
         }
 
-    // This distinctly identifies between two addresses.
-    // Note: this will be empty for older v1 conversations.
-    val conversationId: String?
-        get() {
-            return when (this) {
-                is V1 -> null
-                is V2 -> conversationV2.context.conversationId
-                is Group -> null
-                is Dm -> null
-            }
+    fun isCreator(): Boolean {
+        return when (this) {
+            is V1 -> throw XMTPException("Only supported for V3")
+            is V2 -> throw XMTPException("Only supported for V3")
+            is Group -> group.isCreator()
+            is Dm -> dm.isCreator()
         }
+    }
 
-    val keyMaterial: ByteArray?
-        get() {
-            return when (this) {
-                is V1 -> null
-                is V2 -> conversationV2.keyMaterial
-                is Group -> null
-                is Dm -> null
-            }
+    suspend fun members(): List<Member> {
+        return when (this) {
+            is V1 -> throw XMTPException("Only supported for V3")
+            is V2 -> throw XMTPException("Only supported for V3")
+            is Group -> group.members()
+            is Dm -> dm.members()
         }
+    }
+
+    suspend fun updateConsentState(state: ConsentState) {
+        return when (this) {
+            is V1 -> throw XMTPException("Only supported for V3")
+            is V2 -> throw XMTPException("Only supported for V3")
+            is Group -> group.updateConsentState(state)
+            is Dm -> dm.updateConsentState(state)
+        }
+    }
 
     suspend fun consentState(): ConsentState {
         return when (this) {
             is V1 -> conversationV1.client.contacts.consentList.state(address = peerAddress)
             is V2 -> conversationV2.client.contacts.consentList.state(address = peerAddress)
             is Group -> group.consentState()
-            is Dm -> dm.client.contacts.consentList.groupState(groupId = dm.id)
+            is Dm -> dm.consentState()
         }
     }
 
-    /**
-     * This method is to create a TopicData object
-     * @return [TopicData] that contains all the information about the Topic, the conversation
-     * context and the necessary encryption data for it.
-     */
-    fun toTopicData(): TopicData {
-        val data = TopicData.newBuilder()
-            .setCreatedNs(createdAt.time * 1_000_000)
-            .setPeerAddress(peerAddress)
+    suspend fun <T> prepareMessageV3(content: T, options: SendOptions? = null): String {
         return when (this) {
-            is V1 -> data.build()
-            is V2 -> data.setInvitation(
-                Invitation.InvitationV1.newBuilder()
-                    .setTopic(topic)
-                    .setContext(conversationV2.context)
-                    .setAes256GcmHkdfSha256(
-                        Aes256gcmHkdfsha256.newBuilder()
-                            .setKeyMaterial(conversationV2.keyMaterial.toByteString()),
-                    ),
-            ).build()
-
-            is Group -> throw XMTPException("Groups do not support topics")
-            is Dm -> throw XMTPException("DMs do not support topics")
-        }
-    }
-
-    fun decode(envelope: Envelope, message: MessageV3? = null): DecodedMessage {
-        return when (this) {
-            is V1 -> conversationV1.decode(envelope)
-            is V2 -> conversationV2.decodeEnvelope(envelope)
-            is Group -> message?.decode() ?: throw XMTPException("Groups require message be passed")
-            is Dm -> throw XMTPException("DMs require message be passed")
-        }
-    }
-
-    fun decodeOrNull(envelope: Envelope): DecodedMessage? {
-        return try {
-            decode(envelope)
-        } catch (e: Exception) {
-            Log.d("CONVERSATION", "discarding message that failed to decode", e)
-            null
-        }
-    }
-
-    fun <T> prepareMessage(content: T, options: SendOptions? = null): PreparedMessage {
-        return when (this) {
-            is V1 -> {
-                conversationV1.prepareMessage(content = content, options = options)
-            }
-
-            is V2 -> {
-                conversationV2.prepareMessage(content = content, options = options)
-            }
-
-            is Group -> throw XMTPException("Groups do not support prepared messages") // We return a encoded content not a preparedmessage which requires a envelope
-            is Dm -> throw XMTPException("DMs do not support prepared messages")
-        }
-    }
-
-    fun prepareMessage(
-        encodedContent: EncodedContent,
-        options: SendOptions? = null,
-    ): PreparedMessage {
-        return when (this) {
-            is V1 -> {
-                conversationV1.prepareMessage(encodedContent = encodedContent, options = options)
-            }
-
-            is V2 -> {
-                conversationV2.prepareMessage(encodedContent = encodedContent, options = options)
-            }
-
-            is Group -> throw XMTPException("Groups do not support prepared messages") // We return a encoded content not a preparedmessage which requires a envelope
-            is Dm -> throw XMTPException("DMs do not support prepared messages")
-        }
-    }
-
-    suspend fun send(prepared: PreparedMessage): String {
-        return when (this) {
-            is V1 -> conversationV1.send(prepared = prepared)
-            is V2 -> conversationV2.send(prepared = prepared)
-            is Group -> throw XMTPException("Groups do not support prepared messages") // We return a encoded content not a prepared Message which requires a envelope
-            is Dm -> throw XMTPException("DMs do not support prepared messages")
+            is V1 -> throw XMTPException("Only supported for V3")
+            is V2 -> throw XMTPException("Only supported for V3")
+            is Group -> group.prepareMessage(content, options)
+            is Dm -> dm.prepareMessage(content, options)
         }
     }
 
@@ -218,22 +182,6 @@ sealed class Conversation {
             is Dm -> dm.send(encodedContent = encodedContent)
         }
     }
-
-    val clientAddress: String
-        get() {
-            return client.address
-        }
-
-    // Is the topic of the conversation depending on the version
-    val topic: String
-        get() {
-            return when (this) {
-                is V1 -> conversationV1.topic.description
-                is V2 -> conversationV2.topic
-                is Group -> group.topic
-                is Dm -> dm.topic
-            }
-        }
 
     /**
      * This lists messages sent to the [Conversation].
@@ -278,6 +226,7 @@ sealed class Conversation {
                     direction = direction,
                 )
             }
+
             is Dm -> dm.messages(limit, before, after, direction)
         }
     }
@@ -296,19 +245,23 @@ sealed class Conversation {
         }
     }
 
-    fun decrypt(
-        envelope: Envelope,
-        message: MessageV3? = null,
+    fun decryptV3(
+        message: MessageV3,
     ): DecryptedMessage {
         return when (this) {
-            is V1 -> conversationV1.decrypt(envelope)
-            is V2 -> conversationV2.decrypt(envelope)
-            is Group -> {
-                message?.decrypt() ?: throw XMTPException("Groups require message be passed")
-            }
-            is Dm -> {
-                message?.decrypt() ?: throw XMTPException("DMs require message be passed")
-            }
+            is V1 -> throw XMTPException("Only supported for V3")
+            is V2 -> throw XMTPException("Only supported for V3")
+            is Group -> message.decrypt()
+            is Dm -> message.decrypt()
+        }
+    }
+
+    fun decodeV3(message: MessageV3): DecodedMessage {
+        return when (this) {
+            is V1 -> throw XMTPException("Only supported for V3")
+            is V2 -> throw XMTPException("Only supported for V3")
+            is Group -> message.decode()
+            is Dm -> message.decode()
         }
     }
 
@@ -354,6 +307,149 @@ sealed class Conversation {
             is Dm -> dm.streamDecryptedMessages()
         }
     }
+
+    // ------- V1 V2 to be deprecated ------
+
+    fun decrypt(
+        envelope: Envelope,
+    ): DecryptedMessage {
+        return when (this) {
+            is V1 -> conversationV1.decrypt(envelope)
+            is V2 -> conversationV2.decrypt(envelope)
+            is Group -> throw XMTPException("Use decryptV3 instead")
+            is Dm -> throw XMTPException("Use decryptV3 instead")
+        }
+    }
+
+    fun decode(envelope: Envelope): DecodedMessage {
+        return when (this) {
+            is V1 -> conversationV1.decode(envelope)
+            is V2 -> conversationV2.decodeEnvelope(envelope)
+            is Group -> throw XMTPException("Use decodeV3 instead")
+            is Dm -> throw XMTPException("Use decodeV3 instead")
+        }
+    }
+
+    // This is the address of the peer that I am talking to.
+    val peerAddress: String
+        get() {
+            return when (this) {
+                is V1 -> conversationV1.peerAddress
+                is V2 -> conversationV2.peerAddress
+                is Group -> runBlocking { group.peerInboxIds().joinToString(",") }
+                is Dm -> runBlocking { dm.peerInboxId() }
+            }
+        }
+
+    val peerAddresses: List<String>
+        get() {
+            return when (this) {
+                is V1 -> listOf(conversationV1.peerAddress)
+                is V2 -> listOf(conversationV2.peerAddress)
+                is Group -> runBlocking { group.peerInboxIds() }
+                is Dm -> runBlocking { listOf(dm.peerInboxId()) }
+            }
+        }
+
+    // This distinctly identifies between two addresses.
+    // Note: this will be empty for older v1 conversations.
+    val conversationId: String?
+        get() {
+            return when (this) {
+                is V1 -> null
+                is V2 -> conversationV2.context.conversationId
+                is Group -> null
+                is Dm -> null
+            }
+        }
+
+    val keyMaterial: ByteArray?
+        get() {
+            return when (this) {
+                is V1 -> null
+                is V2 -> conversationV2.keyMaterial
+                is Group -> null
+                is Dm -> null
+            }
+        }
+
+    /**
+     * This method is to create a TopicData object
+     * @return [TopicData] that contains all the information about the Topic, the conversation
+     * context and the necessary encryption data for it.
+     */
+    fun toTopicData(): TopicData {
+        val data = TopicData.newBuilder()
+            .setCreatedNs(createdAt.time * 1_000_000)
+            .setPeerAddress(peerAddress)
+        return when (this) {
+            is V1 -> data.build()
+            is V2 -> data.setInvitation(
+                Invitation.InvitationV1.newBuilder()
+                    .setTopic(topic)
+                    .setContext(conversationV2.context)
+                    .setAes256GcmHkdfSha256(
+                        Aes256gcmHkdfsha256.newBuilder()
+                            .setKeyMaterial(conversationV2.keyMaterial.toByteString()),
+                    ),
+            ).build()
+
+            is Group -> throw XMTPException("Groups do not support topics")
+            is Dm -> throw XMTPException("DMs do not support topics")
+        }
+    }
+
+    fun decodeOrNull(envelope: Envelope): DecodedMessage? {
+        return try {
+            decode(envelope)
+        } catch (e: Exception) {
+            Log.d("CONVERSATION", "discarding message that failed to decode", e)
+            null
+        }
+    }
+
+    fun <T> prepareMessage(content: T, options: SendOptions? = null): PreparedMessage {
+        return when (this) {
+            is V1 -> conversationV1.prepareMessage(content = content, options = options)
+            is V2 -> conversationV2.prepareMessage(content = content, options = options)
+            is Group -> throw XMTPException("Use prepareMessageV3 instead")
+            is Dm -> throw XMTPException("Use prepareMessageV3 instead")
+        }
+    }
+
+    fun prepareMessage(
+        encodedContent: EncodedContent,
+        options: SendOptions? = null,
+    ): PreparedMessage {
+        return when (this) {
+            is V1 -> conversationV1.prepareMessage(
+                encodedContent = encodedContent,
+                options = options
+            )
+
+            is V2 -> conversationV2.prepareMessage(
+                encodedContent = encodedContent,
+                options = options
+            )
+
+            is Group -> throw XMTPException("Use prepareMessageV3 instead")
+            is Dm -> throw XMTPException("Use prepareMessageV3 instead")
+        }
+    }
+
+    suspend fun send(prepared: PreparedMessage): String {
+        return when (this) {
+            is V1 -> conversationV1.send(prepared = prepared)
+            is V2 -> conversationV2.send(prepared = prepared)
+            is Group -> throw XMTPException("Groups do not support sending prepared messages call sync instead")
+            is Dm -> throw XMTPException("DMs do not support sending prepared messages call sync instead")
+        }
+    }
+
+    val clientAddress: String
+        get() {
+            return client.address
+        }
 
     fun streamEphemeral(): Flow<Envelope> {
         return when (this) {

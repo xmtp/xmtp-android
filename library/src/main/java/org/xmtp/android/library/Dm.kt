@@ -41,9 +41,6 @@ class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
     private val metadata: FfiGroupMetadata
         get() = libXMTPGroup.groupMetadata()
 
-    private val permissions: FfiGroupPermissions
-        get() = libXMTPGroup.groupPermissions()
-
     val name: String
         get() = libXMTPGroup.groupName()
 
@@ -66,8 +63,8 @@ class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     suspend fun send(encodedContent: EncodedContent): String {
-        if (client.contacts.consentList.groupState(groupId = id) == ConsentState.UNKNOWN) {
-            client.contacts.allowGroups(groupIds = listOf(id))
+        if (consentState() == ConsentState.UNKNOWN) {
+            updateConsentState(ConsentState.ALLOWED)
         }
         val messageId = libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
         return messageId.toHex()
@@ -100,8 +97,8 @@ class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     suspend fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
-        if (client.contacts.consentList.groupState(groupId = id) == ConsentState.UNKNOWN) {
-            client.contacts.allowGroups(groupIds = listOf(id))
+        if (consentState() == ConsentState.UNKNOWN) {
+            updateConsentState(ConsentState.ALLOWED)
         }
         val encodeContent = encodeContent(content = content, options = options)
         return libXMTPGroup.sendOptimistic(encodeContent.toByteArray()).toHex()
@@ -178,18 +175,6 @@ class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
         return MessageV3(client, message)
     }
 
-    fun isActive(): Boolean {
-        return libXMTPGroup.isActive()
-    }
-
-    fun addedByInboxId(): String {
-        return libXMTPGroup.addedByInboxId()
-    }
-
-    fun permissionPolicySet(): PermissionPolicySet {
-        return PermissionPolicySet.fromFfiPermissionPolicySet(permissions.policySet())
-    }
-
     fun creatorInboxId(): String {
         return metadata.creatorInboxId()
     }
@@ -198,49 +183,17 @@ class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
         return metadata.creatorInboxId() == client.inboxId
     }
 
-    suspend fun addMembers(addresses: List<String>) {
-        try {
-            libXMTPGroup.addMembers(addresses)
-        } catch (e: Exception) {
-            throw XMTPException("Unable to add member", e)
-        }
-    }
-
-    suspend fun removeMembers(addresses: List<String>) {
-        try {
-            libXMTPGroup.removeMembers(addresses)
-        } catch (e: Exception) {
-            throw XMTPException("Unable to remove member", e)
-        }
-    }
-
-    suspend fun addMembersByInboxId(inboxIds: List<String>) {
-        try {
-            libXMTPGroup.addMembersByInboxId(inboxIds)
-        } catch (e: Exception) {
-            throw XMTPException("Unable to add member", e)
-        }
-    }
-
-    suspend fun removeMembersByInboxId(inboxIds: List<String>) {
-        try {
-            libXMTPGroup.removeMembersByInboxId(inboxIds)
-        } catch (e: Exception) {
-            throw XMTPException("Unable to remove member", e)
-        }
-    }
-
     suspend fun members(): List<Member> {
         return libXMTPGroup.listMembers().map { Member(it) }
     }
 
-    suspend fun peerInboxIds(): List<String> {
+    suspend fun peerInboxId(): String {
         val ids = members().map { it.inboxId }.toMutableList()
         ids.remove(client.inboxId)
-        return ids
+        return ids.first()
     }
 
-    suspend fun updateGroupName(name: String) {
+    suspend fun updateName(name: String) {
         try {
             return libXMTPGroup.updateGroupName(name)
         } catch (e: Exception) {
@@ -248,7 +201,7 @@ class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
     }
 
-    suspend fun updateGroupImageUrlSquare(imageUrl: String) {
+    suspend fun updateImageUrlSquare(imageUrl: String) {
         try {
             return libXMTPGroup.updateGroupImageUrlSquare(imageUrl)
         } catch (e: Exception) {
@@ -256,7 +209,7 @@ class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
     }
 
-    suspend fun updateGroupDescription(description: String) {
+    suspend fun updateDescription(description: String) {
         try {
             return libXMTPGroup.updateGroupDescription(description)
         } catch (e: Exception) {
@@ -264,124 +217,12 @@ class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
         }
     }
 
-    suspend fun updateGroupPinnedFrameUrl(pinnedFrameUrl: String) {
+    suspend fun updatePinnedFrameUrl(pinnedFrameUrl: String) {
         try {
             return libXMTPGroup.updateGroupPinnedFrameUrl(pinnedFrameUrl)
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to update pinned frame", e)
         }
-    }
-
-    suspend fun updateAddMemberPermission(newPermissionOption: PermissionOption) {
-        return libXMTPGroup.updatePermissionPolicy(
-            FfiPermissionUpdateType.ADD_MEMBER,
-            PermissionOption.toFfiPermissionPolicy(newPermissionOption),
-            null
-        )
-    }
-
-    suspend fun updateRemoveMemberPermission(newPermissionOption: PermissionOption) {
-        return libXMTPGroup.updatePermissionPolicy(
-            FfiPermissionUpdateType.REMOVE_MEMBER,
-            PermissionOption.toFfiPermissionPolicy(newPermissionOption),
-            null
-        )
-    }
-
-    suspend fun updateAddAdminPermission(newPermissionOption: PermissionOption) {
-        return libXMTPGroup.updatePermissionPolicy(
-            FfiPermissionUpdateType.ADD_ADMIN,
-            PermissionOption.toFfiPermissionPolicy(newPermissionOption),
-            null
-        )
-    }
-
-    suspend fun updateRemoveAdminPermission(newPermissionOption: PermissionOption) {
-        return libXMTPGroup.updatePermissionPolicy(
-            FfiPermissionUpdateType.REMOVE_ADMIN,
-            PermissionOption.toFfiPermissionPolicy(newPermissionOption),
-            null
-        )
-    }
-
-    suspend fun updateGroupNamePermission(newPermissionOption: PermissionOption) {
-        return libXMTPGroup.updatePermissionPolicy(
-            FfiPermissionUpdateType.UPDATE_METADATA,
-            PermissionOption.toFfiPermissionPolicy(newPermissionOption),
-            FfiMetadataField.GROUP_NAME
-        )
-    }
-
-    suspend fun updateGroupDescriptionPermission(newPermissionOption: PermissionOption) {
-        return libXMTPGroup.updatePermissionPolicy(
-            FfiPermissionUpdateType.UPDATE_METADATA,
-            PermissionOption.toFfiPermissionPolicy(newPermissionOption),
-            FfiMetadataField.DESCRIPTION
-        )
-    }
-
-    suspend fun updateGroupImageUrlSquarePermission(newPermissionOption: PermissionOption) {
-        return libXMTPGroup.updatePermissionPolicy(
-            FfiPermissionUpdateType.UPDATE_METADATA,
-            PermissionOption.toFfiPermissionPolicy(newPermissionOption),
-            FfiMetadataField.IMAGE_URL_SQUARE
-        )
-    }
-
-    suspend fun updateGroupPinnedFrameUrlPermission(newPermissionOption: PermissionOption) {
-        return libXMTPGroup.updatePermissionPolicy(
-            FfiPermissionUpdateType.UPDATE_METADATA,
-            PermissionOption.toFfiPermissionPolicy(newPermissionOption),
-            FfiMetadataField.PINNED_FRAME_URL
-        )
-    }
-
-    fun isAdmin(inboxId: String): Boolean {
-        return libXMTPGroup.isAdmin(inboxId)
-    }
-
-    fun isSuperAdmin(inboxId: String): Boolean {
-        return libXMTPGroup.isSuperAdmin(inboxId)
-    }
-
-    suspend fun addAdmin(inboxId: String) {
-        try {
-            libXMTPGroup.addAdmin(inboxId)
-        } catch (e: Exception) {
-            throw XMTPException("Permission denied: Unable to add admin", e)
-        }
-    }
-
-    suspend fun removeAdmin(inboxId: String) {
-        try {
-            libXMTPGroup.removeAdmin(inboxId)
-        } catch (e: Exception) {
-            throw XMTPException("Permission denied: Unable to remove admin", e)
-        }
-    }
-
-    suspend fun addSuperAdmin(inboxId: String) {
-        try {
-            libXMTPGroup.addSuperAdmin(inboxId)
-        } catch (e: Exception) {
-            throw XMTPException("Permission denied: Unable to add super admin", e)
-        }
-    }
-
-    suspend fun removeSuperAdmin(inboxId: String) {
-        try {
-            libXMTPGroup.removeSuperAdmin(inboxId)
-        } catch (e: Exception) {
-            throw XMTPException("Permission denied: Unable to remove super admin", e)
-        }
-    }
-
-    suspend fun listAdmins(): List<String> {
-        return libXMTPGroup.adminList()
-    }
-
-    suspend fun listSuperAdmins(): List<String> {
-        return libXMTPGroup.superAdminList()
     }
 
     fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
@@ -410,5 +251,22 @@ class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
 
         val stream = libXMTPGroup.stream(messageCallback)
         awaitClose { stream.end() }
+    }
+
+    suspend fun updateConsentState(state: ConsentState) {
+        if (client.hasV2Client) {
+            when (state) {
+                ConsentState.ALLOWED -> client.contacts.allowGroups(groupIds = listOf(id))
+                ConsentState.DENIED -> client.contacts.denyGroups(groupIds = listOf(id))
+                ConsentState.UNKNOWN -> Unit
+            }
+        }
+
+        val consentState = ConsentState.toFfiConsentState(state)
+        libXMTPGroup.updateConsentState(consentState)
+    }
+
+    fun consentState(): ConsentState {
+        return ConsentState.fromFfiConsentState(libXMTPGroup.consentState())
     }
 }
