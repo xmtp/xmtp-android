@@ -1205,6 +1205,10 @@ internal interface UniffiLib : Library {
         `newWalletAddress`: RustBuffer.ByValue,
     ): Long
 
+    fun uniffi_xmtpv3_fn_method_ffixmtpclient_addresses_from_inbox_id(
+        `ptr`: Pointer, `refreshFromNetwork`: Byte, `inboxIds`: RustBuffer.ByValue,
+    ): Long
+
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_apply_signature_request(
         `ptr`: Pointer, `signatureRequest`: Pointer,
     ): Long
@@ -1865,6 +1869,9 @@ internal interface UniffiLib : Library {
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_add_wallet(
     ): Short
 
+    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_addresses_from_inbox_id(
+    ): Short
+
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_apply_signature_request(
     ): Short
 
@@ -2201,6 +2208,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_add_wallet() != 23786.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_addresses_from_inbox_id() != 29264.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_apply_signature_request() != 32172.toShort()) {
@@ -6258,6 +6268,17 @@ public interface FfiXmtpClientInterface {
         `newWalletAddress`: kotlin.String,
     ): FfiSignatureRequest
 
+    /**
+     * * Get the inbox state for each `inbox_id`.
+     *      *
+     *      * If `refresh_from_network` is true, the client will go to the network first to refresh the state.
+     *      * Otherwise, the state will be read from the local database.
+     */
+    suspend fun `addressesFromInboxId`(
+        `refreshFromNetwork`: kotlin.Boolean,
+        `inboxIds`: List<kotlin.String>,
+    ): List<FfiInboxState>
+
     suspend fun `applySignatureRequest`(`signatureRequest`: FfiSignatureRequest)
 
     suspend fun `canMessage`(`accountAddresses`: List<kotlin.String>): Map<kotlin.String, kotlin.Boolean>
@@ -6429,6 +6450,48 @@ open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
             // lift function
             { FfiConverterTypeFfiSignatureRequest.lift(it) },
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+
+    /**
+     * * Get the inbox state for each `inbox_id`.
+     *      *
+     *      * If `refresh_from_network` is true, the client will go to the network first to refresh the state.
+     *      * Otherwise, the state will be read from the local database.
+     */
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `addressesFromInboxId`(
+        `refreshFromNetwork`: kotlin.Boolean,
+        `inboxIds`: List<kotlin.String>,
+    ): List<FfiInboxState> {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_addresses_from_inbox_id(
+                    thisPtr,
+                    FfiConverterBoolean.lower(`refreshFromNetwork`),
+                    FfiConverterSequenceString.lower(`inboxIds`),
+                )
+            },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
+            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+            // lift function
+            { FfiConverterSequenceTypeFfiInboxState.lift(it) },
             // Error FFI converter
             GenericException.ErrorHandler,
         )
@@ -8736,6 +8799,29 @@ public object FfiConverterSequenceTypeFfiGroupMember :
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeFfiGroupMember.write(it, buf)
+        }
+    }
+}
+
+
+public object FfiConverterSequenceTypeFfiInboxState : FfiConverterRustBuffer<List<FfiInboxState>> {
+    override fun read(buf: ByteBuffer): List<FfiInboxState> {
+        val len = buf.getInt()
+        return List<FfiInboxState>(len) {
+            FfiConverterTypeFfiInboxState.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<FfiInboxState>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeFfiInboxState.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<FfiInboxState>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeFfiInboxState.write(it, buf)
         }
     }
 }
