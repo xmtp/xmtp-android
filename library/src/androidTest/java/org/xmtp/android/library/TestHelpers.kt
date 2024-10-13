@@ -4,6 +4,7 @@ import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.Hash
+import org.web3j.crypto.Sign
 import org.web3j.protocol.Web3j
 import org.web3j.tx.gas.DefaultGasProvider
 import org.xmtp.android.library.artifact.CoinbaseSmartWallet
@@ -16,6 +17,7 @@ import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.math.BigInteger
 import java.security.SecureRandom
 import java.util.Date
@@ -93,11 +95,15 @@ class FakeSCWWallet(
         SecureRandom().nextBytes(randomHash)
 
         val replaySafeHash = smartWallet.replaySafeHash(randomHash).send()
+        val signedHash = Sign.signMessage(replaySafeHash, credentials.ecKeyPair)
+        val signatureKey = KeyUtil.getSignatureBytes(signedHash)
 
-        val signature = Signature.newBuilder()
-        signature.ecdsaCompact.toBuilder().bytes = replaySafeHash.toByteString()
-
-        return signature.build()
+        return SignatureOuterClass.Signature.newBuilder().also {
+            it.ecdsaCompact = it.ecdsaCompact.toBuilder().also { builder ->
+                builder.bytes = signatureKey.take(64).toByteArray().toByteString()
+                builder.recovery = signatureKey[64].toInt()
+            }.build()
+        }.build()
     }
 
     override suspend fun sign(message: String): Signature {

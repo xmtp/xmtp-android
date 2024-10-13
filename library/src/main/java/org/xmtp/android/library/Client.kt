@@ -423,7 +423,7 @@ class Client() {
                     account.sign(signatureRequest.signatureText())?.let {
                         if (account.isSmartContractWallet) {
                             signatureRequest.addScwSignature(
-                                it.ecdsaCompact.bytes.toByteArray(),
+                                it.rawData,
                                 account.address,
                                 account.chainId.toULong(),
                                 account.blockNumber?.toULong()
