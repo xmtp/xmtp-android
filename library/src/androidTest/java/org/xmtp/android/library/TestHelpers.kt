@@ -2,6 +2,12 @@ package org.xmtp.android.library
 
 import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.runBlocking
+import org.web3j.crypto.Credentials
+import org.web3j.crypto.Hash
+import org.web3j.protocol.Web3j
+import org.web3j.tx.gas.DefaultGasProvider
+import org.xmtp.android.library.artifact.CoinbaseSmartWallet
+import org.xmtp.android.library.artifact.CoinbaseSmartWalletFactory
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.PrivateKey
@@ -10,9 +16,9 @@ import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
+import java.math.BigInteger
+import java.security.SecureRandom
 import java.util.Date
-import java.util.*
-import kotlin.text.Charsets.UTF_8
 
 class FakeWallet : SigningKey {
     private var privateKey: PrivateKey
@@ -44,17 +50,19 @@ class FakeWallet : SigningKey {
         get() = privateKey.walletAddress
 }
 
-class FakeSCWWallet : SigningKey {
-    var walletAddress: String
-    private var internalSignature: String
+class FakeSCWWallet(
+    private val web3j: Web3j,
+    private val credentials: Credentials,
+) : SigningKey {
+    var walletAddress: String = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 
     init {
-        // Simulate a wallet address (could be derived from a hash of some internal data)
-        walletAddress =
-            UUID.randomUUID().toString() // Using UUID for uniqueness in this fake example
-        internalSignature = ByteArray(64) { 0x01 }.toHex() // Fake internal signature
+        runBlocking {
+            createSmartContractWallet()
+        }
     }
 
+    // Override address to return the created smart contract wallet address
     override val address: String
         get() = walletAddress
 
@@ -64,22 +72,36 @@ class FakeSCWWallet : SigningKey {
     override var chainId: Long = 1L
 
     companion object {
-        @Throws(Exception::class)
-        fun generate(): FakeSCWWallet {
-            return FakeSCWWallet()
+        fun generate(
+            web3j: Web3j,
+            credentials: Credentials,
+        ): FakeSCWWallet {
+            return FakeSCWWallet(web3j, credentials).apply {
+                runBlocking { createSmartContractWallet() }
+            }
         }
     }
 
-    @Throws(Exception::class)
     override suspend fun sign(data: ByteArray): Signature {
+        val smartWallet = CoinbaseSmartWallet.deploy(
+            web3j,
+            credentials,
+            DefaultGasProvider()
+        ).send()
+
+        val randomHash = ByteArray(32)
+        SecureRandom().nextBytes(randomHash)
+
+        val replaySafeHash = smartWallet.replaySafeHash(randomHash).send()
+
         val signature = Signature.newBuilder()
-        signature.ecdsaCompact.toBuilder().bytes = internalSignature.hexToByteArray().toByteString()
+        signature.ecdsaCompact.toBuilder().bytes = replaySafeHash.toByteString()
+
         return signature.build()
     }
 
-    @Throws(Exception::class)
     override suspend fun sign(message: String): Signature {
-        val digest = message.toByteArray(UTF_8).sha256()
+        val digest = message.toByteArray(Charsets.UTF_8).sha256()
         return sign(digest)
     }
 
@@ -87,7 +109,30 @@ class FakeSCWWallet : SigningKey {
         val digest = java.security.MessageDigest.getInstance("SHA-256")
         return digest.digest(this)
     }
+
+    private fun createSmartContractWallet() {
+        val factory = CoinbaseSmartWalletFactory.deploy(
+            web3j,
+            credentials,
+            DefaultGasProvider(),
+            BigInteger.ZERO,
+            "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+        ).send()
+
+        val owners = listOf(Hash.sha3(credentials.address.toByteArray()))
+        val nonce = BigInteger.ZERO
+
+        val smartWalletAddress = factory.getAddress(owners, nonce).send()
+        val transactionReceipt = factory.createAccount(owners, nonce, BigInteger.ZERO).send()
+
+        if (transactionReceipt.isStatusOK) {
+            walletAddress = smartWalletAddress
+        } else {
+            throw Exception("Transaction failed: ${transactionReceipt.status}")
+        }
+    }
 }
+
 
 data class Fixtures(
     val clientOptions: ClientOptions? = ClientOptions(
