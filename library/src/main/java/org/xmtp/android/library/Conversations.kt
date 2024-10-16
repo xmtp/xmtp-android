@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.Util.Companion.envelopeFromFFi
 import org.xmtp.android.library.libxmtp.MessageV3
@@ -441,12 +442,14 @@ data class Conversations(
                     conversationsByTopic.putAll(
                         dms.filter { dm ->
                             conversationsByTopic.values.none { existing ->
-                                val existingInboxId = client.inboxIdFromAddress(existing.peerAddress)?.lowercase()
+                                val existingInboxId =
+                                    client.inboxIdFromAddress(existing.peerAddress)?.lowercase()
                                 existingInboxId != null && existingInboxId == dm.peerAddress.lowercase()
                             }
                         }.associateBy { dm -> dm.topic }
                     )
-                } catch (e: Exception) {}
+                } catch (e: Exception) {
+                }
             }
         }
 
@@ -567,14 +570,27 @@ data class Conversations(
         val conversationCallback = object : FfiConversationCallback {
             override fun onConversation(conversation: FfiConversation) {
                 if (conversation.groupMetadata().conversationType() == "dm") {
-                    trySend(Conversation.Dm(Dm(client, conversation)))
+                    launch {
+                        val dm = Dm(client, conversation)
+                        val matchingConversations = list().filter {
+                            client.inboxIdFromAddress(it.peerAddress)?.lowercase() ==
+                                    dm.peerInboxId().lowercase()
+                        }
+
+                        // Only send the DM if no V2 DM exists
+                        if (matchingConversations.none { it.version == Conversation.Version.V2 }) {
+                            trySend(Conversation.Dm(dm)).isSuccess
+                        }
+                    }
                 } else {
-                    trySend(Conversation.Group(Group(client, conversation)))
+                    trySend(Conversation.Group(Group(client, conversation))).isSuccess
                 }
             }
         }
+
         val stream = libXMTPConversations?.stream(conversationCallback)
             ?: throw XMTPException("Client does not support Groups")
+
         awaitClose { stream.end() }
     }
 
@@ -682,28 +698,68 @@ data class Conversations(
     fun streamAllConversationMessages(): Flow<DecodedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
+                val conversation = client.findConversation(message.convoId.toHex())
                 val decodedMessage = MessageV3(client, message).decodeOrNull()
-                decodedMessage?.let {
-                    trySend(it)
+
+                when (conversation?.version) {
+                    Conversation.Version.DM -> {
+                        launch {
+                            val matchingConversations = list().filter {
+                                client.inboxIdFromAddress(it.peerAddress)?.lowercase() ==
+                                        conversation.peerAddress
+                            }
+
+                            // If there is no V2 conversation, send the decoded message
+                            if (matchingConversations.none { it.version == Conversation.Version.V2 }) {
+                                decodedMessage?.let { trySend(it).isSuccess }
+                            }
+                        }
+                    }
+
+                    else -> {
+                        decodedMessage?.let { trySend(it).isSuccess }
+                    }
                 }
             }
         }
+
         val stream = libXMTPConversations?.streamAllMessages(messageCallback)
             ?: throw XMTPException("Client does not support Groups")
+
         awaitClose { stream.end() }
     }
 
     fun streamAllConversationDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
+                val conversation = client.findConversation(message.convoId.toHex())
                 val decryptedMessage = MessageV3(client, message).decryptOrNull()
-                decryptedMessage?.let {
-                    trySend(it)
+
+                when (conversation?.version) {
+                    Conversation.Version.DM -> {
+                        launch {
+                            val matchingConversations = list().filter {
+                                client.inboxIdFromAddress(it.peerAddress)?.lowercase() ==
+                                        conversation.peerAddress
+                            }
+
+                            // If there is no V2 conversation, send the decoded message
+                            if (matchingConversations.none { it.version == Conversation.Version.V2 }) {
+                                decryptedMessage?.let { trySend(it).isSuccess }
+                            }
+                        }
+                    }
+
+                    else -> {
+                        decryptedMessage?.let { trySend(it).isSuccess }
+                    }
                 }
             }
         }
+
         val stream = libXMTPConversations?.streamAllMessages(messageCallback)
             ?: throw XMTPException("Client does not support Groups")
+
         awaitClose { stream.end() }
     }
 

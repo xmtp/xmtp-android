@@ -628,7 +628,7 @@ class GroupTest {
         val group = runBlocking { caroClient.conversations.newGroup(listOf(alix.walletAddress)) }
         val conversation =
             runBlocking { boClient.conversations.newConversation(alix.walletAddress) }
-        runBlocking { alixClient.conversations.syncGroups() }
+        runBlocking { alixClient.conversations.syncConversations() }
 
         val allMessages = mutableListOf<DecodedMessage>()
 
