@@ -556,25 +556,22 @@ data class Conversations(
     }
 
     fun streamAllMessages(includeGroups: Boolean = false): Flow<DecodedMessage> {
-        val dmStream = if (!client.hasV2Client) streamAllDmMessages() else streamAllV2Messages()
         return if (includeGroups && !client.hasV2Client) {
             streamAllConversationMessages()
         } else if (includeGroups) {
-            merge(dmStream, streamAllGroupMessages())
+            merge(streamAllV2Messages(), streamAllGroupMessages())
         } else {
-            dmStream
+            streamAllV2Messages()
         }
     }
 
     fun streamAllDecryptedMessages(includeGroups: Boolean = false): Flow<DecryptedMessage> {
-        val dmStream =
-            if (!client.hasV2Client) streamAllDmDecryptedMessages() else streamAllV2DecryptedMessages()
         return if (includeGroups && !client.hasV2Client) {
             streamAllConversationDecryptedMessages()
         } else if (includeGroups) {
-            merge(dmStream, streamAllGroupDecryptedMessages())
+            merge(streamAllV2DecryptedMessages(), streamAllGroupDecryptedMessages())
         } else {
-            dmStream
+            streamAllV2DecryptedMessages()
         }
     }
 

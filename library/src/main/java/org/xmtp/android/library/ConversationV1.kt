@@ -279,7 +279,7 @@ data class ConversationV1(
             )
             client.contacts.hasIntroduced[peerAddress] = true
         }
-        return PreparedMessage(envelopes)
+        return PreparedMessage(envelopes, encodedContent)
     }
 
     private fun generateId(envelope: Envelope): String =
