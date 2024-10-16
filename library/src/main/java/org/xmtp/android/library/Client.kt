@@ -597,7 +597,7 @@ class Client() {
 
     suspend fun findDm(address: String): Dm? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
-        val inboxId = inboxIdFromAddress(address) ?: throw XMTPException("No inboxId present")
+        val inboxId = inboxIdFromAddress(address.lowercase()) ?: throw XMTPException("No inboxId present")
         try {
             return Dm(this, client.dmConversation(inboxId))
         } catch (e: Exception) {

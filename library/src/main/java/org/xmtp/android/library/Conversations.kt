@@ -182,6 +182,9 @@ data class Conversations(
     }
 
     suspend fun findOrCreateDm(peerAddress: String): Dm {
+        if (peerAddress.lowercase() == client.address.lowercase()) {
+            throw XMTPException("Recipient is sender")
+        }
         val falseAddresses =
             client.canMessageV3(listOf(peerAddress)).filter { !it.value }.map { it.key }
         if (falseAddresses.isNotEmpty()) {
@@ -189,7 +192,7 @@ data class Conversations(
         }
         var dm = client.findDm(peerAddress)
         if (dm == null) {
-            val dmConversation = libXMTPConversations?.createDm(peerAddress)
+            val dmConversation = libXMTPConversations?.createDm(peerAddress.lowercase())
                 ?: throw XMTPException("Client does not support V3 Dms")
             dm = Dm(client, dmConversation)
             client.contacts.allowGroups(groupIds = listOf(dm.id))

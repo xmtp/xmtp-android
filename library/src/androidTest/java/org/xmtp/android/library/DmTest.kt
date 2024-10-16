@@ -135,16 +135,13 @@ class DmTest {
         val boDm = runBlocking {
             boClient.conversations.newConversation(alix.walletAddress)
         }
-        runBlocking {
-            assertEquals("Starting Name", boDm.name)
-            assertEquals("startingurl.com", boDm.imageUrlSquare)
-            alixClient.conversations.syncGroups()
-        }
-        val alixDm = runBlocking { alixClient.conversations.listGroups().first() }
+
+        runBlocking { alixClient.conversations.syncConversations() }
+        val alixDm = runBlocking { alixClient.conversations.listDms().first() }
         runBlocking {
             alixDm.sync()
-            alixDm.updateGroupName("This Is A Great Group")
-            alixDm.updateGroupImageUrlSquare("thisisanewurl.com")
+            alixDm.updateName("This Is A Great Group")
+            alixDm.updateImageUrlSquare("thisisanewurl.com")
             boDm.sync()
         }
         assertEquals("This Is A Great Group", boDm.name)
@@ -342,7 +339,7 @@ class DmTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                alixClient.conversations.streamAllGroupDecryptedMessages().collect { message ->
+                alixClient.conversations.streamAllDmDecryptedMessages().collect { message ->
                     allMessages.add(message)
                 }
             } catch (e: Exception) {

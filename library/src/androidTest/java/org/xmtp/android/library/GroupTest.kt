@@ -746,7 +746,10 @@ class GroupTest {
             val group2 =
                 caroClient.conversations.newGroup(listOf(bo.walletAddress))
             assertEquals(group2.id, awaitItem().id)
-            //Does not stream DMs
+            val dm =
+                caroClient.conversations.findOrCreateDm(bo.walletAddress)
+            expectNoEvents()
+            cancelAndConsumeRemainingEvents()
         }
     }
 
@@ -769,7 +772,7 @@ class GroupTest {
             alixClient.conversations.newConversation(bo.walletAddress)
             Thread.sleep(2500)
             caroClient.conversations.newGroup(listOf(alix.walletAddress))
-            //Does not stream DMs
+            caroClient.conversations.findOrCreateDm(alix.walletAddress)
         }
 
         Thread.sleep(2500)
