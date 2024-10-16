@@ -224,7 +224,6 @@ data class Conversations(
         if (client.v3Client != null) {
             val dm = findOrCreateDm(peerAddress)
             val conversation = Conversation.Dm(dm)
-            conversationsByTopic[conversation.topic] = conversation
             if (!client.hasV2Client || !client.canMessage(peerAddress)) {
                 return conversation
             }
@@ -434,20 +433,20 @@ data class Conversations(
         }
         if (client.v3Client != null) {
             syncConversations()
-            val dms = listDms()
+            val dms = listDms().map { Conversation.Dm(it) }
             if (!client.hasV2Client) {
-                conversationsByTopic += dms.map { it.topic to Conversation.Dm(it) }
+                conversationsByTopic += dms.map { it.topic to it }
             } else {
-                conversationsByTopic.putAll(
-                    dms.filter { dm ->
-                        conversationsByTopic.values.none { existing ->
-                            client.inboxIdFromAddress(existing.peerAddress)
-                                ?.lowercase() == dm.peerInboxId().lowercase()
-                        }
-                    }.associate { dm ->
-                        dm.topic to Conversation.Dm(dm)
-                    }
-                )
+                try {
+                    conversationsByTopic.putAll(
+                        dms.filter { dm ->
+                            conversationsByTopic.values.none { existing ->
+                                val existingInboxId = client.inboxIdFromAddress(existing.peerAddress)?.lowercase()
+                                existingInboxId != null && existingInboxId == dm.peerAddress.lowercase()
+                            }
+                        }.associateBy { dm -> dm.topic }
+                    )
+                } catch (e: Exception) {}
             }
         }
 
@@ -559,9 +558,9 @@ data class Conversations(
 
     fun streamAll(): Flow<Conversation> {
         if (!client.hasV2Client) {
-            streamConversations()
+            return streamConversations()
         }
-        return merge(streamGroupConversations(), stream())
+        return merge(streamConversations(), stream())
     }
 
     private fun streamConversations(): Flow<Conversation> = callbackFlow {
@@ -594,7 +593,7 @@ data class Conversations(
         return if (includeGroups && !client.hasV2Client) {
             streamAllConversationMessages()
         } else if (includeGroups) {
-            merge(streamAllV2Messages(), streamAllGroupMessages())
+            merge(streamAllV2Messages(), streamAllConversationMessages())
         } else {
             streamAllV2Messages()
         }
@@ -604,7 +603,7 @@ data class Conversations(
         return if (includeGroups && !client.hasV2Client) {
             streamAllConversationDecryptedMessages()
         } else if (includeGroups) {
-            merge(streamAllV2DecryptedMessages(), streamAllGroupDecryptedMessages())
+            merge(streamAllV2DecryptedMessages(), streamAllConversationDecryptedMessages())
         } else {
             streamAllV2DecryptedMessages()
         }
