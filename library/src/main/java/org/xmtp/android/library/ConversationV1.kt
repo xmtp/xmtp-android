@@ -195,6 +195,12 @@ data class ConversationV1(
     }
 
     suspend fun send(prepared: PreparedMessage): String {
+        if (client.v3Client != null) {
+            val dm = client.conversations.findOrCreateDm(peerAddress)
+            prepared.encodedContent?.let {
+                dm.send(it)
+            }
+        }
         client.publish(envelopes = prepared.envelopes)
         if (client.contacts.consentList.state(address = peerAddress) == ConsentState.UNKNOWN) {
             client.contacts.allow(addresses = listOf(peerAddress))

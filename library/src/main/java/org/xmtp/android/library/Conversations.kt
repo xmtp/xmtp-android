@@ -190,11 +190,12 @@ data class Conversations(
         } ?: emptyList()
     }
 
-    private suspend fun listDms(
+    suspend fun listDms(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
     ): List<Dm> {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val dms = libXMTPConversations?.listDms(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
@@ -225,6 +226,23 @@ data class Conversations(
         }
     }
 
+    suspend fun findOrCreateDm(peerAddress: String): Dm {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
+        val falseAddresses =
+            client.canMessageV3(listOf(peerAddress)).filter { !it.value }.map { it.key }
+        if (falseAddresses.isNotEmpty()) {
+            throw XMTPException("${falseAddresses.joinToString()} not on network")
+        }
+        var dm = client.findDm(peerAddress)
+        if (dm == null) {
+            val dmConversation = libXMTPConversations?.createDm(peerAddress)
+                ?: throw XMTPException("Client does not support V3 Dms")
+            dm = Dm(client, dmConversation)
+            client.contacts.allowGroups(groupIds = listOf(dm.id))
+        }
+        return dm
+    }
+
     /**
      * This creates a new [Conversation] using a specified address
      * @param peerAddress The address of the client that you want to start a new conversation
@@ -247,18 +265,7 @@ data class Conversations(
             return existingConversation
         }
         if (client.v3Client != null) {
-            val falseAddresses =
-                client.canMessageV3(listOf(peerAddress)).filter { !it.value }.map { it.key }
-            if (falseAddresses.isNotEmpty()) {
-                throw XMTPException("${falseAddresses.joinToString()} not on network")
-            }
-            var dm = client.findDm(peerAddress)
-            if (dm == null) {
-                val dmConversation = libXMTPConversations?.createDm(peerAddress)
-                    ?: throw XMTPException("Client does not support V3 Dms")
-                dm = Dm(client, dmConversation)
-                client.contacts.allowGroups(groupIds = listOf(dm.id))
-            }
+            val dm = findOrCreateDm(peerAddress)
             val conversation = Conversation.Dm(dm)
             conversationsByTopic[conversation.topic] = conversation
             if (!client.hasV2Client) {
@@ -606,7 +613,8 @@ data class Conversations(
         awaitClose { stream.end() }
     }
 
-    private fun streamDms(): Flow<Dm> = callbackFlow {
+    fun streamDms(): Flow<Dm> = callbackFlow {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val groupCallback = object : FfiConversationCallback {
             override fun onConversation(conversation: FfiConversation) {
                 trySend(Dm(client, conversation))
@@ -617,7 +625,8 @@ data class Conversations(
         awaitClose { stream.end() }
     }
 
-    private fun streamAllDmMessages(): Flow<DecodedMessage> = callbackFlow {
+    fun streamAllDmMessages(): Flow<DecodedMessage> = callbackFlow {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
                 val decodedMessage = MessageV3(client, message).decodeOrNull()
@@ -631,7 +640,8 @@ data class Conversations(
         awaitClose { stream.end() }
     }
 
-    private fun streamAllDmDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
+    fun streamAllDmDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
                 val decryptedMessage = MessageV3(client, message).decryptOrNull()
@@ -645,7 +655,8 @@ data class Conversations(
         awaitClose { stream.end() }
     }
 
-    private fun streamAllConversationMessages(): Flow<DecodedMessage> = callbackFlow {
+    fun streamAllConversationMessages(): Flow<DecodedMessage> = callbackFlow {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
                 val decodedMessage = MessageV3(client, message).decodeOrNull()
@@ -659,7 +670,8 @@ data class Conversations(
         awaitClose { stream.end() }
     }
 
-    private fun streamAllConversationDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
+    fun streamAllConversationDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
                 val decryptedMessage = MessageV3(client, message).decryptOrNull()

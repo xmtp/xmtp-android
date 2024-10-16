@@ -22,6 +22,7 @@ import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
+import org.xmtp.proto.message.contents.encodedContent
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import java.util.Date
@@ -200,6 +201,12 @@ data class ConversationV2(
     }
 
     suspend fun send(prepared: PreparedMessage): String {
+        if (client.v3Client != null) {
+            val dm = client.conversations.findOrCreateDm(peerAddress)
+            prepared.encodedContent?.let {
+                dm.send(it)
+            }
+        }
         client.publish(envelopes = prepared.envelopes)
         if (client.contacts.consentList.state(address = peerAddress) == ConsentState.UNKNOWN) {
             client.contacts.allow(addresses = listOf(peerAddress))
@@ -270,7 +277,7 @@ data class ConversationV2(
             timestamp = Date(),
             message = MessageBuilder.buildFromMessageV2(v2 = message.messageV2).toByteArray(),
         )
-        return PreparedMessage(listOf(envelope))
+        return PreparedMessage(listOf(envelope), encodedContent)
     }
 
     private fun generateId(envelope: Envelope): String =
