@@ -31,79 +31,95 @@ import java.security.SecureRandom
 class DmTest {
     private lateinit var alixWallet: PrivateKeyBuilder
     private lateinit var boWallet: PrivateKeyBuilder
+    private lateinit var caroWallet: PrivateKeyBuilder
     private lateinit var alix: PrivateKey
     private lateinit var alixClient: Client
     private lateinit var bo: PrivateKey
     private lateinit var boClient: Client
-    private lateinit var caroWallet: PrivateKeyBuilder
     private lateinit var caro: PrivateKey
     private lateinit var caroClient: Client
-    private lateinit var fixtures: Fixtures
 
     @Before
     fun setUp() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        fixtures =
-            fixtures(
-                clientOptions = ClientOptions(
+        alixWallet = PrivateKeyBuilder()
+        alix = alixWallet.getPrivateKey()
+        alixClient = runBlocking {
+            Client().createOrBuild(
+                account = alixWallet,
+                address = alixWallet.address,
+                options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
                     enableV3 = true,
                     appContext = context,
                     dbEncryptionKey = key
                 )
             )
-        alixWallet = fixtures.aliceAccount
-        alix = fixtures.alice
-        boWallet = fixtures.bobAccount
-        bo = fixtures.bob
-        caroWallet = fixtures.caroAccount
-        caro = fixtures.caro
+        }
+        boWallet = PrivateKeyBuilder()
+        bo = boWallet.getPrivateKey()
+        boClient = runBlocking {
+            Client().createOrBuild(
+                account = boWallet,
+                address = boWallet.address,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
 
-        alixClient = fixtures.aliceClient
-        boClient = fixtures.bobClient
-        caroClient = fixtures.caroClient
+        caroWallet = PrivateKeyBuilder()
+        caro = caroWallet.getPrivateKey()
+        caroClient = runBlocking {
+            Client().createOrBuild(
+                account = caroWallet,
+                address = caroWallet.address,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
+
     }
 
     @Test
     fun testCanCreateADm() {
         val dm = runBlocking {
-            boClient.conversations.newConversation(alix.walletAddress)
+            boClient.conversations.findOrCreateDm(alix.walletAddress)
         }
     }
     @Test
     fun testCanListDmMembers() {
         val group = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(
+            boClient.conversations.findOrCreateDm(
                     alix.walletAddress,
-                    caro.walletAddress
-                )
             )
         }
         assertEquals(
             runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
-                caroClient.inboxId,
                 alixClient.inboxId,
                 boClient.inboxId
             ).sorted()
         )
 
         assertEquals(
-            Conversation.Group(group).peerAddresses.sorted(),
+            Conversation.Dm(group).peerAddresses.sorted(),
             listOf(
-                caroClient.inboxId,
                 alixClient.inboxId,
             ).sorted()
         )
 
         assertEquals(
-            runBlocking { group.peerInboxIds().sorted() },
-            listOf(
-                caroClient.inboxId,
+            runBlocking { group.peerInboxId() },
                 alixClient.inboxId,
-            ).sorted()
         )
     }
 
@@ -133,29 +149,9 @@ class DmTest {
     }
 
     @Test
-    fun testCanRemoveGroupMembers() {
-        val group = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(
-                    alixClient.address,
-                    caroClient.address
-                )
-            )
-        }
-        runBlocking { group.removeMembers(listOf(caro.walletAddress)) }
-        assertEquals(
-            runBlocking { group.members().map { it.inboxId }.sorted() },
-            listOf(
-                alixClient.inboxId,
-                boClient.inboxId
-            ).sorted()
-        )
-    }
-
-    @Test
     fun testCanListDms() {
         runBlocking {
-            boClient.conversations.newGroup(listOf(alix.walletAddress))
+            boClient.conversations.findOrCreateDm(alix.walletAddress)
             boClient.conversations.newGroup(listOf(caro.walletAddress))
         }
         val groups = runBlocking { boClient.conversations.listGroups() }

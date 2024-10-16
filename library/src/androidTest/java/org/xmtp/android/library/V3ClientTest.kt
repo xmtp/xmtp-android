@@ -114,6 +114,25 @@ class V3ClientTest {
     }
 
     @Test
+    fun testsCanListConversations() {
+        val dm = runBlocking { boV3Client.conversations.findOrCreateDm(caroV2V3.walletAddress) }
+        val group =
+            runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
+        assertEquals(runBlocking { boV3Client.conversations.listConversations().size }, 2)
+        assertEquals(runBlocking { boV3Client.conversations.list(includeGroups = true).size }, 2)
+        assertEquals(runBlocking { boV3Client.conversations.listDms().size }, 1)
+        assertEquals(runBlocking { boV3Client.conversations.listGroups().size }, 1)
+
+        runBlocking { caroV2V3Client.conversations.syncConversations() }
+        assertEquals(
+            runBlocking { caroV2V3Client.conversations.list(includeGroups = true).size },
+            2
+        )
+        assertEquals(runBlocking { caroV2V3Client.conversations.listDms().size }, 1)
+        assertEquals(runBlocking { caroV2V3Client.conversations.listGroups().size }, 1)
+    }
+
+    @Test
     fun testsCanSendMessagesToGroup() {
         val group =
             runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
@@ -218,12 +237,69 @@ class V3ClientTest {
     }
 
     @Test
+    fun testCanStreamAllMessagesFromV3Users() {
+        val group =
+            runBlocking { caroV2V3Client.conversations.newGroup(listOf(boV3.walletAddress)) }
+        val conversation =
+            runBlocking { caroV2V3Client.conversations.newConversation(boV3.walletAddress) }
+        runBlocking { boV3Client.conversations.syncConversations() }
+
+        val allMessages = mutableListOf<DecodedMessage>()
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                boV3Client.conversations.streamAllMessages(includeGroups = true)
+                    .collect { message ->
+                        allMessages.add(message)
+                    }
+            } catch (e: Exception) {
+            }
+        }
+        Thread.sleep(1000)
+        runBlocking {
+            group.send("hi")
+            conversation.send("hi")
+        }
+        Thread.sleep(1000)
+        assertEquals(2, allMessages.size)
+        job.cancel()
+    }
+
+    @Test
+    fun testCanStreamGroupsAndConversationsFromV3Users() {
+        val allMessages = mutableListOf<String>()
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                boV3Client.conversations.streamAll()
+                    .collect { message ->
+                        allMessages.add(message.topic)
+                    }
+            } catch (e: Exception) {
+            }
+        }
+        Thread.sleep(1000)
+
+        runBlocking {
+            caroV2V3Client.conversations.newConversation(boV3.walletAddress)
+            Thread.sleep(1000)
+            caroV2V3Client.conversations.newGroup(listOf(boV3.walletAddress))
+        }
+
+        Thread.sleep(2000)
+        assertEquals(2, allMessages.size)
+        job.cancel()
+    }
+
+    @Test
     fun testCanStreamAllMessagesFromV2andV3Users() {
         val group =
             runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
         val conversation =
             runBlocking { alixV2Client.conversations.newConversation(caroV2V3.walletAddress) }
-        runBlocking { caroV2V3Client.conversations.syncGroups() }
+        val dm =
+            runBlocking { boV3Client.conversations.newConversation(caroV2V3.walletAddress) }
+        runBlocking { caroV2V3Client.conversations.syncConversations() }
 
         val allMessages = mutableListOf<DecodedMessage>()
 
@@ -240,9 +316,10 @@ class V3ClientTest {
         runBlocking {
             group.send("hi")
             conversation.send("hi")
+            dm.send("hi")
         }
         Thread.sleep(1000)
-        assertEquals(2, allMessages.size)
+        assertEquals(3, allMessages.size)
         job.cancel()
     }
 
@@ -265,10 +342,11 @@ class V3ClientTest {
             alixV2Client.conversations.newConversation(caroV2V3.walletAddress)
             Thread.sleep(1000)
             boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress))
+            boV3Client.conversations.newConversation(caroV2V3.walletAddress)
         }
 
         Thread.sleep(2000)
-        assertEquals(2, allMessages.size)
+        assertEquals(3, allMessages.size)
         job.cancel()
     }
 }
