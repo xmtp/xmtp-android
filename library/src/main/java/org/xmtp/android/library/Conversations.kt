@@ -167,7 +167,6 @@ data class Conversations(
         libXMTPConversations?.sync()
     }
 
-
     // Sync all existing local conversation data from the network (Note: call syncConversations() first to get the latest list of conversations)
     suspend fun syncAllConversations(): UInt? {
         return libXMTPConversations?.syncAllConversations()
@@ -369,7 +368,6 @@ data class Conversations(
                 limit?.toLong()
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
-
 
         val conversations = ffiConversation.map {
             if (it.groupMetadata().conversationType() == "dm") {
