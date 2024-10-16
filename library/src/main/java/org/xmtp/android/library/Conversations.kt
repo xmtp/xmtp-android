@@ -182,7 +182,6 @@ data class Conversations(
     }
 
     suspend fun findOrCreateDm(peerAddress: String): Dm {
-        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val falseAddresses =
             client.canMessageV3(listOf(peerAddress)).filter { !it.value }.map { it.key }
         if (falseAddresses.isNotEmpty()) {
