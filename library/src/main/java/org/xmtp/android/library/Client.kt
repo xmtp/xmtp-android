@@ -579,10 +579,27 @@ class Client() {
         }
     }
 
-    fun findConversation(conversationId: String): Group? {
+    fun findConversation(conversationId: String): Conversation? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
         try {
-            return Group(this, client.conversation(conversationId.hexToByteArray()))
+            val conversation = client.conversation(conversationId.hexToByteArray())
+            if (conversation.groupMetadata().conversationType() == "dm") {
+                return Conversation.Dm(Dm(this, conversation))
+            } else if (conversation.groupMetadata().conversationType() == "group") {
+                return Conversation.Group(Group(this, conversation))
+            } else {
+                return null
+            }
+        } catch (e: Exception) {
+            return null
+        }
+    }
+
+    suspend fun findDm(address: String): Dm? {
+        val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
+        val inboxId = inboxIdFromAddress(address) ?: throw XMTPException("No inboxId present")
+        try {
+            return Dm(this, client.dmConversation(inboxId))
         } catch (e: Exception) {
             return null
         }

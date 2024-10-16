@@ -262,10 +262,14 @@ data class Conversations(
             if (falseAddresses.isNotEmpty()) {
                 throw XMTPException("${falseAddresses.joinToString()} not on network")
             }
-            val dm = libXMTPConversations?.createDm(peerAddress)
-                ?: throw XMTPException("Client does not support V3 Dms")
-            client.contacts.allowGroups(groupIds = listOf(dm.id().toHex()))
-            val conversation = Conversation.Dm(Dm(client, dm))
+            var dm = client.findDm(peerAddress)
+            if (dm == null) {
+                val dmConversation = libXMTPConversations?.createDm(peerAddress)
+                    ?: throw XMTPException("Client does not support V3 Dms")
+                dm = Dm(client, dmConversation)
+                client.contacts.allowGroups(groupIds = listOf(dm.id))
+            }
+            val conversation = Conversation.Dm(dm)
             conversationsByTopic[conversation.topic] = conversation
             if (!client.hasV2Client) {
                 return conversation
