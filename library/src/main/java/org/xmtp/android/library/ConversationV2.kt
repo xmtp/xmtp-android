@@ -202,9 +202,13 @@ data class ConversationV2(
 
     suspend fun send(prepared: PreparedMessage): String {
         if (client.v3Client != null) {
-            val dm = client.conversations.findOrCreateDm(peerAddress)
-            prepared.encodedContent?.let {
-                dm.send(it)
+            try {
+                val dm = client.conversations.findOrCreateDm(peerAddress)
+                prepared.encodedContent?.let {
+                    dm.send(it)
+                }
+            } catch (e: Exception) {
+                // Do nothing if this errors
             }
         }
         client.publish(envelopes = prepared.envelopes)
