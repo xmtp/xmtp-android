@@ -13,22 +13,17 @@ import org.xmtp.android.library.messages.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+import uniffi.xmtpv3.FfiConversation
+import uniffi.xmtpv3.FfiConversationMetadata
 import uniffi.xmtpv3.FfiDeliveryStatus
-import uniffi.xmtpv3.FfiGroup
-import uniffi.xmtpv3.FfiGroupMetadata
-import uniffi.xmtpv3.FfiGroupPermissions
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
-import uniffi.xmtpv3.FfiMetadataField
-import uniffi.xmtpv3.FfiPermissionUpdateType
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionOption
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionPolicySet
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
 
-class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
+class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
     val id: String
         get() = libXMTPGroup.id().toHex()
 
@@ -38,7 +33,7 @@ class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
     val createdAt: Date
         get() = Date(libXMTPGroup.createdAtNs() / 1_000_000)
 
-    private val metadata: FfiGroupMetadata
+    private val metadata: FfiConversationMetadata
         get() = libXMTPGroup.groupMetadata()
 
     val name: String
@@ -171,7 +166,7 @@ class Dm(val client: Client, private val libXMTPGroup: FfiGroup) {
     }
 
     suspend fun processMessage(envelopeBytes: ByteArray): MessageV3 {
-        val message = libXMTPGroup.processStreamedGroupMessage(envelopeBytes)
+        val message = libXMTPGroup.processStreamedConversationMessage(envelopeBytes)
         return MessageV3(client, message)
     }
 

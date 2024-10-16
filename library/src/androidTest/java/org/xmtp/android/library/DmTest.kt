@@ -69,7 +69,9 @@ class DmTest {
 
     @Test
     fun testCanCreateADm() {
-
+        val dm = runBlocking {
+            boClient.conversations.newConversation(alix.walletAddress)
+        }
     }
     @Test
     fun testCanListDmMembers() {
