@@ -741,6 +741,14 @@ class Client() {
         }
     }
 
+    suspend fun addressesFromInboxIds(
+        refreshFromNetwork: Boolean,
+        inboxIds: List<String>,
+    ): List<InboxState> {
+        val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
+        return client.addressesFromInboxId(refreshFromNetwork, inboxIds).map { InboxState(it) }
+    }
+
     suspend fun inboxState(refreshFromNetwork: Boolean): InboxState {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
         return InboxState(client.inboxState(refreshFromNetwork))

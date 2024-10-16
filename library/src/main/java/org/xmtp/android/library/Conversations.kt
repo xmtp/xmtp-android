@@ -222,7 +222,7 @@ data class Conversations(
             val dm = findOrCreateDm(peerAddress)
             val conversation = Conversation.Dm(dm)
             conversationsByTopic[conversation.topic] = conversation
-            if (!client.hasV2Client) {
+            if (!client.hasV2Client || !client.canMessage(peerAddress)) {
                 return conversation
             }
         }
@@ -330,7 +330,6 @@ data class Conversations(
         limit: Int? = null,
         order: ConversationOrder = ConversationOrder.CREATED_AT,
     ): List<Dm> {
-        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val ffiDms = libXMTPConversations?.listDms(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
@@ -428,10 +427,23 @@ data class Conversations(
             conversationsByTopic += newConversations.filter {
                 it.peerAddress != client.address && Topic.isValidTopic(it.topic)
             }.map { Pair(it.topic, it) }
-        } else if (client.v3Client != null) {
+        }
+        if (client.v3Client != null) {
             syncConversations()
             val dms = listDms()
-            conversationsByTopic += dms.map { Pair(it.topic, Conversation.Dm(it)) }
+            if (!client.hasV2Client) {
+                conversationsByTopic += dms.map { it.topic to Conversation.Dm(it) }
+            } else {
+                conversationsByTopic.putAll(
+                    dms.filter { dm ->
+                        conversationsByTopic.values.none { existing ->
+                            client.inboxIdFromAddress(existing.peerAddress)?.lowercase() == dm.peerInboxId().lowercase()
+                        }
+                    }.associate { dm ->
+                        dm.topic to Conversation.Dm(dm)
+                    }
+                )
+            }
         }
 
         if (includeGroups) {

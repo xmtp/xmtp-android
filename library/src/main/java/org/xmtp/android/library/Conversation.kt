@@ -183,6 +183,15 @@ sealed class Conversation {
         }
     }
 
+    suspend fun sync() {
+        return when (this) {
+            is V1 -> throw XMTPException("Only supported for V3")
+            is V2 -> throw XMTPException("Only supported for V3")
+            is Group -> group.sync()
+            is Dm -> dm.sync()
+        }
+    }
+
     /**
      * This lists messages sent to the [Conversation].
      * @param before initial date to filter
