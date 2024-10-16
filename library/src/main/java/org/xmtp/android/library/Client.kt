@@ -291,30 +291,32 @@ class Client() {
 
     // This is a V3 only feature
     suspend fun createOrBuild(
-        account: SigningKey,
-        options: ClientOptions,
+        address: String,
+        account: SigningKey? = null,
+        options: ClientOptions? = null,
     ): Client {
         this.hasV2Client = false
-        val inboxId = getOrCreateInboxId(options, account.address)
+        val clientOptions = options ?: ClientOptions(enableV3 = true)
+        val inboxId = getOrCreateInboxId(clientOptions, address)
 
         return try {
             val (libXMTPClient, dbPath) = ffiXmtpClient(
-                options,
+                clientOptions,
                 account,
-                options.appContext,
+                clientOptions.appContext,
                 null,
-                account.address,
+                address,
                 inboxId
             )
 
             libXMTPClient?.let { client ->
                 Client(
-                    account.address,
+                    address,
                     client,
                     dbPath,
                     client.installationId().toHex(),
                     client.inboxId(),
-                    options.api.env
+                    clientOptions.api.env
                 )
             } ?: throw XMTPException("Error creating V3 client: libXMTPClient is null")
         } catch (e: Exception) {
