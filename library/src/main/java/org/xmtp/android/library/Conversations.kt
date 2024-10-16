@@ -572,13 +572,13 @@ data class Conversations(
                 if (conversation.groupMetadata().conversationType() == "dm") {
                     launch {
                         val dm = Dm(client, conversation)
-                        val matchingConversations = list().filter {
-                            client.inboxIdFromAddress(it.peerAddress)?.lowercase() ==
+                        val matchingConversations = conversationsByTopic.filter {
+                            client.inboxIdFromAddress(it.value.peerAddress)?.lowercase() ==
                                     dm.peerInboxId().lowercase()
                         }
 
                         // Only send the DM if no V2 DM exists
-                        if (matchingConversations.none { it.version == Conversation.Version.V2 }) {
+                        if (matchingConversations.none { it.value.version == Conversation.Version.V2 }) {
                             trySend(Conversation.Dm(dm)).isSuccess
                         }
                     }
@@ -704,13 +704,13 @@ data class Conversations(
                 when (conversation?.version) {
                     Conversation.Version.DM -> {
                         launch {
-                            val matchingConversations = list().filter {
-                                client.inboxIdFromAddress(it.peerAddress)?.lowercase() ==
+                            val matchingConversations = conversationsByTopic.filter {
+                                client.inboxIdFromAddress(it.value.peerAddress)?.lowercase() ==
                                         conversation.peerAddress
                             }
 
                             // If there is no V2 conversation, send the decoded message
-                            if (matchingConversations.none { it.version == Conversation.Version.V2 }) {
+                            if (matchingConversations.none { it.value.version == Conversation.Version.V2 }) {
                                 decodedMessage?.let { trySend(it).isSuccess }
                             }
                         }
@@ -738,13 +738,13 @@ data class Conversations(
                 when (conversation?.version) {
                     Conversation.Version.DM -> {
                         launch {
-                            val matchingConversations = list().filter {
-                                client.inboxIdFromAddress(it.peerAddress)?.lowercase() ==
+                            val matchingConversations = conversationsByTopic.filter {
+                                client.inboxIdFromAddress(it.value.peerAddress)?.lowercase() ==
                                         conversation.peerAddress
                             }
 
                             // If there is no V2 conversation, send the decoded message
-                            if (matchingConversations.none { it.version == Conversation.Version.V2 }) {
+                            if (matchingConversations.none { it.value.version == Conversation.Version.V2 }) {
                                 decryptedMessage?.let { trySend(it).isSuccess }
                             }
                         }

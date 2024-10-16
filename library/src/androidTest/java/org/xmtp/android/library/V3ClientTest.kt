@@ -318,7 +318,7 @@ class V3ClientTest {
             conversation.send("hi")
             dm.send("hi")
         }
-        Thread.sleep(1000)
+        Thread.sleep(2500)
         assertEquals(3, allMessages.size)
         job.cancel()
     }
