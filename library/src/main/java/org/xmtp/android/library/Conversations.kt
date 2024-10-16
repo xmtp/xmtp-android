@@ -2,7 +2,10 @@ package org.xmtp.android.library
 
 import android.util.Log
 import com.google.protobuf.kotlin.toByteString
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.merge
@@ -36,22 +39,22 @@ import org.xmtp.proto.keystore.api.v1.Keystore.GetConversationHmacKeysResponse.H
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
+import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiCreateGroupOptions
 import uniffi.xmtpv3.FfiEnvelope
-import uniffi.xmtpv3.FfiConversation
+import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiPermissionPolicySet
 import uniffi.xmtpv3.FfiV2SubscribeRequest
 import uniffi.xmtpv3.FfiV2Subscription
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import uniffi.xmtpv3.NoPointer
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionPolicySet
-import uniffi.xmtpv3.FfiGroupPermissionsOptions
-import uniffi.xmtpv3.FfiPermissionPolicySet
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -64,6 +67,11 @@ data class Conversations(
 
     companion object {
         private const val TAG = "CONVERSATIONS"
+    }
+
+    enum class ConversationOrder {
+        CREATED_AT,
+        LAST_MESSAGE;
     }
 
     suspend fun fromWelcome(envelopeBytes: ByteArray): Group {
@@ -172,58 +180,6 @@ data class Conversations(
     )
     suspend fun syncAllGroups(): UInt? {
         return libXMTPConversations?.syncAllConversations()
-    }
-
-    suspend fun listGroups(
-        after: Date? = null,
-        before: Date? = null,
-        limit: Int? = null,
-    ): List<Group> {
-        return libXMTPConversations?.listGroups(
-            opts = FfiListConversationsOptions(
-                after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit?.toLong()
-            )
-        )?.map {
-            Group(client, it)
-        } ?: emptyList()
-    }
-
-    suspend fun listDms(
-        after: Date? = null,
-        before: Date? = null,
-        limit: Int? = null,
-    ): List<Dm> {
-        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
-        val dms = libXMTPConversations?.listDms(
-            opts = FfiListConversationsOptions(
-                after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit?.toLong()
-            )
-        ) ?: throw XMTPException("Client does not support V3 dms")
-        return dms.map {
-            Dm(client, it)
-        }
-    }
-
-    private suspend fun handleConsentProof(
-        consentProof: Invitation.ConsentProofPayload,
-        peerAddress: String,
-    ) {
-        // Todo: Support V3
-        val signature = consentProof.signature
-        val timestamp = consentProof.timestamp
-
-        if (!KeyUtil.validateConsentSignature(signature, client.address, peerAddress, timestamp)) {
-            return
-        }
-        val contacts = client.contacts
-        contacts.refreshConsentList()
-        if (contacts.consentList.state(peerAddress) == ConsentState.UNKNOWN) {
-            contacts.allow(listOf(peerAddress))
-        }
     }
 
     suspend fun findOrCreateDm(peerAddress: String): Dm {
@@ -342,6 +298,101 @@ data class Conversations(
         return conversation
     }
 
+    suspend fun listGroups(
+        after: Date? = null,
+        before: Date? = null,
+        limit: Int? = null,
+        order: ConversationOrder = ConversationOrder.CREATED_AT,
+    ): List<Group> {
+        val ffiGroups = libXMTPConversations?.listGroups(
+            opts = FfiListConversationsOptions(
+                after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                limit?.toLong()
+            )
+        ) ?: throw XMTPException("Client does not support V3 dms")
+
+        val groups = ffiGroups.map {
+            Group(client, it)
+        }
+
+        return when (order) {
+            ConversationOrder.LAST_MESSAGE ->
+                groups.sortedByDescending { group ->
+                    group.messages(limit = 1).firstOrNull()?.sent
+                }
+
+            ConversationOrder.CREATED_AT -> groups
+        }
+    }
+
+    suspend fun listDms(
+        after: Date? = null,
+        before: Date? = null,
+        limit: Int? = null,
+        order: ConversationOrder = ConversationOrder.CREATED_AT,
+    ): List<Dm> {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
+        val ffiDms = libXMTPConversations?.listDms(
+            opts = FfiListConversationsOptions(
+                after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                limit?.toLong()
+            )
+        ) ?: throw XMTPException("Client does not support V3 dms")
+
+        val dms = ffiDms.map {
+            Dm(client, it)
+        }
+
+        return when (order) {
+            ConversationOrder.LAST_MESSAGE ->
+                dms.sortedByDescending { dm ->
+                    dm.messages(limit = 1).firstOrNull()?.sent
+                }
+
+            ConversationOrder.CREATED_AT -> dms
+        }
+    }
+
+    suspend fun listConversations(
+        after: Date? = null,
+        before: Date? = null,
+        limit: Int? = null,
+        order: ConversationOrder = ConversationOrder.CREATED_AT,
+    ): List<Conversation> = coroutineScope {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
+        val ffiConversation = libXMTPConversations?.list(
+            opts = FfiListConversationsOptions(
+                after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                limit?.toLong()
+            )
+        ) ?: throw XMTPException("Client does not support V3 dms")
+
+
+        val conversations = ffiConversation.map {
+            if (it.groupMetadata().conversationType() == "dm") {
+                Conversation.Dm(Dm(client, it))
+            } else {
+                Conversation.Group(Group(client, it))
+            }
+        }
+
+        when (order) {
+            ConversationOrder.LAST_MESSAGE -> {
+                val sortedConversations = conversations.map { dm ->
+                    async {
+                        dm to dm.messages(limit = 1).firstOrNull()?.sent
+                    }
+                }.awaitAll().sortedByDescending { it.second }
+
+                sortedConversations.map { it.first }
+            }
+            ConversationOrder.CREATED_AT -> conversations
+        }
+    }
+
     /**
      * Get the list of conversations that current user has
      * @return The list of [Conversation] that the current [Client] has.
@@ -433,78 +484,22 @@ data class Conversations(
         return hmacKeysResponse.build()
     }
 
+    private suspend fun handleConsentProof(
+        consentProof: Invitation.ConsentProofPayload,
+        peerAddress: String,
+    ) {
+        // Todo: Support V3
+        val signature = consentProof.signature
+        val timestamp = consentProof.timestamp
 
-    /**
-     *  @return This lists messages sent to the [Conversation].
-     *  This pulls messages from multiple conversations in a single call.
-     *  @see Conversation.messages
-     */
-    suspend fun listBatchMessages(
-        topics: List<Pair<String, Pagination?>>,
-    ): List<DecodedMessage> {
-        val requests = topics.map { (topic, page) ->
-            makeQueryRequest(topic = topic, pagination = page)
+        if (!KeyUtil.validateConsentSignature(signature, client.address, peerAddress, timestamp)) {
+            return
         }
-
-        // The maximum number of requests permitted in a single batch call.
-        val maxQueryRequestsPerBatch = 50
-        val messages: MutableList<DecodedMessage> = mutableListOf()
-        val batches = requests.chunked(maxQueryRequestsPerBatch)
-        for (batch in batches) {
-            messages.addAll(
-                client.batchQuery(batch).responsesOrBuilderList.flatMap { res ->
-                    res.envelopesList.mapNotNull { envelope ->
-                        val conversation = conversationsByTopic[envelope.contentTopic]
-                        if (conversation == null) {
-                            Log.d(TAG, "discarding message, unknown conversation $envelope")
-                            return@mapNotNull null
-                        }
-                        val msg = conversation.decodeOrNull(envelope)
-                        msg
-                    }
-                },
-            )
+        val contacts = client.contacts
+        contacts.refreshConsentList()
+        if (contacts.consentList.state(peerAddress) == ConsentState.UNKNOWN) {
+            contacts.allow(listOf(peerAddress))
         }
-        return messages
-    }
-
-    /**
-     *  @return This lists messages sent to the [Conversation] when the messages are encrypted.
-     *  This pulls messages from multiple conversations in a single call.
-     *  @see listBatchMessages
-     */
-    suspend fun listBatchDecryptedMessages(
-        topics: List<Pair<String, Pagination?>>,
-    ): List<DecryptedMessage> {
-        val requests = topics.map { (topic, page) ->
-            makeQueryRequest(topic = topic, pagination = page)
-        }
-
-        // The maximum number of requests permitted in a single batch call.
-        val maxQueryRequestsPerBatch = 50
-        val messages: MutableList<DecryptedMessage> = mutableListOf()
-        val batches = requests.chunked(maxQueryRequestsPerBatch)
-        for (batch in batches) {
-            messages.addAll(
-                client.batchQuery(batch).responsesOrBuilderList.flatMap { res ->
-                    res.envelopesList.mapNotNull { envelope ->
-                        val conversation = conversationsByTopic[envelope.contentTopic]
-                        if (conversation == null) {
-                            Log.d(TAG, "discarding message, unknown conversation $envelope")
-                            return@mapNotNull null
-                        }
-                        try {
-                            val msg = conversation.decrypt(envelope)
-                            msg
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error decrypting message: $envelope", e)
-                            null
-                        }
-                    }
-                },
-            )
-        }
-        return messages
     }
 
     fun stream(): Flow<Conversation> = callbackFlow {
@@ -708,6 +703,83 @@ data class Conversations(
     }
 
     // ------- V1 V2 to be deprecated ------
+
+    /**
+     *  @return This lists messages sent to the [Conversation].
+     *  This pulls messages from multiple conversations in a single call.
+     *  @see Conversation.messages
+     */
+    suspend fun listBatchMessages(
+        topics: List<Pair<String, Pagination?>>,
+    ): List<DecodedMessage> {
+        if (!client.hasV2Client) throw XMTPException("Not supported for V3. The local database handles persistence of messages. Use listConversations order lastMessage")
+
+        val requests = topics.map { (topic, page) ->
+            makeQueryRequest(topic = topic, pagination = page)
+        }
+
+        // The maximum number of requests permitted in a single batch call.
+        val maxQueryRequestsPerBatch = 50
+        val messages: MutableList<DecodedMessage> = mutableListOf()
+        val batches = requests.chunked(maxQueryRequestsPerBatch)
+        for (batch in batches) {
+            messages.addAll(
+                client.batchQuery(batch).responsesOrBuilderList.flatMap { res ->
+                    res.envelopesList.mapNotNull { envelope ->
+                        val conversation = conversationsByTopic[envelope.contentTopic]
+                        if (conversation == null) {
+                            Log.d(TAG, "discarding message, unknown conversation $envelope")
+                            return@mapNotNull null
+                        }
+                        val msg = conversation.decodeOrNull(envelope)
+                        msg
+                    }
+                },
+            )
+        }
+        return messages
+    }
+
+    /**
+     *  @return This lists messages sent to the [Conversation] when the messages are encrypted.
+     *  This pulls messages from multiple conversations in a single call.
+     *  @see listBatchMessages
+     */
+    suspend fun listBatchDecryptedMessages(
+        topics: List<Pair<String, Pagination?>>,
+    ): List<DecryptedMessage> {
+        if (!client.hasV2Client) throw XMTPException("Not supported for V3. The local database handles persistence of messages. Use listConversations order lastMessage")
+
+        val requests = topics.map { (topic, page) ->
+            makeQueryRequest(topic = topic, pagination = page)
+        }
+
+        // The maximum number of requests permitted in a single batch call.
+        val maxQueryRequestsPerBatch = 50
+        val messages: MutableList<DecryptedMessage> = mutableListOf()
+        val batches = requests.chunked(maxQueryRequestsPerBatch)
+        for (batch in batches) {
+            messages.addAll(
+                client.batchQuery(batch).responsesOrBuilderList.flatMap { res ->
+                    res.envelopesList.mapNotNull { envelope ->
+                        val conversation = conversationsByTopic[envelope.contentTopic]
+                        if (conversation == null) {
+                            Log.d(TAG, "discarding message, unknown conversation $envelope")
+                            return@mapNotNull null
+                        }
+                        try {
+                            val msg = conversation.decrypt(envelope)
+                            msg
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error decrypting message: $envelope", e)
+                            null
+                        }
+                    }
+                },
+            )
+        }
+        return messages
+    }
 
     fun importTopicData(data: TopicData): Conversation {
         if (!client.hasV2Client) throw XMTPException("Not supported for V3. The local database handles persistence.")
