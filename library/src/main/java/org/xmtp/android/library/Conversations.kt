@@ -385,6 +385,7 @@ data class Conversations(
 
                 sortedConversations.map { it.first }
             }
+
             ConversationOrder.CREATED_AT -> conversations
         }
     }
@@ -437,7 +438,8 @@ data class Conversations(
                 conversationsByTopic.putAll(
                     dms.filter { dm ->
                         conversationsByTopic.values.none { existing ->
-                            client.inboxIdFromAddress(existing.peerAddress)?.lowercase() == dm.peerInboxId().lowercase()
+                            client.inboxIdFromAddress(existing.peerAddress)
+                                ?.lowercase() == dm.peerInboxId().lowercase()
                         }
                     }.associate { dm ->
                         dm.topic to Conversation.Dm(dm)
@@ -562,7 +564,7 @@ data class Conversations(
     private fun streamConversations(): Flow<Conversation> = callbackFlow {
         val conversationCallback = object : FfiConversationCallback {
             override fun onConversation(conversation: FfiConversation) {
-                if(conversation.groupMetadata().conversationType() == "dm") {
+                if (conversation.groupMetadata().conversationType() == "dm") {
                     trySend(Conversation.Dm(Dm(client, conversation)))
                 } else {
                     trySend(Conversation.Group(Group(client, conversation)))
