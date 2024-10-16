@@ -680,7 +680,6 @@ data class Conversations(
     }
 
     fun streamAllConversationMessages(): Flow<DecodedMessage> = callbackFlow {
-        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
                 val decodedMessage = MessageV3(client, message).decodeOrNull()
@@ -695,7 +694,6 @@ data class Conversations(
     }
 
     fun streamAllConversationDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
-        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
                 val decryptedMessage = MessageV3(client, message).decryptOrNull()
