@@ -546,13 +546,32 @@ data class Conversations(
             )
 
             awaitClose { launch { stream.end() } }
-        } else if (client.v3Client != null) {
+        }
+        if (client.v3Client != null) {
             streamDmConversations()
         }
     }
 
     fun streamAll(): Flow<Conversation> {
+        if (!client.hasV2Client) {
+            streamConversations()
+        }
         return merge(streamGroupConversations(), stream())
+    }
+
+    private fun streamConversations(): Flow<Conversation> = callbackFlow {
+        val conversationCallback = object : FfiConversationCallback {
+            override fun onConversation(conversation: FfiConversation) {
+                if(conversation.groupMetadata().conversationType() == "dm") {
+                    trySend(Conversation.Dm(Dm(client, conversation)))
+                } else {
+                    trySend(Conversation.Group(Group(client, conversation)))
+                }
+            }
+        }
+        val stream = libXMTPConversations?.stream(conversationCallback)
+            ?: throw XMTPException("Client does not support Groups")
+        awaitClose { stream.end() }
     }
 
     fun streamGroups(): Flow<Group> = callbackFlow {
@@ -687,12 +706,12 @@ data class Conversations(
     }
 
     private fun streamDmConversations(): Flow<Conversation> = callbackFlow {
-        val groupCallback = object : FfiConversationCallback {
+        val dmCallback = object : FfiConversationCallback {
             override fun onConversation(conversation: FfiConversation) {
                 trySend(Conversation.Dm(Dm(client, conversation)))
             }
         }
-        val stream = libXMTPConversations?.streamDms(groupCallback)
+        val stream = libXMTPConversations?.streamDms(dmCallback)
             ?: throw XMTPException("Client does not support V3")
         awaitClose { stream.end() }
     }

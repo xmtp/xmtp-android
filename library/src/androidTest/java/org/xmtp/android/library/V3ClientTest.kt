@@ -281,9 +281,9 @@ class V3ClientTest {
         Thread.sleep(1000)
 
         runBlocking {
-            caroV2V3Client.conversations.newConversation(boV3.walletAddress)
-            Thread.sleep(1000)
             caroV2V3Client.conversations.newGroup(listOf(boV3.walletAddress))
+            Thread.sleep(1000)
+            caroV2V3Client.conversations.newConversation(boV3.walletAddress)
         }
 
         Thread.sleep(2000)
