@@ -424,9 +424,11 @@ class Client() {
                 if (account != null) {
                     account.sign(signatureRequest.signatureText())?.let {
                         if (account.isSmartContractWallet) {
+                            Log.d("LOPI", it.ecdsaCompact.bytes.toByteArray().toHex())
+                            Log.d("LOPI4", account.address)
                             signatureRequest.addScwSignature(
-                                it.rawData,
-                                account.address,
+                                it.ecdsaCompact.bytes.toByteArray(),
+                                account.address.lowercase(),
                                 account.chainId.toULong(),
                                 account.blockNumber?.toULong()
                             )

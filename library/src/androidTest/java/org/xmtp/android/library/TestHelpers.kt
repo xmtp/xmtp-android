@@ -1,12 +1,17 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.runBlocking
+import org.web3j.abi.FunctionEncoder
+import org.web3j.abi.datatypes.DynamicBytes
+import org.web3j.abi.datatypes.Uint
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.Hash
 import org.web3j.crypto.Sign
 import org.web3j.protocol.Web3j
 import org.web3j.tx.gas.DefaultGasProvider
+import org.web3j.utils.Numeric
 import org.xmtp.android.library.artifact.CoinbaseSmartWallet
 import org.xmtp.android.library.artifact.CoinbaseSmartWalletFactory
 import org.xmtp.android.library.messages.ContactBundle
@@ -58,7 +63,7 @@ class FakeSCWWallet(
     private val web3j: Web3j,
     private val credentials: Credentials,
 ) : SigningKey {
-    var walletAddress: String = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    var walletAddress: String = ""
 
     init {
         runBlocking {
@@ -87,20 +92,31 @@ class FakeSCWWallet(
     }
 
     override suspend fun sign(data: ByteArray): Signature {
-        val smartWallet = CoinbaseSmartWallet.deploy(
+        val smartWallet = CoinbaseSmartWallet.load(
+            walletAddress,
             web3j,
             credentials,
             DefaultGasProvider()
-        ).send()
+        )
 
         val replaySafeHash = smartWallet.replaySafeHash(data).send()
-        val signedHash = Sign.signMessage(replaySafeHash, credentials.ecKeyPair)
-        val signatureKey = KeyUtil.getSignatureBytes(signedHash)
+        Log.d("LOPI1", replaySafeHash.toHex())
+
+        val signature = Sign.signMessage(replaySafeHash, credentials.ecKeyPair, false)
+        val signatureBytes = signature.r + signature.s + signature.v
+        Log.d("LOPI2", signatureBytes.toHex())
+
+        val tokens = listOf(
+            Uint(BigInteger.ZERO),
+            DynamicBytes(signatureBytes)
+        )
+        val encoded = FunctionEncoder.encodeConstructor(tokens)
+        val encodedBytes = Numeric.hexStringToByteArray(encoded)
+        Log.d("LOPI3", encoded)
 
         return SignatureOuterClass.Signature.newBuilder().also {
             it.ecdsaCompact = it.ecdsaCompact.toBuilder().also { builder ->
-                builder.bytes = signatureKey.take(64).toByteArray().toByteString()
-                builder.recovery = signatureKey[64].toInt()
+                builder.bytes = signatureBytes.toByteString()
             }.build()
         }.build()
     }
@@ -124,12 +140,18 @@ class FakeSCWWallet(
             "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
         ).send()
 
-        val owners = listOf(Hash.sha3(credentials.address.toByteArray()))
+        CoinbaseSmartWallet.deploy(
+            web3j,
+            credentials,
+            DefaultGasProvider()
+        ).send()
+
+        val owners = listOf(Hash.sha3("eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".toByteArray()))
         val nonce = BigInteger.ZERO
 
-        val smartWalletAddress = factory.getAddress(owners, nonce).send()
         val transactionReceipt = factory.createAccount(owners, nonce, BigInteger.ZERO).send()
-
+        val smartWalletAddress = factory.getAddress(owners, nonce).send()
+        Log.d("LOPI5", smartWalletAddress)
         if (transactionReceipt.isStatusOK) {
             walletAddress = smartWalletAddress
         } else {
