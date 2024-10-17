@@ -15,6 +15,8 @@ import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.Topic
+import org.xmtp.android.library.messages.consentProofText
+import org.xmtp.android.library.messages.ethHash
 import org.xmtp.android.library.messages.toPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.contents.SignatureOuterClass
@@ -71,7 +73,7 @@ class FakeSCWWallet(
     override val isSmartContractWallet: Boolean
         get() = true
 
-    override var chainId: Long = 1L
+    override var chainId: Long = 31337L
 
     companion object {
         fun generate(
@@ -91,10 +93,7 @@ class FakeSCWWallet(
             DefaultGasProvider()
         ).send()
 
-        val randomHash = ByteArray(32)
-        SecureRandom().nextBytes(randomHash)
-
-        val replaySafeHash = smartWallet.replaySafeHash(randomHash).send()
+        val replaySafeHash = smartWallet.replaySafeHash(data).send()
         val signedHash = Sign.signMessage(replaySafeHash, credentials.ecKeyPair)
         val signatureKey = KeyUtil.getSignatureBytes(signedHash)
 
@@ -107,7 +106,7 @@ class FakeSCWWallet(
     }
 
     override suspend fun sign(message: String): Signature {
-        val digest = message.toByteArray(Charsets.UTF_8).sha256()
+        val digest = Signature.newBuilder().build().ethHash(message)
         return sign(digest)
     }
 

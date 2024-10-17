@@ -29,6 +29,7 @@ class SmartContractWalletTest {
         val davonSCWClient = runBlocking {
             Client().createOrBuild(
                 account = davonSCW,
+                address = davonSCW.walletAddress,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
                     enableV3 = true,
