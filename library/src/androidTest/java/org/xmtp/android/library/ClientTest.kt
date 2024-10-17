@@ -161,6 +161,7 @@ class ClientTest {
         val client = runBlocking {
             Client().createOrBuild(
                 account = fakeWallet,
+                address = fakeWallet.address,
                 options = options
             )
         }
@@ -169,6 +170,18 @@ class ClientTest {
         }
         assert(client.installationId.isNotEmpty())
         assertEquals(inboxId, client.inboxId)
+
+        val clientBuild = runBlocking {
+            Client().createOrBuild(
+                address = fakeWallet.address,
+                options = options
+            )
+        }
+        runBlocking {
+            clientBuild.canMessageV3(listOf(clientBuild.address))[clientBuild.address]?.let { assert(it) }
+        }
+        assert(clientBuild.installationId.isNotEmpty())
+        assertEquals(inboxId, clientBuild.inboxId)
     }
 
     @Test

@@ -628,7 +628,7 @@ class GroupTest {
         val group = runBlocking { caroClient.conversations.newGroup(listOf(alix.walletAddress)) }
         val conversation =
             runBlocking { boClient.conversations.newConversation(alix.walletAddress) }
-        runBlocking { alixClient.conversations.syncGroups() }
+        runBlocking { alixClient.conversations.syncConversations() }
 
         val allMessages = mutableListOf<DecodedMessage>()
 
@@ -746,6 +746,10 @@ class GroupTest {
             val group2 =
                 caroClient.conversations.newGroup(listOf(bo.walletAddress))
             assertEquals(group2.id, awaitItem().id)
+            val dm =
+                caroClient.conversations.findOrCreateDm(bo.walletAddress)
+            expectNoEvents()
+            cancelAndConsumeRemainingEvents()
         }
     }
 
@@ -768,11 +772,13 @@ class GroupTest {
             alixClient.conversations.newConversation(bo.walletAddress)
             Thread.sleep(2500)
             caroClient.conversations.newGroup(listOf(alix.walletAddress))
+            caroClient.conversations.findOrCreateDm(alix.walletAddress)
+            boClient.conversations.findOrCreateDm(alix.walletAddress)
         }
 
         Thread.sleep(2500)
 
-        assertEquals(2, allMessages.size)
+        assertEquals(3, allMessages.size)
 
         job.cancel()
     }

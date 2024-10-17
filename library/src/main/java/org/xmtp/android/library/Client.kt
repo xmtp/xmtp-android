@@ -291,30 +291,32 @@ class Client() {
 
     // This is a V3 only feature
     suspend fun createOrBuild(
-        account: SigningKey,
-        options: ClientOptions,
+        address: String,
+        account: SigningKey? = null,
+        options: ClientOptions? = null,
     ): Client {
         this.hasV2Client = false
-        val inboxId = getOrCreateInboxId(options, account.address)
+        val clientOptions = options ?: ClientOptions(enableV3 = true)
+        val inboxId = getOrCreateInboxId(clientOptions, address)
 
         return try {
             val (libXMTPClient, dbPath) = ffiXmtpClient(
-                options,
+                clientOptions,
                 account,
-                options.appContext,
+                clientOptions.appContext,
                 null,
-                account.address,
+                address,
                 inboxId
             )
 
             libXMTPClient?.let { client ->
                 Client(
-                    account.address,
+                    address,
                     client,
                     dbPath,
                     client.installationId().toHex(),
                     client.inboxId(),
-                    options.api.env
+                    clientOptions.api.env
                 )
             } ?: throw XMTPException("Error creating V3 client: libXMTPClient is null")
         } catch (e: Exception) {
@@ -567,10 +569,37 @@ class Client() {
         }
     }
 
+    @Deprecated("Find now includes DMs and Groups", replaceWith = ReplaceWith("findConversation"))
     fun findGroup(groupId: String): Group? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
         try {
-            return Group(this, client.group(groupId.hexToByteArray()))
+            return Group(this, client.conversation(groupId.hexToByteArray()))
+        } catch (e: Exception) {
+            return null
+        }
+    }
+
+    fun findConversation(conversationId: String): Conversation? {
+        val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
+        try {
+            val conversation = client.conversation(conversationId.hexToByteArray())
+            if (conversation.groupMetadata().conversationType() == "dm") {
+                return Conversation.Dm(Dm(this, conversation))
+            } else if (conversation.groupMetadata().conversationType() == "group") {
+                return Conversation.Group(Group(this, conversation))
+            } else {
+                return null
+            }
+        } catch (e: Exception) {
+            return null
+        }
+    }
+
+    suspend fun findDm(address: String): Dm? {
+        val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
+        val inboxId = inboxIdFromAddress(address.lowercase()) ?: throw XMTPException("No inboxId present")
+        try {
+            return Dm(this, client.dmConversation(inboxId))
         } catch (e: Exception) {
             return null
         }
@@ -710,6 +739,14 @@ class Client() {
             signatureRequest.addEcdsaSignature(it.rawData)
             client.applySignatureRequest(signatureRequest)
         }
+    }
+
+    suspend fun addressesFromInboxIds(
+        refreshFromNetwork: Boolean,
+        inboxIds: List<String>,
+    ): List<InboxState> {
+        val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
+        return client.addressesFromInboxId(refreshFromNetwork, inboxIds).map { InboxState(it) }
     }
 
     suspend fun inboxState(refreshFromNetwork: Boolean): InboxState {
