@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import android.util.Log
+import com.google.crypto.tink.subtle.EngineWrapper.TKeyAgreement
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -209,6 +210,7 @@ data class ConversationV2(
                 }
             } catch (e: Exception) {
                 // Do nothing if this errors
+                // Log error if the peer is on the v3 network
             }
         }
         client.publish(envelopes = prepared.envelopes)
