@@ -291,30 +291,33 @@ class Client() {
 
     // This is a V3 only feature
     suspend fun createOrBuild(
-        account: SigningKey,
-        options: ClientOptions,
+        address: String,
+        account: SigningKey? = null,
+        options: ClientOptions? = null,
     ): Client {
         this.hasV2Client = false
-        val inboxId = getOrCreateInboxId(options, account.address)
+        val clientOptions = options ?: ClientOptions(enableV3 = true)
+        val accountAddress = "eip155:31337:" + address.lowercase()
+        val inboxId = getOrCreateInboxId(clientOptions, accountAddress)
 
         return try {
             val (libXMTPClient, dbPath) = ffiXmtpClient(
-                options,
+                clientOptions,
                 account,
-                options.appContext,
+                clientOptions.appContext,
                 null,
-                account.address,
+                accountAddress,
                 inboxId
             )
 
             libXMTPClient?.let { client ->
                 Client(
-                    account.address,
+                    address,
                     client,
                     dbPath,
                     client.installationId().toHex(),
                     client.inboxId(),
-                    options.api.env
+                    clientOptions.api.env
                 )
             } ?: throw XMTPException("Error creating V3 client: libXMTPClient is null")
         } catch (e: Exception) {
@@ -421,8 +424,20 @@ class Client() {
             v3Client.signatureRequest()?.let { signatureRequest ->
                 if (account != null) {
                     account.sign(signatureRequest.signatureText())?.let {
-                        signatureRequest.addEcdsaSignature(it.rawData)
+                        if (account.isSmartContractWallet) {
+                            Log.d("LOPI", it.ecdsaCompact.bytes.toByteArray().toHex())
+                            Log.d("LOPI4", account.address)
+                            signatureRequest.addScwSignature(
+                                it.ecdsaCompact.bytes.toByteArray(),
+                                account.address.lowercase(),
+                                account.chainId.toULong(),
+                                account.blockNumber?.toULong()
+                            )
+                        } else {
+                            signatureRequest.addEcdsaSignature(it.rawData)
+                        }
                     }
+
                     v3Client.registerIdentity(signatureRequest)
                 } else {
                     throw XMTPException("No signer passed but signer was required.")
@@ -570,7 +585,7 @@ class Client() {
     fun findGroup(groupId: String): Group? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
         try {
-            return Group(this, client.group(groupId.hexToByteArray()))
+            return Group(this, client.conversation(groupId.hexToByteArray()))
         } catch (e: Exception) {
             return null
         }

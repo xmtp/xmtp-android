@@ -161,6 +161,7 @@ class ClientTest {
         val client = runBlocking {
             Client().createOrBuild(
                 account = fakeWallet,
+                address = fakeWallet.address,
                 options = options
             )
         }
