@@ -22,6 +22,15 @@ services:
   validation:
     image: ghcr.io/xmtp/mls-validation-service:main
     platform: linux/amd64
+    environment:
+      ANVIL_URL: "http://anvil:8545"
+
+  anvil:
+    build:
+      dockerfile: /Users/nickmolnar/code/xmtp/libxmtp/dev/docker/anvil.Dockerfile
+    platform: linux/amd64
+    ports:
+      - 8545:8545
 
   db:
     image: postgres:13

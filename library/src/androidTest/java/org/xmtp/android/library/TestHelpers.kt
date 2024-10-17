@@ -116,7 +116,7 @@ class FakeSCWWallet(
 
         return SignatureOuterClass.Signature.newBuilder().also {
             it.ecdsaCompact = it.ecdsaCompact.toBuilder().also { builder ->
-                builder.bytes = signatureBytes.toByteString()
+                builder.bytes = encodedBytes.toByteString()
             }.build()
         }.build()
     }
@@ -132,21 +132,24 @@ class FakeSCWWallet(
     }
 
     private fun createSmartContractWallet() {
-        val factory = CoinbaseSmartWalletFactory.deploy(
-            web3j,
-            credentials,
-            DefaultGasProvider(),
-            BigInteger.ZERO,
-            "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-        ).send()
-
-        CoinbaseSmartWallet.deploy(
+        val smartWalletContract =  CoinbaseSmartWallet.deploy(
             web3j,
             credentials,
             DefaultGasProvider()
         ).send()
 
-        val owners = listOf(Hash.sha3("eip155:31337:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".toByteArray()))
+        val factory = CoinbaseSmartWalletFactory.deploy(
+            web3j,
+            credentials,
+            DefaultGasProvider(),
+            BigInteger.ZERO,
+            smartWalletContract.contractAddress
+        ).send()
+
+        val ownerAddress = ByteArray(32) { 0 }.apply {
+            System.arraycopy(credentials.address.hexToByteArray(), 0, this, 12, 20)
+        }
+        val owners = listOf(ownerAddress)
         val nonce = BigInteger.ZERO
 
         val transactionReceipt = factory.createAccount(owners, nonce, BigInteger.ZERO).send()

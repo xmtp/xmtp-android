@@ -297,7 +297,8 @@ class Client() {
     ): Client {
         this.hasV2Client = false
         val clientOptions = options ?: ClientOptions(enableV3 = true)
-        val inboxId = getOrCreateInboxId(clientOptions, address)
+        val accountAddress = "eip155:31337:" + address.lowercase()
+        val inboxId = getOrCreateInboxId(clientOptions, accountAddress)
 
         return try {
             val (libXMTPClient, dbPath) = ffiXmtpClient(
@@ -305,7 +306,7 @@ class Client() {
                 account,
                 clientOptions.appContext,
                 null,
-                address,
+                accountAddress,
                 inboxId
             )
 
