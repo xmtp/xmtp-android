@@ -582,7 +582,7 @@ class Client() {
     fun findGroup(groupId: String): Group? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
         try {
-            return Group(this, client.group(groupId.hexToByteArray()))
+            return Group(this, client.conversation(groupId.hexToByteArray()))
         } catch (e: Exception) {
             return null
         }
