@@ -26,9 +26,10 @@ services:
       ANVIL_URL: "http://anvil:8545"
 
   anvil:
-    build:
-      dockerfile: /Users/nickmolnar/code/xmtp/libxmtp/dev/docker/anvil.Dockerfile
+    image: ghcr.io/foundry-rs/foundry
     platform: linux/amd64
+    entrypoint: ["anvil", "--host", "0.0.0.0"]
+    working_dir: /anvil
     ports:
       - 8545:8545
 
