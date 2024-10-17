@@ -225,6 +225,7 @@ data class Conversations(
         if (client.v3Client != null) {
             val dm = findOrCreateDm(peerAddress)
             val conversation = Conversation.Dm(dm)
+            if (!client.hasV2Client) conversationsByTopic[conversation.topic] = conversation
             if (!client.hasV2Client || !client.canMessage(peerAddress)) {
                 return conversation
             }
@@ -436,7 +437,7 @@ data class Conversations(
             syncConversations()
             val dms = listDms().map { Conversation.Dm(it) }
             if (!client.hasV2Client) {
-                conversationsByTopic += dms.map { it.topic to it }
+               conversationsByTopic = dms.associate { it.topic to it as Conversation }.toMutableMap()
             } else {
                 try {
                     conversationsByTopic.putAll(

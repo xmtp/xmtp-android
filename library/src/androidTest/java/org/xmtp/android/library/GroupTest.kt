@@ -773,11 +773,12 @@ class GroupTest {
             Thread.sleep(2500)
             caroClient.conversations.newGroup(listOf(alix.walletAddress))
             caroClient.conversations.findOrCreateDm(alix.walletAddress)
+            boClient.conversations.findOrCreateDm(alix.walletAddress)
         }
 
         Thread.sleep(2500)
 
-        assertEquals(2, allMessages.size)
+        assertEquals(3, allMessages.size)
 
         job.cancel()
     }
