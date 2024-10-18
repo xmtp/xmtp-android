@@ -50,9 +50,8 @@ class V3ClientTest {
         boV3Wallet = PrivateKeyBuilder()
         boV3 = boV3Wallet.getPrivateKey()
         boV3Client = runBlocking {
-            Client().createOrBuild(
+            Client().createV3(
                 account = boV3Wallet,
-                address = boV3Wallet.address,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
                     enableV3 = true,

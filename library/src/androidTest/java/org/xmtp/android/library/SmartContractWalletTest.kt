@@ -3,6 +3,7 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.web3j.crypto.Credentials
@@ -26,17 +27,26 @@ class SmartContractWalletTest {
         val credentials =
             Credentials.create("ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80")
         val davonSCW = FakeSCWWallet.generate(web3j, credentials)
+        val options = ClientOptions(
+            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+            enableV3 = true,
+            appContext = context,
+            dbEncryptionKey = key
+        )
         val davonSCWClient = runBlocking {
-            Client().createOrBuild(
+            Client().createV3(
                 account = davonSCW,
-                address = davonSCW.walletAddress,
-                options = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableV3 = true,
-                    appContext = context,
-                    dbEncryptionKey = key
-                )
+                options = options
             )
         }
+        val davonSCWClient2 = runBlocking {
+            Client().buildV3(
+                address = davonSCW.address,
+                contractChainId = davonSCW.chainId,
+                options = options
+            )
+        }
+
+        assertEquals(davonSCWClient.inboxId, davonSCWClient2.inboxId)
     }
 }
