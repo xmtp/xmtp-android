@@ -336,13 +336,13 @@ class Client() {
     // Function to build a V3 client without a signing key (using only address (& chainId for SCW))
     suspend fun buildV3(
         address: String,
-        contractChainId: Long? = null,
+        chainId: Long? = null,
         options: ClientOptions? = null,
     ): Client {
         this.hasV2Client = false
         val clientOptions = options ?: ClientOptions(enableV3 = true)
         val accountAddress =
-            if (contractChainId != null) "eip155:$contractChainId:${address.lowercase()}" else address.lowercase()
+            if (chainId != null) "eip155:$chainId:${address.lowercase()}" else address.lowercase()
         return try {
             initializeV3Client(accountAddress, clientOptions)
         } catch (e: Exception) {
@@ -449,10 +449,11 @@ class Client() {
             v3Client.signatureRequest()?.let { signatureRequest ->
                 if (account != null) {
                     if (account.isSmartContractWallet) {
+                        val chainId = account.chainId ?: throw XMTPException("ChainId is required for smart contract wallets")
                         signatureRequest.addScwSignature(
-                            account.signSmartContract(signatureRequest.signatureText()),
+                            account.signSCW(signatureRequest.signatureText()),
                             account.address.lowercase(),
-                            account.chainId.toULong(),
+                            chainId.toULong(),
                             account.blockNumber?.toULong()
                         )
                     } else {

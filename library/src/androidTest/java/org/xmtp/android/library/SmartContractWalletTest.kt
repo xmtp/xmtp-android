@@ -34,7 +34,7 @@ class SmartContractWalletTest {
         val davonSCWClient2 = runBlocking {
             Client().buildV3(
                 address = davonSCW.address,
-                contractChainId = davonSCW.chainId,
+                chainId = davonSCW.chainId,
                 options = options
             )
         }

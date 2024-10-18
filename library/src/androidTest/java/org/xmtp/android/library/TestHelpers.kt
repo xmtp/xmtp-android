@@ -66,7 +66,7 @@ class FakeSCWWallet : SigningKey {
     override val isSmartContractWallet: Boolean
         get() = true
 
-    override var chainId: Long = 31337L
+    override var chainId: Long? = 31337L
 
     companion object {
         fun generate(): FakeSCWWallet {
@@ -76,7 +76,7 @@ class FakeSCWWallet : SigningKey {
         }
     }
 
-    override suspend fun signSmartContract(message: String): ByteArray {
+    override suspend fun signSCW(message: String): ByteArray {
         val smartWallet = CoinbaseSmartWallet.load(
             walletAddress,
             web3j,

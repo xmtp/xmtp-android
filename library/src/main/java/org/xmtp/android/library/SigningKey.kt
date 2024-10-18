@@ -24,8 +24,8 @@ interface SigningKey {
         get() = false
 
     // Default chainId value set to 1
-    var chainId: Long
-        get() = 1
+    var chainId: Long?
+        get() = null
         set(_) {}
 
     // Default blockNumber value set to null
@@ -41,8 +41,8 @@ interface SigningKey {
         throw NotImplementedError("sign(String) is not implemented.")
     }
 
-    suspend fun signSmartContract(message: String): ByteArray {
-        throw NotImplementedError("signSmartContract(String) is not implemented.")
+    suspend fun signSCW(message: String): ByteArray {
+        throw NotImplementedError("signSCW(String) is not implemented.")
     }
 }
 
