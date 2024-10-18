@@ -6,9 +6,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.web3j.crypto.Credentials
-import org.web3j.protocol.Web3j
-import org.web3j.protocol.http.HttpService
 
 @RunWith(AndroidJUnit4::class)
 class SmartContractWalletTest {
@@ -21,12 +18,7 @@ class SmartContractWalletTest {
             0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
         )
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val web3j = Web3j.build(HttpService("http://10.0.2.2:8545"))
-        Thread.sleep(1000L)
-
-        val credentials =
-            Credentials.create("ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80")
-        val davonSCW = FakeSCWWallet.generate(web3j, credentials)
+        val davonSCW = FakeSCWWallet.generate()
         val options = ClientOptions(
             ClientOptions.Api(XMTPEnvironment.LOCAL, false),
             enableV3 = true,

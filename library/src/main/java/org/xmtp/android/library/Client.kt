@@ -342,7 +342,7 @@ class Client() {
         this.hasV2Client = false
         val clientOptions = options ?: ClientOptions(enableV3 = true)
         val accountAddress =
-            if (contractChainId != null) "eip155:${contractChainId}:${address.lowercase()}" else address.lowercase()
+            if (contractChainId != null) "eip155:$contractChainId:${address.lowercase()}" else address.lowercase()
         return try {
             initializeV3Client(accountAddress, clientOptions)
         } catch (e: Exception) {
@@ -448,17 +448,15 @@ class Client() {
             }
             v3Client.signatureRequest()?.let { signatureRequest ->
                 if (account != null) {
-                    account.sign(signatureRequest.signatureText())?.let {
-                        if (account.isSmartContractWallet) {
-                            Log.d("LOPI", it.ecdsaCompact.bytes.toByteArray().toHex())
-                            Log.d("LOPI4", account.address)
-                            signatureRequest.addScwSignature(
-                                it.ecdsaCompact.bytes.toByteArray(),
-                                account.address.lowercase(),
-                                account.chainId.toULong(),
-                                account.blockNumber?.toULong()
-                            )
-                        } else {
+                    if (account.isSmartContractWallet) {
+                        signatureRequest.addScwSignature(
+                            account.signSmartContract(signatureRequest.signatureText()),
+                            account.address.lowercase(),
+                            account.chainId.toULong(),
+                            account.blockNumber?.toULong()
+                        )
+                    } else {
+                        account.sign(signatureRequest.signatureText())?.let {
                             signatureRequest.addEcdsaSignature(it.rawData)
                         }
                     }

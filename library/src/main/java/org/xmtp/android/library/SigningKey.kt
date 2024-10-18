@@ -33,9 +33,17 @@ interface SigningKey {
         get() = null
         set(_) {}
 
-    suspend fun sign(data: ByteArray): SignatureOuterClass.Signature?
+    suspend fun sign(data: ByteArray): SignatureOuterClass.Signature? {
+        throw NotImplementedError("sign(ByteArray) is not implemented.")
+    }
 
-    suspend fun sign(message: String): SignatureOuterClass.Signature?
+    suspend fun sign(message: String): SignatureOuterClass.Signature? {
+        throw NotImplementedError("sign(String) is not implemented.")
+    }
+
+    suspend fun signSmartContract(message: String): ByteArray {
+        throw NotImplementedError("signSmartContract(String) is not implemented.")
+    }
 }
 
 /**
