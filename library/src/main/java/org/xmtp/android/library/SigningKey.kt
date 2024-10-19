@@ -23,7 +23,7 @@ interface SigningKey {
     val isSmartContractWallet: Boolean
         get() = false
 
-    // Default chainId value set to 1
+    // The chainId of the Smart Contract Wallet value should be null if not SCW
     var chainId: Long?
         get() = null
         set(_) {}
