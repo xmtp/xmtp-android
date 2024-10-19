@@ -43,9 +43,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 // A rust-owned buffer is represented by its capacity, its current length, and a
 // pointer to the underlying data.
 
-/**
- * @suppress
- */
 @Structure.FieldOrder("capacity", "len", "data")
 open class RustBuffer : Structure() {
     // Note: `capacity` and `len` are actually `ULong` values, but JVM only supports signed values.
@@ -101,8 +98,6 @@ open class RustBuffer : Structure() {
  * Required for callbacks taking in an out pointer.
  *
  * Size is the sum of all values in the struct.
- *
- * @suppress
  */
 class RustBufferByReference : ByReference(16) {
     /**
@@ -137,7 +132,7 @@ class RustBufferByReference : ByReference(16) {
 // completeness.
 
 @Structure.FieldOrder("len", "data")
-internal open class ForeignBytes : Structure() {
+open class ForeignBytes : Structure() {
     @JvmField
     var len: Int = 0
     @JvmField
@@ -146,14 +141,10 @@ internal open class ForeignBytes : Structure() {
     class ByValue : ForeignBytes(), Structure.ByValue
 }
 
-/**
- * The FfiConverter interface handles converter types to and from the FFI
- *
- * All implementing objects should be public to support external types.  When a
- * type is external we need to import it's FfiConverter.
- *
- * @suppress
- */
+// The FfiConverter interface handles converter types to and from the FFI
+//
+// All implementing objects should be public to support external types.  When a
+// type is external we need to import it's FfiConverter.
 public interface FfiConverter<KotlinType, FfiType> {
     // Convert an FFI type to a Kotlin type
     fun lift(value: FfiType): KotlinType
@@ -216,11 +207,7 @@ public interface FfiConverter<KotlinType, FfiType> {
     }
 }
 
-/**
- * FfiConverter that uses `RustBuffer` as the FfiType
- *
- * @suppress
- */
+// FfiConverter that uses `RustBuffer` as the FfiType
 public interface FfiConverterRustBuffer<KotlinType> : FfiConverter<KotlinType, RustBuffer.ByValue> {
     override fun lift(value: RustBuffer.ByValue) = liftFromRustBuffer(value)
     override fun lower(value: KotlinType) = lowerIntoRustBuffer(value)
@@ -265,11 +252,7 @@ internal open class UniffiRustCallStatus : Structure() {
 
 class InternalException(message: String) : kotlin.Exception(message)
 
-/**
- * Each top-level error class has a companion object that can lift the error from the call status's rust buffer
- *
- * @suppress
- */
+// Each top-level error class has a companion object that can lift the error from the call status's rust buffer
 interface UniffiRustCallStatusErrorHandler<E> {
     fun lift(error_buf: RustBuffer.ByValue): E;
 }
@@ -312,11 +295,7 @@ private fun <E : kotlin.Exception> uniffiCheckCallStatus(
     }
 }
 
-/**
- * UniffiRustCallStatusErrorHandler implementation for times when we don't expect a CALL_ERROR
- *
- * @suppress
- */
+// UniffiRustCallStatusErrorHandler implementation for times when we don't expect a CALL_ERROR
 object UniffiNullRustCallStatusErrorHandler : UniffiRustCallStatusErrorHandler<InternalException> {
     override fun lift(error_buf: RustBuffer.ByValue): InternalException {
         RustBuffer.free(error_buf)
@@ -1188,10 +1167,6 @@ internal interface UniffiLib : Library {
         `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
     ): Byte
 
-    fun uniffi_xmtpv3_fn_method_ffistreamcloser_wait_for_ready(
-        `ptr`: Pointer,
-    ): Long
-
     fun uniffi_xmtpv3_fn_clone_ffiv2apiclient(
         `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
     ): Pointer
@@ -1913,9 +1888,6 @@ internal interface UniffiLib : Library {
     fun uniffi_xmtpv3_checksum_method_ffistreamcloser_is_closed(
     ): Short
 
-    fun uniffi_xmtpv3_checksum_method_ffistreamcloser_wait_for_ready(
-    ): Short
-
     fun uniffi_xmtpv3_checksum_method_ffiv2apiclient_batch_query(
     ): Short
 
@@ -2278,9 +2250,6 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffistreamcloser_is_closed() != 62423.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffistreamcloser_wait_for_ready() != 38545.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
     if (lib.uniffi_xmtpv3_checksum_method_ffiv2apiclient_batch_query() != 26551.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2455,9 +2424,6 @@ interface Disposable {
     }
 }
 
-/**
- * @suppress
- */
 inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
     try {
         block(this)
@@ -2470,16 +2436,9 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
         }
     }
 
-/**
- * Used to instantiate an interface without an actual pointer, for fakes in tests, mostly.
- *
- * @suppress
- * */
+/** Used to instantiate an interface without an actual pointer, for fakes in tests, mostly. */
 object NoPointer
 
-/**
- * @suppress
- */
 public object FfiConverterUByte : FfiConverter<UByte, Byte> {
     override fun lift(value: Byte): UByte {
         return value.toUByte()
@@ -2500,9 +2459,6 @@ public object FfiConverterUByte : FfiConverter<UByte, Byte> {
     }
 }
 
-/**
- * @suppress
- */
 public object FfiConverterUInt : FfiConverter<UInt, Int> {
     override fun lift(value: Int): UInt {
         return value.toUInt()
@@ -2523,9 +2479,6 @@ public object FfiConverterUInt : FfiConverter<UInt, Int> {
     }
 }
 
-/**
- * @suppress
- */
 public object FfiConverterULong : FfiConverter<ULong, Long> {
     override fun lift(value: Long): ULong {
         return value.toULong()
@@ -2546,9 +2499,6 @@ public object FfiConverterULong : FfiConverter<ULong, Long> {
     }
 }
 
-/**
- * @suppress
- */
 public object FfiConverterLong : FfiConverter<Long, Long> {
     override fun lift(value: Long): Long {
         return value
@@ -2569,9 +2519,6 @@ public object FfiConverterLong : FfiConverter<Long, Long> {
     }
 }
 
-/**
- * @suppress
- */
 public object FfiConverterBoolean : FfiConverter<Boolean, Byte> {
     override fun lift(value: Byte): Boolean {
         return value.toInt() != 0
@@ -2592,9 +2539,6 @@ public object FfiConverterBoolean : FfiConverter<Boolean, Byte> {
     }
 }
 
-/**
- * @suppress
- */
 public object FfiConverterString : FfiConverter<String, RustBuffer.ByValue> {
     // Note: we don't inherit from FfiConverterRustBuffer, because we use a
     // special encoding when lowering/lifting.  We can use `RustBuffer.len` to
@@ -2649,9 +2593,6 @@ public object FfiConverterString : FfiConverter<String, RustBuffer.ByValue> {
     }
 }
 
-/**
- * @suppress
- */
 public object FfiConverterByteArray : FfiConverterRustBuffer<ByteArray> {
     override fun read(buf: ByteBuffer): ByteArray {
         val len = buf.getInt()
@@ -2769,16 +2710,12 @@ public object FfiConverterByteArray : FfiConverterRustBuffer<ByteArray> {
 //
 
 
-/**
- * The cleaner interface for Object finalization code to run.
- * This is the entry point to any implementation that we're using.
- *
- * The cleaner registers objects and returns cleanables, so now we are
- * defining a `UniffiCleaner` with a `UniffiClenaer.Cleanable` to abstract the
- * different implmentations available at compile time.
- *
- * @suppress
- */
+// The cleaner interface for Object finalization code to run.
+// This is the entry point to any implementation that we're using.
+//
+// The cleaner registers objects and returns cleanables, so now we are
+// defining a `UniffiCleaner` with a `UniffiClenaer.Cleanable` to abstract the
+// different implmentations available at compile time.
 interface UniffiCleaner {
     interface Cleanable {
         fun clean()
@@ -3889,9 +3826,6 @@ open class FfiConversation : Disposable, AutoCloseable, FfiConversationInterface
 
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiConversation : FfiConverter<FfiConversation, Pointer> {
 
     override fun lower(value: FfiConversation): Pointer {
@@ -4136,9 +4070,6 @@ open class FfiConversationMetadata : Disposable, AutoCloseable, FfiConversationM
 
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiConversationMetadata :
     FfiConverter<FfiConversationMetadata, Pointer> {
 
@@ -4833,9 +4764,6 @@ open class FfiConversations : Disposable, AutoCloseable, FfiConversationsInterfa
 
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiConversations : FfiConverter<FfiConversations, Pointer> {
 
     override fun lower(value: FfiConversations): Pointer {
@@ -5083,9 +5011,6 @@ open class FfiGroupPermissions : Disposable, AutoCloseable, FfiGroupPermissionsI
 
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiGroupPermissions : FfiConverter<FfiGroupPermissions, Pointer> {
 
     override fun lower(value: FfiGroupPermissions): Pointer {
@@ -5491,9 +5416,6 @@ open class FfiSignatureRequest : Disposable, AutoCloseable, FfiSignatureRequestI
 
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiSignatureRequest : FfiConverter<FfiSignatureRequest, Pointer> {
 
     override fun lower(value: FfiSignatureRequest): Pointer {
@@ -5632,8 +5554,6 @@ public interface FfiStreamCloserInterface {
     suspend fun `endAndWait`()
 
     fun `isClosed`(): kotlin.Boolean
-
-    suspend fun `waitForReady`()
 
     companion object
 }
@@ -5782,45 +5702,10 @@ open class FfiStreamCloser : Disposable, AutoCloseable, FfiStreamCloserInterface
     }
 
 
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `waitForReady`() {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffistreamcloser_wait_for_ready(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
-    }
-
-
     companion object
 
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiStreamCloser : FfiConverter<FfiStreamCloser, Pointer> {
 
     override fun lower(value: FfiStreamCloser): Pointer {
@@ -6192,9 +6077,6 @@ open class FfiV2ApiClient : Disposable, AutoCloseable, FfiV2ApiClientInterface {
 
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiV2ApiClient : FfiConverter<FfiV2ApiClient, Pointer> {
 
     override fun lower(value: FfiV2ApiClient): Pointer {
@@ -6523,9 +6405,6 @@ open class FfiV2Subscription : Disposable, AutoCloseable, FfiV2SubscriptionInter
 
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiV2Subscription : FfiConverter<FfiV2Subscription, Pointer> {
 
     override fun lower(value: FfiV2Subscription): Pointer {
@@ -7403,9 +7282,6 @@ open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
 
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiXmtpClient : FfiConverter<FfiXmtpClient, Pointer> {
 
     override fun lower(value: FfiXmtpClient): Pointer {
@@ -7441,9 +7317,6 @@ data class FfiConsent(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiConsent : FfiConverterRustBuffer<FfiConsent> {
     override fun read(buf: ByteBuffer): FfiConsent {
         return FfiConsent(
@@ -7478,9 +7351,6 @@ data class FfiConversationMember(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiConversationMember :
     FfiConverterRustBuffer<FfiConversationMember> {
     override fun read(buf: ByteBuffer): FfiConversationMember {
@@ -7523,9 +7393,6 @@ data class FfiCreateGroupOptions(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiCreateGroupOptions :
     FfiConverterRustBuffer<FfiCreateGroupOptions> {
     override fun read(buf: ByteBuffer): FfiCreateGroupOptions {
@@ -7567,9 +7434,6 @@ data class FfiCursor(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiCursor : FfiConverterRustBuffer<FfiCursor> {
     override fun read(buf: ByteBuffer): FfiCursor {
         return FfiCursor(
@@ -7599,9 +7463,6 @@ data class FfiEnvelope(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiEnvelope : FfiConverterRustBuffer<FfiEnvelope> {
     override fun read(buf: ByteBuffer): FfiEnvelope {
         return FfiEnvelope(
@@ -7635,9 +7496,6 @@ data class FfiInboxState(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiInboxState : FfiConverterRustBuffer<FfiInboxState> {
     override fun read(buf: ByteBuffer): FfiInboxState {
         return FfiInboxState(
@@ -7672,9 +7530,6 @@ data class FfiInstallation(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiInstallation : FfiConverterRustBuffer<FfiInstallation> {
     override fun read(buf: ByteBuffer): FfiInstallation {
         return FfiInstallation(
@@ -7704,9 +7559,6 @@ data class FfiListConversationsOptions(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiListConversationsOptions :
     FfiConverterRustBuffer<FfiListConversationsOptions> {
     override fun read(buf: ByteBuffer): FfiListConversationsOptions {
@@ -7741,9 +7593,6 @@ data class FfiListMessagesOptions(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiListMessagesOptions :
     FfiConverterRustBuffer<FfiListMessagesOptions> {
     override fun read(buf: ByteBuffer): FfiListMessagesOptions {
@@ -7784,9 +7633,6 @@ data class FfiMessage(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiMessage : FfiConverterRustBuffer<FfiMessage> {
     override fun read(buf: ByteBuffer): FfiMessage {
         return FfiMessage(
@@ -7831,9 +7677,6 @@ data class FfiPagingInfo(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiPagingInfo : FfiConverterRustBuffer<FfiPagingInfo> {
     override fun read(buf: ByteBuffer): FfiPagingInfo {
         return FfiPagingInfo(
@@ -7871,9 +7714,6 @@ data class FfiPermissionPolicySet(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiPermissionPolicySet :
     FfiConverterRustBuffer<FfiPermissionPolicySet> {
     override fun read(buf: ByteBuffer): FfiPermissionPolicySet {
@@ -7920,9 +7760,6 @@ data class FfiPublishRequest(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiPublishRequest : FfiConverterRustBuffer<FfiPublishRequest> {
     override fun read(buf: ByteBuffer): FfiPublishRequest {
         return FfiPublishRequest(
@@ -7947,9 +7784,6 @@ data class FfiV2BatchQueryRequest(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiV2BatchQueryRequest :
     FfiConverterRustBuffer<FfiV2BatchQueryRequest> {
     override fun read(buf: ByteBuffer): FfiV2BatchQueryRequest {
@@ -7975,9 +7809,6 @@ data class FfiV2BatchQueryResponse(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiV2BatchQueryResponse :
     FfiConverterRustBuffer<FfiV2BatchQueryResponse> {
     override fun read(buf: ByteBuffer): FfiV2BatchQueryResponse {
@@ -8006,9 +7837,6 @@ data class FfiV2QueryRequest(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiV2QueryRequest : FfiConverterRustBuffer<FfiV2QueryRequest> {
     override fun read(buf: ByteBuffer): FfiV2QueryRequest {
         return FfiV2QueryRequest(
@@ -8043,9 +7871,6 @@ data class FfiV2QueryResponse(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiV2QueryResponse : FfiConverterRustBuffer<FfiV2QueryResponse> {
     override fun read(buf: ByteBuffer): FfiV2QueryResponse {
         return FfiV2QueryResponse(
@@ -8073,9 +7898,6 @@ data class FfiV2SubscribeRequest(
     companion object
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiV2SubscribeRequest :
     FfiConverterRustBuffer<FfiV2SubscribeRequest> {
     override fun read(buf: ByteBuffer): FfiV2SubscribeRequest {
@@ -8104,9 +7926,6 @@ enum class FfiConsentEntityType {
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiConsentEntityType : FfiConverterRustBuffer<FfiConsentEntityType> {
     override fun read(buf: ByteBuffer) = try {
         FfiConsentEntityType.values()[buf.getInt() - 1]
@@ -8132,9 +7951,6 @@ enum class FfiConsentState {
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiConsentState : FfiConverterRustBuffer<FfiConsentState> {
     override fun read(buf: ByteBuffer) = try {
         FfiConsentState.values()[buf.getInt() - 1]
@@ -8159,9 +7975,6 @@ enum class FfiConversationMessageKind {
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiConversationMessageKind :
     FfiConverterRustBuffer<FfiConversationMessageKind> {
     override fun read(buf: ByteBuffer) = try {
@@ -8188,9 +8001,6 @@ enum class FfiDeliveryStatus {
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiDeliveryStatus : FfiConverterRustBuffer<FfiDeliveryStatus> {
     override fun read(buf: ByteBuffer) = try {
         FfiDeliveryStatus.values()[buf.getInt() - 1]
@@ -8216,9 +8026,6 @@ enum class FfiGroupPermissionsOptions {
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiGroupPermissionsOptions :
     FfiConverterRustBuffer<FfiGroupPermissionsOptions> {
     override fun read(buf: ByteBuffer) = try {
@@ -8246,9 +8053,6 @@ enum class FfiMetadataField {
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiMetadataField : FfiConverterRustBuffer<FfiMetadataField> {
     override fun read(buf: ByteBuffer) = try {
         FfiMetadataField.values()[buf.getInt() - 1]
@@ -8274,9 +8078,6 @@ enum class FfiPermissionLevel {
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiPermissionLevel : FfiConverterRustBuffer<FfiPermissionLevel> {
     override fun read(buf: ByteBuffer) = try {
         FfiPermissionLevel.values()[buf.getInt() - 1]
@@ -8305,9 +8106,6 @@ enum class FfiPermissionPolicy {
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiPermissionPolicy : FfiConverterRustBuffer<FfiPermissionPolicy> {
     override fun read(buf: ByteBuffer) = try {
         FfiPermissionPolicy.values()[buf.getInt() - 1]
@@ -8335,9 +8133,6 @@ enum class FfiPermissionUpdateType {
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiPermissionUpdateType :
     FfiConverterRustBuffer<FfiPermissionUpdateType> {
     override fun read(buf: ByteBuffer) = try {
@@ -8364,9 +8159,6 @@ enum class FfiSortDirection {
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterTypeFfiSortDirection : FfiConverterRustBuffer<FfiSortDirection> {
     override fun read(buf: ByteBuffer) = try {
         FfiSortDirection.values()[buf.getInt() - 1]
@@ -8415,9 +8207,6 @@ sealed class GenericException(message: String) : kotlin.Exception(message) {
     }
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericException> {
     override fun read(buf: ByteBuffer): GenericException {
 
@@ -8521,9 +8310,6 @@ sealed class SigningException(message: String) : kotlin.Exception(message) {
     }
 }
 
-/**
- * @suppress
- */
 public object FfiConverterTypeSigningError : FfiConverterRustBuffer<SigningException> {
     override fun read(buf: ByteBuffer): SigningException {
 
@@ -8566,9 +8352,6 @@ internal const val UNIFFI_CALLBACK_SUCCESS = 0
 internal const val UNIFFI_CALLBACK_ERROR = 1
 internal const val UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
 
-/**
- * @suppress
- */
 public abstract class FfiConverterCallbackInterface<CallbackInterface : Any> :
     FfiConverter<CallbackInterface, Long> {
     internal val handleMap = UniffiHandleMap<CallbackInterface>()
@@ -8630,11 +8413,7 @@ internal object uniffiCallbackInterfaceFfiConversationCallback {
     }
 }
 
-/**
- * The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
- *
- * @suppress
- */
+// The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
 public object FfiConverterTypeFfiConversationCallback :
     FfiConverterCallbackInterface<FfiConversationCallback>()
 
@@ -8714,11 +8493,7 @@ internal object uniffiCallbackInterfaceFfiInboxOwner {
     }
 }
 
-/**
- * The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
- *
- * @suppress
- */
+// The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
 public object FfiConverterTypeFfiInboxOwner : FfiConverterCallbackInterface<FfiInboxOwner>()
 
 
@@ -8772,11 +8547,7 @@ internal object uniffiCallbackInterfaceFfiLogger {
     }
 }
 
-/**
- * The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
- *
- * @suppress
- */
+// The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
 public object FfiConverterTypeFfiLogger : FfiConverterCallbackInterface<FfiLogger>()
 
 
@@ -8826,11 +8597,7 @@ internal object uniffiCallbackInterfaceFfiMessageCallback {
     }
 }
 
-/**
- * The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
- *
- * @suppress
- */
+// The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
 public object FfiConverterTypeFfiMessageCallback :
     FfiConverterCallbackInterface<FfiMessageCallback>()
 
@@ -8881,18 +8648,11 @@ internal object uniffiCallbackInterfaceFfiV2SubscriptionCallback {
     }
 }
 
-/**
- * The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
- *
- * @suppress
- */
+// The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
 public object FfiConverterTypeFfiV2SubscriptionCallback :
     FfiConverterCallbackInterface<FfiV2SubscriptionCallback>()
 
 
-/**
- * @suppress
- */
 public object FfiConverterOptionalULong : FfiConverterRustBuffer<kotlin.ULong?> {
     override fun read(buf: ByteBuffer): kotlin.ULong? {
         if (buf.get().toInt() == 0) {
@@ -8920,9 +8680,6 @@ public object FfiConverterOptionalULong : FfiConverterRustBuffer<kotlin.ULong?> 
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterOptionalLong : FfiConverterRustBuffer<kotlin.Long?> {
     override fun read(buf: ByteBuffer): kotlin.Long? {
         if (buf.get().toInt() == 0) {
@@ -8950,9 +8707,6 @@ public object FfiConverterOptionalLong : FfiConverterRustBuffer<kotlin.Long?> {
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterOptionalString : FfiConverterRustBuffer<kotlin.String?> {
     override fun read(buf: ByteBuffer): kotlin.String? {
         if (buf.get().toInt() == 0) {
@@ -8980,9 +8734,6 @@ public object FfiConverterOptionalString : FfiConverterRustBuffer<kotlin.String?
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterOptionalByteArray : FfiConverterRustBuffer<kotlin.ByteArray?> {
     override fun read(buf: ByteBuffer): kotlin.ByteArray? {
         if (buf.get().toInt() == 0) {
@@ -9010,9 +8761,6 @@ public object FfiConverterOptionalByteArray : FfiConverterRustBuffer<kotlin.Byte
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterOptionalTypeFfiSignatureRequest :
     FfiConverterRustBuffer<FfiSignatureRequest?> {
     override fun read(buf: ByteBuffer): FfiSignatureRequest? {
@@ -9041,9 +8789,6 @@ public object FfiConverterOptionalTypeFfiSignatureRequest :
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterOptionalTypeFfiCursor : FfiConverterRustBuffer<FfiCursor?> {
     override fun read(buf: ByteBuffer): FfiCursor? {
         if (buf.get().toInt() == 0) {
@@ -9071,9 +8816,6 @@ public object FfiConverterOptionalTypeFfiCursor : FfiConverterRustBuffer<FfiCurs
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterOptionalTypeFfiPagingInfo : FfiConverterRustBuffer<FfiPagingInfo?> {
     override fun read(buf: ByteBuffer): FfiPagingInfo? {
         if (buf.get().toInt() == 0) {
@@ -9101,9 +8843,6 @@ public object FfiConverterOptionalTypeFfiPagingInfo : FfiConverterRustBuffer<Ffi
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterOptionalTypeFfiPermissionPolicySet :
     FfiConverterRustBuffer<FfiPermissionPolicySet?> {
     override fun read(buf: ByteBuffer): FfiPermissionPolicySet? {
@@ -9132,9 +8871,6 @@ public object FfiConverterOptionalTypeFfiPermissionPolicySet :
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterOptionalTypeFfiDeliveryStatus :
     FfiConverterRustBuffer<FfiDeliveryStatus?> {
     override fun read(buf: ByteBuffer): FfiDeliveryStatus? {
@@ -9163,9 +8899,6 @@ public object FfiConverterOptionalTypeFfiDeliveryStatus :
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterOptionalTypeFfiGroupPermissionsOptions :
     FfiConverterRustBuffer<FfiGroupPermissionsOptions?> {
     override fun read(buf: ByteBuffer): FfiGroupPermissionsOptions? {
@@ -9194,9 +8927,6 @@ public object FfiConverterOptionalTypeFfiGroupPermissionsOptions :
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterOptionalTypeFfiMetadataField : FfiConverterRustBuffer<FfiMetadataField?> {
     override fun read(buf: ByteBuffer): FfiMetadataField? {
         if (buf.get().toInt() == 0) {
@@ -9224,9 +8954,6 @@ public object FfiConverterOptionalTypeFfiMetadataField : FfiConverterRustBuffer<
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterSequenceString : FfiConverterRustBuffer<List<kotlin.String>> {
     override fun read(buf: ByteBuffer): List<kotlin.String> {
         val len = buf.getInt()
@@ -9250,9 +8977,6 @@ public object FfiConverterSequenceString : FfiConverterRustBuffer<List<kotlin.St
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterSequenceByteArray : FfiConverterRustBuffer<List<kotlin.ByteArray>> {
     override fun read(buf: ByteBuffer): List<kotlin.ByteArray> {
         val len = buf.getInt()
@@ -9276,9 +9000,6 @@ public object FfiConverterSequenceByteArray : FfiConverterRustBuffer<List<kotlin
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterSequenceTypeFfiConversation :
     FfiConverterRustBuffer<List<FfiConversation>> {
     override fun read(buf: ByteBuffer): List<FfiConversation> {
@@ -9303,9 +9024,6 @@ public object FfiConverterSequenceTypeFfiConversation :
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterSequenceTypeFfiConsent : FfiConverterRustBuffer<List<FfiConsent>> {
     override fun read(buf: ByteBuffer): List<FfiConsent> {
         val len = buf.getInt()
@@ -9329,9 +9047,6 @@ public object FfiConverterSequenceTypeFfiConsent : FfiConverterRustBuffer<List<F
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterSequenceTypeFfiConversationMember :
     FfiConverterRustBuffer<List<FfiConversationMember>> {
     override fun read(buf: ByteBuffer): List<FfiConversationMember> {
@@ -9357,9 +9072,6 @@ public object FfiConverterSequenceTypeFfiConversationMember :
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterSequenceTypeFfiEnvelope : FfiConverterRustBuffer<List<FfiEnvelope>> {
     override fun read(buf: ByteBuffer): List<FfiEnvelope> {
         val len = buf.getInt()
@@ -9383,9 +9095,6 @@ public object FfiConverterSequenceTypeFfiEnvelope : FfiConverterRustBuffer<List<
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterSequenceTypeFfiInboxState : FfiConverterRustBuffer<List<FfiInboxState>> {
     override fun read(buf: ByteBuffer): List<FfiInboxState> {
         val len = buf.getInt()
@@ -9409,9 +9118,6 @@ public object FfiConverterSequenceTypeFfiInboxState : FfiConverterRustBuffer<Lis
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterSequenceTypeFfiInstallation :
     FfiConverterRustBuffer<List<FfiInstallation>> {
     override fun read(buf: ByteBuffer): List<FfiInstallation> {
@@ -9436,9 +9142,6 @@ public object FfiConverterSequenceTypeFfiInstallation :
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterSequenceTypeFfiMessage : FfiConverterRustBuffer<List<FfiMessage>> {
     override fun read(buf: ByteBuffer): List<FfiMessage> {
         val len = buf.getInt()
@@ -9462,9 +9165,6 @@ public object FfiConverterSequenceTypeFfiMessage : FfiConverterRustBuffer<List<F
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterSequenceTypeFfiV2QueryRequest :
     FfiConverterRustBuffer<List<FfiV2QueryRequest>> {
     override fun read(buf: ByteBuffer): List<FfiV2QueryRequest> {
@@ -9489,9 +9189,6 @@ public object FfiConverterSequenceTypeFfiV2QueryRequest :
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterSequenceTypeFfiV2QueryResponse :
     FfiConverterRustBuffer<List<FfiV2QueryResponse>> {
     override fun read(buf: ByteBuffer): List<FfiV2QueryResponse> {
@@ -9516,9 +9213,6 @@ public object FfiConverterSequenceTypeFfiV2QueryResponse :
 }
 
 
-/**
- * @suppress
- */
 public object FfiConverterMapStringBoolean :
     FfiConverterRustBuffer<Map<kotlin.String, kotlin.Boolean>> {
     override fun read(buf: ByteBuffer): Map<kotlin.String, kotlin.Boolean> {

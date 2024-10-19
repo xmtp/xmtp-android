@@ -54,10 +54,13 @@ class FakeWallet : SigningKey {
         get() = privateKey.walletAddress
 }
 
+private const val ANVIL_TEST_PRIVATE_KEY = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+private const val ANVIL_TEST_PORT = "http://10.0.2.2:8545"
+
 class FakeSCWWallet : SigningKey {
-    private var web3j: Web3j = Web3j.build(HttpService("http://10.0.2.2:8545"))
+    private var web3j: Web3j = Web3j.build(HttpService(ANVIL_TEST_PORT))
     private val credentials: Credentials =
-        Credentials.create("ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80")
+        Credentials.create(ANVIL_TEST_PRIVATE_KEY)
     var walletAddress: String = ""
 
     override val address: String
