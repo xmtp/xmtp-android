@@ -54,12 +54,13 @@ class FakeWallet : SigningKey {
         get() = privateKey.walletAddress
 }
 
-private const val ANVIL_TEST_PRIVATE_KEY = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+private const val ANVIL_TEST_PRIVATE_KEY =
+    "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 private const val ANVIL_TEST_PORT = "http://10.0.2.2:8545"
 
 class FakeSCWWallet : SigningKey {
     private var web3j: Web3j = Web3j.build(HttpService(ANVIL_TEST_PORT))
-    private val credentials: Credentials =
+    private val contractDeployerCredentials: Credentials =
         Credentials.create(ANVIL_TEST_PRIVATE_KEY)
     var walletAddress: String = ""
 
@@ -83,13 +84,14 @@ class FakeSCWWallet : SigningKey {
         val smartWallet = CoinbaseSmartWallet.load(
             walletAddress,
             web3j,
-            credentials,
+            contractDeployerCredentials,
             DefaultGasProvider()
         )
         val digest = Signature.newBuilder().build().ethHash(message)
         val replaySafeHash = smartWallet.replaySafeHash(digest).send()
 
-        val signature = Sign.signMessage(replaySafeHash, credentials.ecKeyPair, false)
+        val signature =
+            Sign.signMessage(replaySafeHash, contractDeployerCredentials.ecKeyPair, false)
         val signatureBytes = signature.r + signature.s + signature.v
         val tokens = listOf(
             Uint(BigInteger.ZERO),
@@ -104,20 +106,20 @@ class FakeSCWWallet : SigningKey {
     private fun createSmartContractWallet() {
         val smartWalletContract = CoinbaseSmartWallet.deploy(
             web3j,
-            credentials,
+            contractDeployerCredentials,
             DefaultGasProvider()
         ).send()
 
         val factory = CoinbaseSmartWalletFactory.deploy(
             web3j,
-            credentials,
+            contractDeployerCredentials,
             DefaultGasProvider(),
             BigInteger.ZERO,
             smartWalletContract.contractAddress
         ).send()
 
         val ownerAddress = ByteArray(32) { 0 }.apply {
-            System.arraycopy(credentials.address.hexToByteArray(), 0, this, 12, 20)
+            System.arraycopy(contractDeployerCredentials.address.hexToByteArray(), 0, this, 12, 20)
         }
         val owners = listOf(ownerAddress)
         val nonce = BigInteger.ZERO
