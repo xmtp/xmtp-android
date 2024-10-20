@@ -2,15 +2,11 @@ package org.xmtp.android.library
 
 import android.util.Log
 import com.google.protobuf.kotlin.toByteString
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.Util.Companion.envelopeFromFFi
 import org.xmtp.android.library.libxmtp.MessageV3
@@ -47,6 +43,7 @@ import uniffi.xmtpv3.FfiCreateGroupOptions
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiListConversationsOptions
+import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiPermissionPolicySet
@@ -183,6 +180,7 @@ data class Conversations(
     }
 
     suspend fun findOrCreateDm(peerAddress: String): Dm {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         if (peerAddress.lowercase() == client.address.lowercase()) {
             throw XMTPException("Recipient is sender")
         }
@@ -221,14 +219,6 @@ data class Conversations(
         }
         if (existingConversation != null) {
             return existingConversation
-        }
-        if (client.v3Client != null) {
-            val dm = findOrCreateDm(peerAddress)
-            val conversation = Conversation.Dm(dm)
-            if (!client.hasV2Client) conversationsByTopic[conversation.topic] = conversation
-            if (!client.hasV2Client || !client.canMessage(peerAddress)) {
-                return conversation
-            }
         }
         val contact = client.contacts.find(peerAddress)
             ?: throw XMTPException("Recipient not on network")
@@ -304,7 +294,6 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        order: ConversationOrder = ConversationOrder.CREATED_AT,
     ): List<Group> {
         val ffiGroups = libXMTPConversations?.listGroups(
             opts = FfiListConversationsOptions(
@@ -314,17 +303,8 @@ data class Conversations(
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
 
-        val groups = ffiGroups.map {
+        return ffiGroups.map {
             Group(client, it)
-        }
-
-        return when (order) {
-            ConversationOrder.LAST_MESSAGE ->
-                groups.sortedByDescending { group ->
-                    group.messages(limit = 1).firstOrNull()?.sent
-                }
-
-            ConversationOrder.CREATED_AT -> groups
         }
     }
 
@@ -332,8 +312,8 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        order: ConversationOrder = ConversationOrder.CREATED_AT,
     ): List<Dm> {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val ffiDms = libXMTPConversations?.listDms(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
@@ -342,17 +322,8 @@ data class Conversations(
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
 
-        val dms = ffiDms.map {
+        return ffiDms.map {
             Dm(client, it)
-        }
-
-        return when (order) {
-            ConversationOrder.LAST_MESSAGE ->
-                dms.sortedByDescending { dm ->
-                    dm.messages(limit = 1).firstOrNull()?.sent
-                }
-
-            ConversationOrder.CREATED_AT -> dms
         }
     }
 
@@ -361,7 +332,7 @@ data class Conversations(
         before: Date? = null,
         limit: Int? = null,
         order: ConversationOrder = ConversationOrder.CREATED_AT,
-    ): List<Conversation> = coroutineScope {
+    ): List<Conversation> {
         if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val ffiConversation = libXMTPConversations?.list(
             opts = FfiListConversationsOptions(
@@ -371,26 +342,29 @@ data class Conversations(
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
 
-        val conversations = ffiConversation.map {
+        val sortedConversations = when (order) {
+            ConversationOrder.LAST_MESSAGE -> {
+                ffiConversation.map { conversation ->
+                    val message =
+                        conversation.findMessages(FfiListMessagesOptions(null, null, null, null))
+                            .lastOrNull()
+                    conversation to message?.sentAtNs
+                }.sortedByDescending {
+                    it.second ?: 0L
+                }.map {
+                    it.first
+                }
+            }
+
+            ConversationOrder.CREATED_AT -> ffiConversation
+        }
+
+        return sortedConversations.map {
             if (it.groupMetadata().conversationType() == "dm") {
                 Conversation.Dm(Dm(client, it))
             } else {
                 Conversation.Group(Group(client, it))
             }
-        }
-
-        when (order) {
-            ConversationOrder.LAST_MESSAGE -> {
-                val sortedConversations = conversations.map { dm ->
-                    async {
-                        dm to dm.messages(limit = 1).firstOrNull()?.sent
-                    }
-                }.awaitAll().sortedByDescending { it.second }
-
-                sortedConversations.map { it.first }
-            }
-
-            ConversationOrder.CREATED_AT -> conversations
         }
     }
 
@@ -399,60 +373,38 @@ data class Conversations(
      * @return The list of [Conversation] that the current [Client] has.
      */
     suspend fun list(includeGroups: Boolean = false): List<Conversation> {
-        if (client.hasV2Client) {
-            val newConversations = mutableListOf<Conversation>()
-            val mostRecent = conversationsByTopic.values.maxOfOrNull { it.createdAt }
-            val pagination = Pagination(after = mostRecent)
-            val seenPeers = listIntroductionPeers(pagination = pagination)
-            for ((peerAddress, sentAt) in seenPeers) {
-                newConversations.add(
-                    Conversation.V1(
-                        ConversationV1(
-                            client = client,
-                            peerAddress = peerAddress,
-                            sentAt = sentAt,
-                        ),
+        val newConversations = mutableListOf<Conversation>()
+        val mostRecent = conversationsByTopic.values.maxOfOrNull { it.createdAt }
+        val pagination = Pagination(after = mostRecent)
+        val seenPeers = listIntroductionPeers(pagination = pagination)
+        for ((peerAddress, sentAt) in seenPeers) {
+            newConversations.add(
+                Conversation.V1(
+                    ConversationV1(
+                        client = client,
+                        peerAddress = peerAddress,
+                        sentAt = sentAt,
                     ),
-                )
-            }
-            val invitations = listInvitations(pagination = pagination)
-            for (sealedInvitation in invitations) {
-                try {
-                    val newConversation = Conversation.V2(conversation(sealedInvitation))
-                    newConversations.add(newConversation)
-                    val consentProof = newConversation.consentProof
-                    if (consentProof != null) {
-                        handleConsentProof(consentProof, newConversation.peerAddress)
-                    }
-                } catch (e: Exception) {
-                    Log.d(TAG, e.message.toString())
+                ),
+            )
+        }
+        val invitations = listInvitations(pagination = pagination)
+        for (sealedInvitation in invitations) {
+            try {
+                val newConversation = Conversation.V2(conversation(sealedInvitation))
+                newConversations.add(newConversation)
+                val consentProof = newConversation.consentProof
+                if (consentProof != null) {
+                    handleConsentProof(consentProof, newConversation.peerAddress)
                 }
+            } catch (e: Exception) {
+                Log.d(TAG, e.message.toString())
             }
+        }
 
-            conversationsByTopic += newConversations.filter {
-                it.peerAddress != client.address && Topic.isValidTopic(it.topic)
-            }.map { Pair(it.topic, it) }
-        }
-        if (client.v3Client != null) {
-            syncConversations()
-            val dms = listDms().map { Conversation.Dm(it) }
-            if (!client.hasV2Client) {
-               conversationsByTopic = dms.associate { it.topic to it as Conversation }.toMutableMap()
-            } else {
-                try {
-                    conversationsByTopic.putAll(
-                        dms.filter { dm ->
-                            conversationsByTopic.values.none { existing ->
-                                val existingInboxId =
-                                    client.inboxIdFromAddress(existing.peerAddress)?.lowercase()
-                                existingInboxId != null && existingInboxId == dm.peerAddress.lowercase()
-                            }
-                        }.associateBy { dm -> dm.topic }
-                    )
-                } catch (e: Exception) {
-                }
-            }
-        }
+        conversationsByTopic += newConversations.filter {
+            it.peerAddress != client.address && Topic.isValidTopic(it.topic)
+        }.map { Pair(it.topic, it) }
 
         if (includeGroups) {
             syncConversations()
@@ -465,7 +417,6 @@ data class Conversations(
     fun getHmacKeys(
         request: Keystore.GetConversationHmacKeysRequest? = null,
     ): Keystore.GetConversationHmacKeysResponse {
-        // Todo: Support V3
         val thirtyDayPeriodsSinceEpoch = (Date().time / 1000 / 60 / 60 / 24 / 30).toInt()
         val hmacKeysResponse = Keystore.GetConversationHmacKeysResponse.newBuilder()
 
@@ -505,7 +456,6 @@ data class Conversations(
         consentProof: Invitation.ConsentProofPayload,
         peerAddress: String,
     ) {
-        // Todo: Support V3
         val signature = consentProof.signature
         val timestamp = consentProof.timestamp
 
@@ -520,77 +470,59 @@ data class Conversations(
     }
 
     fun stream(): Flow<Conversation> = callbackFlow {
-        if (client.hasV2Client) {
-            val streamedConversationTopics: MutableSet<String> = mutableSetOf()
-            val subscriptionCallback = object : FfiV2SubscriptionCallback {
-                override fun onMessage(message: FfiEnvelope) {
-                    val envelope = envelopeFromFFi(message)
-                    if (envelope.contentTopic == Topic.userIntro(client.address).description) {
-                        val conversationV1 = fromIntro(envelope = envelope)
-                        if (!streamedConversationTopics.contains(conversationV1.topic)) {
-                            streamedConversationTopics.add(conversationV1.topic)
-                            trySend(conversationV1)
-                        }
+        val streamedConversationTopics: MutableSet<String> = mutableSetOf()
+        val subscriptionCallback = object : FfiV2SubscriptionCallback {
+            override fun onMessage(message: FfiEnvelope) {
+                val envelope = envelopeFromFFi(message)
+                if (envelope.contentTopic == Topic.userIntro(client.address).description) {
+                    val conversationV1 = fromIntro(envelope = envelope)
+                    if (!streamedConversationTopics.contains(conversationV1.topic)) {
+                        streamedConversationTopics.add(conversationV1.topic)
+                        trySend(conversationV1)
                     }
+                }
 
-                    if (envelope.contentTopic == Topic.userInvite(client.address).description) {
-                        val conversationV2 = fromInvite(envelope = envelope)
-                        if (!streamedConversationTopics.contains(conversationV2.topic)) {
-                            streamedConversationTopics.add(conversationV2.topic)
-                            trySend(conversationV2)
-                        }
+                if (envelope.contentTopic == Topic.userInvite(client.address).description) {
+                    val conversationV2 = fromInvite(envelope = envelope)
+                    if (!streamedConversationTopics.contains(conversationV2.topic)) {
+                        streamedConversationTopics.add(conversationV2.topic)
+                        trySend(conversationV2)
                     }
                 }
             }
-
-            val stream = client.subscribe2(
-                FfiV2SubscribeRequest(
-                    listOf(
-                        Topic.userIntro(client.address).description,
-                        Topic.userInvite(client.address).description
-                    )
-                ),
-                subscriptionCallback
-            )
-
-            awaitClose { launch { stream.end() } }
         }
-        if (client.v3Client != null) {
-            streamDmConversations()
-        }
+
+        val stream = client.subscribe2(
+            FfiV2SubscribeRequest(
+                listOf(
+                    Topic.userIntro(client.address).description,
+                    Topic.userInvite(client.address).description
+                )
+            ),
+            subscriptionCallback
+        )
+
+        awaitClose { launch { stream.end() } }
     }
 
     fun streamAll(): Flow<Conversation> {
-        if (!client.hasV2Client) {
-            return streamConversations()
-        }
-        return merge(streamConversations(), stream())
+        return merge(streamGroupConversations(), stream())
     }
 
-    private fun streamConversations(): Flow<Conversation> = callbackFlow {
+    fun streamConversations(): Flow<Conversation> = callbackFlow {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val conversationCallback = object : FfiConversationCallback {
             override fun onConversation(conversation: FfiConversation) {
                 if (conversation.groupMetadata().conversationType() == "dm") {
-                    launch {
-                        val dm = Dm(client, conversation)
-                        val matchingConversations = conversationsByTopic.filter {
-                            client.inboxIdFromAddress(it.value.peerAddress)?.lowercase() ==
-                                    dm.peerInboxId().lowercase()
-                        }
-
-                        // Only send the DM if no V2 DM exists
-                        if (matchingConversations.none { it.value.version == Conversation.Version.V2 }) {
-                            trySend(Conversation.Dm(dm)).isSuccess
-                        }
-                    }
+                    trySend(Conversation.Dm(Dm(client, conversation)))
                 } else {
-                    trySend(Conversation.Group(Group(client, conversation))).isSuccess
+                    trySend(Conversation.Group(Group(client, conversation)))
                 }
             }
         }
 
         val stream = libXMTPConversations?.stream(conversationCallback)
-            ?: throw XMTPException("Client does not support Groups")
+            ?: throw XMTPException("Client does not support V3")
 
         awaitClose { stream.end() }
     }
@@ -607,20 +539,16 @@ data class Conversations(
     }
 
     fun streamAllMessages(includeGroups: Boolean = false): Flow<DecodedMessage> {
-        return if (includeGroups && !client.hasV2Client) {
-            streamAllConversationMessages()
-        } else if (includeGroups) {
-            merge(streamAllV2Messages(), streamAllConversationMessages())
+        return if (includeGroups) {
+            merge(streamAllV2Messages(), streamAllGroupMessages())
         } else {
             streamAllV2Messages()
         }
     }
 
     fun streamAllDecryptedMessages(includeGroups: Boolean = false): Flow<DecryptedMessage> {
-        return if (includeGroups && !client.hasV2Client) {
-            streamAllConversationDecryptedMessages()
-        } else if (includeGroups) {
-            merge(streamAllV2DecryptedMessages(), streamAllConversationDecryptedMessages())
+        return if (includeGroups) {
+            merge(streamAllV2DecryptedMessages(), streamAllGroupDecryptedMessages())
         } else {
             streamAllV2DecryptedMessages()
         }
@@ -654,71 +582,19 @@ data class Conversations(
         awaitClose { stream.end() }
     }
 
-    fun streamDms(): Flow<Dm> = callbackFlow {
-        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
-        val groupCallback = object : FfiConversationCallback {
-            override fun onConversation(conversation: FfiConversation) {
-                trySend(Dm(client, conversation))
-            }
-        }
-        val stream = libXMTPConversations?.streamDms(groupCallback)
-            ?: throw XMTPException("Client does not support V3")
-        awaitClose { stream.end() }
-    }
-
-    fun streamAllDmMessages(): Flow<DecodedMessage> = callbackFlow {
-        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
-        val messageCallback = object : FfiMessageCallback {
-            override fun onMessage(message: FfiMessage) {
-                val decodedMessage = MessageV3(client, message).decodeOrNull()
-                decodedMessage?.let {
-                    trySend(it)
-                }
-            }
-        }
-        val stream = libXMTPConversations?.streamAllDmMessages(messageCallback)
-            ?: throw XMTPException("Client does not support Groups")
-        awaitClose { stream.end() }
-    }
-
-    fun streamAllDmDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
-        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
-        val messageCallback = object : FfiMessageCallback {
-            override fun onMessage(message: FfiMessage) {
-                val decryptedMessage = MessageV3(client, message).decryptOrNull()
-                decryptedMessage?.let {
-                    trySend(it)
-                }
-            }
-        }
-        val stream = libXMTPConversations?.streamAllDmMessages(messageCallback)
-            ?: throw XMTPException("Client does not support Groups")
-        awaitClose { stream.end() }
-    }
-
     fun streamAllConversationMessages(): Flow<DecodedMessage> = callbackFlow {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
                 val conversation = client.findConversation(message.convoId.toHex())
                 val decodedMessage = MessageV3(client, message).decodeOrNull()
-
                 when (conversation?.version) {
                     Conversation.Version.DM -> {
-                        launch {
-                            val matchingConversations = conversationsByTopic.filter {
-                                client.inboxIdFromAddress(it.value.peerAddress)?.lowercase() ==
-                                        conversation.peerAddress
-                            }
-
-                            // If there is no V2 conversation, send the decoded message
-                            if (matchingConversations.none { it.value.version == Conversation.Version.V2 }) {
-                                decodedMessage?.let { trySend(it).isSuccess }
-                            }
-                        }
+                        decodedMessage?.let { trySend(it) }
                     }
 
                     else -> {
-                        decodedMessage?.let { trySend(it).isSuccess }
+                        decodedMessage?.let { trySend(it) }
                     }
                 }
             }
@@ -731,6 +607,7 @@ data class Conversations(
     }
 
     fun streamAllConversationDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
+        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
                 val conversation = client.findConversation(message.convoId.toHex())
@@ -738,21 +615,11 @@ data class Conversations(
 
                 when (conversation?.version) {
                     Conversation.Version.DM -> {
-                        launch {
-                            val matchingConversations = conversationsByTopic.filter {
-                                client.inboxIdFromAddress(it.value.peerAddress)?.lowercase() ==
-                                        conversation.peerAddress
-                            }
-
-                            // If there is no V2 conversation, send the decoded message
-                            if (matchingConversations.none { it.value.version == Conversation.Version.V2 }) {
-                                decryptedMessage?.let { trySend(it).isSuccess }
-                            }
-                        }
+                        decryptedMessage?.let { trySend(it) }
                     }
 
                     else -> {
-                        decryptedMessage?.let { trySend(it).isSuccess }
+                        decryptedMessage?.let { trySend(it) }
                     }
                 }
             }
@@ -761,17 +628,6 @@ data class Conversations(
         val stream = libXMTPConversations?.streamAllMessages(messageCallback)
             ?: throw XMTPException("Client does not support Groups")
 
-        awaitClose { stream.end() }
-    }
-
-    private fun streamDmConversations(): Flow<Conversation> = callbackFlow {
-        val dmCallback = object : FfiConversationCallback {
-            override fun onConversation(conversation: FfiConversation) {
-                trySend(Conversation.Dm(Dm(client, conversation)))
-            }
-        }
-        val stream = libXMTPConversations?.streamDms(dmCallback)
-            ?: throw XMTPException("Client does not support V3")
         awaitClose { stream.end() }
     }
 
