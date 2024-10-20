@@ -373,38 +373,62 @@ data class Conversations(
      * @return The list of [Conversation] that the current [Client] has.
      */
     suspend fun list(includeGroups: Boolean = false): List<Conversation> {
-        val newConversations = mutableListOf<Conversation>()
-        val mostRecent = conversationsByTopic.values.maxOfOrNull { it.createdAt }
-        val pagination = Pagination(after = mostRecent)
-        val seenPeers = listIntroductionPeers(pagination = pagination)
-        for ((peerAddress, sentAt) in seenPeers) {
-            newConversations.add(
-                Conversation.V1(
-                    ConversationV1(
-                        client = client,
-                        peerAddress = peerAddress,
-                        sentAt = sentAt,
+        if (client.hasV2Client) {
+            val newConversations = mutableListOf<Conversation>()
+            val mostRecent = conversationsByTopic.values.maxOfOrNull { it.createdAt }
+            val pagination = Pagination(after = mostRecent)
+            val seenPeers = listIntroductionPeers(pagination = pagination)
+            for ((peerAddress, sentAt) in seenPeers) {
+                newConversations.add(
+                    Conversation.V1(
+                        ConversationV1(
+                            client = client,
+                            peerAddress = peerAddress,
+                            sentAt = sentAt,
+                        ),
                     ),
-                ),
-            )
-        }
-        val invitations = listInvitations(pagination = pagination)
-        for (sealedInvitation in invitations) {
-            try {
-                val newConversation = Conversation.V2(conversation(sealedInvitation))
-                newConversations.add(newConversation)
-                val consentProof = newConversation.consentProof
-                if (consentProof != null) {
-                    handleConsentProof(consentProof, newConversation.peerAddress)
+                )
+            }
+            val invitations = listInvitations(pagination = pagination)
+            for (sealedInvitation in invitations) {
+                try {
+                    val newConversation = Conversation.V2(conversation(sealedInvitation))
+                    newConversations.add(newConversation)
+                    val consentProof = newConversation.consentProof
+                    if (consentProof != null) {
+                        handleConsentProof(consentProof, newConversation.peerAddress)
+                    }
+                } catch (e: Exception) {
+                    Log.d(TAG, e.message.toString())
                 }
-            } catch (e: Exception) {
-                Log.d(TAG, e.message.toString())
+            }
+
+            conversationsByTopic += newConversations.filter {
+                it.peerAddress != client.address && Topic.isValidTopic(it.topic)
+            }.map { Pair(it.topic, it) }
+        }
+        if (client.v3Client != null) {
+            syncConversations()
+            val dms = listDms().map { Conversation.Dm(it) }
+            if (!client.hasV2Client) {
+                conversationsByTopic =
+                    dms.associate { it.topic to it as Conversation }.toMutableMap()
+            } else {
+                // TODO: Handle when there is a V3 and V2 conversation (needs api)
+                try {
+                    conversationsByTopic.putAll(
+                        dms.filter { dm ->
+                            conversationsByTopic.values.none { existing ->
+                                val existingInboxId =
+                                    client.inboxIdFromAddress(existing.peerAddress)?.lowercase()
+                                existingInboxId != null && existingInboxId == dm.peerAddress.lowercase()
+                            }
+                        }.associateBy { dm -> dm.topic }
+                    )
+                } catch (e: Exception) {
+                }
             }
         }
-
-        conversationsByTopic += newConversations.filter {
-            it.peerAddress != client.address && Topic.isValidTopic(it.topic)
-        }.map { Pair(it.topic, it) }
 
         if (includeGroups) {
             syncConversations()
@@ -506,7 +530,10 @@ data class Conversations(
     }
 
     fun streamAll(): Flow<Conversation> {
-        return merge(streamGroupConversations(), stream())
+        if (!client.hasV2Client) {
+            return streamConversations()
+        }
+        return merge(streamConversations(), stream())
     }
 
     fun streamConversations(): Flow<Conversation> = callbackFlow {
@@ -514,7 +541,19 @@ data class Conversations(
         val conversationCallback = object : FfiConversationCallback {
             override fun onConversation(conversation: FfiConversation) {
                 if (conversation.groupMetadata().conversationType() == "dm") {
-                    trySend(Conversation.Dm(Dm(client, conversation)))
+                    // TODO: Need APIs to better match on existing V2 conversations
+                    launch {
+                        val dm = Dm(client, conversation)
+                        val matchingConversations = conversationsByTopic.filter {
+                            client.inboxIdFromAddress(it.value.peerAddress)?.lowercase() ==
+                                    dm.peerInboxId().lowercase()
+                        }
+
+                        // Only send the DM if no V2 DM exists
+                        if (matchingConversations.none { it.value.version == Conversation.Version.V2 }) {
+                            trySend(Conversation.Dm(dm)).isSuccess
+                        }
+                    }
                 } else {
                     trySend(Conversation.Group(Group(client, conversation)))
                 }
@@ -539,16 +578,20 @@ data class Conversations(
     }
 
     fun streamAllMessages(includeGroups: Boolean = false): Flow<DecodedMessage> {
-        return if (includeGroups) {
-            merge(streamAllV2Messages(), streamAllGroupMessages())
+        return if (includeGroups && !client.hasV2Client) {
+            streamAllConversationMessages()
+        } else if (includeGroups) {
+            merge(streamAllV2Messages(), streamAllConversationMessages())
         } else {
             streamAllV2Messages()
         }
     }
 
     fun streamAllDecryptedMessages(includeGroups: Boolean = false): Flow<DecryptedMessage> {
-        return if (includeGroups) {
-            merge(streamAllV2DecryptedMessages(), streamAllGroupDecryptedMessages())
+        return if (includeGroups && !client.hasV2Client) {
+            streamAllConversationDecryptedMessages()
+        } else if (includeGroups) {
+            merge(streamAllV2DecryptedMessages(), streamAllConversationDecryptedMessages())
         } else {
             streamAllV2DecryptedMessages()
         }
@@ -590,7 +633,18 @@ data class Conversations(
                 val decodedMessage = MessageV3(client, message).decodeOrNull()
                 when (conversation?.version) {
                     Conversation.Version.DM -> {
-                        decodedMessage?.let { trySend(it) }
+                        // TODO: Need api to better match on V2 conversations
+                        launch {
+                            val matchingConversations = conversationsByTopic.filter {
+                                client.inboxIdFromAddress(it.value.peerAddress)?.lowercase() ==
+                                        conversation.peerAddress
+                            }
+
+                            // If there is no V2 conversation, send the decoded message
+                            if (matchingConversations.none { it.value.version == Conversation.Version.V2 }) {
+                                decodedMessage?.let { trySend(it) }
+                            }
+                        }
                     }
 
                     else -> {
@@ -615,8 +669,18 @@ data class Conversations(
 
                 when (conversation?.version) {
                     Conversation.Version.DM -> {
-                        decryptedMessage?.let { trySend(it) }
-                    }
+                        // TODO: Need api to better match on V2 conversations
+                        launch {
+                            val matchingConversations = conversationsByTopic.filter {
+                                client.inboxIdFromAddress(it.value.peerAddress)?.lowercase() ==
+                                        conversation.peerAddress
+                            }
+
+                            // If there is no V2 conversation, send the decoded message
+                            if (matchingConversations.none { it.value.version == Conversation.Version.V2 }) {
+                                decryptedMessage?.let { trySend(it) }
+                            }
+                        }                    }
 
                     else -> {
                         decryptedMessage?.let { trySend(it) }
