@@ -143,6 +143,7 @@ data class Fixtures(
     val aliceAccount = PrivateKeyBuilder()
     val bobAccount = PrivateKeyBuilder()
     val caroAccount = PrivateKeyBuilder()
+    val davonV3Account = PrivateKeyBuilder()
 
     var alice: PrivateKey = aliceAccount.getPrivateKey()
     var aliceClient: Client =
@@ -155,6 +156,10 @@ data class Fixtures(
     var caro: PrivateKey = caroAccount.getPrivateKey()
     var caroClient: Client =
         runBlocking { Client().create(account = caroAccount, options = clientOptions) }
+
+    var davonV3: PrivateKey = caroAccount.getPrivateKey()
+    var davonV3Client: Client =
+        runBlocking { Client().createV3(account = caroAccount, options = clientOptions) }
 
     fun publishLegacyContact(client: Client) {
         val contactBundle = ContactBundle.newBuilder().also { builder ->
