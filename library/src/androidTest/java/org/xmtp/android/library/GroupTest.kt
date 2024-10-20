@@ -702,7 +702,7 @@ class GroupTest {
         }
         Thread.sleep(2500)
 
-        runBlocking { dm.send("Should not stream")}
+        runBlocking { dm.send("Should not stream") }
         for (i in 0 until 2) {
             runBlocking { group.send(text = "Message $i") }
             Thread.sleep(100)
