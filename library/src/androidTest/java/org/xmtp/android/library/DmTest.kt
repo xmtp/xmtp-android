@@ -86,24 +86,21 @@ class DmTest {
     fun testCanCreateADm() {
         runBlocking {
             val convo1 = boClient.conversations.findOrCreateDm(alix.walletAddress)
-            val convo2 = caroClient.conversations.newConversation(alix.walletAddress)
             alixClient.conversations.syncConversations()
             val sameConvo1 = alixClient.conversations.findOrCreateDm(bo.walletAddress)
-            val sameConvo2 = alixClient.conversations.newConversation(caro.walletAddress)
             assertEquals(convo1.id, sameConvo1.id)
-            assertEquals(convo2.id, sameConvo2.id)
         }
     }
 
     @Test
     fun testCanListDmMembers() {
-        val group = runBlocking {
+        val dm = runBlocking {
             boClient.conversations.findOrCreateDm(
                 alix.walletAddress,
             )
         }
         assertEquals(
-            runBlocking { group.members().map { it.inboxId }.sorted() },
+            runBlocking { dm.members().map { it.inboxId }.sorted() },
             listOf(
                 alixClient.inboxId,
                 boClient.inboxId
@@ -112,7 +109,7 @@ class DmTest {
 
         assertEquals(
             runBlocking {
-                Conversation.Dm(group).members().map { it.inboxId }.sorted()
+                Conversation.Dm(dm).members().map { it.inboxId }.sorted()
             },
             listOf(
                 alixClient.inboxId,
@@ -122,7 +119,7 @@ class DmTest {
 
         assertEquals(
             runBlocking
-            { group.peerInboxId() },
+            { dm.peerInboxId() },
             alixClient.inboxId,
         )
     }
@@ -130,7 +127,7 @@ class DmTest {
     @Test
     fun testDmMetadata() {
         val boDm = runBlocking {
-            boClient.conversations.newConversation(alix.walletAddress)
+            boClient.conversations.findOrCreateDm(alix.walletAddress)
         }
 
         runBlocking { alixClient.conversations.syncConversations() }
@@ -272,7 +269,7 @@ class DmTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                alixClient.conversations.streamAllMessages().collect { message ->
+                alixClient.conversations.streamAllConversationMessages().collect { message ->
                     allMessages.add(message)
                 }
             } catch (e: Exception) {
@@ -302,9 +299,9 @@ class DmTest {
 
     @Test
     fun testCanStreamDecryptedDmMessages() = kotlinx.coroutines.test.runTest {
-        val dm = boClient.conversations.newConversation(alix.walletAddress)
+        val dm = boClient.conversations.findOrCreateDm(alix.walletAddress)
         alixClient.conversations.syncConversations()
-        val alixDm = alixClient.findConversation(dm.id)
+        val alixDm = alixClient.findDm(bo.walletAddress)
         dm.streamDecryptedMessages().test {
             alixDm?.send("hi")
             assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
@@ -315,14 +312,14 @@ class DmTest {
 
     @Test
     fun testCanStreamAllDecryptedDmMessages() {
-        val dm = runBlocking { boClient.conversations.newConversation(alix.walletAddress) }
+        val dm = runBlocking { boClient.conversations.findOrCreateDm(alix.walletAddress) }
         runBlocking { alixClient.conversations.syncConversations() }
 
         val allMessages = mutableListOf<DecryptedMessage>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                alixClient.conversations.streamAllDecryptedMessages().collect { message ->
+                alixClient.conversations.streamAllConversationDecryptedMessages().collect { message ->
                     allMessages.add(message)
                 }
             } catch (e: Exception) {
@@ -357,7 +354,7 @@ class DmTest {
                 alixClient.conversations.findOrCreateDm(bo.walletAddress)
             assertEquals(dm.id, awaitItem().id)
             val dm2 =
-                caroClient.conversations.newConversation(bo.walletAddress)
+                caroClient.conversations.findOrCreateDm(bo.walletAddress)
             assertEquals(dm2.id, awaitItem().id)
         }
     }

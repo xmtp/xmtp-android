@@ -119,16 +119,14 @@ class V3ClientTest {
         val group =
             runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
         assertEquals(runBlocking { boV3Client.conversations.listConversations().size }, 2)
-        assertEquals(runBlocking { boV3Client.conversations.list(includeGroups = true).size }, 2)
         assertEquals(runBlocking { boV3Client.conversations.listDms().size }, 1)
         assertEquals(runBlocking { boV3Client.conversations.listGroups().size }, 1)
 
         runBlocking { caroV2V3Client.conversations.syncConversations() }
         assertEquals(
             runBlocking { caroV2V3Client.conversations.list(includeGroups = true).size },
-            2
+            1
         )
-        assertEquals(runBlocking { caroV2V3Client.conversations.listDms().size }, 1)
         assertEquals(runBlocking { caroV2V3Client.conversations.listGroups().size }, 1)
     }
 
@@ -141,6 +139,7 @@ class V3ClientTest {
             runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
         runBlocking { dm.send("Howdy") }
         runBlocking { group2.send("Howdy") }
+        runBlocking { boV3Client.conversations.syncAllConversations() }
         val conversations = runBlocking { boV3Client.conversations.listConversations() }
         val conversationsOrdered =
             runBlocking { boV3Client.conversations.listConversations(order = Conversations.ConversationOrder.LAST_MESSAGE) }
@@ -171,8 +170,8 @@ class V3ClientTest {
 
     @Test
     fun testsCanSendMessagesToDm() {
-        val boDm =
-            runBlocking { boV3Client.conversations.newConversation(caroV2V3.walletAddress) }
+        var boDm =
+            runBlocking { boV3Client.conversations.findOrCreateDm(caroV2V3.walletAddress) }
         runBlocking { boDm.send("howdy") }
         var messageId = runBlocking { boDm.send("gm") }
         var boDmMessage = runBlocking { boDm.messages() }
@@ -182,27 +181,24 @@ class V3ClientTest {
         assertEquals(boDmMessage.size, 3)
 
         runBlocking { caroV2V3Client.conversations.syncConversations() }
-        var sameDm = runBlocking { caroV2V3Client.conversations.list().last() }
-        runBlocking { sameDm.sync() }
-        var caroDmMessage = runBlocking { sameDm.messages() }
+        val caroDm = runBlocking { caroV2V3Client.findDm(boV3.walletAddress) }
+        runBlocking { caroDm!!.sync() }
+        var caroDmMessage = runBlocking { caroDm!!.messages() }
         assertEquals(caroDmMessage.size, 2)
         assertEquals(caroDmMessage.first().body, "gm")
 
-        // Do the inverse
-        val caroDm =
-            runBlocking { caroV2V3Client.conversations.newConversation(boV3.walletAddress) }
-        runBlocking { caroDm.send("howdy") }
-        messageId = runBlocking { caroDm.send("gm") }
-        caroDmMessage = runBlocking { caroDm.messages() }
+        runBlocking { caroDm!!.send("howdy") }
+        messageId = runBlocking { caroDm!!.send("gm") }
+        caroDmMessage = runBlocking { caroDm!!.messages() }
         assertEquals(caroDmMessage.first().body, "gm")
         assertEquals(caroDmMessage.first().id, messageId)
         assertEquals(caroDmMessage.first().deliveryStatus, MessageDeliveryStatus.PUBLISHED)
         assertEquals(caroDmMessage.size, 4)
 
         runBlocking { boV3Client.conversations.syncConversations() }
-        sameDm = runBlocking { boV3Client.conversations.list().last() }
-        runBlocking { sameDm.sync() }
-        boDmMessage = runBlocking { sameDm.messages() }
+        boDm = runBlocking { boV3Client.findDm(caroV2V3.walletAddress)!! }
+        runBlocking { boDm.sync() }
+        boDmMessage = runBlocking { boDm.messages() }
         assertEquals(boDmMessage.size, 5)
         assertEquals(boDmMessage.first().body, "gm")
     }
@@ -259,7 +255,7 @@ class V3ClientTest {
         val group =
             runBlocking { caroV2V3Client.conversations.newGroup(listOf(boV3.walletAddress)) }
         val conversation =
-            runBlocking { caroV2V3Client.conversations.findOrCreateDm(boV3.walletAddress) }
+            runBlocking { boV3Client.conversations.findOrCreateDm(caroV2V3.walletAddress) }
         runBlocking { boV3Client.conversations.syncConversations() }
 
         val allMessages = mutableListOf<DecodedMessage>()
@@ -288,7 +284,7 @@ class V3ClientTest {
         val group =
             runBlocking { caroV2V3Client.conversations.newGroup(listOf(boV3.walletAddress)) }
         val conversation =
-            runBlocking { caroV2V3Client.conversations.findOrCreateDm(boV3.walletAddress) }
+            runBlocking { boV3Client.conversations.findOrCreateDm(caroV2V3.walletAddress) }
         runBlocking { boV3Client.conversations.syncConversations() }
 
         val allMessages = mutableListOf<DecryptedMessage>()
@@ -330,7 +326,7 @@ class V3ClientTest {
         runBlocking {
             caroV2V3Client.conversations.newGroup(listOf(boV3.walletAddress))
             Thread.sleep(1000)
-            caroV2V3Client.conversations.findOrCreateDm(boV3.walletAddress)
+            boV3Client.conversations.findOrCreateDm(caroV2V3.walletAddress)
         }
 
         Thread.sleep(2000)

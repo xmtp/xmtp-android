@@ -47,6 +47,7 @@ import uniffi.xmtpv3.FfiCreateGroupOptions
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiListConversationsOptions
+import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiPermissionPolicySet
@@ -335,7 +336,7 @@ data class Conversations(
         before: Date? = null,
         limit: Int? = null,
         order: ConversationOrder = ConversationOrder.CREATED_AT,
-    ): List<Conversation> = coroutineScope {
+    ): List<Conversation> {
         if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val ffiConversation = libXMTPConversations?.list(
             opts = FfiListConversationsOptions(
@@ -345,26 +346,29 @@ data class Conversations(
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
 
-        val conversations = ffiConversation.map {
+        val sortedConversations = when (order) {
+            ConversationOrder.LAST_MESSAGE -> {
+                ffiConversation.map { conversation ->
+                    val message =
+                        conversation.findMessages(FfiListMessagesOptions(null, null, null, null))
+                            .lastOrNull()
+                    conversation to message?.sentAtNs
+                }.sortedByDescending {
+                    it.second ?: 0L
+                }.map {
+                    it.first
+                }
+            }
+
+            ConversationOrder.CREATED_AT -> ffiConversation
+        }
+
+        return sortedConversations.map {
             if (it.groupMetadata().conversationType() == "dm") {
                 Conversation.Dm(Dm(client, it))
             } else {
                 Conversation.Group(Group(client, it))
             }
-        }
-
-        when (order) {
-            ConversationOrder.LAST_MESSAGE -> {
-                val sortedConversations = conversations.map { dm ->
-                    async {
-                        dm to dm.messages(limit = 1).firstOrNull()?.sent
-                    }
-                }.awaitAll().sortedByDescending { it.second }
-
-                sortedConversations.map { it.first }
-            }
-
-            ConversationOrder.CREATED_AT -> conversations
         }
     }
 
@@ -592,6 +596,7 @@ data class Conversations(
                     Conversation.Version.DM -> {
                         decodedMessage?.let { trySend(it) }
                     }
+
                     else -> {
                         decodedMessage?.let { trySend(it) }
                     }
@@ -616,6 +621,7 @@ data class Conversations(
                     Conversation.Version.DM -> {
                         decryptedMessage?.let { trySend(it) }
                     }
+
                     else -> {
                         decryptedMessage?.let { trySend(it) }
                     }
