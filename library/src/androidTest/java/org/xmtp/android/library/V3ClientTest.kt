@@ -114,6 +114,18 @@ class V3ClientTest {
     }
 
     @Test
+    fun testsCanFindConversationByTopic() {
+        val group =
+            runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
+        val dm = runBlocking { boV3Client.conversations.findOrCreateDm(caroV2V3.walletAddress) }
+
+        val sameDm = boV3Client.findConversationByTopic(dm.topic)
+        val sameGroup = boV3Client.findConversationByTopic(group.topic)
+        assertEquals(group.id, sameGroup?.id)
+        assertEquals(dm.id, sameDm?.id)
+    }
+
+    @Test
     fun testsCanListConversations() {
         val dm = runBlocking { boV3Client.conversations.findOrCreateDm(caroV2V3.walletAddress) }
         val group =
@@ -128,6 +140,28 @@ class V3ClientTest {
             1
         )
         assertEquals(runBlocking { caroV2V3Client.conversations.listGroups().size }, 1)
+    }
+
+    @Test
+    fun testsCanListConversationsFiltered() {
+        val dm = runBlocking { boV3Client.conversations.findOrCreateDm(caroV2V3.walletAddress) }
+        val group =
+            runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
+        assertEquals(runBlocking { boV3Client.conversations.listConversations().size }, 2)
+        assertEquals(
+            runBlocking { boV3Client.conversations.listConversations(consentState = ConsentState.ALLOWED).size },
+            2
+        )
+        runBlocking { group.updateConsentState(ConsentState.DENIED) }
+        assertEquals(
+            runBlocking { boV3Client.conversations.listConversations(consentState = ConsentState.ALLOWED).size },
+            1
+        )
+        assertEquals(
+            runBlocking { boV3Client.conversations.listConversations(consentState = ConsentState.DENIED).size },
+            1
+        )
+        assertEquals(runBlocking { boV3Client.conversations.listConversations().size }, 2)
     }
 
     @Test

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
+import org.xmtp.android.library.ConsentState.Companion.toFfiConsentState
 import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
 import org.xmtp.android.library.Util.Companion.envelopeFromFFi
 import org.xmtp.android.library.libxmtp.MessageV3
@@ -36,6 +37,7 @@ import org.xmtp.proto.keystore.api.v1.Keystore.GetConversationHmacKeysResponse.H
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
+import uniffi.xmtpv3.FfiConsentState
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
@@ -342,19 +344,32 @@ data class Conversations(
         before: Date? = null,
         limit: Int? = null,
         order: ConversationOrder = ConversationOrder.CREATED_AT,
+        consentState: ConsentState? = null,
     ): List<Conversation> {
-        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
-        val ffiConversation = libXMTPConversations?.list(
-            opts = FfiListConversationsOptions(
+        if (client.hasV2Client)
+            throw XMTPException("Only supported for V3 only clients.")
+
+        val ffiConversations = libXMTPConversations?.list(
+            FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong()
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
 
-        val sortedConversations = when (order) {
+        val filteredConversations = filterByConsentState(ffiConversations, consentState)
+        val sortedConversations = sortConversations(filteredConversations, order)
+
+        return filteredConversations.map { it.toConversation() }
+    }
+
+    private fun sortConversations(
+        conversations: List<FfiConversation>,
+        order: ConversationOrder,
+    ): List<FfiConversation> {
+        return when (order) {
             ConversationOrder.LAST_MESSAGE -> {
-                ffiConversation.map { conversation ->
+                conversations.map { conversation ->
                     val message =
                         conversation.findMessages(FfiListMessagesOptions(null, null, null, null))
                             .lastOrNull()
@@ -365,18 +380,27 @@ data class Conversations(
                     it.first
                 }
             }
-
-            ConversationOrder.CREATED_AT -> ffiConversation
-        }
-
-        return sortedConversations.map {
-            if (it.groupMetadata().conversationType() == "dm") {
-                Conversation.Dm(Dm(client, it))
-            } else {
-                Conversation.Group(Group(client, it))
-            }
+            ConversationOrder.CREATED_AT -> conversations
         }
     }
+
+    private fun filterByConsentState(
+        conversations: List<FfiConversation>,
+        consentState: ConsentState?,
+    ): List<FfiConversation> {
+        return consentState?.let { state ->
+            conversations.filter { it.consentState() == toFfiConsentState(state) }
+        } ?: conversations
+    }
+
+    private fun FfiConversation.toConversation(): Conversation {
+        return if (groupMetadata().conversationType() == "dm") {
+            Conversation.Dm(Dm(client, this))
+        } else {
+            Conversation.Group(Group(client, this))
+        }
+    }
+
 
     /**
      * Get the list of conversations that current user has
