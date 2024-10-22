@@ -619,17 +619,28 @@ class Client() {
 
     fun findConversation(conversationId: String): Conversation? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
-        try {
-            val conversation = client.conversation(conversationId.hexToByteArray())
-            if (conversation.groupMetadata().conversationType() == "dm") {
-                return Conversation.Dm(Dm(this, conversation))
-            } else if (conversation.groupMetadata().conversationType() == "group") {
-                return Conversation.Group(Group(this, conversation))
-            } else {
-                return null
-            }
-        } catch (e: Exception) {
-            return null
+        val conversation = client.conversation(conversationId.hexToByteArray())
+        return if (conversation.groupMetadata().conversationType() == "dm") {
+            Conversation.Dm(Dm(this, conversation))
+        } else if (conversation.groupMetadata().conversationType() == "group") {
+            Conversation.Group(Group(this, conversation))
+        } else {
+            null
+        }
+    }
+
+    fun findConversationByTopic(topic: String): Conversation? {
+        val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
+        val regex = """/xmtp/mls/1/g-(.*?)/proto""".toRegex()
+        val matchResult = regex.find(topic)
+        val conversationId = matchResult?.groupValues?.get(1) ?: ""
+        val conversation = client.conversation(conversationId.hexToByteArray())
+        return if (conversation.groupMetadata().conversationType() == "dm") {
+            Conversation.Dm(Dm(this, conversation))
+        } else if (conversation.groupMetadata().conversationType() == "group") {
+            Conversation.Group(Group(this, conversation))
+        } else {
+            null
         }
     }
 
