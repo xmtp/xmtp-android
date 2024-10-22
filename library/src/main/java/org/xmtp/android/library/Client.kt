@@ -325,7 +325,7 @@ class Client() {
         this.hasV2Client = false
         val clientOptions = options ?: ClientOptions(enableV3 = true)
         val accountAddress =
-            if (account.isSmartContractWallet) "eip155:${account.chainId}:${account.address.lowercase()}" else account.address.lowercase()
+            if (account.chainId != null) "eip155:${account.chainId}:${account.address.lowercase()}" else account.address.lowercase()
         return try {
             initializeV3Client(accountAddress, clientOptions, account)
         } catch (e: Exception) {
@@ -448,7 +448,7 @@ class Client() {
             }
             v3Client.signatureRequest()?.let { signatureRequest ->
                 if (account != null) {
-                    if (account.isSmartContractWallet) {
+                    if (account.type == WalletType.SCW) {
                         val chainId = account.chainId ?: throw XMTPException("ChainId is required for smart contract wallets")
                         signatureRequest.addScwSignature(
                             account.signSCW(signatureRequest.signatureText()),
