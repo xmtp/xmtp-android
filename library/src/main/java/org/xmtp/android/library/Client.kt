@@ -324,8 +324,7 @@ class Client() {
     ): Client {
         this.hasV2Client = false
         val clientOptions = options ?: ClientOptions(enableV3 = true)
-        val accountAddress =
-            if (account.chainId != null) "eip155:${account.chainId}:${account.address.lowercase()}" else account.address.lowercase()
+        val accountAddress = account.address.lowercase()
         return try {
             initializeV3Client(accountAddress, clientOptions, account)
         } catch (e: Exception) {
@@ -341,8 +340,7 @@ class Client() {
     ): Client {
         this.hasV2Client = false
         val clientOptions = options ?: ClientOptions(enableV3 = true)
-        val accountAddress =
-            if (chainId != null) "eip155:$chainId:${address.lowercase()}" else address.lowercase()
+        val accountAddress = address.lowercase()
         return try {
             initializeV3Client(accountAddress, clientOptions)
         } catch (e: Exception) {
