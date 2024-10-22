@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.MessageDeliveryStatus
@@ -17,57 +17,60 @@ import org.xmtp.android.library.messages.walletAddress
 
 @RunWith(AndroidJUnit4::class)
 class SmartContractWalletTest {
-    private lateinit var davonSCW: FakeSCWWallet
-    private lateinit var davonSCWClient: Client
-    private lateinit var eriSCW: FakeSCWWallet
-    private lateinit var eriSCWClient: Client
-    private lateinit var options: ClientOptions
-    private lateinit var boV3Wallet: PrivateKeyBuilder
-    private lateinit var boV3: PrivateKey
-    private lateinit var boV3Client: Client
+    companion object {
+        private lateinit var davonSCW: FakeSCWWallet
+        private lateinit var davonSCWClient: Client
+        private lateinit var eriSCW: FakeSCWWallet
+        private lateinit var eriSCWClient: Client
+        private lateinit var options: ClientOptions
+        private lateinit var boV3Wallet: PrivateKeyBuilder
+        private lateinit var boV3: PrivateKey
+        private lateinit var boV3Client: Client
 
-    @Before
-    fun setUp() {
-        val key = byteArrayOf(
-            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-            0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-            0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
-            0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
-        )
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        options = ClientOptions(
-            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-            enableV3 = true,
-            appContext = context,
-            dbEncryptionKey = key
-        )
-
-        // EOA
-        boV3Wallet = PrivateKeyBuilder()
-        boV3 = boV3Wallet.getPrivateKey()
-        boV3Client = runBlocking {
-            Client().createV3(
-                account = boV3Wallet,
-                options = options
+        @BeforeClass
+        @JvmStatic
+        fun setUpClass() {
+            val key = byteArrayOf(
+                0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+                0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+                0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
             )
-        }
-
-        // SCW
-        davonSCW = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_1)
-        davonSCWClient = runBlocking {
-            Client().createV3(
-                account = davonSCW,
-                options = options
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            options = ClientOptions(
+                ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                enableV3 = true,
+                appContext = context,
+                dbEncryptionKey = key
             )
-        }
 
-        // SCW
-        eriSCW = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_2)
-        eriSCWClient = runBlocking {
-            Client().createV3(
-                account = davonSCW,
-                options = options
-            )
+            // EOA
+            boV3Wallet = PrivateKeyBuilder()
+            boV3 = boV3Wallet.getPrivateKey()
+            boV3Client = runBlocking {
+                Client().createV3(
+                    account = boV3Wallet,
+                    options = options
+                )
+            }
+
+            // SCW
+            davonSCW = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_1)
+            davonSCWClient = runBlocking {
+                Client().createV3(
+                    account = davonSCW,
+                    options = options
+                )
+            }
+
+            // SCW
+            eriSCW = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_2)
+            eriSCWClient = runBlocking {
+                Client().createV3(
+                    account = eriSCW,
+                    options = options
+                )
+            }
         }
     }
 
@@ -76,7 +79,6 @@ class SmartContractWalletTest {
         val davonSCWClient2 = runBlocking {
             Client().buildV3(
                 address = davonSCW.address,
-                chainId = davonSCW.chainId,
                 options = options
             )
         }

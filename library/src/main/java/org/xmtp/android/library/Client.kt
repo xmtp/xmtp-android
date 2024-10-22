@@ -335,7 +335,6 @@ class Client() {
     // Function to build a V3 client without a signing key (using only address (& chainId for SCW))
     suspend fun buildV3(
         address: String,
-        chainId: Long? = null,
         options: ClientOptions? = null,
     ): Client {
         this.hasV2Client = false
