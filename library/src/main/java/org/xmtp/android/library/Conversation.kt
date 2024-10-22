@@ -274,6 +274,15 @@ sealed class Conversation {
         }
     }
 
+    suspend fun processMessage(envelopeBytes: ByteArray): MessageV3 {
+        return when (this) {
+            is V1 -> throw XMTPException("Only supported for V3")
+            is V2 -> throw XMTPException("Only supported for V3")
+            is Group -> group.processMessage(envelopeBytes)
+            is Dm -> dm.processMessage(envelopeBytes)
+        }
+    }
+
     val consentProof: ConsentProofPayload?
         get() {
             return when (this) {

@@ -72,6 +72,16 @@ data class Conversations(
         LAST_MESSAGE;
     }
 
+    suspend fun conversationFromWelcome(envelopeBytes: ByteArray): Conversation {
+        val conversation = libXMTPConversations?.processStreamedWelcomeMessage(envelopeBytes)
+            ?: throw XMTPException("Client does not support Groups")
+        if (conversation.groupMetadata().conversationType() == "dm") {
+            return Conversation.Dm(Dm(client, conversation))
+        } else {
+            return Conversation.Group(Group(client, conversation))
+        }
+    }
+
     suspend fun fromWelcome(envelopeBytes: ByteArray): Group {
         val group = libXMTPConversations?.processStreamedWelcomeMessage(envelopeBytes)
             ?: throw XMTPException("Client does not support Groups")
@@ -758,7 +768,7 @@ data class Conversations(
      * @return [Conversation] from an invitation suing the current [Client].
      */
     fun fromInvite(envelope: Envelope): Conversation {
-        if (!client.hasV2Client) throw XMTPException("Not supported for V3. Use fromWelcome.")
+        if (!client.hasV2Client) throw XMTPException("Not supported for V3. Use conversationFromWelcome.")
         val sealedInvitation = Invitation.SealedInvitation.parseFrom(envelope.message)
         val unsealed = sealedInvitation.v1.getInvitation(viewer = client.keys)
         return Conversation.V2(
@@ -777,7 +787,7 @@ data class Conversations(
      * @return [Conversation] from an Intro suing the current [Client].
      */
     fun fromIntro(envelope: Envelope): Conversation {
-        if (!client.hasV2Client) throw XMTPException("Not supported for V3. Use fromWelcome.")
+        if (!client.hasV2Client) throw XMTPException("Not supported for V3. Use conversationFromWelcome.")
         val messageV1 = MessageV1Builder.buildFromBytes(envelope.message.toByteArray())
         val senderAddress = messageV1.header.sender.walletAddress
         val recipientAddress = messageV1.header.recipient.walletAddress
@@ -956,7 +966,7 @@ data class Conversations(
      * @return List of [SealedInvitation] that are inside of the range specified by [pagination]
      */
     private suspend fun listInvitations(pagination: Pagination? = null): List<SealedInvitation> {
-        if (!client.hasV2Client) throw XMTPException("Not supported for V3. Use fromWelcome.")
+        if (!client.hasV2Client) throw XMTPException("Not supported for V3. Use conversationFromWelcome.")
         val apiClient = client.apiClient ?: throw XMTPException("V2 only function")
         val envelopes =
             apiClient.envelopes(Topic.userInvite(client.address).description, pagination)
@@ -966,7 +976,7 @@ data class Conversations(
     }
 
     private suspend fun listIntroductionPeers(pagination: Pagination? = null): Map<String, Date> {
-        if (!client.hasV2Client) throw XMTPException("Not supported for V3. Use fromWelcome.")
+        if (!client.hasV2Client) throw XMTPException("Not supported for V3. Use conversationFromWelcome.")
         val apiClient = client.apiClient ?: throw XMTPException("V2 only function")
         val envelopes = apiClient.queryTopic(
             topic = Topic.userIntro(client.address),
