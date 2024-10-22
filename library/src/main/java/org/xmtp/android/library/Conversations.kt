@@ -37,7 +37,6 @@ import org.xmtp.proto.keystore.api.v1.Keystore.GetConversationHmacKeysResponse.H
 import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
-import uniffi.xmtpv3.FfiConsentState
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
@@ -554,10 +553,20 @@ data class Conversations(
                 }
             }
         }
-
         val stream = libXMTPConversations?.stream(conversationCallback)
-            ?: throw XMTPException("Client does not support V3")
+            ?: throw XMTPException("Client does not support Groups")
+        awaitClose { stream.end() }
+    }
 
+    private fun streamGroupConversations(): Flow<Conversation> = callbackFlow {
+        val groupCallback = object : FfiConversationCallback {
+            override fun onConversation(conversation: FfiConversation) {
+                trySend(Conversation.Group(Group(client, conversation)))
+            }
+        }
+
+        val stream = libXMTPConversations?.streamGroups(groupCallback)
+            ?: throw XMTPException("Client does not support Groups")
         awaitClose { stream.end() }
     }
 
@@ -662,17 +671,6 @@ data class Conversations(
         val stream = libXMTPConversations?.streamAllMessages(messageCallback)
             ?: throw XMTPException("Client does not support Groups")
 
-        awaitClose { stream.end() }
-    }
-
-    private fun streamGroupConversations(): Flow<Conversation> = callbackFlow {
-        val groupCallback = object : FfiConversationCallback {
-            override fun onConversation(conversation: FfiConversation) {
-                trySend(Conversation.Group(Group(client, conversation)))
-            }
-        }
-        val stream = libXMTPConversations?.streamGroups(groupCallback)
-            ?: throw XMTPException("Client does not support Groups")
         awaitClose { stream.end() }
     }
 
