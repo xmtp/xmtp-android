@@ -65,7 +65,7 @@ data class ClientOptions(
     val preEnableIdentityCallback: PreEventCallback? = null,
     val preAuthenticateToInboxCallback: PreEventCallback? = null,
     val appContext: Context? = null,
-    val enableV3: Boolean = false,
+    val enableV3: Boolean = true,
     val dbDirectory: String? = null,
     val dbEncryptionKey: ByteArray? = null,
     val historySyncUrl: String = when (api.env) {
