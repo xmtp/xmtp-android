@@ -103,7 +103,7 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         direction: PagingInfoSortDirection = SortDirection.SORT_DIRECTION_DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
     ): List<DecodedMessage> {
-        val messages = libXMTPGroup.findMessages(
+        return libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
@@ -122,11 +122,6 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         ).mapNotNull {
             MessageV3(client, it).decodeOrNull()
         }
-
-        return when (direction) {
-            SortDirection.SORT_DIRECTION_ASCENDING -> messages
-            else -> messages.reversed()
-        }
     }
 
     fun decryptedMessages(
@@ -136,7 +131,7 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         direction: PagingInfoSortDirection = SortDirection.SORT_DIRECTION_DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
     ): List<DecryptedMessage> {
-        val messages = libXMTPGroup.findMessages(
+        return libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
@@ -154,11 +149,6 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
             )
         ).mapNotNull {
             MessageV3(client, it).decryptOrNull()
-        }
-
-        return when (direction) {
-            SortDirection.SORT_DIRECTION_ASCENDING -> messages
-            else -> messages.reversed()
         }
     }
 

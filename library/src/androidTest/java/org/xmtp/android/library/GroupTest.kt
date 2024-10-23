@@ -49,14 +49,15 @@ class GroupTest {
     fun setUp() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val options = ClientOptions(
+            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+            enableV3 = true,
+            appContext = context,
+            dbEncryptionKey = key
+        )
         fixtures =
             fixtures(
-                clientOptions = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableV3 = true,
-                    appContext = context,
-                    dbEncryptionKey = key
-                )
+                clientOptions = options
             )
         alixWallet = fixtures.aliceAccount
         alix = fixtures.alice
@@ -64,13 +65,14 @@ class GroupTest {
         bo = fixtures.bob
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
-        davonV3Wallet = fixtures.davonV3Account
-        davonV3 = fixtures.davonV3
+        davonV3Wallet = PrivateKeyBuilder()
+        davonV3 = davonV3Wallet.getPrivateKey()
 
         alixClient = fixtures.aliceClient
         boClient = fixtures.bobClient
         caroClient = fixtures.caroClient
-        davonV3Client = fixtures.davonV3Client
+        davonV3Client =
+            runBlocking { Client().createV3(account = davonV3Wallet, options = options) }
     }
 
     @Test

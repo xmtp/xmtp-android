@@ -410,7 +410,6 @@ data class Conversations(
         }
     }
 
-
     /**
      * Get the list of conversations that current user has
      * @return The list of [Conversation] that the current [Client] has.

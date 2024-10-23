@@ -165,10 +165,6 @@ data class Fixtures(
     var caroClient: Client =
         runBlocking { Client().create(account = caroAccount, options = clientOptions) }
 
-    var davonV3: PrivateKey = caroAccount.getPrivateKey()
-    var davonV3Client: Client =
-        runBlocking { Client().createV3(account = caroAccount, options = clientOptions) }
-
     fun publishLegacyContact(client: Client) {
         val contactBundle = ContactBundle.newBuilder().also { builder ->
             builder.v1 = builder.v1.toBuilder().also {
