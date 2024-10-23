@@ -216,26 +216,6 @@ sealed class Conversation {
         }
     }
 
-    fun decryptV3(
-        message: MessageV3,
-    ): DecryptedMessage {
-        return when (this) {
-            is V1 -> throw XMTPException("Only supported for V3")
-            is V2 -> throw XMTPException("Only supported for V3")
-            is Group -> message.decrypt()
-            is Dm -> message.decrypt()
-        }
-    }
-
-    fun decodeV3(message: MessageV3): DecodedMessage {
-        return when (this) {
-            is V1 -> throw XMTPException("Only supported for V3")
-            is V2 -> throw XMTPException("Only supported for V3")
-            is Group -> message.decode()
-            is Dm -> message.decode()
-        }
-    }
-
     suspend fun processMessage(envelopeBytes: ByteArray): MessageV3 {
         return when (this) {
             is V1 -> throw XMTPException("Only supported for V3")

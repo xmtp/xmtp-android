@@ -603,7 +603,6 @@ class Client() {
         }
     }
 
-    @Deprecated("Find now includes DMs and Groups", replaceWith = ReplaceWith("findConversation"))
     fun findGroup(groupId: String): Group? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
         try {
