@@ -275,5 +275,4 @@ class SmartContractWalletTest {
         assertEquals(2, allMessages.size)
         job.cancel()
     }
-
 }
