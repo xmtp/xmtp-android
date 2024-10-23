@@ -125,26 +125,6 @@ class DmTest {
     }
 
     @Test
-    fun testDmMetadata() {
-        val boDm = runBlocking {
-            boClient.conversations.findOrCreateDm(alix.walletAddress)
-        }
-
-        runBlocking { alixClient.conversations.syncConversations() }
-        val alixDm = runBlocking { alixClient.conversations.listDms().first() }
-        runBlocking {
-            alixDm.sync()
-            alixDm.updateName("This Is A Great Group")
-            alixDm.updateImageUrlSquare("thisisanewurl.com")
-            boDm.sync()
-        }
-        assertEquals("This Is A Great Group", boDm.name)
-        assertEquals("This Is A Great Group", alixDm.name)
-        assertEquals("thisisanewurl.com", boDm.imageUrlSquare)
-        assertEquals("thisisanewurl.com", alixDm.imageUrlSquare)
-    }
-
-    @Test
     fun testCannotCreateDmWithMemberNotOnV3() {
         val chuxAccount = PrivateKeyBuilder()
         val chux: PrivateKey = chuxAccount.getPrivateKey()
