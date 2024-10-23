@@ -206,7 +206,7 @@ data class Conversations(
             val dmConversation = libXMTPConversations?.createDm(peerAddress.lowercase())
                 ?: throw XMTPException("Client does not support V3 Dms")
             dm = Dm(client, dmConversation)
-            client.contacts.allowGroups(groupIds = listOf(dm.id))
+            client.contacts.allow(listOf(peerAddress))
         }
         return dm
     }
