@@ -73,44 +73,6 @@ sealed class Conversation {
             }
         }
 
-    val name: String
-        get() {
-            return when (this) {
-                is V1 -> throw XMTPException("Only supported for V3")
-                is V2 -> throw XMTPException("Only supported for V3")
-                is Group -> group.name
-                is Dm -> dm.name
-            }
-        }
-
-    val imageUrlSquare: String
-        get() {
-            return when (this) {
-                is V1 -> throw XMTPException("Only supported for V3")
-                is V2 -> throw XMTPException("Only supported for V3")
-                is Group -> group.imageUrlSquare
-                is Dm -> dm.imageUrlSquare
-            }
-        }
-    val description: String
-        get() {
-            return when (this) {
-                is V1 -> throw XMTPException("Only supported for V3")
-                is V2 -> throw XMTPException("Only supported for V3")
-                is Group -> group.description
-                is Dm -> dm.description
-            }
-        }
-    val pinnedFrameUrl: String
-        get() {
-            return when (this) {
-                is V1 -> throw XMTPException("Only supported for V3")
-                is V2 -> throw XMTPException("Only supported for V3")
-                is Group -> group.pinnedFrameUrl
-                is Dm -> dm.pinnedFrameUrl
-            }
-        }
-
     fun isCreator(): Boolean {
         return when (this) {
             is V1 -> throw XMTPException("Only supported for V3")

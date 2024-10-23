@@ -380,7 +380,7 @@ data class Conversations(
                                 FfiDirection.DESCENDING
                             )
                         )
-                            .lastOrNull()
+                            .firstOrNull()
                     conversation to message?.sentAtNs
                 }.sortedByDescending {
                     it.second ?: 0L
