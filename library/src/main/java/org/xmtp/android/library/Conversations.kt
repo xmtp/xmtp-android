@@ -41,6 +41,7 @@ import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiCreateGroupOptions
+import uniffi.xmtpv3.FfiDirection
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiListConversationsOptions
@@ -359,7 +360,7 @@ data class Conversations(
         val filteredConversations = filterByConsentState(ffiConversations, consentState)
         val sortedConversations = sortConversations(filteredConversations, order)
 
-        return filteredConversations.map { it.toConversation() }
+        return sortedConversations.map { it.toConversation() }
     }
 
     private fun sortConversations(
@@ -370,7 +371,15 @@ data class Conversations(
             ConversationOrder.LAST_MESSAGE -> {
                 conversations.map { conversation ->
                     val message =
-                        conversation.findMessages(FfiListMessagesOptions(null, null, null, null))
+                        conversation.findMessages(
+                            FfiListMessagesOptions(
+                                null,
+                                null,
+                                1,
+                                null,
+                                FfiDirection.DESCENDING
+                            )
+                        )
                             .lastOrNull()
                     conversation to message?.sentAtNs
                 }.sortedByDescending {
@@ -379,6 +388,7 @@ data class Conversations(
                     it.first
                 }
             }
+
             ConversationOrder.CREATED_AT -> conversations
         }
     }
