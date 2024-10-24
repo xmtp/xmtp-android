@@ -161,7 +161,7 @@ data class Conversations(
                     customPermissionPolicySet = permissionsPolicySet
                 )
             ) ?: throw XMTPException("Client does not support Groups")
-        client.contacts.allowConversations(groupIds = listOf(group.id().toHex()))
+        client.contacts.allowConversations(conversationIds = listOf(group.id().toHex()))
 
         return Group(client, group)
     }
