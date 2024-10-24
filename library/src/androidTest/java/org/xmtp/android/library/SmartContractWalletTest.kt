@@ -159,15 +159,15 @@ class SmartContractWalletTest {
                     )
                 )
             }
-            assert(davonSCWClient.contacts.isGroupAllowed(davonGroup.id))
+            assert(davonSCWClient.contacts.isConversationAllowed(davonGroup.id))
             assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
 
-            davonSCWClient.contacts.denyGroups(listOf(davonGroup.id))
-            assert(davonSCWClient.contacts.isGroupDenied(davonGroup.id))
+            davonSCWClient.contacts.denyConversations(listOf(davonGroup.id))
+            assert(davonSCWClient.contacts.isConversationDenied(davonGroup.id))
             assertEquals(davonGroup.consentState(), ConsentState.DENIED)
 
             davonGroup.updateConsentState(ConsentState.ALLOWED)
-            assert(davonSCWClient.contacts.isGroupAllowed(davonGroup.id))
+            assert(davonSCWClient.contacts.isConversationAllowed(davonGroup.id))
             assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
         }
     }

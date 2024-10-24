@@ -40,14 +40,14 @@ enum class ConsentState {
 
 enum class EntryType {
     ADDRESS,
-    GROUP_ID,
+    CONVERSATION_ID,
     INBOX_ID;
 
     companion object {
         fun toFfiConsentEntityType(option: EntryType): FfiConsentEntityType {
             return when (option) {
                 EntryType.ADDRESS -> FfiConsentEntityType.ADDRESS
-                EntryType.GROUP_ID -> FfiConsentEntityType.CONVERSATION_ID
+                EntryType.CONVERSATION_ID -> FfiConsentEntityType.CONVERSATION_ID
                 EntryType.INBOX_ID -> FfiConsentEntityType.INBOX_ID
             }
         }
@@ -55,7 +55,7 @@ enum class EntryType {
         fun fromFfiConsentEntityType(option: FfiConsentEntityType): EntryType {
             return when (option) {
                 FfiConsentEntityType.ADDRESS -> EntryType.ADDRESS
-                FfiConsentEntityType.CONVERSATION_ID -> EntryType.GROUP_ID
+                FfiConsentEntityType.CONVERSATION_ID -> EntryType.CONVERSATION_ID
                 FfiConsentEntityType.INBOX_ID -> EntryType.INBOX_ID
             }
         }
@@ -75,11 +75,11 @@ data class ConsentListEntry(
             return ConsentListEntry(address, EntryType.ADDRESS, type)
         }
 
-        fun groupId(
-            groupId: String,
+        fun conversationId(
+            conversationId: String,
             type: ConsentState = ConsentState.UNKNOWN,
         ): ConsentListEntry {
-            return ConsentListEntry(groupId, EntryType.GROUP_ID, type)
+            return ConsentListEntry(conversationId, EntryType.CONVERSATION_ID, type)
         }
 
         fun inboxId(
@@ -154,10 +154,10 @@ class ConsentList(
                     deny(address)
                 }
                 preference.allowGroup?.groupIdsList?.forEach { groupId ->
-                    allowGroup(groupId)
+                    allowConversation(groupId)
                 }
                 preference.denyGroup?.groupIdsList?.forEach { groupId ->
-                    denyGroup(groupId)
+                    denyConversation(groupId)
                 }
 
                 preference.allowInboxId?.inboxIdsList?.forEach { inboxId ->
@@ -189,12 +189,12 @@ class ConsentList(
                                 .addWalletAddresses(entry.value)
                         )
 
-                        EntryType.GROUP_ID to ConsentState.ALLOWED -> it.setAllowGroup(
+                        EntryType.CONVERSATION_ID to ConsentState.ALLOWED -> it.setAllowGroup(
                             PrivatePreferencesAction.AllowGroup.newBuilder()
                                 .addGroupIds(entry.value)
                         )
 
-                        EntryType.GROUP_ID to ConsentState.DENIED -> it.setDenyGroup(
+                        EntryType.CONVERSATION_ID to ConsentState.DENIED -> it.setDenyGroup(
                             PrivatePreferencesAction.DenyGroup.newBuilder().addGroupIds(entry.value)
                         )
 
@@ -256,15 +256,15 @@ class ConsentList(
         return entry
     }
 
-    fun allowGroup(groupId: String): ConsentListEntry {
-        val entry = ConsentListEntry.groupId(groupId, ConsentState.ALLOWED)
+    fun allowConversation(conversationId: String): ConsentListEntry {
+        val entry = ConsentListEntry.conversationId(conversationId, ConsentState.ALLOWED)
         entries[entry.key] = entry
 
         return entry
     }
 
-    fun denyGroup(groupId: String): ConsentListEntry {
-        val entry = ConsentListEntry.groupId(groupId, ConsentState.DENIED)
+    fun denyConversation(conversationId: String): ConsentListEntry {
+        val entry = ConsentListEntry.conversationId(conversationId, ConsentState.DENIED)
         entries[entry.key] = entry
 
         return entry
@@ -297,7 +297,7 @@ class ConsentList(
         return entry?.consentType ?: ConsentState.UNKNOWN
     }
 
-    suspend fun groupState(groupId: String): ConsentState {
+    suspend fun conversationState(groupId: String): ConsentState {
         client.v3Client?.let {
             return ConsentState.fromFfiConsentState(
                 it.getConsentState(
@@ -306,7 +306,7 @@ class ConsentList(
                 )
             )
         }
-        val entry = entries[ConsentListEntry.groupId(groupId).key]
+        val entry = entries[ConsentListEntry.conversationId(groupId).key]
         return entry?.consentType ?: ConsentState.UNKNOWN
     }
 
@@ -351,16 +351,16 @@ data class Contacts(
         consentList.publish(entries)
     }
 
-    suspend fun allowGroups(groupIds: List<String>) {
-        val entries = groupIds.map {
-            consentList.allowGroup(it)
+    suspend fun allowConversations(conversationIds: List<String>) {
+        val entries = conversationIds.map {
+            consentList.allowConversation(it)
         }
         consentList.publish(entries)
     }
 
-    suspend fun denyGroups(groupIds: List<String>) {
-        val entries = groupIds.map {
-            consentList.denyGroup(it)
+    suspend fun denyConversations(conversationIds: List<String>) {
+        val entries = conversationIds.map {
+            consentList.denyConversation(it)
         }
         consentList.publish(entries)
     }
@@ -387,12 +387,12 @@ data class Contacts(
         return consentList.state(address) == ConsentState.DENIED
     }
 
-    suspend fun isGroupAllowed(groupId: String): Boolean {
-        return consentList.groupState(groupId) == ConsentState.ALLOWED
+    suspend fun isConversationAllowed(conversationId: String): Boolean {
+        return consentList.conversationState(conversationId) == ConsentState.ALLOWED
     }
 
-    suspend fun isGroupDenied(groupId: String): Boolean {
-        return consentList.groupState(groupId) == ConsentState.DENIED
+    suspend fun isConversationDenied(conversationId: String): Boolean {
+        return consentList.conversationState(conversationId) == ConsentState.DENIED
     }
 
     suspend fun isInboxAllowed(inboxId: String): Boolean {
