@@ -77,10 +77,10 @@ data class Conversations(
     suspend fun conversationFromWelcome(envelopeBytes: ByteArray): Conversation {
         val conversation = libXMTPConversations?.processStreamedWelcomeMessage(envelopeBytes)
             ?: throw XMTPException("Client does not support Groups")
-        if (conversation.groupMetadata().conversationType() == "dm") {
-            return Conversation.Dm(Dm(client, conversation))
+        return if (conversation.groupMetadata().conversationType() == "dm") {
+            Conversation.Dm(Dm(client, conversation))
         } else {
-            return Conversation.Group(Group(client, conversation))
+            Conversation.Group(Group(client, conversation))
         }
     }
 
@@ -161,7 +161,7 @@ data class Conversations(
                     customPermissionPolicySet = permissionsPolicySet
                 )
             ) ?: throw XMTPException("Client does not support Groups")
-        client.contacts.allowGroups(groupIds = listOf(group.id().toHex()))
+        client.contacts.allowConversations(conversationIds = listOf(group.id().toHex()))
 
         return Group(client, group)
     }
@@ -206,7 +206,7 @@ data class Conversations(
             val dmConversation = libXMTPConversations?.createDm(peerAddress.lowercase())
                 ?: throw XMTPException("Client does not support V3 Dms")
             dm = Dm(client, dmConversation)
-            client.contacts.allowGroups(groupIds = listOf(dm.id))
+            client.contacts.allow(listOf(peerAddress))
         }
         return dm
     }

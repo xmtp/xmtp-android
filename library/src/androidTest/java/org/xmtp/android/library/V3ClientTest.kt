@@ -241,15 +241,15 @@ class V3ClientTest {
     fun testGroupConsent() {
         runBlocking {
             val group = boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress))
-            assert(boV3Client.contacts.isGroupAllowed(group.id))
+            assert(boV3Client.contacts.isConversationAllowed(group.id))
             assertEquals(group.consentState(), ConsentState.ALLOWED)
 
-            boV3Client.contacts.denyGroups(listOf(group.id))
-            assert(boV3Client.contacts.isGroupDenied(group.id))
+            boV3Client.contacts.denyConversations(listOf(group.id))
+            assert(boV3Client.contacts.isConversationDenied(group.id))
             assertEquals(group.consentState(), ConsentState.DENIED)
 
             group.updateConsentState(ConsentState.ALLOWED)
-            assert(boV3Client.contacts.isGroupAllowed(group.id))
+            assert(boV3Client.contacts.isConversationAllowed(group.id))
             assertEquals(group.consentState(), ConsentState.ALLOWED)
         }
     }

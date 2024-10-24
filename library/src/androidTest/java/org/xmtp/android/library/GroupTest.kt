@@ -131,9 +131,9 @@ class GroupTest {
         assert(alixGroup.id.isNotEmpty())
 
         runBlocking {
-            assertEquals(boClient.contacts.consentList.groupState(boGroup.id), ConsentState.ALLOWED)
+            assertEquals(boClient.contacts.consentList.conversationState(boGroup.id), ConsentState.ALLOWED)
             assertEquals(
-                alixClient.contacts.consentList.groupState(alixGroup.id),
+                alixClient.contacts.consentList.conversationState(alixGroup.id),
                 ConsentState.UNKNOWN
             )
         }
@@ -446,8 +446,8 @@ class GroupTest {
             group.send("howdy")
             group.send("gm")
             group.sync()
-            assert(boClient.contacts.isGroupAllowed(group.id))
-            assertEquals(boClient.contacts.consentList.groupState(group.id), ConsentState.ALLOWED)
+            assert(boClient.contacts.isConversationAllowed(group.id))
+            assertEquals(boClient.contacts.consentList.conversationState(group.id), ConsentState.ALLOWED)
         }
     }
 
@@ -813,15 +813,15 @@ class GroupTest {
                         caro.walletAddress
                     )
                 )
-            assert(boClient.contacts.isGroupAllowed(group.id))
+            assert(boClient.contacts.isConversationAllowed(group.id))
             assertEquals(group.consentState(), ConsentState.ALLOWED)
 
-            boClient.contacts.denyGroups(listOf(group.id))
-            assert(boClient.contacts.isGroupDenied(group.id))
+            boClient.contacts.denyConversations(listOf(group.id))
+            assert(boClient.contacts.isConversationDenied(group.id))
             assertEquals(group.consentState(), ConsentState.DENIED)
 
             group.updateConsentState(ConsentState.ALLOWED)
-            assert(boClient.contacts.isGroupAllowed(group.id))
+            assert(boClient.contacts.isConversationAllowed(group.id))
             assertEquals(group.consentState(), ConsentState.ALLOWED)
         }
     }
@@ -904,9 +904,9 @@ class GroupTest {
         }
         runBlocking { alixClient.conversations.syncGroups() }
         val alixGroup: Group = alixClient.findGroup(boGroup.id)!!
-        runBlocking { assert(!alixClient.contacts.isGroupAllowed(boGroup.id)) }
+        runBlocking { assert(!alixClient.contacts.isConversationAllowed(boGroup.id)) }
         val preparedMessageId = runBlocking { alixGroup.prepareMessage("Test text") }
-        runBlocking { assert(alixClient.contacts.isGroupAllowed(boGroup.id)) }
+        runBlocking { assert(alixClient.contacts.isConversationAllowed(boGroup.id)) }
         assertEquals(alixGroup.messages().size, 1)
         assertEquals(alixGroup.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED).size, 0)
         assertEquals(alixGroup.messages(deliveryStatus = MessageDeliveryStatus.UNPUBLISHED).size, 1)

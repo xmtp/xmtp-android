@@ -149,8 +149,8 @@ class DmTest {
             dm.send("howdy")
             dm.send("gm")
             dm.sync()
-            assert(boClient.contacts.isGroupAllowed(dm.id))
-            assertEquals(boClient.contacts.consentList.groupState(dm.id), ConsentState.ALLOWED)
+            assert(boClient.contacts.isConversationAllowed(dm.id))
+            assertEquals(boClient.contacts.consentList.conversationState(dm.id), ConsentState.ALLOWED)
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
         }
     }
@@ -344,15 +344,15 @@ class DmTest {
         runBlocking {
             val dm =
                 boClient.conversations.findOrCreateDm(alix.walletAddress)
-            assert(boClient.contacts.isGroupAllowed(dm.id))
+            assert(boClient.contacts.isConversationAllowed(dm.id))
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
 
-            boClient.contacts.denyGroups(listOf(dm.id))
-            assert(boClient.contacts.isGroupDenied(dm.id))
+            boClient.contacts.denyConversations(listOf(dm.id))
+            assert(boClient.contacts.isConversationDenied(dm.id))
             assertEquals(dm.consentState(), ConsentState.DENIED)
 
             dm.updateConsentState(ConsentState.ALLOWED)
-            assert(boClient.contacts.isGroupAllowed(dm.id))
+            assert(boClient.contacts.isConversationAllowed(dm.id))
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
         }
     }
