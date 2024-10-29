@@ -24,6 +24,7 @@ import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiMetadataField
 import uniffi.xmtpv3.FfiPermissionUpdateType
+import uniffi.xmtpv3.FfiSubscribeException
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionOption
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionPolicySet
 import java.util.Date
@@ -409,6 +410,10 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
                     trySend(it)
                 }
             }
+
+            override fun onError(error: FfiSubscribeException) {
+
+            }
         }
 
         val stream = libXMTPGroup.stream(messageCallback)
@@ -422,6 +427,10 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
                 decryptedMessage?.let {
                     trySend(it)
                 }
+            }
+
+            override fun onError(error: FfiSubscribeException) {
+
             }
         }
 

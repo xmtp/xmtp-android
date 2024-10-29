@@ -20,6 +20,7 @@ import uniffi.xmtpv3.FfiDirection
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiSubscribeException
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -33,6 +34,9 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
 
     val createdAt: Date
         get() = Date(libXMTPGroup.createdAtNs() / 1_000_000)
+
+    val peerInboxId: String
+        get() = libXMTPGroup.dmPeerInboxId()
 
     private val metadata: FfiConversationMetadata
         get() = libXMTPGroup.groupMetadata()
@@ -169,12 +173,6 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         return libXMTPGroup.listMembers().map { Member(it) }
     }
 
-    suspend fun peerInboxId(): String {
-        val ids = members().map { it.inboxId }.toMutableList()
-        ids.remove(client.inboxId)
-        return ids.first()
-    }
-
     fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
@@ -182,6 +180,10 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
                 decodedMessage?.let {
                     trySend(it)
                 }
+            }
+
+            override fun onError(error: FfiSubscribeException) {
+
             }
         }
 
@@ -196,6 +198,10 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
                 decryptedMessage?.let {
                     trySend(it)
                 }
+            }
+
+            override fun onError(error: FfiSubscribeException) {
+
             }
         }
 
