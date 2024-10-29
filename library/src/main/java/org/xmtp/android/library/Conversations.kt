@@ -564,7 +564,7 @@ data class Conversations(
             }
 
             override fun onError(error: FfiSubscribeException) {
-
+                Log.e("XMTP Conversation stream", error.message.toString())
             }
         }
         val stream = libXMTPConversations?.stream(conversationCallback)
@@ -579,7 +579,7 @@ data class Conversations(
             }
 
             override fun onError(error: FfiSubscribeException) {
-
+                Log.e("XMTP Conversation stream", error.message.toString())
             }
         }
 
@@ -595,7 +595,7 @@ data class Conversations(
             }
 
             override fun onError(error: FfiSubscribeException) {
-
+                Log.e("XMTP Group stream", error.message.toString())
             }
         }
         val stream = libXMTPConversations?.streamGroups(groupCallback)
@@ -629,7 +629,7 @@ data class Conversations(
             }
 
             override fun onError(error: FfiSubscribeException) {
-
+                Log.e("XMTP all group message stream", error.message.toString())
             }
         }
         val stream = libXMTPConversations?.streamAllGroupMessages(messageCallback)
@@ -647,7 +647,7 @@ data class Conversations(
             }
 
             override fun onError(error: FfiSubscribeException) {
-
+                Log.e("XMTP all group message stream", error.message.toString())
             }
         }
         val stream = libXMTPConversations?.streamAllGroupMessages(messageCallback)
@@ -673,7 +673,7 @@ data class Conversations(
             }
 
             override fun onError(error: FfiSubscribeException) {
-
+                Log.e("XMTP all message stream", error.message.toString())
             }
         }
 
@@ -702,7 +702,7 @@ data class Conversations(
             }
 
             override fun onError(error: FfiSubscribeException) {
-
+                Log.e("XMTP all message stream", error.message.toString())
             }
         }
 

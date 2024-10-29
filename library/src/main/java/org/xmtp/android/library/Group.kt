@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -412,7 +413,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
             }
 
             override fun onError(error: FfiSubscribeException) {
-
+                Log.e("XMTP Group stream", error.message.toString())
             }
         }
 
@@ -430,7 +431,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
             }
 
             override fun onError(error: FfiSubscribeException) {
-
+                Log.e("XMTP Group stream", error.message.toString())
             }
         }
 
