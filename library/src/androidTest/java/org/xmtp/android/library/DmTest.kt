@@ -150,7 +150,10 @@ class DmTest {
             dm.send("gm")
             dm.sync()
             assert(boClient.contacts.isConversationAllowed(dm.id))
-            assertEquals(boClient.contacts.consentList.conversationState(dm.id), ConsentState.ALLOWED)
+            assertEquals(
+                boClient.contacts.consentList.conversationState(dm.id),
+                ConsentState.ALLOWED
+            )
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
         }
     }
@@ -299,9 +302,10 @@ class DmTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                alixClient.conversations.streamAllConversationDecryptedMessages().collect { message ->
-                    allMessages.add(message)
-                }
+                alixClient.conversations.streamAllConversationDecryptedMessages()
+                    .collect { message ->
+                        allMessages.add(message)
+                    }
             } catch (e: Exception) {
             }
         }
@@ -354,6 +358,59 @@ class DmTest {
             dm.updateConsentState(ConsentState.ALLOWED)
             assert(boClient.contacts.isConversationAllowed(dm.id))
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
+        }
+    }
+
+    @Test
+    fun testSyncConsent() {
+        val key = SecureRandom().generateSeed(32)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val alixWallet = PrivateKeyBuilder()
+
+        val alixClient = runBlocking {
+            Client().createV3(
+                account = alixWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
+        runBlocking {
+            val dm =
+                alixClient.conversations.findOrCreateDm(bo.walletAddress)
+            assert(alixClient.contacts.isConversationAllowed(dm.id))
+            assertEquals(dm.consentState(), ConsentState.ALLOWED)
+        }
+        alixClient.dropLocalDatabaseConnection()
+        alixClient.deleteLocalDatabase()
+
+        val alixClient2 = runBlocking {
+            Client().createV3(
+                account = alixWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
+
+        val state = runBlocking { alixClient2.inboxState(true) }
+        assertEquals(state.installations.size, 2)
+
+        runBlocking {
+            alixClient2.conversations.syncConversations()
+            val dm2 =
+                alixClient2.conversations.findOrCreateDm(bo.walletAddress)
+            alixClient2.syncConsent()
+            assert(alixClient2.contacts.isConversationAllowed(dm2.id))
+            alixClient2.contacts.denyConversations(listOf(dm2.id))
+            assert(alixClient2.contacts.isConversationDenied(dm2.id))
+            assertEquals(dm2.consentState(), ConsentState.DENIED)
         }
     }
 }
