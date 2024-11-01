@@ -53,6 +53,7 @@ import uniffi.xmtpv3.FfiSubscribeException
 import uniffi.xmtpv3.FfiV2SubscribeRequest
 import uniffi.xmtpv3.FfiV2Subscription
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
+import uniffi.xmtpv3.GenericException
 import uniffi.xmtpv3.NoPointer
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionPolicySet
@@ -307,12 +308,14 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
+        consentState: ConsentState? = null,
     ): List<Group> {
         val ffiGroups = libXMTPConversations?.listGroups(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit?.toLong()
+                limit?.toLong(),
+                if (consentState != null) ConsentState.toFfiConsentState(consentState) else null
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
 
@@ -325,13 +328,15 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
+        consentState: ConsentState? = null,
     ): List<Dm> {
         if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val ffiDms = libXMTPConversations?.listDms(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit?.toLong()
+                limit?.toLong(),
+                if (consentState != null) ConsentState.toFfiConsentState(consentState) else null
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
 
@@ -354,12 +359,12 @@ data class Conversations(
             FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit?.toLong()
+                limit?.toLong(),
+                if (consentState != null) ConsentState.toFfiConsentState(consentState) else null
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
 
-        val filteredConversations = filterByConsentState(ffiConversations, consentState)
-        val sortedConversations = sortConversations(filteredConversations, order)
+        val sortedConversations = sortConversations(ffiConversations, order)
 
         return sortedConversations.map { it.toConversation() }
     }
@@ -392,15 +397,6 @@ data class Conversations(
 
             ConversationOrder.CREATED_AT -> conversations
         }
-    }
-
-    private fun filterByConsentState(
-        conversations: List<FfiConversation>,
-        consentState: ConsentState?,
-    ): List<FfiConversation> {
-        return consentState?.let { state ->
-            conversations.filter { it.consentState() == toFfiConsentState(state) }
-        } ?: conversations
     }
 
     private fun FfiConversation.toConversation(): Conversation {
@@ -532,6 +528,10 @@ data class Conversations(
                         trySend(conversationV2)
                     }
                 }
+            }
+
+            override fun onError(error: GenericException) {
+                Log.e("XMTP stream v2 conversations", error.message.toString())
             }
         }
 
@@ -963,6 +963,10 @@ data class Conversations(
                     else -> {}
                 }
             }
+
+            override fun onError(error: GenericException) {
+                Log.e("XMTP stream all v2 messages", error.message.toString())
+            }
         }
 
         stream = client.subscribe2(subscriptionRequest, subscriptionCallback)
@@ -1012,6 +1016,10 @@ data class Conversations(
 
                     else -> {}
                 }
+            }
+
+            override fun onError(error: GenericException) {
+                Log.e("XMTP stream all v2 messages", error.message.toString())
             }
         }
 

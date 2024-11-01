@@ -37,6 +37,7 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
+import uniffi.xmtpv3.FfiDeviceSyncKind
 import uniffi.xmtpv3.FfiV2SubscribeRequest
 import uniffi.xmtpv3.FfiV2Subscription
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
@@ -783,7 +784,8 @@ class Client() {
     }
 
     suspend fun requestMessageHistorySync() {
-        v3Client?.requestHistorySync() ?: throw XMTPException("Error no V3 client initialized")
+        v3Client?.sendSyncRequest(FfiDeviceSyncKind.MESSAGES)
+            ?: throw XMTPException("Error no V3 client initialized")
     }
 
     suspend fun revokeAllOtherInstallations(signingKey: SigningKey) {
@@ -798,6 +800,11 @@ class Client() {
     suspend fun inboxState(refreshFromNetwork: Boolean): InboxState {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
         return InboxState(client.inboxState(refreshFromNetwork))
+    }
+
+    suspend fun syncConsent() {
+        v3Client?.sendSyncRequest(FfiDeviceSyncKind.CONSENT)
+            ?: throw XMTPException("Error no V3 client initialized")
     }
 
     val privateKeyBundle: PrivateKeyBundle
