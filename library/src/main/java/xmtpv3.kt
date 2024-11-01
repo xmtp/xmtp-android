@@ -1424,16 +1424,16 @@ internal interface UniffiLib : Library {
         `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
     ): Unit
 
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_request_history_sync(
-        `ptr`: Pointer,
-    ): Long
-
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_all_other_installations(
         `ptr`: Pointer,
     ): Long
 
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_wallet(
         `ptr`: Pointer, `walletAddress`: RustBuffer.ByValue,
+    ): Long
+
+    fun uniffi_xmtpv3_fn_method_ffixmtpclient_send_sync_request(
+        `ptr`: Pointer, `kind`: RustBuffer.ByValue,
     ): Long
 
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_set_consent_states(
@@ -2106,13 +2106,13 @@ internal interface UniffiLib : Library {
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_release_db_connection(
     ): Short
 
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_request_history_sync(
-    ): Short
-
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_all_other_installations(
     ): Short
 
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_wallet(
+    ): Short
+
+    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_send_sync_request(
     ): Short
 
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_set_consent_states(
@@ -2483,13 +2483,13 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_release_db_connection() != 11067.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_request_history_sync() != 22295.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_all_other_installations() != 36450.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_wallet() != 12211.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_send_sync_request() != 41331.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_set_consent_states() != 64566.toShort()) {
@@ -7780,8 +7780,6 @@ public interface FfiXmtpClientInterface {
 
     fun `releaseDbConnection`()
 
-    suspend fun `requestHistorySync`()
-
     /**
      * * Revokes all installations except the one the client is currently using
      */
@@ -7791,6 +7789,8 @@ public interface FfiXmtpClientInterface {
      * Revokes or removes an identity - really a wallet address - from the existing client
      */
     suspend fun `revokeWallet`(`walletAddress`: kotlin.String): FfiSignatureRequest
+
+    suspend fun `sendSyncRequest`(`kind`: FfiDeviceSyncKind)
 
     suspend fun `setConsentStates`(`records`: List<FfiConsent>)
 
@@ -8321,39 +8321,6 @@ open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
         }
 
 
-    @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `requestHistorySync`() {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_request_history_sync(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
-    }
-
-
     /**
      * * Revokes all installations except the one the client is currently using
      */
@@ -8418,6 +8385,39 @@ open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
             // lift function
             { FfiConverterTypeFfiSignatureRequest.lift(it) },
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `sendSyncRequest`(`kind`: FfiDeviceSyncKind) {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_send_sync_request(
+                    thisPtr,
+                    FfiConverterTypeFfiDeviceSyncKind.lower(`kind`),
+                )
+            },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
+            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+            // lift function
+            { Unit },
+
             // Error FFI converter
             GenericException.ErrorHandler,
         )
@@ -9284,6 +9284,33 @@ public object FfiConverterTypeFfiDeliveryStatus : FfiConverterRustBuffer<FfiDeli
 }
 
 
+enum class FfiDeviceSyncKind {
+
+    MESSAGES,
+    CONSENT;
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiDeviceSyncKind : FfiConverterRustBuffer<FfiDeviceSyncKind> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiDeviceSyncKind.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: FfiDeviceSyncKind) = 4UL
+
+    override fun write(value: FfiDeviceSyncKind, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
 enum class FfiDirection {
 
     ASCENDING,
@@ -9555,6 +9582,8 @@ sealed class GenericException(message: String) : kotlin.Exception(message) {
 
     class FailedToConvertToU32(message: String) : GenericException(message)
 
+    class DeviceSync(message: String) : GenericException(message)
+
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<GenericException> {
         override fun lift(error_buf: RustBuffer.ByValue): GenericException =
@@ -9582,6 +9611,7 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
             11 -> GenericException.Erc1271SignatureException(FfiConverterString.read(buf))
             12 -> GenericException.Verifier(FfiConverterString.read(buf))
             13 -> GenericException.FailedToConvertToU32(FfiConverterString.read(buf))
+            14 -> GenericException.DeviceSync(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
 
@@ -9655,6 +9685,11 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
 
             is GenericException.FailedToConvertToU32 -> {
                 buf.putInt(13)
+                Unit
+            }
+
+            is GenericException.DeviceSync -> {
+                buf.putInt(14)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
