@@ -209,8 +209,7 @@ data class ConversationV2(
                     dm.send(it)
                 }
             } catch (e: Exception) {
-                // Do nothing if this errors
-                // Log error if the peer is on the v3 network
+                Log.e("ConversationV1 send", e.message.toString())
             }
         }
         client.publish(envelopes = prepared.envelopes)

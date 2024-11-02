@@ -202,7 +202,7 @@ data class ConversationV1(
                     dm.send(it)
                 }
             } catch (e: Exception) {
-                // Do nothing if this errors
+                Log.e("ConversationV1 send", e.message.toString())
             }
         }
         client.publish(envelopes = prepared.envelopes)
