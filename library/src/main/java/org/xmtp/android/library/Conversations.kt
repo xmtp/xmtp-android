@@ -193,7 +193,6 @@ data class Conversations(
     }
 
     suspend fun findOrCreateDm(peerAddress: String): Dm {
-        if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         if (peerAddress.lowercase() == client.address.lowercase()) {
             throw XMTPException("Recipient is sender")
         }
@@ -300,6 +299,13 @@ data class Conversations(
         client.contacts.allow(addresses = listOf(peerAddress))
         val conversation = Conversation.V2(conversationV2)
         conversationsByTopic[conversation.topic] = conversation
+        if (client.v3Client != null) {
+            try {
+                client.conversations.findOrCreateDm(peerAddress)
+            } catch (e: Exception) {
+                Log.e("newConversation", e.message.toString())
+            }
+        }
         return conversation
     }
 
