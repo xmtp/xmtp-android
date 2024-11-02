@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import android.util.Log
-import com.google.crypto.tink.subtle.EngineWrapper.TKeyAgreement
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -23,7 +22,6 @@ import org.xmtp.android.library.messages.getPublicKeyBundle
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
-import org.xmtp.proto.message.contents.encodedContent
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
 import java.util.Date
