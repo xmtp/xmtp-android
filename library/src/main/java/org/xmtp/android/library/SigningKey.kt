@@ -19,9 +19,9 @@ import java.util.Date
 interface SigningKey {
     val address: String
 
-    // If this signing key is a smart contract wallet
-    val isSmartContractWallet: Boolean
-        get() = false
+    // The wallet type if Smart Contract Wallet this should be type SCW.
+    val type: WalletType
+        get() = WalletType.EOA
 
     // The chainId of the Smart Contract Wallet value should be null if not SCW
     var chainId: Long?
@@ -44,6 +44,11 @@ interface SigningKey {
     suspend fun signSCW(message: String): ByteArray {
         throw NotImplementedError("signSCW(String) is not implemented.")
     }
+}
+
+enum class WalletType {
+    SCW, // Smart Contract Wallet
+    EOA // Externally Owned Account *Default
 }
 
 /**

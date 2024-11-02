@@ -324,8 +324,7 @@ class Client() {
     ): Client {
         this.hasV2Client = false
         val clientOptions = options ?: ClientOptions(enableV3 = true)
-        val accountAddress =
-            if (account.isSmartContractWallet) "eip155:${account.chainId}:${account.address.lowercase()}" else account.address.lowercase()
+        val accountAddress = account.address.lowercase()
         return try {
             initializeV3Client(accountAddress, clientOptions, account)
         } catch (e: Exception) {
@@ -336,13 +335,11 @@ class Client() {
     // Function to build a V3 client without a signing key (using only address (& chainId for SCW))
     suspend fun buildV3(
         address: String,
-        chainId: Long? = null,
         options: ClientOptions? = null,
     ): Client {
         this.hasV2Client = false
         val clientOptions = options ?: ClientOptions(enableV3 = true)
-        val accountAddress =
-            if (chainId != null) "eip155:$chainId:${address.lowercase()}" else address.lowercase()
+        val accountAddress = address.lowercase()
         return try {
             initializeV3Client(accountAddress, clientOptions)
         } catch (e: Exception) {
@@ -448,9 +445,8 @@ class Client() {
             }
             v3Client.signatureRequest()?.let { signatureRequest ->
                 if (account != null) {
-                    if (account.isSmartContractWallet) {
-                        val chainId = account.chainId
-                            ?: throw XMTPException("ChainId is required for smart contract wallets")
+                    if (account.type == WalletType.SCW) {
+                        val chainId = account.chainId ?: throw XMTPException("ChainId is required for smart contract wallets")
                         signatureRequest.addScwSignature(
                             account.signSCW(signatureRequest.signatureText()),
                             account.address.lowercase(),
@@ -619,17 +615,28 @@ class Client() {
 
     fun findConversation(conversationId: String): Conversation? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
-        try {
-            val conversation = client.conversation(conversationId.hexToByteArray())
-            if (conversation.groupMetadata().conversationType() == "dm") {
-                return Conversation.Dm(Dm(this, conversation))
-            } else if (conversation.groupMetadata().conversationType() == "group") {
-                return Conversation.Group(Group(this, conversation))
-            } else {
-                return null
-            }
-        } catch (e: Exception) {
-            return null
+        val conversation = client.conversation(conversationId.hexToByteArray())
+        return if (conversation.groupMetadata().conversationType() == "dm") {
+            Conversation.Dm(Dm(this, conversation))
+        } else if (conversation.groupMetadata().conversationType() == "group") {
+            Conversation.Group(Group(this, conversation))
+        } else {
+            null
+        }
+    }
+
+    fun findConversationByTopic(topic: String): Conversation? {
+        val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
+        val regex = """/xmtp/mls/1/g-(.*?)/proto""".toRegex()
+        val matchResult = regex.find(topic)
+        val conversationId = matchResult?.groupValues?.get(1) ?: ""
+        val conversation = client.conversation(conversationId.hexToByteArray())
+        return if (conversation.groupMetadata().conversationType() == "dm") {
+            Conversation.Dm(Dm(this, conversation))
+        } else if (conversation.groupMetadata().conversationType() == "group") {
+            Conversation.Group(Group(this, conversation))
+        } else {
+            null
         }
     }
 

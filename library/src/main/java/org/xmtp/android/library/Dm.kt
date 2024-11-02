@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -12,13 +13,15 @@ import org.xmtp.android.library.messages.DecryptedMessage
 import org.xmtp.android.library.messages.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.Topic
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass
+import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
 import uniffi.xmtpv3.FfiDeliveryStatus
+import uniffi.xmtpv3.FfiDirection
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiSubscribeException
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -33,20 +36,11 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
     val createdAt: Date
         get() = Date(libXMTPGroup.createdAtNs() / 1_000_000)
 
+    val peerInboxId: String
+        get() = libXMTPGroup.dmPeerInboxId()
+
     private val metadata: FfiConversationMetadata
         get() = libXMTPGroup.groupMetadata()
-
-    val name: String
-        get() = libXMTPGroup.groupName()
-
-    val imageUrlSquare: String
-        get() = libXMTPGroup.groupImageUrlSquare()
-
-    val description: String
-        get() = libXMTPGroup.groupDescription()
-
-    val pinnedFrameUrl: String
-        get() = libXMTPGroup.groupPinnedFrameUrl()
 
     suspend fun send(text: String): String {
         return send(encodeContent(content = text, options = null))
@@ -111,10 +105,10 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
-        direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
+        direction: PagingInfoSortDirection = SortDirection.SORT_DIRECTION_DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
     ): List<DecodedMessage> {
-        val messages = libXMTPGroup.findMessages(
+        return libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
@@ -124,15 +118,14 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
                     MessageDeliveryStatus.UNPUBLISHED -> FfiDeliveryStatus.UNPUBLISHED
                     MessageDeliveryStatus.FAILED -> FfiDeliveryStatus.FAILED
                     else -> null
+                },
+                direction = when (direction) {
+                    SortDirection.SORT_DIRECTION_ASCENDING -> FfiDirection.ASCENDING
+                    else -> FfiDirection.DESCENDING
                 }
             )
         ).mapNotNull {
             MessageV3(client, it).decodeOrNull()
-        }
-
-        return when (direction) {
-            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
-            else -> messages.reversed()
         }
     }
 
@@ -140,10 +133,10 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
-        direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
+        direction: PagingInfoSortDirection = SortDirection.SORT_DIRECTION_DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
     ): List<DecryptedMessage> {
-        val messages = libXMTPGroup.findMessages(
+        return libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
@@ -153,15 +146,14 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
                     MessageDeliveryStatus.UNPUBLISHED -> FfiDeliveryStatus.UNPUBLISHED
                     MessageDeliveryStatus.FAILED -> FfiDeliveryStatus.FAILED
                     else -> null
+                },
+                direction = when (direction) {
+                    SortDirection.SORT_DIRECTION_ASCENDING -> FfiDirection.ASCENDING
+                    else -> FfiDirection.DESCENDING
                 }
             )
         ).mapNotNull {
             MessageV3(client, it).decryptOrNull()
-        }
-
-        return when (direction) {
-            MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING -> messages
-            else -> messages.reversed()
         }
     }
 
@@ -182,44 +174,6 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         return libXMTPGroup.listMembers().map { Member(it) }
     }
 
-    suspend fun peerInboxId(): String {
-        val ids = members().map { it.inboxId }.toMutableList()
-        ids.remove(client.inboxId)
-        return ids.first()
-    }
-
-    suspend fun updateName(name: String) {
-        try {
-            return libXMTPGroup.updateGroupName(name)
-        } catch (e: Exception) {
-            throw XMTPException("Permission denied: Unable to update group name", e)
-        }
-    }
-
-    suspend fun updateImageUrlSquare(imageUrl: String) {
-        try {
-            return libXMTPGroup.updateGroupImageUrlSquare(imageUrl)
-        } catch (e: Exception) {
-            throw XMTPException("Permission denied: Unable to update image url", e)
-        }
-    }
-
-    suspend fun updateDescription(description: String) {
-        try {
-            return libXMTPGroup.updateGroupDescription(description)
-        } catch (e: Exception) {
-            throw XMTPException("Permission denied: Unable to update group description", e)
-        }
-    }
-
-    suspend fun updatePinnedFrameUrl(pinnedFrameUrl: String) {
-        try {
-            return libXMTPGroup.updateGroupPinnedFrameUrl(pinnedFrameUrl)
-        } catch (e: Exception) {
-            throw XMTPException("Permission denied: Unable to update pinned frame", e)
-        }
-    }
-
     fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
@@ -227,6 +181,10 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
                 decodedMessage?.let {
                     trySend(it)
                 }
+            }
+
+            override fun onError(error: FfiSubscribeException) {
+                Log.e("XMTP Dm stream", error.message.toString())
             }
         }
 
@@ -241,6 +199,10 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
                 decryptedMessage?.let {
                     trySend(it)
                 }
+            }
+
+            override fun onError(error: FfiSubscribeException) {
+                Log.e("XMTP Dm stream", error.message.toString())
             }
         }
 

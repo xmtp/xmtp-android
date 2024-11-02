@@ -73,44 +73,6 @@ sealed class Conversation {
             }
         }
 
-    val name: String
-        get() {
-            return when (this) {
-                is V1 -> throw XMTPException("Only supported for V3")
-                is V2 -> throw XMTPException("Only supported for V3")
-                is Group -> group.name
-                is Dm -> dm.name
-            }
-        }
-
-    val imageUrlSquare: String
-        get() {
-            return when (this) {
-                is V1 -> throw XMTPException("Only supported for V3")
-                is V2 -> throw XMTPException("Only supported for V3")
-                is Group -> group.imageUrlSquare
-                is Dm -> dm.imageUrlSquare
-            }
-        }
-    val description: String
-        get() {
-            return when (this) {
-                is V1 -> throw XMTPException("Only supported for V3")
-                is V2 -> throw XMTPException("Only supported for V3")
-                is Group -> group.description
-                is Dm -> dm.description
-            }
-        }
-    val pinnedFrameUrl: String
-        get() {
-            return when (this) {
-                is V1 -> throw XMTPException("Only supported for V3")
-                is V2 -> throw XMTPException("Only supported for V3")
-                is Group -> group.pinnedFrameUrl
-                is Dm -> dm.pinnedFrameUrl
-            }
-        }
-
     fun isCreator(): Boolean {
         return when (this) {
             is V1 -> throw XMTPException("Only supported for V3")
@@ -274,6 +236,15 @@ sealed class Conversation {
         }
     }
 
+    suspend fun processMessage(envelopeBytes: ByteArray): MessageV3 {
+        return when (this) {
+            is V1 -> throw XMTPException("Only supported for V3")
+            is V2 -> throw XMTPException("Only supported for V3")
+            is Group -> group.processMessage(envelopeBytes)
+            is Dm -> dm.processMessage(envelopeBytes)
+        }
+    }
+
     val consentProof: ConsentProofPayload?
         get() {
             return when (this) {
@@ -346,7 +317,7 @@ sealed class Conversation {
                 is V1 -> conversationV1.peerAddress
                 is V2 -> conversationV2.peerAddress
                 is Group -> runBlocking { group.peerInboxIds().joinToString(",") }
-                is Dm -> runBlocking { dm.peerInboxId() }
+                is Dm -> dm.peerInboxId
             }
         }
 
@@ -356,7 +327,7 @@ sealed class Conversation {
                 is V1 -> listOf(conversationV1.peerAddress)
                 is V2 -> listOf(conversationV2.peerAddress)
                 is Group -> runBlocking { group.peerInboxIds() }
-                is Dm -> runBlocking { listOf(dm.peerInboxId()) }
+                is Dm -> listOf(dm.peerInboxId)
             }
         }
 
