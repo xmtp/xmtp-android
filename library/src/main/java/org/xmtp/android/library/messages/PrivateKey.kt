@@ -1,18 +1,12 @@
 package org.xmtp.android.library.messages
 
 import com.google.protobuf.kotlin.toByteString
-import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.ECKeyPair
-import org.web3j.crypto.Hash
-import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.SigningKey
-import org.xmtp.android.library.toHex
-import org.xmtp.proto.message.contents.PublicKeyOuterClass
 import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.security.SecureRandom
-import java.util.Arrays
 import java.util.Date
 
 typealias PrivateKey = org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey
@@ -99,25 +93,4 @@ fun PrivateKey.generate(): PrivateKey {
 }
 
 val PrivateKey.walletAddress: String
-    get() {
-        val address = Keys.getAddress(
-            Arrays.copyOfRange(
-                publicKey.secp256K1Uncompressed.bytes.toByteArray(),
-                1,
-                publicKey.secp256K1Uncompressed.bytes.toByteArray().size
-            )
-        )
-        return Keys.toChecksumAddress(address.toHex())
-    }
-
-fun PrivateKey.sign(key: PublicKeyOuterClass.UnsignedPublicKey): PublicKeyOuterClass.SignedPublicKey {
-    val bytes = key.toByteArray()
-    val signedPublicKey = PublicKeyOuterClass.SignedPublicKey.newBuilder()
-    val builder = PrivateKeyBuilder(this)
-    val signature = runBlocking {
-        builder.sign(Hash.sha256(bytes))
-    }
-    signedPublicKey.signature = signature
-    signedPublicKey.keyBytes = bytes.toByteString()
-    return signedPublicKey.build()
-}
+    get() = publicKey.walletAddress
