@@ -130,13 +130,13 @@ class V3ClientTest {
         val dm = runBlocking { boV3Client.conversations.findOrCreateDm(caroV2V3.walletAddress) }
         val group =
             runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
-        assertEquals(runBlocking { boV3Client.conversations.listConversations().size }, 2)
+        assertEquals(runBlocking { boV3Client.conversations.list().size }, 2)
         assertEquals(runBlocking { boV3Client.conversations.listDms().size }, 1)
         assertEquals(runBlocking { boV3Client.conversations.listGroups().size }, 1)
 
         runBlocking { caroV2V3Client.conversations.syncConversations() }
         assertEquals(
-            runBlocking { caroV2V3Client.conversations.list(includeGroups = true).size },
+            runBlocking { caroV2V3Client.conversations.list().size },
             1
         )
         assertEquals(runBlocking { caroV2V3Client.conversations.listGroups().size }, 1)
@@ -147,21 +147,21 @@ class V3ClientTest {
         val dm = runBlocking { boV3Client.conversations.findOrCreateDm(caroV2V3.walletAddress) }
         val group =
             runBlocking { boV3Client.conversations.newGroup(listOf(caroV2V3.walletAddress)) }
-        assertEquals(runBlocking { boV3Client.conversations.listConversations().size }, 2)
+        assertEquals(runBlocking { boV3Client.conversations.list().size }, 2)
         assertEquals(
-            runBlocking { boV3Client.conversations.listConversations(consentState = ConsentState.ALLOWED).size },
+            runBlocking { boV3Client.conversations.list(consentState = ConsentState.ALLOWED).size },
             2
         )
         runBlocking { group.updateConsentState(ConsentState.DENIED) }
         assertEquals(
-            runBlocking { boV3Client.conversations.listConversations(consentState = ConsentState.ALLOWED).size },
+            runBlocking { boV3Client.conversations.list(consentState = ConsentState.ALLOWED).size },
             1
         )
         assertEquals(
-            runBlocking { boV3Client.conversations.listConversations(consentState = ConsentState.DENIED).size },
+            runBlocking { boV3Client.conversations.list(consentState = ConsentState.DENIED).size },
             1
         )
-        assertEquals(runBlocking { boV3Client.conversations.listConversations().size }, 2)
+        assertEquals(runBlocking { boV3Client.conversations.list().size }, 2)
     }
 
     @Test
@@ -174,9 +174,9 @@ class V3ClientTest {
         runBlocking { dm.send("Howdy") }
         runBlocking { group2.send("Howdy") }
         runBlocking { boV3Client.conversations.syncAllConversations() }
-        val conversations = runBlocking { boV3Client.conversations.listConversations() }
+        val conversations = runBlocking { boV3Client.conversations.list() }
         val conversationsOrdered =
-            runBlocking { boV3Client.conversations.listConversations(order = Conversations.ConversationOrder.LAST_MESSAGE) }
+            runBlocking { boV3Client.conversations.list(order = Conversations.ConversationOrder.LAST_MESSAGE) }
         assertEquals(conversations.size, 3)
         assertEquals(conversationsOrdered.size, 3)
         assertEquals(conversations.map { it.id }, listOf(dm.id, group1.id, group2.id))
@@ -296,7 +296,7 @@ class V3ClientTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                boV3Client.conversations.streamAllConversationMessages()
+                boV3Client.conversations.streamAllMessages()
                     .collect { message ->
                         allMessages.add(message)
                     }
@@ -325,7 +325,7 @@ class V3ClientTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                boV3Client.conversations.streamAllConversationDecryptedMessages()
+                boV3Client.conversations.streamAllDecryptedMessages()
                     .collect { message ->
                         allMessages.add(message)
                     }
@@ -348,7 +348,7 @@ class V3ClientTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                boV3Client.conversations.streamConversations()
+                boV3Client.conversations.stream()
                     .collect { message ->
                         allMessages.add(message.topic)
                     }
@@ -380,7 +380,7 @@ class V3ClientTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                caroV2V3Client.conversations.streamAllMessages(includeGroups = true)
+                caroV2V3Client.conversations.streamAllMessages()
                     .collect { message ->
                         allMessages.add(message)
                     }
@@ -403,7 +403,7 @@ class V3ClientTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                caroV2V3Client.conversations.streamAll()
+                caroV2V3Client.conversations.stream()
                     .collect { message ->
                         allMessages.add(message.topic)
                     }

@@ -133,14 +133,14 @@ class SmartContractWalletTest {
         assertEquals(boGroup.messages().first().deliveryStatus, MessageDeliveryStatus.PUBLISHED)
         assertEquals(boGroup.messages().size, 3)
 
-        runBlocking { davonSCWClient.conversations.syncGroups() }
+        runBlocking { davonSCWClient.conversations.syncConversations() }
         val davonGroup = runBlocking { davonSCWClient.conversations.listGroups().last() }
         runBlocking { davonGroup.sync() }
         assertEquals(davonGroup.messages().size, 2)
         assertEquals(davonGroup.messages().first().body, "gm")
         runBlocking { davonGroup.send("from davon") }
 
-        runBlocking { eriSCWClient.conversations.syncGroups() }
+        runBlocking { eriSCWClient.conversations.syncConversations() }
         val eriGroup = runBlocking { davonSCWClient.findGroup(davonGroup.id) }
         runBlocking { eriGroup?.sync() }
         assertEquals(eriGroup?.messages()?.size, 3)
@@ -236,7 +236,7 @@ class SmartContractWalletTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                davonSCWClient.conversations.streamAllConversationMessages()
+                davonSCWClient.conversations.streamAllMessages()
                     .collect { message ->
                         allMessages.add(message)
                     }
@@ -261,7 +261,7 @@ class SmartContractWalletTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                davonSCWClient.conversations.streamConversations()
+                davonSCWClient.conversations.stream()
                     .collect { message ->
                         allMessages.add(message.topic)
                     }

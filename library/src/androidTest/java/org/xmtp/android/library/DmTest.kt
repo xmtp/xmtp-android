@@ -249,7 +249,7 @@ class DmTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                alixClient.conversations.streamAllConversationMessages().collect { message ->
+                alixClient.conversations.streamAllMessages().collect { message ->
                     allMessages.add(message)
                 }
             } catch (e: Exception) {
@@ -299,7 +299,7 @@ class DmTest {
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                alixClient.conversations.streamAllConversationDecryptedMessages().collect { message ->
+                alixClient.conversations.streamAllDecryptedMessages().collect { message ->
                     allMessages.add(message)
                 }
             } catch (e: Exception) {
@@ -329,7 +329,7 @@ class DmTest {
 
     @Test
     fun testCanStreamConversations() = kotlinx.coroutines.test.runTest {
-        boClient.conversations.streamConversations().test {
+        boClient.conversations.stream().test {
             val dm =
                 alixClient.conversations.findOrCreateDm(bo.walletAddress)
             assertEquals(dm.id, awaitItem().id)
