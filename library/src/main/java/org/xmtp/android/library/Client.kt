@@ -73,7 +73,7 @@ data class ClientOptions(
 
 class Client() {
     lateinit var address: String
-    lateinit var contacts: Contacts
+    lateinit var preferences: PrivatePreferences
     lateinit var conversations: Conversations
     var privateKeyBundleV1: PrivateKeyBundleV1? = null
     var apiClient: ApiClient? = null
@@ -181,7 +181,7 @@ class Client() {
         this.address = address
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
-        this.contacts = Contacts(client = this)
+        this.preferences = PrivatePreferences(client = this)
         this.v3Client = libXMTPClient
         this.conversations =
             Conversations(client = this, libXMTPConversations = libXMTPClient?.conversations())
@@ -201,7 +201,7 @@ class Client() {
         environment: XMTPEnvironment,
     ) : this() {
         this.address = address
-        this.contacts = Contacts(client = this)
+        this.preferences = PrivatePreferences(client = this)
         this.v3Client = libXMTPClient
         this.conversations =
             Conversations(client = this, libXMTPConversations = libXMTPClient.conversations())
@@ -272,7 +272,6 @@ class Client() {
                     libXMTPClient?.installationId()?.toHex() ?: "",
                     libXMTPClient?.inboxId() ?: inboxId
                 )
-            client.ensureUserContactPublished()
             return client
         } catch (e: java.lang.Exception) {
             throw XMTPException("Error creating client ${e.message}", e)
@@ -554,10 +553,6 @@ class Client() {
         publish(envelopes = envelopes)
     }
 
-    fun getUserContact(peerAddress: String): ContactBundle? {
-        return contacts.find(Keys.toChecksumAddress(peerAddress))
-    }
-
     suspend fun query(topic: Topic, pagination: Pagination? = null): QueryResponse {
         val client = apiClient ?: throw XMTPException("V2 only function")
         return client.queryTopic(topic = topic, pagination = pagination)
@@ -650,15 +645,6 @@ class Client() {
         client.setAuthToken(authToken)
 
         client.publish(envelopes = envelopes)
-    }
-
-    suspend fun ensureUserContactPublished() {
-        val contact = getUserContact(peerAddress = address)
-        if (contact != null && keys.getPublicKeyBundle() == contact.v2.keyBundle) {
-            return
-        }
-
-        publishUserContact(legacy = true)
     }
 
     /**

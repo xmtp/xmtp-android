@@ -122,7 +122,6 @@ data class Conversations(
                     customPermissionPolicySet = permissionsPolicySet
                 )
             ) ?: throw XMTPException("Client does not support Groups")
-        client.contacts.allowGroups(groupIds = listOf(group.id().toHex()))
 
         return Group(client, group)
     }
@@ -156,7 +155,6 @@ data class Conversations(
             val dmConversation = libXMTPConversations?.createDm(peerAddress.lowercase())
                 ?: throw XMTPException("Client does not support V3 Dms")
             dm = Dm(client, dmConversation)
-            client.contacts.allowGroups(groupIds = listOf(dm.id))
         }
         return dm
     }
@@ -316,11 +314,11 @@ data class Conversations(
         if (!KeyUtil.validateConsentSignature(signature, client.address, peerAddress, timestamp)) {
             return
         }
-        val contacts = client.contacts
-        contacts.refreshConsentList()
-        if (contacts.consentList.state(peerAddress) == ConsentState.UNKNOWN) {
-            contacts.allow(listOf(peerAddress))
-        }
+//        val contacts = client.preferences
+//        contacts.refreshConsentList()
+//        if (contacts.consentList.state(peerAddress) == ConsentState.UNKNOWN) {
+//            contacts.allow(listOf(peerAddress))
+//        }
     }
 
     fun stream(/*Maybe Put a way to specify group, dm, or both?*/): Flow<Conversation> = callbackFlow {
