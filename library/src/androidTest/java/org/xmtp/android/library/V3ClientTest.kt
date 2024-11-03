@@ -11,8 +11,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.messages.DecryptedMessage
-import org.xmtp.android.library.messages.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.Message
+import org.xmtp.android.library.libxmtp.Message.*
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
@@ -297,35 +297,6 @@ class V3ClientTest {
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 boV3Client.conversations.streamAllMessages()
-                    .collect { message ->
-                        allMessages.add(message)
-                    }
-            } catch (e: Exception) {
-            }
-        }
-        Thread.sleep(1000)
-        runBlocking {
-            group.send("hi")
-            conversation.send("hi")
-        }
-        Thread.sleep(1000)
-        assertEquals(2, allMessages.size)
-        job.cancel()
-    }
-
-    @Test
-    fun testCanStreamAllDecryptedMessagesFromV3Users() {
-        val group =
-            runBlocking { caroV2V3Client.conversations.newGroup(listOf(boV3.walletAddress)) }
-        val conversation =
-            runBlocking { boV3Client.conversations.findOrCreateDm(caroV2V3.walletAddress) }
-        runBlocking { boV3Client.conversations.syncConversations() }
-
-        val allMessages = mutableListOf<DecryptedMessage>()
-
-        val job = CoroutineScope(Dispatchers.IO).launch {
-            try {
-                boV3Client.conversations.streamAllDecryptedMessages()
                     .collect { message ->
                         allMessages.add(message)
                     }

@@ -1,48 +1,18 @@
 package org.xmtp.android.library
 
 import android.util.Log
-import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.launch
 import org.xmtp.android.library.ConsentState.Companion.toFfiConsentState
-import org.xmtp.android.library.GRPCApiClient.Companion.makeQueryRequest
-import org.xmtp.android.library.Util.Companion.envelopeFromFFi
-import org.xmtp.android.library.libxmtp.MessageV3
-import org.xmtp.android.library.messages.DecryptedMessage
-import org.xmtp.android.library.messages.Envelope
-import org.xmtp.android.library.messages.EnvelopeBuilder
-import org.xmtp.android.library.messages.InvitationV1
-import org.xmtp.android.library.messages.MessageV1Builder
-import org.xmtp.android.library.messages.Pagination
-import org.xmtp.android.library.messages.SealedInvitation
-import org.xmtp.android.library.messages.SealedInvitationBuilder
-import org.xmtp.android.library.messages.SignedPublicKeyBundle
-import org.xmtp.android.library.messages.Topic
-import org.xmtp.android.library.messages.createDeterministic
-import org.xmtp.android.library.messages.decrypt
-import org.xmtp.android.library.messages.getInvitation
-import org.xmtp.android.library.messages.header
-import org.xmtp.android.library.messages.involves
-import org.xmtp.android.library.messages.recipientAddress
-import org.xmtp.android.library.messages.senderAddress
-import org.xmtp.android.library.messages.sentAt
-import org.xmtp.android.library.messages.toSignedPublicKeyBundle
-import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.proto.keystore.api.v1.Keystore
-import org.xmtp.proto.keystore.api.v1.Keystore.GetConversationHmacKeysResponse.HmacKeyData
-import org.xmtp.proto.keystore.api.v1.Keystore.GetConversationHmacKeysResponse.HmacKeys
-import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
-import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiCreateGroupOptions
 import uniffi.xmtpv3.FfiDirection
-import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiListMessagesOptions
@@ -50,10 +20,6 @@ import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiPermissionPolicySet
 import uniffi.xmtpv3.FfiSubscribeException
-import uniffi.xmtpv3.FfiV2SubscribeRequest
-import uniffi.xmtpv3.FfiV2Subscription
-import uniffi.xmtpv3.FfiV2SubscriptionCallback
-import uniffi.xmtpv3.NoPointer
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionPolicySet
 import java.util.Date
@@ -379,41 +345,13 @@ data class Conversations(
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
                 val conversation = client.findConversation(message.convoId.toHex())
-                val decodedMessage = MessageV3(client, message).decodeOrNull()
+                val decodedMessage = Message(client, message).decodeOrNull()
                 when (conversation?.version) {
                     Conversation.Version.DM -> {
                         decodedMessage?.let { trySend(it) }
                     }
                     else -> {
                         decodedMessage?.let { trySend(it) }
-                    }
-                }
-            }
-
-            override fun onError(error: FfiSubscribeException) {
-                Log.e("XMTP all message stream", error.message.toString())
-            }
-        }
-
-        val stream = libXMTPConversations?.streamAllMessages(messageCallback)
-            ?: throw XMTPException("Client does not support Groups")
-
-        awaitClose { stream.end() }
-    }
-
-    fun streamAllDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
-        val messageCallback = object : FfiMessageCallback {
-            override fun onMessage(message: FfiMessage) {
-                val conversation = client.findConversation(message.convoId.toHex())
-                val decryptedMessage = MessageV3(client, message).decryptOrNull()
-
-                when (conversation?.version) {
-                    Conversation.Version.DM -> {
-                        decryptedMessage?.let { trySend(it) }
-                    }
-
-                    else -> {
-                        decryptedMessage?.let { trySend(it) }
                     }
                 }
             }

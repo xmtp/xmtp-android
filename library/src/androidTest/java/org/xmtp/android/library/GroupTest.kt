@@ -19,8 +19,7 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
-import org.xmtp.android.library.messages.DecryptedMessage
-import org.xmtp.android.library.messages.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.Message.*
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
@@ -336,13 +335,13 @@ class GroupTest {
     fun testMessageTimeIsCorrect() {
         val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(boClient.address)) }
         runBlocking { alixGroup.send("Hello") }
-        assertEquals(alixGroup.decryptedMessages().size, 2)
+        assertEquals(alixGroup.messages().size, 2)
         runBlocking { alixGroup.sync() }
-        val message2 = alixGroup.decryptedMessages().last()
+        val message2 = alixGroup.messages().last()
         runBlocking { alixGroup.sync() }
-        val message3 = alixGroup.decryptedMessages().last()
+        val message3 = alixGroup.messages().last()
         assertEquals(message3.id, message2.id)
-        assertEquals(message3.sentAt.time, message2.sentAt.time)
+        assertEquals(message3.sent.time, message2.sent.time)
     }
 
     @Test
@@ -656,92 +655,6 @@ class GroupTest {
             group.send("hi")
             conversation.send("hi")
             dm.send("should not stream")
-        }
-
-        Thread.sleep(1000)
-
-        assertEquals(2, allMessages.size)
-
-        job.cancel()
-    }
-
-    @Test
-    fun testCanStreamDecryptedGroupMessages() = kotlinx.coroutines.test.runTest {
-        val group = boClient.conversations.newGroup(listOf(alix.walletAddress))
-        alixClient.conversations.syncConversations()
-        val alixGroup = alixClient.conversations.listGroups().first()
-        group.streamDecryptedMessages().test {
-            alixGroup.send("hi")
-            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
-            alixGroup.send("hi again")
-            assertEquals("hi again", awaitItem().encodedContent.content.toStringUtf8())
-        }
-    }
-
-    @Test
-    fun testCanStreamAllDecryptedGroupMessages() {
-        val group = runBlocking { caroClient.conversations.newGroup(listOf(alix.walletAddress)) }
-        val dm = runBlocking { davonV3Client.conversations.findOrCreateDm(alix.walletAddress) }
-        runBlocking { alixClient.conversations.syncConversations() }
-
-        val allMessages = mutableListOf<DecryptedMessage>()
-
-        val job = CoroutineScope(Dispatchers.IO).launch {
-            try {
-                alixClient.conversations.streamAllDecryptedMessages().collect { message ->
-                    allMessages.add(message)
-                }
-            } catch (e: Exception) {
-            }
-        }
-        Thread.sleep(2500)
-
-        runBlocking { dm.send("Should not stream") }
-        for (i in 0 until 2) {
-            runBlocking { group.send(text = "Message $i") }
-            Thread.sleep(100)
-        }
-        assertEquals(2, allMessages.size)
-
-        val caroGroup =
-            runBlocking { caroClient.conversations.newGroup(listOf(alixClient.address)) }
-        Thread.sleep(2500)
-
-        for (i in 0 until 2) {
-            runBlocking { caroGroup.send(text = "Message $i") }
-            Thread.sleep(100)
-        }
-
-        assertEquals(4, allMessages.size)
-
-        job.cancel()
-    }
-
-    @Test
-    fun testCanStreamAllDecryptedMessages() {
-        val group = runBlocking { caroClient.conversations.newGroup(listOf(alix.walletAddress)) }
-        val dm = runBlocking { davonV3Client.conversations.findOrCreateDm(alix.walletAddress) }
-        val conversation =
-            runBlocking { boClient.conversations.newConversation(alix.walletAddress) }
-        runBlocking { alixClient.conversations.syncConversations() }
-
-        val allMessages = mutableListOf<DecryptedMessage>()
-
-        val job = CoroutineScope(Dispatchers.IO).launch {
-            try {
-                alixClient.conversations.streamAllDecryptedMessages()
-                    .collect { message ->
-                        allMessages.add(message)
-                    }
-            } catch (e: Exception) {
-            }
-        }
-        Thread.sleep(2500)
-
-        runBlocking {
-            dm.send("should not stream")
-            group.send("hi")
-            conversation.send("hi")
         }
 
         Thread.sleep(1000)

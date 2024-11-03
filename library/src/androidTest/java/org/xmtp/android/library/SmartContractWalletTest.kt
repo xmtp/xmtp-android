@@ -10,7 +10,7 @@ import org.junit.Assert.assertEquals
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.messages.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
@@ -130,7 +130,7 @@ class SmartContractWalletTest {
         runBlocking { boGroup.sync() }
         assertEquals(boGroup.messages().first().body, "gm")
         assertEquals(boGroup.messages().first().id, messageId)
-        assertEquals(boGroup.messages().first().deliveryStatus, MessageDeliveryStatus.PUBLISHED)
+        assertEquals(boGroup.messages().first().deliveryStatus, Message.MessageDeliveryStatus.PUBLISHED)
         assertEquals(boGroup.messages().size, 3)
 
         runBlocking { davonSCWClient.conversations.syncConversations() }

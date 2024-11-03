@@ -1,20 +1,12 @@
 package org.xmtp.android.library
 
-import android.util.Log
-import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
-import org.xmtp.android.library.libxmtp.MessageV3
-import org.xmtp.android.library.messages.DecryptedMessage
-import org.xmtp.android.library.messages.Envelope
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.PagingInfoSortDirection
-import org.xmtp.proto.keystore.api.v1.Keystore.TopicMap.TopicData
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
-import org.xmtp.proto.message.contents.Invitation
 import org.xmtp.proto.message.contents.Invitation.ConsentProofPayload
-import org.xmtp.proto.message.contents.Invitation.InvitationV1.Aes256gcmHkdfsha256
 import java.util.Date
 
 /**
@@ -138,7 +130,7 @@ sealed class Conversation {
      * If [limit] is specified then results are pulled in pages of that size.
      * If [direction] is specified then that will control the sort order of te messages.
      */
-    suspend fun messages(
+    fun messages(
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
@@ -158,35 +150,14 @@ sealed class Conversation {
         }
     }
 
-    suspend fun decryptedMessages(
-        limit: Int? = null,
-        before: Date? = null,
-        after: Date? = null,
-        direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
-    ): List<DecryptedMessage> {
-        return when (this) {
-            is Group -> group.decryptedMessages(limit, before, after, direction)
-            is Dm -> dm.decryptedMessages(limit, before, after, direction)
-        }
-    }
-
-    fun decrypt(
-        message: MessageV3,
-    ): DecryptedMessage {
-        return when (this) {
-            is Group -> message.decrypt()
-            is Dm -> message.decrypt()
-        }
-    }
-
-    fun decode(message: MessageV3): DecodedMessage {
+    fun decode(message: Message): DecodedMessage {
         return when (this) {
             is Group -> message.decode()
             is Dm -> message.decode()
         }
     }
 
-    suspend fun processMessage(envelopeBytes: ByteArray): MessageV3 {
+    suspend fun processMessage(envelopeBytes: ByteArray): Message {
         return when (this) {
             is Group -> group.processMessage(envelopeBytes)
             is Dm -> dm.processMessage(envelopeBytes)
@@ -218,13 +189,6 @@ sealed class Conversation {
         return when (this) {
             is Group -> group.streamMessages()
             is Dm -> dm.streamMessages()
-        }
-    }
-
-    fun streamDecryptedMessages(): Flow<DecryptedMessage> {
-        return when (this) {
-            is Group -> group.streamDecryptedMessages()
-            is Dm -> dm.streamDecryptedMessages()
         }
     }
 }

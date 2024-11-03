@@ -8,9 +8,8 @@ import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.libxmtp.Member
-import org.xmtp.android.library.libxmtp.MessageV3
-import org.xmtp.android.library.messages.DecryptedMessage
-import org.xmtp.android.library.messages.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.Message
+import org.xmtp.android.library.libxmtp.Message.*
 import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING
@@ -143,41 +142,13 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
                 }
             )
         ).mapNotNull {
-            MessageV3(client, it).decodeOrNull()
+            Message(client, it).decodeOrNull()
         }
     }
 
-    fun decryptedMessages(
-        limit: Int? = null,
-        before: Date? = null,
-        after: Date? = null,
-        direction: PagingInfoSortDirection = SORT_DIRECTION_DESCENDING,
-        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
-    ): List<DecryptedMessage> {
-        return libXMTPGroup.findMessages(
-            opts = FfiListMessagesOptions(
-                sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit = limit?.toLong(),
-                deliveryStatus = when (deliveryStatus) {
-                    MessageDeliveryStatus.PUBLISHED -> FfiDeliveryStatus.PUBLISHED
-                    MessageDeliveryStatus.UNPUBLISHED -> FfiDeliveryStatus.UNPUBLISHED
-                    MessageDeliveryStatus.FAILED -> FfiDeliveryStatus.FAILED
-                    else -> null
-                },
-                direction = when (direction) {
-                    SORT_DIRECTION_ASCENDING -> FfiDirection.ASCENDING
-                    else -> FfiDirection.DESCENDING
-                }
-            )
-        ).mapNotNull {
-            MessageV3(client, it).decryptOrNull()
-        }
-    }
-
-    suspend fun processMessage(envelopeBytes: ByteArray): MessageV3 {
+    suspend fun processMessage(envelopeBytes: ByteArray): Message {
         val message = libXMTPGroup.processStreamedConversationMessage(envelopeBytes)
-        return MessageV3(client, message)
+        return Message(client, message)
     }
 
     suspend fun updateConsentState(state: ConsentState) {
@@ -406,26 +377,8 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
     fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                val decodedMessage = MessageV3(client, message).decodeOrNull()
+                val decodedMessage = Message(client, message).decodeOrNull()
                 decodedMessage?.let {
-                    trySend(it)
-                }
-            }
-
-            override fun onError(error: FfiSubscribeException) {
-                Log.e("XMTP Group stream", error.message.toString())
-            }
-        }
-
-        val stream = libXMTPGroup.stream(messageCallback)
-        awaitClose { stream.end() }
-    }
-
-    fun streamDecryptedMessages(): Flow<DecryptedMessage> = callbackFlow {
-        val messageCallback = object : FfiMessageCallback {
-            override fun onMessage(message: FfiMessage) {
-                val decryptedMessage = MessageV3(client, message).decryptOrNull()
-                decryptedMessage?.let {
                     trySend(it)
                 }
             }

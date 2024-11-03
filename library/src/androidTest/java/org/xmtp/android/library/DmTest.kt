@@ -17,8 +17,7 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
-import org.xmtp.android.library.messages.DecryptedMessage
-import org.xmtp.android.library.messages.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.Message.*
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
@@ -259,56 +258,6 @@ class DmTest {
 
         for (i in 0 until 2) {
             runBlocking { boDm.send(text = "Message $i") }
-            Thread.sleep(100)
-        }
-        assertEquals(2, allMessages.size)
-
-        val caroDm =
-            runBlocking { caroClient.conversations.findOrCreateDm(alixClient.address) }
-        Thread.sleep(2500)
-
-        for (i in 0 until 2) {
-            runBlocking { caroDm.send(text = "Message $i") }
-            Thread.sleep(100)
-        }
-
-        assertEquals(4, allMessages.size)
-
-        job.cancel()
-    }
-
-    @Test
-    fun testCanStreamDecryptedDmMessages() = kotlinx.coroutines.test.runTest {
-        val dm = boClient.conversations.findOrCreateDm(alix.walletAddress)
-        alixClient.conversations.syncConversations()
-        val alixDm = alixClient.findDm(bo.walletAddress)
-        dm.streamDecryptedMessages().test {
-            alixDm?.send("hi")
-            assertEquals("hi", awaitItem().encodedContent.content.toStringUtf8())
-            alixDm?.send("hi again")
-            assertEquals("hi again", awaitItem().encodedContent.content.toStringUtf8())
-        }
-    }
-
-    @Test
-    fun testCanStreamAllDecryptedDmMessages() {
-        val dm = runBlocking { boClient.conversations.findOrCreateDm(alix.walletAddress) }
-        runBlocking { alixClient.conversations.syncConversations() }
-
-        val allMessages = mutableListOf<DecryptedMessage>()
-
-        val job = CoroutineScope(Dispatchers.IO).launch {
-            try {
-                alixClient.conversations.streamAllDecryptedMessages().collect { message ->
-                    allMessages.add(message)
-                }
-            } catch (e: Exception) {
-            }
-        }
-        Thread.sleep(2500)
-
-        for (i in 0 until 2) {
-            runBlocking { dm.send(text = "Message $i") }
             Thread.sleep(100)
         }
         assertEquals(2, allMessages.size)

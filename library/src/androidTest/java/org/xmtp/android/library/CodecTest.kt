@@ -4,21 +4,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.Crypto.Companion.verifyHmacSignature
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.ContentTypeId
 import org.xmtp.android.library.codecs.ContentTypeIdBuilder
 import org.xmtp.android.library.codecs.EncodedContent
-import org.xmtp.android.library.codecs.TextCodec
-import org.xmtp.android.library.messages.InvitationV1ContextBuilder
-import org.xmtp.android.library.messages.MessageV2Builder
-import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import java.time.Instant
 
 data class NumberCodec(
     override var contentType: ContentTypeId = ContentTypeIdBuilder.builderFromAuthorityId(

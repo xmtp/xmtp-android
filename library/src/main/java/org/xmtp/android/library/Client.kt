@@ -1,28 +1,23 @@
 package org.xmtp.android.library
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
-import com.google.crypto.tink.subtle.Base64
-import com.google.gson.GsonBuilder
 import kotlinx.coroutines.runBlocking
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Keys.toChecksumAddress
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
-import org.xmtp.android.library.libxmtp.MessageV3
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.XMTPLogger
 import org.xmtp.android.library.messages.ContactBundle
 import org.xmtp.android.library.messages.EncryptedPrivateKeyBundle
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.android.library.messages.EnvelopeBuilder
-import org.xmtp.android.library.messages.InvitationV1ContextBuilder
 import org.xmtp.android.library.messages.Pagination
 import org.xmtp.android.library.messages.PrivateKeyBundle
 import org.xmtp.android.library.messages.PrivateKeyBundleBuilder
 import org.xmtp.android.library.messages.PrivateKeyBundleV1
 import org.xmtp.android.library.messages.PrivateKeyBundleV2
-import org.xmtp.android.library.messages.SealedInvitationHeaderV1
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.decrypted
 import org.xmtp.android.library.messages.encrypted
@@ -48,12 +43,7 @@ import uniffi.xmtpv3.getInboxIdForAddress
 import uniffi.xmtpv3.getVersionInfo
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.InboxState
 import java.io.File
-import java.nio.charset.StandardCharsets
-import java.text.SimpleDateFormat
-import java.time.Instant
 import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
 
 typealias PublishResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishResponse
 typealias QueryResponse = org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryResponse
@@ -640,10 +630,10 @@ class Client() {
         }
     }
 
-    fun findMessage(messageId: String): MessageV3? {
+    fun findMessage(messageId: String): Message? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
         return try {
-            MessageV3(this, client.message(messageId.hexToByteArray()))
+            Message(this, client.message(messageId.hexToByteArray()))
         } catch (e: Exception) {
             null
         }
