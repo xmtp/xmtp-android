@@ -49,9 +49,9 @@ class CodecTest {
     fun testCanRoundTripWithCustomContentType() {
         Client.register(codec = NumberCodec())
         val fixtures = fixtures()
-        val aliceClient = fixtures.aliceClient
+        val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
         }
         runBlocking {
             aliceConversation.send(

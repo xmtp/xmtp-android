@@ -24,9 +24,9 @@ class AttachmentTest {
         Client.register(codec = AttachmentCodec())
 
         val fixtures = fixtures()
-        val aliceClient = fixtures.aliceClient
+        val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
         }
 
         runBlocking {

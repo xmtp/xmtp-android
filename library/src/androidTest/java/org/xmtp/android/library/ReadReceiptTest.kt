@@ -18,9 +18,9 @@ class ReadReceiptTest {
         Client.register(codec = ReadReceiptCodec())
 
         val fixtures = fixtures()
-        val aliceClient = fixtures.aliceClient
+        val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
         }
 
         runBlocking { aliceConversation.send(text = "hey alice 2 bob") }

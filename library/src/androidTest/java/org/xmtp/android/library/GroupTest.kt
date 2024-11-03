@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +25,6 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.mls.message.contents.TranscriptMessages
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionOption
-import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
@@ -46,32 +44,19 @@ class GroupTest {
 
     @Before
     fun setUp() {
-        val key = SecureRandom().generateSeed(32)
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val options = ClientOptions(
-            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-            enableV3 = true,
-            appContext = context,
-            dbEncryptionKey = key
-        )
-        fixtures =
-            fixtures(
-                clientOptions = options
-            )
-        alixWallet = fixtures.aliceAccount
-        alix = fixtures.alice
-        boWallet = fixtures.bobAccount
-        bo = fixtures.bob
+        fixtures = fixtures()
+        alixWallet = fixtures.alixAccount
+        alix = fixtures.alix
+        boWallet = fixtures.boAccount
+        bo = fixtures.bo
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
         davonV3Wallet = PrivateKeyBuilder()
         davonV3 = davonV3Wallet.getPrivateKey()
 
-        alixClient = fixtures.aliceClient
-        boClient = fixtures.bobClient
+        alixClient = fixtures.alixClient
+        boClient = fixtures.boClient
         caroClient = fixtures.caroClient
-        davonV3Client =
-            runBlocking { Client().createV3(account = davonV3Wallet, options = options) }
     }
 
     @Test
@@ -130,9 +115,12 @@ class GroupTest {
         assert(alixGroup.id.isNotEmpty())
 
         runBlocking {
-            assertEquals(boClient.contacts.consentList.groupState(boGroup.id), ConsentState.ALLOWED)
             assertEquals(
-                alixClient.contacts.consentList.groupState(alixGroup.id),
+                boClient.preferences.consentList.groupState(boGroup.id),
+                ConsentState.ALLOWED
+            )
+            assertEquals(
+                alixClient.preferences.consentList.groupState(alixGroup.id),
                 ConsentState.UNKNOWN
             )
         }
@@ -410,7 +398,6 @@ class GroupTest {
     fun testCannotSendMessageToGroupMemberNotOnV3() {
         val chuxAccount = PrivateKeyBuilder()
         val chux: PrivateKey = chuxAccount.getPrivateKey()
-        runBlocking { Client().create(account = chuxAccount) }
 
         assertThrows("Recipient not on network", XMTPException::class.java) {
             runBlocking { boClient.conversations.newGroup(listOf(chux.walletAddress)) }
@@ -437,8 +424,11 @@ class GroupTest {
             group.send("howdy")
             group.send("gm")
             group.sync()
-            assert(boClient.contacts.isGroupAllowed(group.id))
-            assertEquals(boClient.contacts.consentList.groupState(group.id), ConsentState.ALLOWED)
+            assertEquals(group.consentState(), ConsentState.ALLOWED)
+            assertEquals(
+                boClient.preferences.consentList.groupState(group.id),
+                ConsentState.ALLOWED
+            )
         }
     }
 
@@ -718,15 +708,29 @@ class GroupTest {
                         caro.walletAddress
                     )
                 )
-            assert(boClient.contacts.isGroupAllowed(group.id))
+            assertEquals(
+                boClient.preferences.consentList.groupState(group.id),
+                ConsentState.ALLOWED
+            )
             assertEquals(group.consentState(), ConsentState.ALLOWED)
 
-            boClient.contacts.denyGroups(listOf(group.id))
-            assert(boClient.contacts.isGroupDenied(group.id))
+            boClient.preferences.consentList.setConsentState(
+                listOf(
+                    ConsentListEntry(
+                        group.id,
+                        EntryType.GROUP_ID,
+                        ConsentState.DENIED
+                    )
+                )
+            )
+            assertEquals(boClient.preferences.consentList.groupState(group.id), ConsentState.DENIED)
             assertEquals(group.consentState(), ConsentState.DENIED)
 
             group.updateConsentState(ConsentState.ALLOWED)
-            assert(boClient.contacts.isGroupAllowed(group.id))
+            assertEquals(
+                boClient.preferences.consentList.groupState(group.id),
+                ConsentState.ALLOWED
+            )
             assertEquals(group.consentState(), ConsentState.ALLOWED)
         }
     }
@@ -735,30 +739,64 @@ class GroupTest {
     fun testCanAllowAndDenyInboxId() {
         runBlocking {
             val boGroup = boClient.conversations.newGroup(listOf(alix.walletAddress))
-            assert(!boClient.contacts.isInboxAllowed(alixClient.inboxId))
-            assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
-
-            boClient.contacts.allowInboxes(listOf(alixClient.inboxId))
+            assertEquals(
+                boClient.preferences.consentList.inboxIdState(alixClient.inboxId),
+                ConsentState.UNKNOWN
+            )
+            boClient.preferences.consentList.setConsentState(
+                listOf(
+                    ConsentListEntry(
+                        alixClient.inboxId,
+                        EntryType.INBOX_ID,
+                        ConsentState.ALLOWED
+                    )
+                )
+            )
             var alixMember = boGroup.members().firstOrNull { it.inboxId == alixClient.inboxId }
             assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
 
-            assert(boClient.contacts.isInboxAllowed(alixClient.inboxId))
-            assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
+            assertEquals(
+                boClient.preferences.consentList.inboxIdState(alixClient.inboxId),
+                ConsentState.ALLOWED
+            )
 
-            boClient.contacts.denyInboxes(listOf(alixClient.inboxId))
+            boClient.preferences.consentList.setConsentState(
+                listOf(
+                    ConsentListEntry(
+                        alixClient.inboxId,
+                        EntryType.INBOX_ID,
+                        ConsentState.DENIED
+                    )
+                )
+            )
             alixMember = boGroup.members().firstOrNull { it.inboxId == alixClient.inboxId }
             assertEquals(alixMember!!.consentState, ConsentState.DENIED)
 
-            assert(!boClient.contacts.isInboxAllowed(alixClient.inboxId))
-            assert(boClient.contacts.isInboxDenied(alixClient.inboxId))
+            assertEquals(
+                boClient.preferences.consentList.inboxIdState(alixClient.inboxId),
+                ConsentState.DENIED
+            )
 
-            boClient.contacts.allow(listOf(alixClient.address))
+
+            boClient.preferences.consentList.setConsentState(
+                listOf(
+                    ConsentListEntry(
+                        alixClient.address,
+                        EntryType.ADDRESS,
+                        ConsentState.ALLOWED
+                    )
+                )
+            )
             alixMember = boGroup.members().firstOrNull { it.inboxId == alixClient.inboxId }
             assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
-            assert(boClient.contacts.isInboxAllowed(alixClient.inboxId))
-            assert(!boClient.contacts.isInboxDenied(alixClient.inboxId))
-            assert(boClient.contacts.isAllowed(alixClient.address))
-            assert(!boClient.contacts.isDenied(alixClient.address))
+            assertEquals(
+                boClient.preferences.consentList.inboxIdState(alixClient.inboxId),
+                ConsentState.ALLOWED
+            )
+            assertEquals(
+                boClient.preferences.consentList.addressState(alixClient.address),
+                ConsentState.ALLOWED
+            )
         }
     }
 
@@ -809,9 +847,9 @@ class GroupTest {
         }
         runBlocking { alixClient.conversations.syncConversations() }
         val alixGroup: Group = alixClient.findGroup(boGroup.id)!!
-        runBlocking { assert(!alixClient.contacts.isGroupAllowed(boGroup.id)) }
+        runBlocking { assertEquals(alixGroup.consentState(), ConsentState.UNKNOWN) }
         val preparedMessageId = runBlocking { alixGroup.prepareMessage("Test text") }
-        runBlocking { assert(alixClient.contacts.isGroupAllowed(boGroup.id)) }
+        runBlocking { assertEquals(alixGroup.consentState(), ConsentState.ALLOWED) }
         assertEquals(alixGroup.messages().size, 1)
         assertEquals(alixGroup.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED).size, 0)
         assertEquals(alixGroup.messages(deliveryStatus = MessageDeliveryStatus.UNPUBLISHED).size, 1)
