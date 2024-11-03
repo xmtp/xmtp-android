@@ -59,16 +59,6 @@ class PrivateKeyBuilder : SigningKey {
                 }.build()
             }.build()
         }
-
-        fun buildFromSignedPrivateKey(signedPrivateKey: SignedPrivateKey): PrivateKey {
-            return PrivateKey.newBuilder().apply {
-                timestamp = signedPrivateKey.createdNs / 1_000_000
-                secp256K1 = secp256K1.toBuilder().also { keyBuilder ->
-                    keyBuilder.bytes = signedPrivateKey.secp256K1.bytes
-                }.build()
-                publicKey = PublicKeyBuilder.buildFromSignedPublicKey(signedPrivateKey.publicKey)
-            }.build()
-        }
     }
 
     fun getPrivateKey(): PrivateKey {

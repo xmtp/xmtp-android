@@ -18,6 +18,11 @@ data class Message(val client: Client, private val libXMTPMessage: FfiMessage) {
         ALL, PUBLISHED, UNPUBLISHED, FAILED
     }
 
+    enum class SortDirection {
+        ASCENDING,
+        DESCENDING;
+    }
+
     val id: String
         get() = libXMTPMessage.id.toHex()
 

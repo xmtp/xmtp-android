@@ -10,7 +10,6 @@ import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.*
-import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING
@@ -122,7 +121,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
-        direction: PagingInfoSortDirection = SORT_DIRECTION_DESCENDING,
+        direction: SortDirection = SortDirection.DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
     ): List<DecodedMessage> {
         return libXMTPGroup.findMessages(
@@ -137,7 +136,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
                     else -> null
                 },
                 direction = when (direction) {
-                    SORT_DIRECTION_ASCENDING -> FfiDirection.ASCENDING
+                    SortDirection.ASCENDING -> FfiDirection.ASCENDING
                     else -> FfiDirection.DESCENDING
                 }
             )

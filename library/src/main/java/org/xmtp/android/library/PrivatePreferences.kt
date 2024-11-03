@@ -88,7 +88,7 @@ class ConsentList(
     val client: Client,
 ) {
     suspend fun setConsentState(entries: List<ConsentListEntry>) {
-        client.v3Client?.setConsentStates(entries.map { it.toFfiConsent() })
+        client.ffiClient.setConsentStates(entries.map { it.toFfiConsent() })
     }
 
     private fun ConsentListEntry.toFfiConsent(): FfiConsent {
@@ -99,40 +99,31 @@ class ConsentList(
         )
     }
 
-    suspend fun addressState(address: String): ConsentState? {
-        client.v3Client?.let {
-            return ConsentState.fromFfiConsentState(
-                it.getConsentState(
-                    FfiConsentEntityType.ADDRESS,
-                    address
-                )
+    suspend fun addressState(address: String): ConsentState {
+        return ConsentState.fromFfiConsentState(
+            client.ffiClient.getConsentState(
+                FfiConsentEntityType.ADDRESS,
+                address
             )
-        }
-        return null
+        )
     }
 
-    suspend fun groupState(groupId: String): ConsentState? {
-        client.v3Client?.let {
-            return ConsentState.fromFfiConsentState(
-                it.getConsentState(
-                    FfiConsentEntityType.CONVERSATION_ID,
-                    groupId
-                )
+    suspend fun groupState(groupId: String): ConsentState {
+        return ConsentState.fromFfiConsentState(
+            client.ffiClient.getConsentState(
+                FfiConsentEntityType.CONVERSATION_ID,
+                groupId
             )
-        }
-        return null
+        )
     }
 
-    suspend fun inboxIdState(inboxId: String): ConsentState? {
-        client.v3Client?.let {
-            return ConsentState.fromFfiConsentState(
-                it.getConsentState(
-                    FfiConsentEntityType.INBOX_ID,
-                    inboxId
-                )
+    suspend fun inboxIdState(inboxId: String): ConsentState {
+        return ConsentState.fromFfiConsentState(
+            client.ffiClient.getConsentState(
+                FfiConsentEntityType.INBOX_ID,
+                inboxId
             )
-        }
-        return null
+        )
     }
 }
 
