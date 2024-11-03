@@ -214,7 +214,7 @@ class ClientTest {
 
         runBlocking {
             client.conversations.newGroup(listOf(client2.address))
-            client.conversations.syncGroups()
+            client.conversations.syncConversations()
             assertEquals(client.conversations.listGroups().size, 1)
         }
 
@@ -233,7 +233,7 @@ class ClientTest {
             )
         }
         runBlocking {
-            client.conversations.syncGroups()
+            client.conversations.syncConversations()
             assertEquals(client.conversations.listGroups().size, 0)
         }
     }
@@ -422,7 +422,7 @@ class ClientTest {
 
         runBlocking {
             boClient.conversations.newGroup(listOf(alixClient.address))
-            boClient.conversations.syncGroups()
+            boClient.conversations.syncConversations()
         }
 
         runBlocking {

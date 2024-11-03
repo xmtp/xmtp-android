@@ -593,17 +593,6 @@ class Client() {
         return client.subscribe(request, callback)
     }
 
-    suspend fun fetchConversation(
-        topic: String?,
-        includeGroups: Boolean = false,
-    ): Conversation? {
-        if (topic.isNullOrBlank()) return null
-        return conversations.list(includeGroups = includeGroups).firstOrNull {
-            it.topic == topic
-        }
-    }
-
-    @Deprecated("Find now includes DMs and Groups", replaceWith = ReplaceWith("findConversation"))
     fun findGroup(groupId: String): Group? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
         try {
@@ -680,61 +669,6 @@ class Client() {
         }
 
         publishUserContact(legacy = true)
-    }
-
-    fun importConversation(conversationData: ByteArray): Conversation {
-        val gson = GsonBuilder().create()
-        val v2Export = gson.fromJson(
-            conversationData.toString(StandardCharsets.UTF_8),
-            ConversationV2Export::class.java,
-        )
-        return try {
-            importV2Conversation(export = v2Export)
-        } catch (e: java.lang.Exception) {
-            val v1Export = gson.fromJson(
-                conversationData.toString(StandardCharsets.UTF_8),
-                ConversationV1Export::class.java,
-            )
-            try {
-                importV1Conversation(export = v1Export)
-            } catch (e: java.lang.Exception) {
-                throw XMTPException("Invalid input data", e)
-            }
-        }
-    }
-
-    fun importV2Conversation(export: ConversationV2Export): Conversation {
-        val keyMaterial = Base64.decode(export.keyMaterial)
-        return Conversation.V2(
-            ConversationV2(
-                topic = export.topic,
-                keyMaterial = keyMaterial,
-                context = InvitationV1ContextBuilder.buildFromConversation(
-                    conversationId = export.context?.conversationId ?: "",
-                    metadata = export.context?.metadata ?: mapOf(),
-                ),
-                peerAddress = export.peerAddress,
-                client = this,
-                header = SealedInvitationHeaderV1.newBuilder().build(),
-            ),
-        )
-    }
-
-    fun importV1Conversation(export: ConversationV1Export): Conversation {
-        val sentAt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Date.from(Instant.parse(export.createdAt))
-        } else {
-            val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-            df.timeZone = TimeZone.getTimeZone("UTC")
-            df.parse(export.createdAt)
-        }
-        return Conversation.V1(
-            ConversationV1(
-                client = this,
-                peerAddress = export.peerAddress,
-                sentAt = sentAt,
-            ),
-        )
     }
 
     /**
