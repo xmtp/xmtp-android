@@ -68,14 +68,14 @@ sealed class Conversation {
         }
     }
 
-    suspend fun updateConsentState(state: ConsentState) {
+    fun updateConsentState(state: ConsentState) {
         return when (this) {
             is Group -> group.updateConsentState(state)
             is Dm -> dm.updateConsentState(state)
         }
     }
 
-    suspend fun consentState(): ConsentState {
+    fun consentState(): ConsentState {
         return when (this) {
             is Group -> group.consentState()
             is Dm -> dm.consentState()

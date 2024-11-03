@@ -40,7 +40,7 @@ class Client() {
     lateinit var address: String
     lateinit var inboxId: String
     lateinit var installationId: String
-    lateinit var contacts: Contacts
+    lateinit var preferences: PrivatePreferences
     lateinit var conversations: Conversations
     lateinit var environment: XMTPEnvironment
     lateinit var ffiClient: FfiXmtpClient
@@ -84,7 +84,7 @@ class Client() {
         environment: XMTPEnvironment,
     ) : this() {
         this.address = address
-        this.contacts = Contacts(client = this)
+        this.preferences = PrivatePreferences(client = this)
         this.ffiClient = libXMTPClient
         this.conversations =
             Conversations(client = this, libXMTPConversations = libXMTPClient.conversations())
@@ -256,7 +256,6 @@ class Client() {
             null
         }
     }
-
 
     suspend fun canMessage(addresses: List<String>): Map<String, Boolean> {
         return ffiClient.canMessage(addresses)

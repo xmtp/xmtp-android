@@ -163,15 +163,7 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         awaitClose { stream.end() }
     }
 
-    suspend fun updateConsentState(state: ConsentState) {
-        if (client.hasV2Client) {
-            when (state) {
-                ConsentState.ALLOWED -> client.contacts.allowGroups(groupIds = listOf(id))
-                ConsentState.DENIED -> client.contacts.denyGroups(groupIds = listOf(id))
-                ConsentState.UNKNOWN -> Unit
-            }
-        }
-
+    fun updateConsentState(state: ConsentState) {
         val consentState = ConsentState.toFfiConsentState(state)
         libXMTPGroup.updateConsentState(consentState)
     }
