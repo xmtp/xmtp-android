@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
@@ -29,9 +28,6 @@ import org.xmtp.proto.mls.message.contents.TranscriptMessages
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionOption
 import java.security.SecureRandom
-import java.util.Date
-import kotlin.time.Duration.Companion.nanoseconds
-import kotlin.time.DurationUnit
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
@@ -552,26 +548,25 @@ class GroupTest {
     @Test
     fun testCanListGroupMessagesAfter() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
-        runBlocking {
+        val messageId = runBlocking {
             group.send("howdy")
             group.send("gm")
         }
-        Thread.sleep(1000)
-        val time = Date()
+        val message = boClient.findMessage(messageId)
         assertEquals(group.messages().size, 3)
-        assertEquals(group.messages(after = time).size, 0)
+        assertEquals(group.messages(afterNs = message?.sentAtNs).size, 0)
         runBlocking {
             group.send("howdy")
             group.send("gm")
         }
         assertEquals(group.messages().size, 5)
-        assertEquals(group.messages(after = time).size, 2)
+        assertEquals(group.messages(afterNs = message?.sentAtNs).size, 2)
 
         runBlocking { alixClient.conversations.syncConversations() }
         val sameGroup = runBlocking { alixClient.conversations.listGroups().last() }
         runBlocking { sameGroup.sync() }
-        assertEquals(sameGroup.messages().size, 5)
-        assertEquals(sameGroup.messages(after = time).size, 2)
+        assertEquals(sameGroup.messages().size, 4)
+        assertEquals(sameGroup.messages(afterNs = message?.sentAtNs).size, 2)
     }
 
     @Test
