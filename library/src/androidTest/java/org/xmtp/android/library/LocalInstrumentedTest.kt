@@ -166,7 +166,8 @@ class LocalInstrumentedTest {
             val nowMessage = messages[0]
             assertEquals("now", nowMessage.body)
             val messages2 = convo.messages(
-                limit = 1, beforeNs = nowMessage.sent.time.nanoseconds.toLong(
+                limit = 1,
+                beforeNs = nowMessage.sent.time.nanoseconds.toLong(
                     DurationUnit.NANOSECONDS
                 )
             )

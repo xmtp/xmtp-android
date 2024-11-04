@@ -421,7 +421,8 @@ class ConversationTest {
             assertEquals(1, messages.size)
             assertEquals("hey alice 3", messages[0].body)
             val messages2 = aliceConversation.messages(
-                limit = 1, afterNs = date.time.nanoseconds.toLong(
+                limit = 1,
+                afterNs = date.time.nanoseconds.toLong(
                     DurationUnit.NANOSECONDS
                 )
             )
