@@ -1432,8 +1432,9 @@ $dokka.location:org.xmtp.android.library/KeyUtil/validateConsentSignature/#kotli
 $dokka.location:org.xmtp.android.library/PreparedMessage.Companion///PointingToDeclaration/library/org.xmtp.android.library/-prepared-message/-companion/index.html
 $dokka.location:org.xmtp.android.library/PreparedMessage.Companion/fromSerializedData/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-prepared-message/-companion/from-serialized-data.html
 $dokka.location:org.xmtp.android.library/PreparedMessage///PointingToDeclaration/library/org.xmtp.android.library/-prepared-message/index.html
-$dokka.location:org.xmtp.android.library/PreparedMessage/PreparedMessage/#kotlin.collections.List[org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope]/PointingToDeclaration/library/org.xmtp.android.library/-prepared-message/-prepared-message.html
+$dokka.location:org.xmtp.android.library/PreparedMessage/PreparedMessage/#kotlin.collections.List[org.xmtp.proto.message.api.v1.MessageApiOuterClass.Envelope]#org.xmtp.proto.message.contents.Content.EncodedContent?/PointingToDeclaration/library/org.xmtp.android.library/-prepared-message/-prepared-message.html
 $dokka.location:org.xmtp.android.library/PreparedMessage/conversationTopic/#/PointingToDeclaration/library/org.xmtp.android.library/-prepared-message/conversation-topic.html
+$dokka.location:org.xmtp.android.library/PreparedMessage/encodedContent/#/PointingToDeclaration/library/org.xmtp.android.library/-prepared-message/encoded-content.html
 $dokka.location:org.xmtp.android.library/PreparedMessage/envelopes/#/PointingToDeclaration/library/org.xmtp.android.library/-prepared-message/envelopes.html
 $dokka.location:org.xmtp.android.library/PreparedMessage/messageId/#/PointingToDeclaration/library/org.xmtp.android.library/-prepared-message/message-id.html
 $dokka.location:org.xmtp.android.library/PreparedMessage/toSerializedData/#/PointingToDeclaration/library/org.xmtp.android.library/-prepared-message/to-serialized-data.html
