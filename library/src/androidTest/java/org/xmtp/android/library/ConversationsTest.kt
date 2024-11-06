@@ -67,7 +67,7 @@ class ConversationsTest {
         runBlocking { caroClient.conversations.syncConversations() }
         assertEquals(
             runBlocking { caroClient.conversations.list().size },
-            1
+            2
         )
         assertEquals(runBlocking { caroClient.conversations.listGroups().size }, 1)
     }

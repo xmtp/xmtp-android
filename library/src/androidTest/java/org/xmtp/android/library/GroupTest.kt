@@ -37,9 +37,6 @@ class GroupTest {
     private lateinit var caroWallet: PrivateKeyBuilder
     private lateinit var caro: PrivateKey
     private lateinit var caroClient: Client
-    private lateinit var davonV3Wallet: PrivateKeyBuilder
-    private lateinit var davonV3: PrivateKey
-    private lateinit var davonV3Client: Client
     private lateinit var fixtures: Fixtures
 
     @Before
@@ -51,8 +48,6 @@ class GroupTest {
         bo = fixtures.bo
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
-        davonV3Wallet = PrivateKeyBuilder()
-        davonV3 = davonV3Wallet.getPrivateKey()
 
         alixClient = fixtures.alixClient
         boClient = fixtures.boClient
@@ -374,7 +369,6 @@ class GroupTest {
         runBlocking {
             boClient.conversations.newGroup(listOf(alix.walletAddress))
             boClient.conversations.newGroup(listOf(caro.walletAddress))
-            davonV3Client.conversations.findOrCreateDm(bo.walletAddress)
             boClient.conversations.syncConversations()
         }
         val groups = runBlocking { boClient.conversations.listGroups() }
@@ -387,7 +381,6 @@ class GroupTest {
             boClient.conversations.newGroup(listOf(alix.walletAddress))
             boClient.conversations.newGroup(listOf(caro.walletAddress))
             boClient.conversations.newConversation(alix.walletAddress)
-            davonV3Client.conversations.findOrCreateDm(bo.walletAddress)
             boClient.conversations.syncConversations()
         }
         val convos = runBlocking { boClient.conversations.list() }
@@ -582,7 +575,6 @@ class GroupTest {
     @Test
     fun testCanStreamAllGroupMessages() {
         val group = runBlocking { caroClient.conversations.newGroup(listOf(alix.walletAddress)) }
-        val dm = runBlocking { davonV3Client.conversations.findOrCreateDm(alix.walletAddress) }
         runBlocking { alixClient.conversations.syncConversations() }
 
         val allMessages = mutableListOf<DecodedMessage>()
@@ -597,7 +589,6 @@ class GroupTest {
         }
         Thread.sleep(2500)
 
-        runBlocking { dm.send("should not stream") }
         for (i in 0 until 2) {
             runBlocking {
                 group.send(text = "Message $i")
@@ -623,7 +614,6 @@ class GroupTest {
     @Test
     fun testCanStreamAllMessages() {
         val group = runBlocking { caroClient.conversations.newGroup(listOf(alix.walletAddress)) }
-        val dm = runBlocking { davonV3Client.conversations.findOrCreateDm(alix.walletAddress) }
         val conversation =
             runBlocking { boClient.conversations.newConversation(alix.walletAddress) }
         runBlocking { alixClient.conversations.syncConversations() }
@@ -644,7 +634,6 @@ class GroupTest {
         runBlocking {
             group.send("hi")
             conversation.send("hi")
-            dm.send("should not stream")
         }
 
         Thread.sleep(1000)
@@ -663,9 +652,6 @@ class GroupTest {
             val group2 =
                 caroClient.conversations.newGroup(listOf(bo.walletAddress))
             assertEquals(group2.id, awaitItem().id)
-            davonV3Client.conversations.findOrCreateDm(bo.walletAddress)
-            expectNoEvents()
-            cancelAndConsumeRemainingEvents()
         }
     }
 
@@ -685,7 +671,6 @@ class GroupTest {
         Thread.sleep(2500)
 
         runBlocking {
-            davonV3Client.conversations.findOrCreateDm(alix.walletAddress)
             alixClient.conversations.newConversation(bo.walletAddress)
             Thread.sleep(2500)
             caroClient.conversations.newGroup(listOf(alix.walletAddress))
