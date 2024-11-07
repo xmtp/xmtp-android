@@ -16,12 +16,10 @@ import org.xmtp.android.library.artifact.CoinbaseSmartWalletFactory
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.Signature
-import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.messages.ethHash
 import org.xmtp.android.library.messages.walletAddress
 import java.math.BigInteger
 import java.security.SecureRandom
-import java.util.Date
 
 class FakeWallet : SigningKey {
     private var privateKey: PrivateKey
