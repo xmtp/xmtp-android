@@ -87,7 +87,7 @@ class Client() {
         this.preferences = PrivatePreferences(client = this, ffiClient = libXMTPClient)
         this.ffiClient = libXMTPClient
         this.conversations =
-            Conversations(client = this, libXMTPConversations = libXMTPClient.conversations())
+            Conversations(client = this, ffiConversations = libXMTPClient.conversations())
         this.dbPath = dbPath
         this.installationId = installationId
         this.inboxId = inboxId
