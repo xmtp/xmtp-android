@@ -74,28 +74,26 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
 
     fun <T> encodeContent(content: T, options: SendOptions?): EncodedContent {
         val codec = Client.codecRegistry.find(options?.contentType)
-
-        fun <Codec : ContentCodec<T>> encode(codec: Codec, content: Any?): EncodedContent {
-            val contentType = content as? T
-            if (contentType != null) {
-                return codec.encode(contentType)
-            } else {
-                throw XMTPException("Codec type is not registered")
+        fun <Codec : ContentCodec<T>> encode(codec: Codec, content: T): EncodedContent {
+            return codec.encode(content)
+        }
+        try {
+            @Suppress("UNCHECKED_CAST")
+            var encoded = encode(codec as ContentCodec<T>, content)
+            val fallback = codec.fallback(content)
+            if (!fallback.isNullOrBlank()) {
+                encoded = encoded.toBuilder().also {
+                    it.fallback = fallback
+                }.build()
             }
+            val compression = options?.compression
+            if (compression != null) {
+                encoded = encoded.compress(compression)
+            }
+            return encoded
+        } catch (e: Exception) {
+            throw XMTPException("Codec type is not registered")
         }
-
-        var encoded = encode(codec = codec as ContentCodec<T>, content = content)
-        val fallback = codec.fallback(content)
-        if (!fallback.isNullOrBlank()) {
-            encoded = encoded.toBuilder().also {
-                it.fallback = fallback
-            }.build()
-        }
-        val compression = options?.compression
-        if (compression != null) {
-            encoded = encoded.compress(compression)
-        }
-        return encoded
     }
 
     fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
