@@ -49,9 +49,9 @@ class CodecTest {
     fun testCanRoundTripWithCustomContentType() {
         Client.register(codec = NumberCodec())
         val fixtures = fixtures()
-        val aliceClient = fixtures.aliceClient
+        val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
         }
         runBlocking {
             aliceConversation.send(
@@ -60,8 +60,8 @@ class CodecTest {
             )
         }
         val messages = runBlocking { aliceConversation.messages() }
-        assertEquals(messages.size, 1)
-        if (messages.size == 1) {
+        assertEquals(messages.size, 2)
+        if (messages.size == 2) {
             val content: Double? = messages[0].content()
             assertEquals(3.14, content)
             assertEquals("Error: This app does not support numbers.", messages[0].fallbackContent)

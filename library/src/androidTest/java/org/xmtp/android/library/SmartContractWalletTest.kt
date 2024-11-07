@@ -39,7 +39,6 @@ class SmartContractWalletTest {
             val context = InstrumentationRegistry.getInstrumentation().targetContext
             options = ClientOptions(
                 ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                enableV3 = true,
                 appContext = context,
                 dbEncryptionKey = key
             )
@@ -48,7 +47,7 @@ class SmartContractWalletTest {
             boV3Wallet = PrivateKeyBuilder()
             boV3 = boV3Wallet.getPrivateKey()
             boV3Client = runBlocking {
-                Client().createV3(
+                Client().create(
                     account = boV3Wallet,
                     options = options
                 )
@@ -57,7 +56,7 @@ class SmartContractWalletTest {
             // SCW
             davonSCW = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_1)
             davonSCWClient = runBlocking {
-                Client().createV3(
+                Client().create(
                     account = davonSCW,
                     options = options
                 )
@@ -66,7 +65,7 @@ class SmartContractWalletTest {
             // SCW
             eriSCW = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_2)
             eriSCWClient = runBlocking {
-                Client().createV3(
+                Client().create(
                     account = eriSCW,
                     options = options
                 )
@@ -77,7 +76,7 @@ class SmartContractWalletTest {
     @Test
     fun testCanBuildASCW() {
         val davonSCWClient2 = runBlocking {
-            Client().buildV3(
+            Client().build(
                 address = davonSCW.address,
                 options = options
             )
@@ -130,7 +129,10 @@ class SmartContractWalletTest {
         runBlocking { boGroup.sync() }
         assertEquals(boGroup.messages().first().body, "gm")
         assertEquals(boGroup.messages().first().id, messageId)
-        assertEquals(boGroup.messages().first().deliveryStatus, Message.MessageDeliveryStatus.PUBLISHED)
+        assertEquals(
+            boGroup.messages().first().deliveryStatus,
+            Message.MessageDeliveryStatus.PUBLISHED
+        )
         assertEquals(boGroup.messages().size, 3)
 
         runBlocking { davonSCWClient.conversations.syncConversations() }
@@ -159,15 +161,32 @@ class SmartContractWalletTest {
                     )
                 )
             }
-            assert(davonSCWClient.contacts.isGroupAllowed(davonGroup.id))
+            assertEquals(
+                davonSCWClient.preferences.consentList.conversationState(davonGroup.id),
+                ConsentState.ALLOWED
+            )
             assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
 
-            davonSCWClient.contacts.denyGroups(listOf(davonGroup.id))
-            assert(davonSCWClient.contacts.isGroupDenied(davonGroup.id))
+            davonSCWClient.preferences.consentList.setConsentState(
+                listOf(
+                    ConsentListEntry(
+                        davonGroup.id,
+                        EntryType.CONVERSATION_ID,
+                        ConsentState.DENIED
+                    )
+                )
+            )
+            assertEquals(
+                davonSCWClient.preferences.consentList.conversationState(davonGroup.id),
+                ConsentState.DENIED
+            )
             assertEquals(davonGroup.consentState(), ConsentState.DENIED)
 
             davonGroup.updateConsentState(ConsentState.ALLOWED)
-            assert(davonSCWClient.contacts.isGroupAllowed(davonGroup.id))
+            assertEquals(
+                davonSCWClient.preferences.consentList.conversationState(davonGroup.id),
+                ConsentState.ALLOWED
+            )
             assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
         }
     }
@@ -183,30 +202,63 @@ class SmartContractWalletTest {
                     )
                 )
             }
-            assert(!davonSCWClient.contacts.isInboxAllowed(boV3Client.inboxId))
-            assert(!davonSCWClient.contacts.isInboxDenied(boV3Client.inboxId))
+            assertEquals(
+                davonSCWClient.preferences.consentList.inboxIdState(boV3Client.inboxId),
+                ConsentState.UNKNOWN
+            )
+            davonSCWClient.preferences.consentList.setConsentState(
+                listOf(
+                    ConsentListEntry(
+                        boV3Client.inboxId,
+                        EntryType.INBOX_ID,
+                        ConsentState.ALLOWED
+                    )
+                )
+            )
+            var alixMember = davonGroup.members().firstOrNull { it.inboxId == boV3Client.inboxId }
+            assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
 
-            davonSCWClient.contacts.allowInboxes(listOf(boV3Client.inboxId))
-            var caroMember = davonGroup.members().firstOrNull { it.inboxId == boV3Client.inboxId }
-            assertEquals(caroMember!!.consentState, ConsentState.ALLOWED)
+            assertEquals(
+                davonSCWClient.preferences.consentList.inboxIdState(boV3Client.inboxId),
+                ConsentState.ALLOWED
+            )
 
-            assert(davonSCWClient.contacts.isInboxAllowed(boV3Client.inboxId))
-            assert(!davonSCWClient.contacts.isInboxDenied(boV3Client.inboxId))
-            assert(davonSCWClient.contacts.isAllowed(boV3Client.address))
-            assert(!davonSCWClient.contacts.isDenied(boV3Client.address))
+            davonSCWClient.preferences.consentList.setConsentState(
+                listOf(
+                    ConsentListEntry(
+                        boV3Client.inboxId,
+                        EntryType.INBOX_ID,
+                        ConsentState.DENIED
+                    )
+                )
+            )
+            alixMember = davonGroup.members().firstOrNull { it.inboxId == boV3Client.inboxId }
+            assertEquals(alixMember!!.consentState, ConsentState.DENIED)
 
-            davonSCWClient.contacts.denyInboxes(listOf(boV3Client.inboxId))
-            caroMember = davonGroup.members().firstOrNull { it.inboxId == boV3Client.inboxId }
-            assertEquals(caroMember!!.consentState, ConsentState.DENIED)
+            assertEquals(
+                davonSCWClient.preferences.consentList.inboxIdState(boV3Client.inboxId),
+                ConsentState.DENIED
+            )
 
-            assert(!davonSCWClient.contacts.isInboxAllowed(boV3Client.inboxId))
-            assert(davonSCWClient.contacts.isInboxDenied(boV3Client.inboxId))
-
-            davonSCWClient.contacts.allow(listOf(eriSCWClient.address))
-            assert(davonSCWClient.contacts.isAllowed(eriSCWClient.address))
-            assert(!davonSCWClient.contacts.isDenied(eriSCWClient.address))
-            assert(davonSCWClient.contacts.isInboxAllowed(eriSCWClient.inboxId))
-            assert(!davonSCWClient.contacts.isInboxDenied(eriSCWClient.inboxId))
+            davonSCWClient.preferences.consentList.setConsentState(
+                listOf(
+                    ConsentListEntry(
+                        eriSCWClient.address,
+                        EntryType.ADDRESS,
+                        ConsentState.ALLOWED
+                    )
+                )
+            )
+            alixMember = davonGroup.members().firstOrNull { it.inboxId == eriSCWClient.inboxId }
+            assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
+            assertEquals(
+                davonSCWClient.preferences.consentList.inboxIdState(eriSCWClient.inboxId),
+                ConsentState.ALLOWED
+            )
+            assertEquals(
+                davonSCWClient.preferences.consentList.addressState(eriSCWClient.address),
+                ConsentState.ALLOWED
+            )
         }
     }
 

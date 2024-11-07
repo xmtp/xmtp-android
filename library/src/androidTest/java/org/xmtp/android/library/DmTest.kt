@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,11 +16,10 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
-import org.xmtp.android.library.libxmtp.Message.*
+import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
 class DmTest {
@@ -37,48 +35,17 @@ class DmTest {
 
     @Before
     fun setUp() {
-        val key = SecureRandom().generateSeed(32)
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        alixWallet = PrivateKeyBuilder()
-        alix = alixWallet.getPrivateKey()
-        alixClient = runBlocking {
-            Client().createV3(
-                account = alixWallet,
-                options = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableV3 = true,
-                    appContext = context,
-                    dbEncryptionKey = key
-                )
-            )
-        }
-        boWallet = PrivateKeyBuilder()
-        bo = boWallet.getPrivateKey()
-        boClient = runBlocking {
-            Client().createV3(
-                account = boWallet,
-                options = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableV3 = true,
-                    appContext = context,
-                    dbEncryptionKey = key
-                )
-            )
-        }
+        val fixtures = fixtures()
+        alixWallet = fixtures.alixAccount
+        alix = fixtures.alix
+        boWallet = fixtures.boAccount
+        bo = fixtures.bo
+        caroWallet = fixtures.caroAccount
+        caro = fixtures.caro
 
-        caroWallet = PrivateKeyBuilder()
-        caro = caroWallet.getPrivateKey()
-        caroClient = runBlocking {
-            Client().createV3(
-                account = caroWallet,
-                options = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    enableV3 = true,
-                    appContext = context,
-                    dbEncryptionKey = key
-                )
-            )
-        }
+        alixClient = fixtures.alixClient
+        boClient = fixtures.boClient
+        caroClient = fixtures.caroClient
     }
 
     @Test
@@ -127,7 +94,6 @@ class DmTest {
     fun testCannotCreateDmWithMemberNotOnV3() {
         val chuxAccount = PrivateKeyBuilder()
         val chux: PrivateKey = chuxAccount.getPrivateKey()
-        runBlocking { Client().create(account = chuxAccount) }
 
         assertThrows("Recipient not on network", XMTPException::class.java) {
             runBlocking { boClient.conversations.findOrCreateDm(chux.walletAddress) }
@@ -148,8 +114,7 @@ class DmTest {
             dm.send("howdy")
             dm.send("gm")
             dm.sync()
-            assert(boClient.contacts.isGroupAllowed(dm.id))
-            assertEquals(boClient.contacts.consentList.groupState(dm.id), ConsentState.ALLOWED)
+            assertEquals(boClient.preferences.consentList.conversationState(dm.id), ConsentState.ALLOWED)
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
         }
     }
@@ -293,15 +258,32 @@ class DmTest {
         runBlocking {
             val dm =
                 boClient.conversations.findOrCreateDm(alix.walletAddress)
-            assert(boClient.contacts.isGroupAllowed(dm.id))
+            assertEquals(boClient.preferences.consentList.conversationState(dm.id), ConsentState.ALLOWED)
+
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
 
-            boClient.contacts.denyGroups(listOf(dm.id))
-            assert(boClient.contacts.isGroupDenied(dm.id))
+            boClient.preferences.consentList.setConsentState(
+                listOf(
+                    ConsentListEntry(
+                        dm.id,
+                        EntryType.CONVERSATION_ID,
+                        ConsentState.DENIED
+                    )
+                )
+            )
+            assertEquals(boClient.preferences.consentList.conversationState(dm.id), ConsentState.DENIED)
             assertEquals(dm.consentState(), ConsentState.DENIED)
 
-            dm.updateConsentState(ConsentState.ALLOWED)
-            assert(boClient.contacts.isGroupAllowed(dm.id))
+            boClient.preferences.consentList.setConsentState(
+                listOf(
+                    ConsentListEntry(
+                        dm.id,
+                        EntryType.CONVERSATION_ID,
+                        ConsentState.ALLOWED
+                    )
+                )
+            )
+            assertEquals(boClient.preferences.consentList.conversationState(dm.id), ConsentState.ALLOWED)
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
         }
     }
