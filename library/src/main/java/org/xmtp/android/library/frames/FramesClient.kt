@@ -1,20 +1,9 @@
-//package org.xmtp.android.library.frames
-//
-//import android.util.Base64
-//import org.xmtp.android.library.Client
-//import org.xmtp.android.library.XMTPException
-//import org.xmtp.android.library.frames.FramesConstants.PROTOCOL_VERSION
-//import org.xmtp.android.library.messages.PrivateKeyBuilder
-//import org.xmtp.android.library.messages.Signature
-//import org.xmtp.android.library.messages.getPublicKeyBundle
-//import org.xmtp.proto.message.contents.PublicKeyOuterClass.SignedPublicKeyBundle
-//import java.security.MessageDigest
-//import org.xmtp.proto.message.contents.Frames.FrameActionBody
-//import org.xmtp.proto.message.contents.Frames.FrameAction
-//import java.util.Date
-//
-//class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = OpenFramesProxy()) {
-//
+package org.xmtp.android.library.frames
+
+import org.xmtp.android.library.Client
+
+class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = OpenFramesProxy()) {
+
 //    suspend fun signFrameAction(inputs: FrameActionInputs): FramePostPayload {
 //        val opaqueConversationIdentifier = buildOpaqueIdentifier(inputs)
 //        val frameUrl = inputs.frameUrl
@@ -91,4 +80,4 @@
 //        val digest = MessageDigest.getInstance("SHA-256")
 //        return digest.digest(input)
 //    }
-//}
+}
