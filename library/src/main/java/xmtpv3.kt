@@ -1412,6 +1412,10 @@ internal interface UniffiLib : Library {
         `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
 
+    fun uniffi_xmtpv3_fn_method_ffixmtpclient_maybe_start_sync_worker(
+        `ptr`: Pointer,
+    ): Long
+
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_message(
         `ptr`: Pointer, `messageId`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
@@ -2097,6 +2101,9 @@ internal interface UniffiLib : Library {
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_installation_id(
     ): Short
 
+    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_maybe_start_sync_worker(
+    ): Short
+
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_message(
     ): Short
 
@@ -2156,7 +2163,7 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_func_diffie_hellman_k256() != 37475.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_func_generate_inbox_id() != 2184.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_func_generate_inbox_id() != 47637.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_func_generate_private_preferences_topic_identifier() != 59124.toShort()) {
@@ -2472,6 +2479,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_installation_id() != 37173.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_maybe_start_sync_worker() != 27018.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_message() != 26932.toShort()) {
@@ -7774,6 +7784,11 @@ public interface FfiXmtpClientInterface {
 
     fun `installationId`(): kotlin.ByteArray
 
+    /**
+     * Starts the sync worker if the history sync url is present.
+     */
+    suspend fun `maybeStartSyncWorker`()
+
     fun `message`(`messageId`: kotlin.ByteArray): FfiMessage
 
     suspend fun `registerIdentity`(`signatureRequest`: FfiSignatureRequest)
@@ -8259,6 +8274,42 @@ open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
                     )
                 }
             }
+        )
+    }
+
+
+    /**
+     * Starts the sync worker if the history sync url is present.
+     */
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `maybeStartSyncWorker`() {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_maybe_start_sync_worker(
+                    thisPtr,
+
+                    )
+            },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
+                    future,
+                    continuation
+                )
+            },
+            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+            // lift function
+            { Unit },
+
+            // Error FFI converter
+            GenericException.ErrorHandler,
         )
     }
 
@@ -9582,6 +9633,8 @@ sealed class GenericException(message: String) : kotlin.Exception(message) {
 
     class FailedToConvertToU32(message: String) : GenericException(message)
 
+    class Association(message: String) : GenericException(message)
+
     class DeviceSync(message: String) : GenericException(message)
 
 
@@ -9611,7 +9664,8 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
             11 -> GenericException.Erc1271SignatureException(FfiConverterString.read(buf))
             12 -> GenericException.Verifier(FfiConverterString.read(buf))
             13 -> GenericException.FailedToConvertToU32(FfiConverterString.read(buf))
-            14 -> GenericException.DeviceSync(FfiConverterString.read(buf))
+            14 -> GenericException.Association(FfiConverterString.read(buf))
+            15 -> GenericException.DeviceSync(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
 
@@ -9688,8 +9742,13 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
                 Unit
             }
 
-            is GenericException.DeviceSync -> {
+            is GenericException.Association -> {
                 buf.putInt(14)
+                Unit
+            }
+
+            is GenericException.DeviceSync -> {
+                buf.putInt(15)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -10719,9 +10778,11 @@ fun `diffieHellmanK256`(
     )
 }
 
+
+@Throws(GenericException::class)
 fun `generateInboxId`(`accountAddress`: kotlin.String, `nonce`: kotlin.ULong): kotlin.String {
     return FfiConverterString.lift(
-        uniffiRustCall() { _status ->
+        uniffiRustCallWithError(GenericException) { _status ->
             UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_generate_inbox_id(
                 FfiConverterString.lower(`accountAddress`),
                 FfiConverterULong.lower(`nonce`),
