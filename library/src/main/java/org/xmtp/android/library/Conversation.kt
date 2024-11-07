@@ -4,17 +4,8 @@ import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass
-import org.xmtp.proto.message.contents.Invitation.ConsentProofPayload
 import java.util.Date
 
-/**
- * This represents an ongoing conversation.
- * It can be provided to [Client] to [messages] and [send].
- * The [Client] also allows you to [streamMessages] from this [Conversation].
- *
- * It attempts to give uniform shape to v1 and v2 conversations.
- */
 sealed class Conversation {
     data class Group(val group: org.xmtp.android.library.Group) : Conversation()
     data class Dm(val dm: org.xmtp.android.library.Dm) : Conversation()
@@ -116,19 +107,6 @@ sealed class Conversation {
         }
     }
 
-    /**
-     * This lists messages sent to the [Conversation].
-     * @param before initial date to filter
-     * @param after final date to create a range of dates and filter
-     * @param limit is the number of result that will be returned
-     * @param direction is the way of srting the information, by default is descending, you can
-     * know more about it in class [MessageApiOuterClass].
-     * @see MessageApiOuterClass.SortDirection
-     * @return The list of messages sent. If [before] or [after] are specified then this will only list messages
-     * sent at or [after] and at or [before].
-     * If [limit] is specified then results are pulled in pages of that size.
-     * If [direction] is specified then that will control the sort order of te messages.
-     */
     fun messages(
         limit: Int? = null,
         beforeNs: Long? = null,
@@ -149,7 +127,6 @@ sealed class Conversation {
         }
     }
 
-
     suspend fun processMessage(envelopeBytes: ByteArray): Message {
         return when (this) {
             is Group -> group.processMessage(envelopeBytes)
@@ -157,15 +134,6 @@ sealed class Conversation {
         }
     }
 
-    val consentProof: ConsentProofPayload?
-        get() {
-            return when (this) {
-                is Group -> return null
-                is Dm -> return null
-            }
-        }
-
-    // Get the client according to the version
     val client: Client
         get() {
             return when (this) {
@@ -174,10 +142,6 @@ sealed class Conversation {
             }
         }
 
-    /**
-     * This exposes a stream of new messages sent to the [Conversation].
-     * @return Stream of messages according to the version
-     */
     fun streamMessages(): Flow<DecodedMessage> {
         return when (this) {
             is Group -> group.streamMessages()

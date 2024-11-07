@@ -9,10 +9,9 @@ import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.libxmtp.Message.*
+import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.Message.SortDirection
 import org.xmtp.android.library.messages.Topic
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection.SORT_DIRECTION_ASCENDING
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
 import uniffi.xmtpv3.FfiDeliveryStatus
