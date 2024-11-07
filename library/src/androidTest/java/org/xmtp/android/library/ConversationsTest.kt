@@ -1,0 +1,170 @@
+package org.xmtp.android.library
+
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.xmtp.android.library.libxmtp.Message.*
+import org.xmtp.android.library.messages.PrivateKey
+import org.xmtp.android.library.messages.PrivateKeyBuilder
+import org.xmtp.android.library.messages.walletAddress
+
+@RunWith(AndroidJUnit4::class)
+class ConversationsTest {
+    private lateinit var alixWallet: PrivateKeyBuilder
+    private lateinit var boWallet: PrivateKeyBuilder
+    private lateinit var alix: PrivateKey
+    private lateinit var alixClient: Client
+    private lateinit var bo: PrivateKey
+    private lateinit var boClient: Client
+    private lateinit var caroWallet: PrivateKeyBuilder
+    private lateinit var caro: PrivateKey
+    private lateinit var caroClient: Client
+    private lateinit var fixtures: Fixtures
+
+    @Before
+    fun setUp() {
+        fixtures = fixtures()
+        alixWallet = fixtures.alixAccount
+        alix = fixtures.alix
+        boWallet = fixtures.boAccount
+        bo = fixtures.bo
+        caroWallet = fixtures.caroAccount
+        caro = fixtures.caro
+
+        alixClient = fixtures.alixClient
+        boClient = fixtures.boClient
+        caroClient = fixtures.caroClient
+    }
+
+    @Test
+    fun testsCanFindConversationByTopic() {
+        val group =
+            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+        val dm = runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+
+        val sameDm = boClient.findConversationByTopic(dm.topic)
+        val sameGroup = boClient.findConversationByTopic(group.topic)
+        assertEquals(group.id, sameGroup?.id)
+        assertEquals(dm.id, sameDm?.id)
+    }
+
+    @Test
+    fun testsCanListConversations() {
+        val dm = runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+        val group =
+            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+        assertEquals(runBlocking { boClient.conversations.list().size }, 2)
+        assertEquals(runBlocking { boClient.conversations.listDms().size }, 1)
+        assertEquals(runBlocking { boClient.conversations.listGroups().size }, 1)
+
+        runBlocking { caroClient.conversations.syncConversations() }
+        assertEquals(
+            runBlocking { caroClient.conversations.list().size },
+            2
+        )
+        assertEquals(runBlocking { caroClient.conversations.listGroups().size }, 1)
+    }
+
+    @Test
+    fun testsCanListConversationsFiltered() {
+        val dm = runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+        val group =
+            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+        assertEquals(runBlocking { boClient.conversations.list().size }, 2)
+        assertEquals(
+            runBlocking { boClient.conversations.list(consentState = ConsentState.ALLOWED).size },
+            2
+        )
+        runBlocking { group.updateConsentState(ConsentState.DENIED) }
+        assertEquals(
+            runBlocking { boClient.conversations.list(consentState = ConsentState.ALLOWED).size },
+            1
+        )
+        assertEquals(
+            runBlocking { boClient.conversations.list(consentState = ConsentState.DENIED).size },
+            1
+        )
+        assertEquals(runBlocking { boClient.conversations.list().size }, 2)
+    }
+
+    @Test
+    fun testCanListConversationsOrder() {
+        val dm = runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+        val group1 =
+            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+        val group2 =
+            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+        runBlocking { dm.send("Howdy") }
+        runBlocking { group2.send("Howdy") }
+        runBlocking { boClient.conversations.syncAllConversations() }
+        val conversations = runBlocking { boClient.conversations.list() }
+        val conversationsOrdered =
+            runBlocking { boClient.conversations.list(order = Conversations.ConversationOrder.LAST_MESSAGE) }
+        assertEquals(conversations.size, 3)
+        assertEquals(conversationsOrdered.size, 3)
+        assertEquals(conversations.map { it.id }, listOf(dm.id, group1.id, group2.id))
+        assertEquals(conversationsOrdered.map { it.id }, listOf(group2.id, dm.id, group1.id))
+    }
+
+    @Test
+    fun testCanStreamAllMessages() {
+        val group =
+            runBlocking { caroClient.conversations.newGroup(listOf(bo.walletAddress)) }
+        val conversation =
+            runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+        runBlocking { boClient.conversations.syncConversations() }
+
+        val allMessages = mutableListOf<DecodedMessage>()
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                boClient.conversations.streamAllMessages()
+                    .collect { message ->
+                        allMessages.add(message)
+                    }
+            } catch (e: Exception) {
+            }
+        }
+        Thread.sleep(1000)
+        runBlocking {
+            group.send("hi")
+            conversation.send("hi")
+        }
+        Thread.sleep(1000)
+        assertEquals(2, allMessages.size)
+        job.cancel()
+    }
+
+    @Test
+    fun testCanStreamGroupsAndConversations() {
+        val allMessages = mutableListOf<String>()
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                boClient.conversations.stream()
+                    .collect { message ->
+                        allMessages.add(message.topic)
+                    }
+            } catch (e: Exception) {
+            }
+        }
+        Thread.sleep(1000)
+
+        runBlocking {
+            caroClient.conversations.newGroup(listOf(bo.walletAddress))
+            Thread.sleep(1000)
+            boClient.conversations.findOrCreateDm(caro.walletAddress)
+        }
+
+        Thread.sleep(2000)
+        assertEquals(2, allMessages.size)
+        job.cancel()
+    }
+}

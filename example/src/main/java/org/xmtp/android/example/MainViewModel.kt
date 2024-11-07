@@ -45,7 +45,7 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val listItems = mutableListOf<MainListItem>()
             try {
-                val conversations = ClientManager.client.conversations.list(includeGroups = true)
+                val conversations = ClientManager.client.conversations.list()
                 val hmacKeysResult = ClientManager.client.conversations.getHmacKeys()
                 val subscriptions: MutableList<Service.Subscription> = conversations.map {
                     val hmacKeys = hmacKeysResult.hmacKeysMap
@@ -61,7 +61,6 @@ class MainViewModel : ViewModel() {
                             sub.addAllHmacKeys(result)
                         }
                         sub.topic = it.topic
-                        sub.isSilent = it.version == Conversation.Version.V1
                     }.build()
                 }.toMutableList()
 
@@ -105,7 +104,7 @@ class MainViewModel : ViewModel() {
     val stream: StateFlow<MainListItem?> =
         stateFlow(viewModelScope, null) { subscriptionCount ->
             if (ClientManager.clientState.value is ClientManager.ClientState.Ready) {
-                ClientManager.client.conversations.streamAll()
+                ClientManager.client.conversations.stream()
                     .flowWhileShared(
                         subscriptionCount,
                         SharingStarted.WhileSubscribed(1000L)
