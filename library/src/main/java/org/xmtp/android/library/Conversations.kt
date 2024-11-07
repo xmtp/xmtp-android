@@ -104,7 +104,7 @@ data class Conversations(
             throw XMTPException("Recipient is sender")
         }
         val falseAddresses =
-            if (accountAddresses.isNotEmpty()) client.canMessageV3(accountAddresses)
+            if (accountAddresses.isNotEmpty()) client.canMessage(accountAddresses)
                 .filter { !it.value }.map { it.key } else emptyList()
         if (falseAddresses.isNotEmpty()) {
             throw XMTPException("${falseAddresses.joinToString()} not on network")
@@ -146,7 +146,7 @@ data class Conversations(
             throw XMTPException("Recipient is sender")
         }
         val falseAddresses =
-            client.canMessageV3(listOf(peerAddress)).filter { !it.value }.map { it.key }
+            client.canMessage(listOf(peerAddress)).filter { !it.value }.map { it.key }
         if (falseAddresses.isNotEmpty()) {
             throw XMTPException("${falseAddresses.joinToString()} not on network")
         }
@@ -202,9 +202,6 @@ data class Conversations(
         order: ConversationOrder = ConversationOrder.CREATED_AT,
         consentState: ConsentState? = null,
     ): List<Conversation> {
-        if (client.hasV2Client)
-            throw XMTPException("Only supported for V3 only clients.")
-
         val ffiConversations = libXMTPConversations?.list(
             FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),

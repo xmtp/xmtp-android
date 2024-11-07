@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.messages.PagingInfoSortDirection
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation.ConsentProofPayload
 import java.util.Date
@@ -134,7 +133,7 @@ sealed class Conversation {
         limit: Int? = null,
         before: Date? = null,
         after: Date? = null,
-        direction: PagingInfoSortDirection = MessageApiOuterClass.SortDirection.SORT_DIRECTION_DESCENDING,
+        direction: Message.SortDirection = Message.SortDirection.DESCENDING,
     ): List<DecodedMessage> {
         return when (this) {
             is Group -> {

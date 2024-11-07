@@ -3,6 +3,7 @@ package org.xmtp.android.library
 import uniffi.xmtpv3.FfiConsent
 import uniffi.xmtpv3.FfiConsentEntityType
 import uniffi.xmtpv3.FfiConsentState
+import uniffi.xmtpv3.FfiXmtpClient
 
 enum class ConsentState {
     ALLOWED,
@@ -86,9 +87,10 @@ data class ConsentListEntry(
 
 class ConsentList(
     val client: Client,
+    private val ffiClient: FfiXmtpClient
 ) {
     suspend fun setConsentState(entries: List<ConsentListEntry>) {
-        client.v3Client?.setConsentStates(entries.map { it.toFfiConsent() })
+        ffiClient.setConsentStates(entries.map { it.toFfiConsent() })
     }
 
     private fun ConsentListEntry.toFfiConsent(): FfiConsent {
@@ -99,44 +101,36 @@ class ConsentList(
         )
     }
 
-    suspend fun addressState(address: String): ConsentState? {
-        client.v3Client?.let {
-            return ConsentState.fromFfiConsentState(
-                it.getConsentState(
-                    FfiConsentEntityType.ADDRESS,
-                    address
-                )
+    suspend fun addressState(address: String): ConsentState {
+        return ConsentState.fromFfiConsentState(
+            ffiClient.getConsentState(
+                FfiConsentEntityType.ADDRESS,
+                address
             )
-        }
-        return null
+        )
     }
 
-    suspend fun groupState(groupId: String): ConsentState? {
-        client.v3Client?.let {
-            return ConsentState.fromFfiConsentState(
-                it.getConsentState(
-                    FfiConsentEntityType.CONVERSATION_ID,
-                    groupId
-                )
+    suspend fun groupState(groupId: String): ConsentState {
+        return ConsentState.fromFfiConsentState(
+            ffiClient.getConsentState(
+                FfiConsentEntityType.CONVERSATION_ID,
+                groupId
             )
-        }
-        return null
+        )
     }
 
-    suspend fun inboxIdState(inboxId: String): ConsentState? {
-        client.v3Client?.let {
-            return ConsentState.fromFfiConsentState(
-                it.getConsentState(
-                    FfiConsentEntityType.INBOX_ID,
-                    inboxId
-                )
+    suspend fun inboxIdState(inboxId: String): ConsentState {
+        return ConsentState.fromFfiConsentState(
+            ffiClient.getConsentState(
+                FfiConsentEntityType.INBOX_ID,
+                inboxId
             )
-        }
-        return null
+        )
     }
 }
 
 data class PrivatePreferences(
     var client: Client,
-    var consentList: ConsentList = ConsentList(client),
+    private val ffiClient: FfiXmtpClient,
+    var consentList: ConsentList = ConsentList(client, ffiClient),
 )
