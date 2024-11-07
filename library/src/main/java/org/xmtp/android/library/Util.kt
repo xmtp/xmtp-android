@@ -12,14 +12,6 @@ class Util {
             val digest256 = Keccak.Digest256()
             return digest256.digest(data)
         }
-
-        fun envelopeFromFFi(envelope: FfiEnvelope): MessageApiOuterClass.Envelope {
-            return MessageApiOuterClass.Envelope.newBuilder().also {
-                it.contentTopic = envelope.contentTopic
-                it.timestampNs = envelope.timestampNs.toLong()
-                it.message = envelope.message.toByteString()
-            }.build()
-        }
     }
 }
 
