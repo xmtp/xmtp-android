@@ -352,7 +352,7 @@ class GroupTest {
 
     @Test
     fun testAddedByAddress() {
-        val group = runBlocking {
+        runBlocking {
             alixClient.conversations.newGroup(
                 listOf(
                     boClient.address,
@@ -432,11 +432,8 @@ class GroupTest {
         var messageCallbacks = 0
 
         val job = CoroutineScope(Dispatchers.IO).launch {
-            try {
-                boClient.conversations.streamAllMessages().collect { message ->
-                    messageCallbacks++
-                }
-            } catch (e: Exception) {
+            boClient.conversations.streamAllMessages().collect { _ ->
+                messageCallbacks++
             }
         }
         Thread.sleep(1000)
@@ -478,6 +475,7 @@ class GroupTest {
         Thread.sleep(1000)
 
         assertEquals(secondMsgCheck, messageCallbacks)
+        job.cancel()
     }
 
     @Test

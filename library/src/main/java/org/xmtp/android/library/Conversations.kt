@@ -103,7 +103,7 @@ data class Conversations(
         }
 
         val group =
-            ffiConversations?.createGroup(
+            ffiConversations.createGroup(
                 accountAddresses,
                 opts = FfiCreateGroupOptions(
                     permissions = permissions,
@@ -113,7 +113,7 @@ data class Conversations(
                     groupPinnedFrameUrl = groupPinnedFrameUrl,
                     customPermissionPolicySet = permissionsPolicySet
                 )
-            ) ?: throw XMTPException("Client does not support Groups")
+            )
 
         return Group(client, group)
     }

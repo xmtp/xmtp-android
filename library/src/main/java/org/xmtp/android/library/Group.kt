@@ -142,8 +142,8 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
         }
     }
 
-    suspend fun processMessage(envelopeBytes: ByteArray): Message {
-        val message = libXMTPGroup.processStreamedConversationMessage(envelopeBytes)
+    suspend fun processMessage(messageBytes: ByteArray): Message {
+        val message = libXMTPGroup.processStreamedConversationMessage(messageBytes)
         return Message(client, message)
     }
 

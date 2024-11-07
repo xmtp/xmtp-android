@@ -55,9 +55,8 @@ class ConversationsTest {
 
     @Test
     fun testsCanListConversations() {
-        val dm = runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
-        val group =
-            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+        runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+        runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
         assertEquals(runBlocking { boClient.conversations.list().size }, 2)
         assertEquals(runBlocking { boClient.conversations.listDms().size }, 1)
         assertEquals(runBlocking { boClient.conversations.listGroups().size }, 1)
@@ -72,7 +71,7 @@ class ConversationsTest {
 
     @Test
     fun testsCanListConversationsFiltered() {
-        val dm = runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+        runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
         val group =
             runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
         assertEquals(runBlocking { boClient.conversations.list().size }, 2)

@@ -44,13 +44,6 @@ sealed class Conversation {
             }
         }
 
-    fun isCreator(): Boolean {
-        return when (this) {
-            is Group -> group.isCreator()
-            is Dm -> dm.isCreator()
-        }
-    }
-
     suspend fun members(): List<Member> {
         return when (this) {
             is Group -> group.members()
@@ -86,17 +79,10 @@ sealed class Conversation {
         }
     }
 
-    suspend fun send(text: String, sendOptions: SendOptions? = null, sentAt: Date? = null): String {
+    suspend fun send(text: String): String {
         return when (this) {
             is Group -> group.send(text)
             is Dm -> dm.send(text)
-        }
-    }
-
-    suspend fun send(encodedContent: EncodedContent, options: SendOptions? = null): String {
-        return when (this) {
-            is Group -> group.send(encodedContent = encodedContent)
-            is Dm -> dm.send(encodedContent = encodedContent)
         }
     }
 
@@ -120,17 +106,10 @@ sealed class Conversation {
         }
     }
 
-    fun decode(message: Message): DecodedMessage {
+    suspend fun processMessage(messageBytes: ByteArray): Message {
         return when (this) {
-            is Group -> message.decode()
-            is Dm -> message.decode()
-        }
-    }
-
-    suspend fun processMessage(envelopeBytes: ByteArray): Message {
-        return when (this) {
-            is Group -> group.processMessage(envelopeBytes)
-            is Dm -> dm.processMessage(envelopeBytes)
+            is Group -> group.processMessage(messageBytes)
+            is Dm -> dm.processMessage(messageBytes)
         }
     }
 
