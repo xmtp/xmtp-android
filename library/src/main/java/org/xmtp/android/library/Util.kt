@@ -1,10 +1,7 @@
 package org.xmtp.android.library
 
-import com.google.protobuf.kotlin.toByteString
 import org.bouncycastle.jcajce.provider.digest.Keccak
 import org.web3j.utils.Numeric
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass
-import uniffi.xmtpv3.FfiEnvelope
 
 class Util {
     companion object {

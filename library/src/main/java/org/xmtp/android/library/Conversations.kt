@@ -124,7 +124,7 @@ data class Conversations(
     }
 
     // Sync all existing local conversation data from the network (Note: call syncConversations() first to get the latest list of conversations)
-    suspend fun syncAllConversations(): UInt? {
+    suspend fun syncAllConversations(): UInt {
         return ffiConversations.syncAllConversations()
     }
 
@@ -277,17 +277,8 @@ data class Conversations(
         callbackFlow {
             val messageCallback = object : FfiMessageCallback {
                 override fun onMessage(message: FfiMessage) {
-                    val conversation = client.findConversation(message.convoId.toHex())
                     val decodedMessage = Message(client, message).decodeOrNull()
-                    when (conversation?.version) {
-                        Conversation.Version.DM -> {
-                            decodedMessage?.let { trySend(it) }
-                        }
-
-                        else -> {
-                            decodedMessage?.let { trySend(it) }
-                        }
-                    }
+                    decodedMessage?.let { trySend(it) }
                 }
 
                 override fun onError(error: FfiSubscribeException) {
