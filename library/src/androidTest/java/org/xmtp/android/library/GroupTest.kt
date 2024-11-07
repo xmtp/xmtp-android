@@ -18,7 +18,7 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
-import org.xmtp.android.library.libxmtp.Message.*
+import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
@@ -111,11 +111,11 @@ class GroupTest {
 
         runBlocking {
             assertEquals(
-                boClient.preferences.consentList.groupState(boGroup.id),
+                boClient.preferences.consentList.conversationState(boGroup.id),
                 ConsentState.ALLOWED
             )
             assertEquals(
-                alixClient.preferences.consentList.groupState(alixGroup.id),
+                alixClient.preferences.consentList.conversationState(alixGroup.id),
                 ConsentState.UNKNOWN
             )
         }
@@ -419,7 +419,7 @@ class GroupTest {
             group.sync()
             assertEquals(group.consentState(), ConsentState.ALLOWED)
             assertEquals(
-                boClient.preferences.consentList.groupState(group.id),
+                boClient.preferences.consentList.conversationState(group.id),
                 ConsentState.ALLOWED
             )
         }
@@ -694,7 +694,7 @@ class GroupTest {
                     )
                 )
             assertEquals(
-                boClient.preferences.consentList.groupState(group.id),
+                boClient.preferences.consentList.conversationState(group.id),
                 ConsentState.ALLOWED
             )
             assertEquals(group.consentState(), ConsentState.ALLOWED)
@@ -703,17 +703,17 @@ class GroupTest {
                 listOf(
                     ConsentListEntry(
                         group.id,
-                        EntryType.GROUP_ID,
+                        EntryType.CONVERSATION_ID,
                         ConsentState.DENIED
                     )
                 )
             )
-            assertEquals(boClient.preferences.consentList.groupState(group.id), ConsentState.DENIED)
+            assertEquals(boClient.preferences.consentList.conversationState(group.id), ConsentState.DENIED)
             assertEquals(group.consentState(), ConsentState.DENIED)
 
             group.updateConsentState(ConsentState.ALLOWED)
             assertEquals(
-                boClient.preferences.consentList.groupState(group.id),
+                boClient.preferences.consentList.conversationState(group.id),
                 ConsentState.ALLOWED
             )
             assertEquals(group.consentState(), ConsentState.ALLOWED)
@@ -761,7 +761,6 @@ class GroupTest {
                 boClient.preferences.consentList.inboxIdState(alixClient.inboxId),
                 ConsentState.DENIED
             )
-
 
             boClient.preferences.consentList.setConsentState(
                 listOf(

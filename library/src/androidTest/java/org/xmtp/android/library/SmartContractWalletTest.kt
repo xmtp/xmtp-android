@@ -129,7 +129,10 @@ class SmartContractWalletTest {
         runBlocking { boGroup.sync() }
         assertEquals(boGroup.messages().first().body, "gm")
         assertEquals(boGroup.messages().first().id, messageId)
-        assertEquals(boGroup.messages().first().deliveryStatus, Message.MessageDeliveryStatus.PUBLISHED)
+        assertEquals(
+            boGroup.messages().first().deliveryStatus,
+            Message.MessageDeliveryStatus.PUBLISHED
+        )
         assertEquals(boGroup.messages().size, 3)
 
         runBlocking { davonSCWClient.conversations.syncConversations() }
@@ -159,7 +162,7 @@ class SmartContractWalletTest {
                 )
             }
             assertEquals(
-                davonSCWClient.preferences.consentList.groupState(davonGroup.id),
+                davonSCWClient.preferences.consentList.conversationState(davonGroup.id),
                 ConsentState.ALLOWED
             )
             assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
@@ -168,17 +171,20 @@ class SmartContractWalletTest {
                 listOf(
                     ConsentListEntry(
                         davonGroup.id,
-                        EntryType.GROUP_ID,
+                        EntryType.CONVERSATION_ID,
                         ConsentState.DENIED
                     )
                 )
             )
-            assertEquals(davonSCWClient.preferences.consentList.groupState(davonGroup.id), ConsentState.DENIED)
+            assertEquals(
+                davonSCWClient.preferences.consentList.conversationState(davonGroup.id),
+                ConsentState.DENIED
+            )
             assertEquals(davonGroup.consentState(), ConsentState.DENIED)
 
             davonGroup.updateConsentState(ConsentState.ALLOWED)
             assertEquals(
-                davonSCWClient.preferences.consentList.groupState(davonGroup.id),
+                davonSCWClient.preferences.consentList.conversationState(davonGroup.id),
                 ConsentState.ALLOWED
             )
             assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
@@ -233,7 +239,6 @@ class SmartContractWalletTest {
                 davonSCWClient.preferences.consentList.inboxIdState(boV3Client.inboxId),
                 ConsentState.DENIED
             )
-
 
             davonSCWClient.preferences.consentList.setConsentState(
                 listOf(
