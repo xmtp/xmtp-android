@@ -58,32 +58,32 @@
   <div class="breadcrumbs"><a href="../../../index.html">library</a><span class="delimiter">/</span><a href="../index.html">org.xmtp.android.library</a><span class="delimiter">/</span><span class="current">ClientOptions</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Client</span><wbr></wbr><span><span>Options</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">ClientOptions</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>api<span class="token operator">: </span><a href="-api/index.html">ClientOptions.Api</a><span class="token operator"> = </span>Api()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>preCreateIdentityCallback<span class="token operator">: </span><a href="../index.html#-16111313%2FClasslikes%2F-1887420133">PreEventCallback</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>preEnableIdentityCallback<span class="token operator">: </span><a href="../index.html#-16111313%2FClasslikes%2F-1887420133">PreEventCallback</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>preAuthenticateToInboxCallback<span class="token operator">: </span><a href="../index.html#-16111313%2FClasslikes%2F-1887420133">PreEventCallback</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>appContext<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>enableV3<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dbDirectory<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dbEncryptionKey<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historySyncUrl<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>when (api.env) {
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">ClientOptions</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>api<span class="token operator">: </span><a href="-api/index.html">ClientOptions.Api</a><span class="token operator"> = </span>Api()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>preAuthenticateToInboxCallback<span class="token operator">: </span><a href="../index.html#-16111313%2FClasslikes%2F-1887420133">PreEventCallback</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>appContext<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dbEncryptionKey<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>historySyncUrl<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>when (api.env) {
         XMTPEnvironment.PRODUCTION -&gt; &quot;https://message-history.production.ephemera.network/&quot;
         XMTPEnvironment.LOCAL -&gt; &quot;http://0.0.0.0:5558&quot;
         else -&gt; &quot;https://message-history.dev.ephemera.network/&quot;
-    }</span></span><span class="token punctuation">)</span></div></div></div>
+    }<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dbDirectory<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
-        <div class="table"><a data-name="-1634135313%2FConstructors%2F-1887420133" anchor-label="ClientOptions" id="-1634135313%2FConstructors%2F-1887420133" data-filterable-set=":library:dokkaHtml/release"></a>
+        <div class="table"><a data-name="752580537%2FConstructors%2F-1887420133" anchor-label="ClientOptions" id="752580537%2FConstructors%2F-1887420133" data-filterable-set=":library:dokkaHtml/release"></a>
           <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":library:dokkaHtml/release" data-filterable-set=":library:dokkaHtml/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-client-options.html"><span>Client</span><wbr></wbr><span><span>Options</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1634135313%2FConstructors%2F-1887420133"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="752580537%2FConstructors%2F-1887420133"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">api<span class="token operator">: </span><a href="-api/index.html">ClientOptions.Api</a><span class="token operator"> = </span>Api()<span class="token punctuation">, </span></span><span class="parameter ">preCreateIdentityCallback<span class="token operator">: </span><a href="../index.html#-16111313%2FClasslikes%2F-1887420133">PreEventCallback</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">preEnableIdentityCallback<span class="token operator">: </span><a href="../index.html#-16111313%2FClasslikes%2F-1887420133">PreEventCallback</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">preAuthenticateToInboxCallback<span class="token operator">: </span><a href="../index.html#-16111313%2FClasslikes%2F-1887420133">PreEventCallback</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">appContext<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">enableV3<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">dbDirectory<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">dbEncryptionKey<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">historySyncUrl<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>when (api.env) {
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">api<span class="token operator">: </span><a href="-api/index.html">ClientOptions.Api</a><span class="token operator"> = </span>Api()<span class="token punctuation">, </span></span><span class="parameter ">preAuthenticateToInboxCallback<span class="token operator">: </span><a href="../index.html#-16111313%2FClasslikes%2F-1887420133">PreEventCallback</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">appContext<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">dbEncryptionKey<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">historySyncUrl<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>when (api.env) {
         XMTPEnvironment.PRODUCTION -&gt; &quot;https://message-history.production.ephemera.network/&quot;
         XMTPEnvironment.LOCAL -&gt; &quot;http://0.0.0.0:5558&quot;
         else -&gt; &quot;https://message-history.dev.ephemera.network/&quot;
-    }</span></span><span class="token punctuation">)</span></div></div></div>
+    }<span class="token punctuation">, </span></span><span class="parameter ">dbDirectory<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -136,7 +136,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="app-context.html">appContext</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="app-context.html">appContext</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -166,22 +166,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="db-encryption-key.html">dbEncryptionKey</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1417593669%2FProperties%2F-1887420133" anchor-label="enableV3" id="-1417593669%2FProperties%2F-1887420133" data-filterable-set=":library:dokkaHtml/release"></a>
-          <div class="table-row" data-filterable-current=":library:dokkaHtml/release" data-filterable-set=":library:dokkaHtml/release">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="enable-v3.html"><span>enable</span><wbr></wbr><span><span>V3</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1417593669%2FProperties%2F-1887420133"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="enable-v3.html">enableV3</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="db-encryption-key.html">dbEncryptionKey</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -212,36 +197,6 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="pre-authenticate-to-inbox-callback.html">preAuthenticateToInboxCallback</a><span class="token operator">: </span><a href="../index.html#-16111313%2FClasslikes%2F-1887420133">PreEventCallback</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="114838173%2FProperties%2F-1887420133" anchor-label="preCreateIdentityCallback" id="114838173%2FProperties%2F-1887420133" data-filterable-set=":library:dokkaHtml/release"></a>
-          <div class="table-row" data-filterable-current=":library:dokkaHtml/release" data-filterable-set=":library:dokkaHtml/release">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="pre-create-identity-callback.html"><span>pre</span><wbr></wbr><span>Create</span><wbr></wbr><span>Identity</span><wbr></wbr><span><span>Callback</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="114838173%2FProperties%2F-1887420133"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="pre-create-identity-callback.html">preCreateIdentityCallback</a><span class="token operator">: </span><a href="../index.html#-16111313%2FClasslikes%2F-1887420133">PreEventCallback</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="978078198%2FProperties%2F-1887420133" anchor-label="preEnableIdentityCallback" id="978078198%2FProperties%2F-1887420133" data-filterable-set=":library:dokkaHtml/release"></a>
-          <div class="table-row" data-filterable-current=":library:dokkaHtml/release" data-filterable-set=":library:dokkaHtml/release">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="pre-enable-identity-callback.html"><span>pre</span><wbr></wbr><span>Enable</span><wbr></wbr><span>Identity</span><wbr></wbr><span><span>Callback</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="978078198%2FProperties%2F-1887420133"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":library:dokkaHtml/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="pre-enable-identity-callback.html">preEnableIdentityCallback</a><span class="token operator">: </span><a href="../index.html#-16111313%2FClasslikes%2F-1887420133">PreEventCallback</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
                 </div>
               </div>
             </div>
