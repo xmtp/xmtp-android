@@ -29,7 +29,7 @@ object ClientManager {
                 isSecure = true
             ),
             appContext = appContext,
-            dbEncryptionKey = encryptionKey!!
+            dbEncryptionKey = encryptionKey
         )
     }
 
