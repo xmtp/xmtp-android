@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import kotlinx.coroutines.flow.Flow
-import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
 import java.util.Date
