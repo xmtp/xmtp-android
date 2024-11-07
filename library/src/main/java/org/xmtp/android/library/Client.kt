@@ -43,10 +43,10 @@ class Client() {
     lateinit var preferences: PrivatePreferences
     lateinit var conversations: Conversations
     lateinit var environment: XMTPEnvironment
-    lateinit var ffiClient: FfiXmtpClient
     lateinit var dbPath: String
     var logger: XMTPLogger = XMTPLogger()
     val libXMTPVersion: String = getVersionInfo()
+    private lateinit var ffiClient: FfiXmtpClient
 
     companion object {
         private const val TAG = "Client"
@@ -84,10 +84,10 @@ class Client() {
         environment: XMTPEnvironment,
     ) : this() {
         this.address = address
-        this.preferences = PrivatePreferences(client = this)
+        this.preferences = PrivatePreferences(client = this, ffiClient = libXMTPClient)
         this.ffiClient = libXMTPClient
         this.conversations =
-            Conversations(client = this, libXMTPConversations = libXMTPClient.conversations())
+            Conversations(client = this, ffiConversations = libXMTPClient.conversations())
         this.dbPath = dbPath
         this.installationId = installationId
         this.inboxId = inboxId

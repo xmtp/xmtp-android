@@ -3,6 +3,7 @@ package org.xmtp.android.library
 import uniffi.xmtpv3.FfiConsent
 import uniffi.xmtpv3.FfiConsentEntityType
 import uniffi.xmtpv3.FfiConsentState
+import uniffi.xmtpv3.FfiXmtpClient
 
 enum class ConsentState {
     ALLOWED,
@@ -14,7 +15,7 @@ enum class ConsentState {
             return when (option) {
                 ALLOWED -> FfiConsentState.ALLOWED
                 DENIED -> FfiConsentState.DENIED
-                else -> FfiConsentState.UNKNOWN
+                UNKNOWN -> FfiConsentState.UNKNOWN
             }
         }
 
@@ -22,7 +23,7 @@ enum class ConsentState {
             return when (option) {
                 FfiConsentState.ALLOWED -> ALLOWED
                 FfiConsentState.DENIED -> DENIED
-                else -> UNKNOWN
+                FfiConsentState.UNKNOWN -> UNKNOWN
             }
         }
     }
@@ -30,14 +31,14 @@ enum class ConsentState {
 
 enum class EntryType {
     ADDRESS,
-    GROUP_ID,
+    CONVERSATION_ID,
     INBOX_ID;
 
     companion object {
         fun toFfiConsentEntityType(option: EntryType): FfiConsentEntityType {
             return when (option) {
                 ADDRESS -> FfiConsentEntityType.ADDRESS
-                GROUP_ID -> FfiConsentEntityType.CONVERSATION_ID
+                CONVERSATION_ID -> FfiConsentEntityType.CONVERSATION_ID
                 INBOX_ID -> FfiConsentEntityType.INBOX_ID
             }
         }
@@ -45,7 +46,7 @@ enum class EntryType {
         fun fromFfiConsentEntityType(option: FfiConsentEntityType): EntryType {
             return when (option) {
                 FfiConsentEntityType.ADDRESS -> ADDRESS
-                FfiConsentEntityType.CONVERSATION_ID -> GROUP_ID
+                FfiConsentEntityType.CONVERSATION_ID -> CONVERSATION_ID
                 FfiConsentEntityType.INBOX_ID -> INBOX_ID
             }
         }
@@ -65,11 +66,11 @@ data class ConsentListEntry(
             return ConsentListEntry(address, EntryType.ADDRESS, type)
         }
 
-        fun groupId(
+        fun conversationId(
             groupId: String,
             type: ConsentState = ConsentState.UNKNOWN,
         ): ConsentListEntry {
-            return ConsentListEntry(groupId, EntryType.GROUP_ID, type)
+            return ConsentListEntry(groupId, EntryType.CONVERSATION_ID, type)
         }
 
         fun inboxId(
@@ -86,9 +87,10 @@ data class ConsentListEntry(
 
 class ConsentList(
     val client: Client,
+    private val ffiClient: FfiXmtpClient,
 ) {
     suspend fun setConsentState(entries: List<ConsentListEntry>) {
-        client.ffiClient.setConsentStates(entries.map { it.toFfiConsent() })
+        ffiClient.setConsentStates(entries.map { it.toFfiConsent() })
     }
 
     private fun ConsentListEntry.toFfiConsent(): FfiConsent {
@@ -101,16 +103,16 @@ class ConsentList(
 
     suspend fun addressState(address: String): ConsentState {
         return ConsentState.fromFfiConsentState(
-            client.ffiClient.getConsentState(
+            ffiClient.getConsentState(
                 FfiConsentEntityType.ADDRESS,
                 address
             )
         )
     }
 
-    suspend fun groupState(groupId: String): ConsentState {
+    suspend fun conversationState(groupId: String): ConsentState {
         return ConsentState.fromFfiConsentState(
-            client.ffiClient.getConsentState(
+            ffiClient.getConsentState(
                 FfiConsentEntityType.CONVERSATION_ID,
                 groupId
             )
@@ -119,7 +121,7 @@ class ConsentList(
 
     suspend fun inboxIdState(inboxId: String): ConsentState {
         return ConsentState.fromFfiConsentState(
-            client.ffiClient.getConsentState(
+            ffiClient.getConsentState(
                 FfiConsentEntityType.INBOX_ID,
                 inboxId
             )
@@ -129,5 +131,6 @@ class ConsentList(
 
 data class PrivatePreferences(
     var client: Client,
-    var consentList: ConsentList = ConsentList(client),
+    private val ffiClient: FfiXmtpClient,
+    var consentList: ConsentList = ConsentList(client, ffiClient),
 )

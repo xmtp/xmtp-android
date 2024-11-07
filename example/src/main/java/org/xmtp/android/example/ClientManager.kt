@@ -19,11 +19,8 @@ object ClientManager {
 
     fun clientOptions(appContext: Context, address: String): ClientOptions {
         val keyUtil = KeyUtil(appContext)
-        var encryptionKey = keyUtil.retrieveKey(address)
-        if (encryptionKey == null || encryptionKey.isEmpty()) {
-            encryptionKey = SecureRandom().generateSeed(32)
-            keyUtil.storeKey(address, encryptionKey)
-        }
+        val encryptionKey = keyUtil.retrieveKey(address)?.takeUnless { it.isEmpty() }
+            ?: SecureRandom().generateSeed(32).also { keyUtil.storeKey(address, it) }
 
         return ClientOptions(
             api = ClientOptions.Api(

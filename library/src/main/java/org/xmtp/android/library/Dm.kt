@@ -9,7 +9,8 @@ import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.libxmtp.Message.*
+import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.Message.SortDirection
 import org.xmtp.android.library.messages.Topic
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
@@ -20,8 +21,6 @@ import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiSubscribeException
 import java.util.Date
-import kotlin.time.Duration.Companion.nanoseconds
-import kotlin.time.DurationUnit
 
 class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
     val id: String
@@ -58,31 +57,29 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
 
     fun <T> encodeContent(content: T, options: SendOptions?): EncodedContent {
         val codec = Client.codecRegistry.find(options?.contentType)
-
-        fun <Codec : ContentCodec<T>> encode(codec: Codec, content: Any?): EncodedContent {
-            val contentType = content as? T
-            if (contentType != null) {
-                return codec.encode(contentType)
-            } else {
-                throw XMTPException("Codec type is not registered")
+        fun <Codec : ContentCodec<T>> encode(codec: Codec, content: T): EncodedContent {
+            return codec.encode(content)
+        }
+        try {
+            @Suppress("UNCHECKED_CAST")
+            var encoded = encode(codec as ContentCodec<T>, content)
+            val fallback = codec.fallback(content)
+            if (!fallback.isNullOrBlank()) {
+                encoded = encoded.toBuilder().also {
+                    it.fallback = fallback
+                }.build()
             }
+            val compression = options?.compression
+            if (compression != null) {
+                encoded = encoded.compress(compression)
+            }
+            return encoded
+        } catch (e: Exception) {
+            throw XMTPException("Codec type is not registered")
         }
-
-        var encoded = encode(codec = codec as ContentCodec<T>, content = content)
-        val fallback = codec.fallback(content)
-        if (!fallback.isNullOrBlank()) {
-            encoded = encoded.toBuilder().also {
-                it.fallback = fallback
-            }.build()
-        }
-        val compression = options?.compression
-        if (compression != null) {
-            encoded = encoded.compress(compression)
-        }
-        return encoded
     }
 
-    suspend fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
+    fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
         if (consentState() == ConsentState.UNKNOWN) {
             updateConsentState(ConsentState.ALLOWED)
         }
@@ -100,15 +97,15 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
 
     fun messages(
         limit: Int? = null,
-        before: Date? = null,
-        after: Date? = null,
+        beforeNs: Long? = null,
+        afterNs: Long? = null,
         direction: SortDirection = SortDirection.DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
     ): List<DecodedMessage> {
         return libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
-                sentBeforeNs = before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                sentAfterNs = after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
+                sentBeforeNs = beforeNs,
+                sentAfterNs = afterNs,
                 limit = limit?.toLong(),
                 deliveryStatus = when (deliveryStatus) {
                     MessageDeliveryStatus.PUBLISHED -> FfiDeliveryStatus.PUBLISHED
@@ -126,8 +123,8 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         }
     }
 
-    suspend fun processMessage(envelopeBytes: ByteArray): Message {
-        val message = libXMTPGroup.processStreamedConversationMessage(envelopeBytes)
+    suspend fun processMessage(messageBytes: ByteArray): Message {
+        val message = libXMTPGroup.processStreamedConversationMessage(messageBytes)
         return Message(client, message)
     }
 

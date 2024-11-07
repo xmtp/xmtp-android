@@ -2,7 +2,6 @@ package org.xmtp.android.library.messages
 
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.Util
-import org.xmtp.android.library.toHex
 import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.text.SimpleDateFormat
 import java.util.TimeZone

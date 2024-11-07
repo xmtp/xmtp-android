@@ -5,12 +5,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.libxmtp.Message.*
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
@@ -57,9 +55,8 @@ class ConversationsTest {
 
     @Test
     fun testsCanListConversations() {
-        val dm = runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
-        val group =
-            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+        runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+        runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
         assertEquals(runBlocking { boClient.conversations.list().size }, 2)
         assertEquals(runBlocking { boClient.conversations.listDms().size }, 1)
         assertEquals(runBlocking { boClient.conversations.listGroups().size }, 1)
@@ -67,14 +64,14 @@ class ConversationsTest {
         runBlocking { caroClient.conversations.syncConversations() }
         assertEquals(
             runBlocking { caroClient.conversations.list().size },
-            1
+            2
         )
         assertEquals(runBlocking { caroClient.conversations.listGroups().size }, 1)
     }
 
     @Test
     fun testsCanListConversationsFiltered() {
-        val dm = runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+        runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
         val group =
             runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
         assertEquals(runBlocking { boClient.conversations.list().size }, 2)

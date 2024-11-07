@@ -1,31 +1,21 @@
 package org.xmtp.android.library
 
 import kotlinx.coroutines.flow.Flow
-import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.proto.message.api.v1.MessageApiOuterClass
-import org.xmtp.proto.message.contents.Invitation.ConsentProofPayload
 import java.util.Date
 
-/**
- * This represents an ongoing conversation.
- * It can be provided to [Client] to [messages] and [send].
- * The [Client] also allows you to [streamMessages] from this [Conversation].
- *
- * It attempts to give uniform shape to v1 and v2 conversations.
- */
 sealed class Conversation {
     data class Group(val group: org.xmtp.android.library.Group) : Conversation()
     data class Dm(val dm: org.xmtp.android.library.Dm) : Conversation()
 
-    enum class Version { GROUP, DM }
+    enum class Type { GROUP, DM }
 
-    val version: Version
+    val type: Type
         get() {
             return when (this) {
-                is Group -> Version.GROUP
-                is Dm -> Version.DM
+                is Group -> Type.GROUP
+                is Dm -> Type.DM
             }
         }
 
@@ -53,13 +43,6 @@ sealed class Conversation {
             }
         }
 
-    fun isCreator(): Boolean {
-        return when (this) {
-            is Group -> group.isCreator()
-            is Dm -> dm.isCreator()
-        }
-    }
-
     suspend fun members(): List<Member> {
         return when (this) {
             is Group -> group.members()
@@ -81,7 +64,7 @@ sealed class Conversation {
         }
     }
 
-    suspend fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
+    fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
         return when (this) {
             is Group -> group.prepareMessage(content, options)
             is Dm -> dm.prepareMessage(content, options)
@@ -95,17 +78,10 @@ sealed class Conversation {
         }
     }
 
-    suspend fun send(text: String, sendOptions: SendOptions? = null, sentAt: Date? = null): String {
+    suspend fun send(text: String): String {
         return when (this) {
             is Group -> group.send(text)
             is Dm -> dm.send(text)
-        }
-    }
-
-    suspend fun send(encodedContent: EncodedContent, options: SendOptions? = null): String {
-        return when (this) {
-            is Group -> group.send(encodedContent = encodedContent)
-            is Dm -> dm.send(encodedContent = encodedContent)
         }
     }
 
@@ -116,62 +92,26 @@ sealed class Conversation {
         }
     }
 
-    /**
-     * This lists messages sent to the [Conversation].
-     * @param before initial date to filter
-     * @param after final date to create a range of dates and filter
-     * @param limit is the number of result that will be returned
-     * @param direction is the way of srting the information, by default is descending, you can
-     * know more about it in class [MessageApiOuterClass].
-     * @see MessageApiOuterClass.SortDirection
-     * @return The list of messages sent. If [before] or [after] are specified then this will only list messages
-     * sent at or [after] and at or [before].
-     * If [limit] is specified then results are pulled in pages of that size.
-     * If [direction] is specified then that will control the sort order of te messages.
-     */
     fun messages(
         limit: Int? = null,
-        before: Date? = null,
-        after: Date? = null,
+        beforeNs: Long? = null,
+        afterNs: Long? = null,
         direction: Message.SortDirection = Message.SortDirection.DESCENDING,
+        deliveryStatus: Message.MessageDeliveryStatus = Message.MessageDeliveryStatus.ALL,
     ): List<DecodedMessage> {
         return when (this) {
-            is Group -> {
-                group.messages(
-                    limit = limit,
-                    before = before,
-                    after = after,
-                    direction = direction,
-                )
-            }
-
-            is Dm -> dm.messages(limit, before, after, direction)
+            is Group -> group.messages(limit, beforeNs, afterNs, direction, deliveryStatus)
+            is Dm -> dm.messages(limit, beforeNs, afterNs, direction, deliveryStatus)
         }
     }
 
-    fun decode(message: Message): DecodedMessage {
+    suspend fun processMessage(messageBytes: ByteArray): Message {
         return when (this) {
-            is Group -> message.decode()
-            is Dm -> message.decode()
+            is Group -> group.processMessage(messageBytes)
+            is Dm -> dm.processMessage(messageBytes)
         }
     }
 
-    suspend fun processMessage(envelopeBytes: ByteArray): Message {
-        return when (this) {
-            is Group -> group.processMessage(envelopeBytes)
-            is Dm -> dm.processMessage(envelopeBytes)
-        }
-    }
-
-    val consentProof: ConsentProofPayload?
-        get() {
-            return when (this) {
-                is Group -> return null
-                is Dm -> return null
-            }
-        }
-
-    // Get the client according to the version
     val client: Client
         get() {
             return when (this) {
@@ -180,10 +120,6 @@ sealed class Conversation {
             }
         }
 
-    /**
-     * This exposes a stream of new messages sent to the [Conversation].
-     * @return Stream of messages according to the version
-     */
     fun streamMessages(): Flow<DecodedMessage> {
         return when (this) {
             is Group -> group.streamMessages()

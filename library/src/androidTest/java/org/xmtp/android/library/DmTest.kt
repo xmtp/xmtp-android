@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,11 +16,10 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
-import org.xmtp.android.library.libxmtp.Message.*
+import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
 class DmTest {
@@ -116,7 +114,7 @@ class DmTest {
             dm.send("howdy")
             dm.send("gm")
             dm.sync()
-            assertEquals(boClient.preferences.consentList.groupState(dm.id), ConsentState.ALLOWED)
+            assertEquals(boClient.preferences.consentList.conversationState(dm.id), ConsentState.ALLOWED)
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
         }
     }
@@ -260,7 +258,7 @@ class DmTest {
         runBlocking {
             val dm =
                 boClient.conversations.findOrCreateDm(alix.walletAddress)
-            assertEquals(boClient.preferences.consentList.groupState(dm.id), ConsentState.ALLOWED)
+            assertEquals(boClient.preferences.consentList.conversationState(dm.id), ConsentState.ALLOWED)
 
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
 
@@ -268,24 +266,24 @@ class DmTest {
                 listOf(
                     ConsentListEntry(
                         dm.id,
-                        EntryType.GROUP_ID,
+                        EntryType.CONVERSATION_ID,
                         ConsentState.DENIED
                     )
                 )
             )
-            assertEquals(boClient.preferences.consentList.groupState(dm.id), ConsentState.DENIED)
+            assertEquals(boClient.preferences.consentList.conversationState(dm.id), ConsentState.DENIED)
             assertEquals(dm.consentState(), ConsentState.DENIED)
 
             boClient.preferences.consentList.setConsentState(
                 listOf(
                     ConsentListEntry(
                         dm.id,
-                        EntryType.GROUP_ID,
+                        EntryType.CONVERSATION_ID,
                         ConsentState.ALLOWED
                     )
                 )
             )
-            assertEquals(boClient.preferences.consentList.groupState(dm.id), ConsentState.ALLOWED)
+            assertEquals(boClient.preferences.consentList.conversationState(dm.id), ConsentState.ALLOWED)
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
         }
     }
