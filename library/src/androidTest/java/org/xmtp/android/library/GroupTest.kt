@@ -110,24 +110,12 @@ class GroupTest {
         assert(alixGroup.id.isNotEmpty())
 
         runBlocking {
-<<<<<<< HEAD
-            assertEquals(boClient.contacts.consentList.conversationState(boGroup.id), ConsentState.ALLOWED)
-||||||| 3b17b281
-            assertEquals(boClient.contacts.consentList.groupState(boGroup.id), ConsentState.ALLOWED)
-=======
->>>>>>> 9b9f6282b943695878997dfc3d9ae630a7a5b91e
             assertEquals(
-<<<<<<< HEAD
-                alixClient.contacts.consentList.conversationState(alixGroup.id),
-||||||| 3b17b281
-                alixClient.contacts.consentList.groupState(alixGroup.id),
-=======
                 boClient.preferences.consentList.conversationState(boGroup.id),
                 ConsentState.ALLOWED
             )
             assertEquals(
                 alixClient.preferences.consentList.conversationState(alixGroup.id),
->>>>>>> 9b9f6282b943695878997dfc3d9ae630a7a5b91e
                 ConsentState.UNKNOWN
             )
         }
@@ -429,19 +417,11 @@ class GroupTest {
             group.send("howdy")
             group.send("gm")
             group.sync()
-<<<<<<< HEAD
-            assert(boClient.contacts.isConversationAllowed(group.id))
-            assertEquals(boClient.contacts.consentList.conversationState(group.id), ConsentState.ALLOWED)
-||||||| 3b17b281
-            assert(boClient.contacts.isGroupAllowed(group.id))
-            assertEquals(boClient.contacts.consentList.groupState(group.id), ConsentState.ALLOWED)
-=======
             assertEquals(group.consentState(), ConsentState.ALLOWED)
             assertEquals(
                 boClient.preferences.consentList.conversationState(group.id),
                 ConsentState.ALLOWED
             )
->>>>>>> 9b9f6282b943695878997dfc3d9ae630a7a5b91e
         }
     }
 
@@ -735,25 +715,12 @@ class GroupTest {
                         caro.walletAddress
                     )
                 )
-<<<<<<< HEAD
-            assert(boClient.contacts.isConversationAllowed(group.id))
-||||||| 3b17b281
-            assert(boClient.contacts.isGroupAllowed(group.id))
-=======
             assertEquals(
                 boClient.preferences.consentList.conversationState(group.id),
                 ConsentState.ALLOWED
             )
->>>>>>> 9b9f6282b943695878997dfc3d9ae630a7a5b91e
             assertEquals(group.consentState(), ConsentState.ALLOWED)
 
-<<<<<<< HEAD
-            boClient.contacts.denyConversations(listOf(group.id))
-            assert(boClient.contacts.isConversationDenied(group.id))
-||||||| 3b17b281
-            boClient.contacts.denyGroups(listOf(group.id))
-            assert(boClient.contacts.isGroupDenied(group.id))
-=======
             boClient.preferences.consentList.setConsentState(
                 listOf(
                     ConsentListEntry(
@@ -764,20 +731,13 @@ class GroupTest {
                 )
             )
             assertEquals(boClient.preferences.consentList.conversationState(group.id), ConsentState.DENIED)
->>>>>>> 9b9f6282b943695878997dfc3d9ae630a7a5b91e
             assertEquals(group.consentState(), ConsentState.DENIED)
 
             group.updateConsentState(ConsentState.ALLOWED)
-<<<<<<< HEAD
-            assert(boClient.contacts.isConversationAllowed(group.id))
-||||||| 3b17b281
-            assert(boClient.contacts.isGroupAllowed(group.id))
-=======
             assertEquals(
                 boClient.preferences.consentList.conversationState(group.id),
                 ConsentState.ALLOWED
             )
->>>>>>> 9b9f6282b943695878997dfc3d9ae630a7a5b91e
             assertEquals(group.consentState(), ConsentState.ALLOWED)
         }
     }
@@ -893,21 +853,9 @@ class GroupTest {
         }
         runBlocking { alixClient.conversations.syncConversations() }
         val alixGroup: Group = alixClient.findGroup(boGroup.id)!!
-<<<<<<< HEAD
-        runBlocking { assert(!alixClient.contacts.isConversationAllowed(boGroup.id)) }
-||||||| 3b17b281
-        runBlocking { assert(!alixClient.contacts.isGroupAllowed(boGroup.id)) }
-=======
         runBlocking { assertEquals(alixGroup.consentState(), ConsentState.UNKNOWN) }
->>>>>>> 9b9f6282b943695878997dfc3d9ae630a7a5b91e
         val preparedMessageId = runBlocking { alixGroup.prepareMessage("Test text") }
-<<<<<<< HEAD
-        runBlocking { assert(alixClient.contacts.isConversationAllowed(boGroup.id)) }
-||||||| 3b17b281
-        runBlocking { assert(alixClient.contacts.isGroupAllowed(boGroup.id)) }
-=======
         runBlocking { assertEquals(alixGroup.consentState(), ConsentState.ALLOWED) }
->>>>>>> 9b9f6282b943695878997dfc3d9ae630a7a5b91e
         assertEquals(alixGroup.messages().size, 1)
         assertEquals(alixGroup.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED).size, 0)
         assertEquals(alixGroup.messages(deliveryStatus = MessageDeliveryStatus.UNPUBLISHED).size, 1)
