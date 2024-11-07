@@ -81,7 +81,7 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         return encoded
     }
 
-    suspend fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
+    fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
         if (consentState() == ConsentState.UNKNOWN) {
             updateConsentState(ConsentState.ALLOWED)
         }

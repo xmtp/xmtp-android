@@ -46,20 +46,8 @@ class MainViewModel : ViewModel() {
             val listItems = mutableListOf<MainListItem>()
             try {
                 val conversations = ClientManager.client.conversations.list()
-                val hmacKeysResult = ClientManager.client.conversations.getHmacKeys()
                 val subscriptions: MutableList<Service.Subscription> = conversations.map {
-                    val hmacKeys = hmacKeysResult.hmacKeysMap
-                    val result = hmacKeys[it.topic]?.valuesList?.map { hmacKey ->
-                        Service.Subscription.HmacKey.newBuilder().also { sub_key ->
-                            sub_key.key = hmacKey.hmacKey
-                            sub_key.thirtyDayPeriodsSinceEpoch = hmacKey.thirtyDayPeriodsSinceEpoch
-                        }.build()
-                    }
-
                     Service.Subscription.newBuilder().also { sub ->
-                        if (!result.isNullOrEmpty()) {
-                            sub.addAllHmacKeys(result)
-                        }
                         sub.topic = it.topic
                     }.build()
                 }.toMutableList()

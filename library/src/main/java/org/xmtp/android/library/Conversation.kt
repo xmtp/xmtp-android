@@ -10,13 +10,13 @@ sealed class Conversation {
     data class Group(val group: org.xmtp.android.library.Group) : Conversation()
     data class Dm(val dm: org.xmtp.android.library.Dm) : Conversation()
 
-    enum class Version { GROUP, DM }
+    enum class Type { GROUP, DM }
 
-    val version: Version
+    val type: Type
         get() {
             return when (this) {
-                is Group -> Version.GROUP
-                is Dm -> Version.DM
+                is Group -> Type.GROUP
+                is Dm -> Type.DM
             }
         }
 
@@ -72,7 +72,7 @@ sealed class Conversation {
         }
     }
 
-    suspend fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
+    fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
         return when (this) {
             is Group -> group.prepareMessage(content, options)
             is Dm -> dm.prepareMessage(content, options)
