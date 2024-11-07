@@ -131,21 +131,14 @@ sealed class Conversation {
      */
     fun messages(
         limit: Int? = null,
-        before: Date? = null,
-        after: Date? = null,
+        beforeNs: Long? = null,
+        afterNs: Long? = null,
         direction: Message.SortDirection = Message.SortDirection.DESCENDING,
+        deliveryStatus: Message.MessageDeliveryStatus = Message.MessageDeliveryStatus.ALL,
     ): List<DecodedMessage> {
         return when (this) {
-            is Group -> {
-                group.messages(
-                    limit = limit,
-                    before = before,
-                    after = after,
-                    direction = direction,
-                )
-            }
-
-            is Dm -> dm.messages(limit, before, after, direction)
+            is Group -> group.messages(limit, beforeNs, afterNs, direction, deliveryStatus)
+            is Dm -> dm.messages(limit, beforeNs, afterNs, direction, deliveryStatus)
         }
     }
 
@@ -155,6 +148,7 @@ sealed class Conversation {
             is Dm -> message.decode()
         }
     }
+
 
     suspend fun processMessage(envelopeBytes: ByteArray): Message {
         return when (this) {
