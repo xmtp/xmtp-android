@@ -101,7 +101,7 @@ class Client() {
         signingKey: SigningKey? = null,
     ): Client {
         val accountAddress = address.lowercase()
-        val inboxId = getOrCreateInboxId(clientOptions, accountAddress)
+        val inboxId = getOrCreateInboxId(clientOptions.api, accountAddress)
 
         val (ffiClient, dbPath) = createFfiClient(
             accountAddress,

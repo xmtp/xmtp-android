@@ -88,6 +88,7 @@ data class ConsentListEntry(
 class ConsentList(
     val client: Client,
     private val ffiClient: FfiXmtpClient,
+    val entries: MutableMap<String, ConsentListEntry> = mutableMapOf(),
 ) {
     suspend fun setConsentState(entries: List<ConsentListEntry>) {
         ffiClient.setConsentStates(entries.map { it.toFfiConsent() })
