@@ -782,7 +782,7 @@ $dokka.location:org.xmtp.android.library//hexToByteArray/kotlin.String#/Pointing
 $dokka.location:org.xmtp.android.library//toHex/kotlin.ByteArray#/PointingToDeclaration/library/org.xmtp.android.library/to-hex.html
 $dokka.location:org.xmtp.android.library/Client.Companion///PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/index.html
 $dokka.location:org.xmtp.android.library/Client.Companion/codecRegistry/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/codec-registry.html
-$dokka.location:org.xmtp.android.library/Client.Companion/getOrCreateInboxId/#org.xmtp.android.library.ClientOptions#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/get-or-create-inbox-id.html
+$dokka.location:org.xmtp.android.library/Client.Companion/getOrCreateInboxId/#org.xmtp.android.library.ClientOptions.Api#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/get-or-create-inbox-id.html
 $dokka.location:org.xmtp.android.library/Client.Companion/register/#org.xmtp.android.library.codecs.ContentCodec[*]/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/register.html
 $dokka.location:org.xmtp.android.library/Client///PointingToDeclaration/library/org.xmtp.android.library/-client/index.html
 $dokka.location:org.xmtp.android.library/Client/Client/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
@@ -877,6 +877,7 @@ $dokka.location:org.xmtp.android.library/Conversation/members/#/PointingToDeclar
 $dokka.location:org.xmtp.android.library/Conversation/messages/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.Message.SortDirection#org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-conversation/messages.html
 $dokka.location:org.xmtp.android.library/Conversation/prepareMessage/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-conversation/prepare-message.html
 $dokka.location:org.xmtp.android.library/Conversation/processMessage/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-conversation/process-message.html
+$dokka.location:org.xmtp.android.library/Conversation/publishMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/publish-messages.html
 $dokka.location:org.xmtp.android.library/Conversation/send/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-conversation/send.html
 $dokka.location:org.xmtp.android.library/Conversation/send/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversation/send.html
 $dokka.location:org.xmtp.android.library/Conversation/streamMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/stream-messages.html
