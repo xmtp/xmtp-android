@@ -33,6 +33,12 @@ data class Conversations(
         LAST_MESSAGE;
     }
 
+    enum class ConversationType {
+        ALL,
+        GROUPS,
+        DMS;
+    }
+
     suspend fun fromWelcome(envelopeBytes: ByteArray): Conversation {
         val conversation = ffiConversations.processStreamedWelcomeMessage(envelopeBytes)
         return if (conversation.groupMetadata().conversationType() == "dm") {
@@ -152,6 +158,7 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
+        order: ConversationOrder = ConversationOrder.CREATED_AT,
         consentState: ConsentState? = null,
     ): List<Group> {
         val ffiGroups = ffiConversations.listGroups(
@@ -162,8 +169,9 @@ data class Conversations(
                 if (consentState != null) ConsentState.toFfiConsentState(consentState) else null
             )
         )
+        val sortedConversations = sortConversations(ffiGroups, order)
 
-        return ffiGroups.map {
+        return sortedConversations.map {
             Group(client, it)
         }
     }
@@ -172,6 +180,7 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
+        order: ConversationOrder = ConversationOrder.CREATED_AT,
         consentState: ConsentState? = null,
     ): List<Dm> {
         val ffiDms = ffiConversations.listDms(
@@ -182,8 +191,9 @@ data class Conversations(
                 if (consentState != null) ConsentState.toFfiConsentState(consentState) else null
             )
         )
+        val sortedConversations = sortConversations(ffiDms, order)
 
-        return ffiDms.map {
+        return sortedConversations.map {
             Dm(client, it)
         }
     }
@@ -247,7 +257,7 @@ data class Conversations(
         }
     }
 
-    fun stream(/*Maybe Put a way to specify group, dm, or both?*/): Flow<Conversation> =
+    fun stream(type: ConversationType = ConversationType.ALL): Flow<Conversation> =
         callbackFlow {
             val conversationCallback = object : FfiConversationCallback {
                 override fun onConversation(conversation: FfiConversation) {
@@ -263,11 +273,16 @@ data class Conversations(
                 }
             }
 
-            val stream = ffiConversations.stream(conversationCallback)
+            val stream = when (type) {
+                ConversationType.ALL -> ffiConversations.stream(conversationCallback)
+                ConversationType.GROUPS -> ffiConversations.streamGroups(conversationCallback)
+                ConversationType.DMS -> ffiConversations.streamDms(conversationCallback)
+            }
+
             awaitClose { stream.end() }
         }
 
-    fun streamAllMessages(/*Maybe Put a way to specify group, dm, or both?*/): Flow<DecodedMessage> =
+    fun streamAllMessages(type: ConversationType = ConversationType.ALL): Flow<DecodedMessage> =
         callbackFlow {
             val messageCallback = object : FfiMessageCallback {
                 override fun onMessage(message: FfiMessage) {
@@ -280,7 +295,12 @@ data class Conversations(
                 }
             }
 
-            val stream = ffiConversations.streamAllMessages(messageCallback)
+            val stream = when (type) {
+                ConversationType.ALL -> ffiConversations.streamAllMessages(messageCallback)
+                ConversationType.GROUPS -> ffiConversations.streamAllGroupMessages(messageCallback)
+                ConversationType.DMS -> ffiConversations.streamAllDmMessages(messageCallback)
+            }
+
             awaitClose { stream.end() }
         }
 }
