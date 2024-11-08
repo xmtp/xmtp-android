@@ -58,11 +58,11 @@ class Client() {
             registry
         }
 
-        suspend fun getOrCreateInboxId(options: ClientOptions, address: String): String {
+        suspend fun getOrCreateInboxId(environment: ClientOptions.Api, address: String): String {
             var inboxId = getInboxIdForAddress(
                 logger = XMTPLogger(),
-                host = options.api.env.getUrl(),
-                isSecure = options.api.isSecure,
+                host = environment.env.getUrl(),
+                isSecure = environment.isSecure,
                 accountAddress = address
             )
             if (inboxId.isNullOrBlank()) {
