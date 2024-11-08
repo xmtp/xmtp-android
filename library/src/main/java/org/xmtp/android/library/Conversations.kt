@@ -123,7 +123,7 @@ data class Conversations(
     }
 
     // Sync from the network the latest list of conversations
-    suspend fun syncConversations() {
+    suspend fun sync() {
         ffiConversations.sync()
     }
 

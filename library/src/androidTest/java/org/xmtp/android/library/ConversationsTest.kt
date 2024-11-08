@@ -63,7 +63,7 @@ class ConversationsTest {
         assertEquals(runBlocking { boClient.conversations.listDms().size }, 1)
         assertEquals(runBlocking { boClient.conversations.listGroups().size }, 1)
 
-        runBlocking { caroClient.conversations.syncConversations() }
+        runBlocking { caroClient.conversations.sync() }
         assertEquals(
             runBlocking { caroClient.conversations.list().size },
             2
@@ -118,7 +118,7 @@ class ConversationsTest {
             runBlocking { caroClient.conversations.newGroup(listOf(bo.walletAddress)) }
         val conversation =
             runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
-        runBlocking { boClient.conversations.syncConversations() }
+        runBlocking { boClient.conversations.sync() }
 
         val allMessages = mutableListOf<DecodedMessage>()
 
@@ -183,11 +183,13 @@ class ConversationsTest {
                 )
             )
         }
+        val dm = runBlocking { alixClient.conversations.findOrCreateDm(bo.walletAddress) }
         runBlocking {
-            val dm =
-                alixClient.conversations.findOrCreateDm(bo.walletAddress)
-            assertEquals(dm.consentState(), ConsentState.ALLOWED)
+            dm.updateConsentState(ConsentState.DENIED)
+            assertEquals(dm.consentState(), ConsentState.DENIED)
+            boClient.conversations.sync()
         }
+        val boDm = runBlocking { boClient.findConversation(dm.id) }
         alixClient.dropLocalDatabaseConnection()
         alixClient.deleteLocalDatabase()
 
@@ -206,25 +208,26 @@ class ConversationsTest {
         assertEquals(state.installations.size, 2)
 
         runBlocking {
-            alixClient2.conversations.syncConversations()
-            val dm2 =
-                alixClient2.conversations.findOrCreateDm(bo.walletAddress)
+            boClient.conversations.sync()
+            boDm?.sync()
+            alixClient2.conversations.sync()
+            val dm2 = alixClient2.findConversation(dm.id)!!
             alixClient2.syncConsent()
-            assertEquals(dm2.consentState(), ConsentState.ALLOWED)
+            assertEquals(dm2.consentState(), ConsentState.DENIED)
             alixClient2.preferences.consentList.setConsentState(
                 listOf(
                     ConsentListEntry(
                         dm2.id,
                         EntryType.CONVERSATION_ID,
-                        ConsentState.DENIED
+                        ConsentState.ALLOWED
                     )
                 )
             )
             assertEquals(
                 alixClient2.preferences.consentList.conversationState(dm2.id),
-                ConsentState.DENIED
+                ConsentState.ALLOWED
             )
-            assertEquals(dm2.consentState(), ConsentState.DENIED)
+            assertEquals(dm2.consentState(), ConsentState.ALLOWED)
         }
     }
 }
