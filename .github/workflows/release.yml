@@ -2,8 +2,7 @@ name: Release XMTP Android Package
 on:
   push:
     branches:
-      - main
-  pull_request:
+      - release
 
 jobs:
   library:
@@ -28,7 +27,6 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.1
         with:
           release_branches: "release"
-          dry_run: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
