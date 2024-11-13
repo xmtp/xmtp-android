@@ -798,12 +798,14 @@ $dokka.location:org.xmtp.android.library/Client/dropLocalDatabaseConnection/#/Po
 $dokka.location:org.xmtp.android.library/Client/environment/#/PointingToDeclaration/library/org.xmtp.android.library/-client/environment.html
 $dokka.location:org.xmtp.android.library/Client/findConversation/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-conversation.html
 $dokka.location:org.xmtp.android.library/Client/findConversationByTopic/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-conversation-by-topic.html
-$dokka.location:org.xmtp.android.library/Client/findDm/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-dm.html
+$dokka.location:org.xmtp.android.library/Client/findDmByAddress/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-dm-by-address.html
+$dokka.location:org.xmtp.android.library/Client/findDmByInboxId/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-dm-by-inbox-id.html
 $dokka.location:org.xmtp.android.library/Client/findGroup/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-group.html
 $dokka.location:org.xmtp.android.library/Client/findMessage/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/find-message.html
 $dokka.location:org.xmtp.android.library/Client/inboxId/#/PointingToDeclaration/library/org.xmtp.android.library/-client/inbox-id.html
 $dokka.location:org.xmtp.android.library/Client/inboxIdFromAddress/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/inbox-id-from-address.html
 $dokka.location:org.xmtp.android.library/Client/inboxState/#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client/inbox-state.html
+$dokka.location:org.xmtp.android.library/Client/inboxStatesForInboxIds/#kotlin.Boolean#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-client/inbox-states-for-inbox-ids.html
 $dokka.location:org.xmtp.android.library/Client/installationId/#/PointingToDeclaration/library/org.xmtp.android.library/-client/installation-id.html
 $dokka.location:org.xmtp.android.library/Client/libXMTPVersion/#/PointingToDeclaration/library/org.xmtp.android.library/-client/lib-x-m-t-p-version.html
 $dokka.location:org.xmtp.android.library/Client/logger/#/PointingToDeclaration/library/org.xmtp.android.library/-client/logger.html
