@@ -248,14 +248,18 @@ class Client() {
         }
     }
 
-    suspend fun findDm(address: String): Dm? {
-        val inboxId =
-            inboxIdFromAddress(address.lowercase()) ?: throw XMTPException("No inboxId present")
+    fun findDmFromInboxId(inboxId: String): Dm? {
         return try {
             Dm(this, ffiClient.dmConversation(inboxId))
         } catch (e: Exception) {
             null
         }
+    }
+
+    suspend fun findDmFromAddress(address: String): Dm? {
+        val inboxId =
+            inboxIdFromAddress(address.lowercase()) ?: throw XMTPException("No inboxId present")
+        return findDmFromInboxId(inboxId)
     }
 
     fun findMessage(messageId: String): Message? {
@@ -304,6 +308,13 @@ class Client() {
             signatureRequest.addEcdsaSignature(it.rawData)
             ffiClient.applySignatureRequest(signatureRequest)
         }
+    }
+
+    suspend fun inboxStatesForInboxIds(
+        refreshFromNetwork: Boolean,
+        inboxIds: List<String>,
+    ): List<InboxState> {
+        return ffiClient.addressesFromInboxId(refreshFromNetwork, inboxIds).map { InboxState(it) }
     }
 
     suspend fun inboxState(refreshFromNetwork: Boolean): InboxState {
