@@ -248,7 +248,7 @@ class Client() {
         }
     }
 
-    fun findDmFromInboxId(inboxId: String): Dm? {
+    fun findDmByInboxId(inboxId: String): Dm? {
         return try {
             Dm(this, ffiClient.dmConversation(inboxId))
         } catch (e: Exception) {
@@ -256,10 +256,10 @@ class Client() {
         }
     }
 
-    suspend fun findDmFromAddress(address: String): Dm? {
+    suspend fun findDmByAddress(address: String): Dm? {
         val inboxId =
             inboxIdFromAddress(address.lowercase()) ?: throw XMTPException("No inboxId present")
-        return findDmFromInboxId(inboxId)
+        return findDmByInboxId(inboxId)
     }
 
     fun findMessage(messageId: String): Message? {
