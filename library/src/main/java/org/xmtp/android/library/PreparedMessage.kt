@@ -3,7 +3,6 @@ package org.xmtp.android.library
 import org.web3j.crypto.Hash
 import org.xmtp.android.library.messages.Envelope
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.PublishRequest
-import org.xmtp.proto.message.contents.Content.EncodedContent
 
 // This houses a fully prepared message that can be published
 // as soon as the API client has connectivity.
@@ -15,8 +14,7 @@ data class PreparedMessage(
     // The first envelope should send the message to the conversation itself.
     // Any more are for required intros/invites etc.
     // A client can just publish these when it has connectivity.
-    val envelopes: List<Envelope>,
-    val encodedContent: EncodedContent? = null
+    val envelopes: List<Envelope>
 ) {
     companion object {
         fun fromSerializedData(data: ByteArray): PreparedMessage {
