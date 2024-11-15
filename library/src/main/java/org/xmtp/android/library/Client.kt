@@ -110,10 +110,10 @@ class Client() {
                 logger = XMTPLogger(),
                 host = options.api.env.getUrl(),
                 isSecure = options.api.isSecure,
-                accountAddress = address
+                accountAddress = address.lowercase()
             )
             if (inboxId.isNullOrBlank()) {
-                inboxId = generateInboxId(address, 0.toULong())
+                inboxId = generateInboxId(address.lowercase(), 0.toULong())
             }
             return inboxId
         }
@@ -188,7 +188,7 @@ class Client() {
         installationId: String = "",
         inboxId: String,
     ) : this() {
-        this.address = address
+        this.address = address.lowercase()
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
         this.contacts = Contacts(client = this)
@@ -210,7 +210,7 @@ class Client() {
         inboxId: String,
         environment: XMTPEnvironment,
     ) : this() {
-        this.address = address
+        this.address = address.lowercase()
         this.contacts = Contacts(client = this)
         this.v3Client = libXMTPClient
         this.conversations =
@@ -261,14 +261,14 @@ class Client() {
                 apiClient,
                 clientOptions
             )
-            val inboxId = getOrCreateInboxId(clientOptions, account.address)
+            val inboxId = getOrCreateInboxId(clientOptions, account.address.lowercase())
             val (libXMTPClient, dbPath) =
                 ffiXmtpClient(
                     clientOptions,
                     account,
                     clientOptions.appContext,
                     privateKeyBundleV1,
-                    account.address,
+                    account.address.lowercase(),
                     inboxId
                 )
 
@@ -294,14 +294,14 @@ class Client() {
         clientOptions: ClientOptions,
         signingKey: SigningKey? = null,
     ): Client {
-        val inboxId = getOrCreateInboxId(clientOptions, accountAddress)
+        val inboxId = getOrCreateInboxId(clientOptions, accountAddress.lowercase())
 
         val (libXMTPClient, dbPath) = ffiXmtpClient(
             clientOptions,
             signingKey,
             clientOptions.appContext,
             null,
-            accountAddress,
+            accountAddress.lowercase(),
             inboxId
         )
 
@@ -368,14 +368,14 @@ class Client() {
             )
         newOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
         val apiClient = GRPCApiClient(environment = newOptions.api.env, rustV2Client = v2Client)
-        val inboxId = getOrCreateInboxId(newOptions, address)
+        val inboxId = getOrCreateInboxId(newOptions, address.lowercase())
         val (v3Client, dbPath) = if (isV3Enabled(options)) {
             ffiXmtpClient(
                 newOptions,
                 account,
                 options?.appContext,
                 v1Bundle,
-                address,
+                address.lowercase(),
                 inboxId
             )
         } else Pair(null, "")
