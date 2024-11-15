@@ -37,6 +37,8 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
+import uniffi.xmtpv3.FfiConversationType
+import uniffi.xmtpv3.FfiDeviceSyncKind
 import uniffi.xmtpv3.FfiV2SubscribeRequest
 import uniffi.xmtpv3.FfiV2Subscription
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
@@ -616,12 +618,10 @@ class Client() {
     fun findConversation(conversationId: String): Conversation? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
         val conversation = client.conversation(conversationId.hexToByteArray())
-        return if (conversation.groupMetadata().conversationType() == "dm") {
-            Conversation.Dm(Dm(this, conversation))
-        } else if (conversation.groupMetadata().conversationType() == "group") {
-            Conversation.Group(Group(this, conversation))
-        } else {
-            null
+        return when (conversation.conversationType()) {
+            FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
+            FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
+            else -> null
         }
     }
 
@@ -631,12 +631,10 @@ class Client() {
         val matchResult = regex.find(topic)
         val conversationId = matchResult?.groupValues?.get(1) ?: ""
         val conversation = client.conversation(conversationId.hexToByteArray())
-        return if (conversation.groupMetadata().conversationType() == "dm") {
-            Conversation.Dm(Dm(this, conversation))
-        } else if (conversation.groupMetadata().conversationType() == "group") {
-            Conversation.Group(Group(this, conversation))
-        } else {
-            null
+        return when (conversation.conversationType()) {
+            FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
+            FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
+            else -> null
         }
     }
 
@@ -775,7 +773,7 @@ class Client() {
     }
 
     suspend fun requestMessageHistorySync() {
-        v3Client?.requestHistorySync() ?: throw XMTPException("Error no V3 client initialized")
+        v3Client?.sendSyncRequest(FfiDeviceSyncKind.MESSAGES) ?: throw XMTPException("Error no V3 client initialized")
     }
 
     suspend fun revokeAllOtherInstallations(signingKey: SigningKey) {
