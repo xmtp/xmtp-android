@@ -26,7 +26,7 @@ data class ClientOptions(
     val dbEncryptionKey: ByteArray,
     val historySyncUrl: String = when (api.env) {
         XMTPEnvironment.PRODUCTION -> "https://message-history.production.ephemera.network/"
-        XMTPEnvironment.LOCAL -> "http://0.0.0.0:5558"
+        XMTPEnvironment.LOCAL -> "http://10.0.2.2:5558"
         else -> "https://message-history.dev.ephemera.network/"
     },
     val dbDirectory: String? = null,
@@ -64,10 +64,10 @@ class Client() {
                 logger = XMTPLogger(),
                 host = environment.env.getUrl(),
                 isSecure = environment.isSecure,
-                accountAddress = address
+                accountAddress = address.lowercase()
             )
             if (inboxId.isNullOrBlank()) {
-                inboxId = generateInboxId(address, 0.toULong())
+                inboxId = generateInboxId(address.lowercase(), 0.toULong())
             }
             return inboxId
         }
@@ -85,7 +85,7 @@ class Client() {
         inboxId: String,
         environment: XMTPEnvironment,
     ) : this() {
-        this.address = address
+        this.address = address.lowercase()
         this.preferences = PrivatePreferences(client = this, ffiClient = libXMTPClient)
         this.ffiClient = libXMTPClient
         this.conversations =
@@ -170,7 +170,7 @@ class Client() {
             isSecure = options.api.isSecure,
             db = dbPath,
             encryptionKey = options.dbEncryptionKey,
-            accountAddress = accountAddress,
+            accountAddress = accountAddress.lowercase(),
             inboxId = inboxId,
             nonce = 0.toULong(),
             legacySignedPrivateKeyProto = null,
