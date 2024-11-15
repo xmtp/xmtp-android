@@ -2,7 +2,7 @@ name: Release XMTP Android Package
 on:
   push:
     branches:
-      - release
+      - xmtp-legacy
 
 jobs:
   library:
