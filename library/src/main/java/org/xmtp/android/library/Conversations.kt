@@ -39,6 +39,7 @@ import org.xmtp.proto.message.contents.Contact
 import org.xmtp.proto.message.contents.Invitation
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationCallback
+import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiCreateGroupOptions
 import uniffi.xmtpv3.FfiDirection
@@ -53,6 +54,7 @@ import uniffi.xmtpv3.FfiSubscribeException
 import uniffi.xmtpv3.FfiV2SubscribeRequest
 import uniffi.xmtpv3.FfiV2Subscription
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
+import uniffi.xmtpv3.GenericException
 import uniffi.xmtpv3.NoPointer
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionPolicySet
@@ -78,7 +80,7 @@ data class Conversations(
     suspend fun conversationFromWelcome(envelopeBytes: ByteArray): Conversation {
         val conversation = libXMTPConversations?.processStreamedWelcomeMessage(envelopeBytes)
             ?: throw XMTPException("Client does not support Groups")
-        if (conversation.groupMetadata().conversationType() == "dm") {
+        if (conversation.conversationType() == FfiConversationType.DM) {
             return Conversation.Dm(Dm(client, conversation))
         } else {
             return Conversation.Group(Group(client, conversation))
@@ -312,7 +314,8 @@ data class Conversations(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit?.toLong()
+                limit?.toLong(),
+                null
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
 
@@ -331,7 +334,8 @@ data class Conversations(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit?.toLong()
+                limit?.toLong(),
+                null
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
 
@@ -354,7 +358,8 @@ data class Conversations(
             FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit?.toLong()
+                limit?.toLong(),
+                null
             )
         ) ?: throw XMTPException("Client does not support V3 dms")
 
@@ -404,7 +409,7 @@ data class Conversations(
     }
 
     private fun FfiConversation.toConversation(): Conversation {
-        return if (groupMetadata().conversationType() == "dm") {
+        return if (conversationType() == FfiConversationType.DM) {
             Conversation.Dm(Dm(client, this))
         } else {
             Conversation.Group(Group(client, this))
@@ -533,6 +538,9 @@ data class Conversations(
                     }
                 }
             }
+
+            override fun onError(error: GenericException) {
+            }
         }
 
         val stream = client.subscribe2(
@@ -556,7 +564,7 @@ data class Conversations(
         if (client.hasV2Client) throw XMTPException("Only supported for V3 only clients.")
         val conversationCallback = object : FfiConversationCallback {
             override fun onConversation(conversation: FfiConversation) {
-                if (conversation.groupMetadata().conversationType() == "dm") {
+                if (conversation.conversationType() == FfiConversationType.DM) {
                     trySend(Conversation.Dm(Dm(client, conversation)))
                 } else {
                     trySend(Conversation.Group(Group(client, conversation)))
@@ -963,6 +971,9 @@ data class Conversations(
                     else -> {}
                 }
             }
+
+            override fun onError(error: GenericException) {
+            }
         }
 
         stream = client.subscribe2(subscriptionRequest, subscriptionCallback)
@@ -1012,6 +1023,9 @@ data class Conversations(
 
                     else -> {}
                 }
+            }
+
+            override fun onError(error: GenericException) {
             }
         }
 

@@ -24,6 +24,7 @@ import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.contents.Invitation
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
+import uniffi.xmtpv3.GenericException
 import java.util.Date
 
 data class ConversationV2(
@@ -148,6 +149,9 @@ data class ConversationV2(
                 decodeEnvelopeOrNull(envelope = Util.envelopeFromFFi(message))?.let {
                     trySend(it)
                 }
+            }
+
+            override fun onError(error: GenericException) {
             }
         }
         val stream = client.subscribe(listOf(topic), streamCallback)
@@ -284,6 +288,9 @@ data class ConversationV2(
             override fun onMessage(message: FfiEnvelope) {
                 trySend(Util.envelopeFromFFi(message))
             }
+
+            override fun onError(error: GenericException) {
+            }
         }
         val stream = client.subscribe(listOf(ephemeralTopic), streamCallback)
         awaitClose { launch { stream.end() } }
@@ -293,6 +300,9 @@ data class ConversationV2(
         val streamCallback = object : FfiV2SubscriptionCallback {
             override fun onMessage(message: FfiEnvelope) {
                 trySend(decrypt(envelope = Util.envelopeFromFFi(message)))
+            }
+
+            override fun onError(error: GenericException) {
             }
         }
         val stream = client.subscribe(listOf(topic), streamCallback)

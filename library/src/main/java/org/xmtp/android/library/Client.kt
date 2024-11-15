@@ -37,6 +37,8 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.BatchQueryResponse
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass.QueryRequest
+import uniffi.xmtpv3.FfiConversationType
+import uniffi.xmtpv3.FfiDeviceSyncKind
 import uniffi.xmtpv3.FfiV2SubscribeRequest
 import uniffi.xmtpv3.FfiV2Subscription
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
@@ -110,10 +112,10 @@ class Client() {
                 logger = XMTPLogger(),
                 host = options.api.env.getUrl(),
                 isSecure = options.api.isSecure,
-                accountAddress = address
+                accountAddress = address.lowercase()
             )
             if (inboxId.isNullOrBlank()) {
-                inboxId = generateInboxId(address, 0.toULong())
+                inboxId = generateInboxId(address.lowercase(), 0.toULong())
             }
             return inboxId
         }
@@ -188,7 +190,7 @@ class Client() {
         installationId: String = "",
         inboxId: String,
     ) : this() {
-        this.address = address
+        this.address = address.lowercase()
         this.privateKeyBundleV1 = privateKeyBundleV1
         this.apiClient = apiClient
         this.contacts = Contacts(client = this)
@@ -210,7 +212,7 @@ class Client() {
         inboxId: String,
         environment: XMTPEnvironment,
     ) : this() {
-        this.address = address
+        this.address = address.lowercase()
         this.contacts = Contacts(client = this)
         this.v3Client = libXMTPClient
         this.conversations =
@@ -261,14 +263,14 @@ class Client() {
                 apiClient,
                 clientOptions
             )
-            val inboxId = getOrCreateInboxId(clientOptions, account.address)
+            val inboxId = getOrCreateInboxId(clientOptions, account.address.lowercase())
             val (libXMTPClient, dbPath) =
                 ffiXmtpClient(
                     clientOptions,
                     account,
                     clientOptions.appContext,
                     privateKeyBundleV1,
-                    account.address,
+                    account.address.lowercase(),
                     inboxId
                 )
 
@@ -294,14 +296,14 @@ class Client() {
         clientOptions: ClientOptions,
         signingKey: SigningKey? = null,
     ): Client {
-        val inboxId = getOrCreateInboxId(clientOptions, accountAddress)
+        val inboxId = getOrCreateInboxId(clientOptions, accountAddress.lowercase())
 
         val (libXMTPClient, dbPath) = ffiXmtpClient(
             clientOptions,
             signingKey,
             clientOptions.appContext,
             null,
-            accountAddress,
+            accountAddress.lowercase(),
             inboxId
         )
 
@@ -368,14 +370,14 @@ class Client() {
             )
         newOptions.api.appVersion?.let { v2Client.setAppVersion(it) }
         val apiClient = GRPCApiClient(environment = newOptions.api.env, rustV2Client = v2Client)
-        val inboxId = getOrCreateInboxId(newOptions, address)
+        val inboxId = getOrCreateInboxId(newOptions, address.lowercase())
         val (v3Client, dbPath) = if (isV3Enabled(options)) {
             ffiXmtpClient(
                 newOptions,
                 account,
                 options?.appContext,
                 v1Bundle,
-                address,
+                address.lowercase(),
                 inboxId
             )
         } else Pair(null, "")
@@ -616,12 +618,10 @@ class Client() {
     fun findConversation(conversationId: String): Conversation? {
         val client = v3Client ?: throw XMTPException("Error no V3 client initialized")
         val conversation = client.conversation(conversationId.hexToByteArray())
-        return if (conversation.groupMetadata().conversationType() == "dm") {
-            Conversation.Dm(Dm(this, conversation))
-        } else if (conversation.groupMetadata().conversationType() == "group") {
-            Conversation.Group(Group(this, conversation))
-        } else {
-            null
+        return when (conversation.conversationType()) {
+            FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
+            FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
+            else -> null
         }
     }
 
@@ -631,12 +631,10 @@ class Client() {
         val matchResult = regex.find(topic)
         val conversationId = matchResult?.groupValues?.get(1) ?: ""
         val conversation = client.conversation(conversationId.hexToByteArray())
-        return if (conversation.groupMetadata().conversationType() == "dm") {
-            Conversation.Dm(Dm(this, conversation))
-        } else if (conversation.groupMetadata().conversationType() == "group") {
-            Conversation.Group(Group(this, conversation))
-        } else {
-            null
+        return when (conversation.conversationType()) {
+            FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
+            FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
+            else -> null
         }
     }
 
@@ -775,7 +773,7 @@ class Client() {
     }
 
     suspend fun requestMessageHistorySync() {
-        v3Client?.requestHistorySync() ?: throw XMTPException("Error no V3 client initialized")
+        v3Client?.sendSyncRequest(FfiDeviceSyncKind.MESSAGES) ?: throw XMTPException("Error no V3 client initialized")
     }
 
     suspend fun revokeAllOtherInstallations(signingKey: SigningKey) {

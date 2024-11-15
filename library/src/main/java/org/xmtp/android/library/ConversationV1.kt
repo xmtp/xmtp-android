@@ -27,6 +27,7 @@ import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.message.api.v1.MessageApiOuterClass
 import uniffi.xmtpv3.FfiEnvelope
 import uniffi.xmtpv3.FfiV2SubscriptionCallback
+import uniffi.xmtpv3.GenericException
 import java.util.Date
 
 data class ConversationV1(
@@ -48,6 +49,9 @@ data class ConversationV1(
         val streamCallback = object : FfiV2SubscriptionCallback {
             override fun onMessage(message: FfiEnvelope) {
                 trySend(decode(envelope = envelopeFromFFi(message)))
+            }
+
+            override fun onError(error: GenericException) {
             }
         }
         val stream = client.subscribe(listOf(topic.description), streamCallback)
@@ -283,6 +287,9 @@ data class ConversationV1(
             override fun onMessage(message: FfiEnvelope) {
                 trySend(envelopeFromFFi(message))
             }
+
+            override fun onError(error: GenericException) {
+            }
         }
         val stream = client.subscribe(listOf(ephemeralTopic), streamCallback)
         awaitClose { launch { stream.end() } }
@@ -292,6 +299,9 @@ data class ConversationV1(
         val streamCallback = object : FfiV2SubscriptionCallback {
             override fun onMessage(message: FfiEnvelope) {
                 trySend(decrypt(envelope = envelopeFromFFi(message)))
+            }
+
+            override fun onError(error: GenericException) {
             }
         }
         val stream = client.subscribe(listOf(topic.description), streamCallback)
