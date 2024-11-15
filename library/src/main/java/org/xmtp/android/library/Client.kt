@@ -24,8 +24,8 @@ data class ClientOptions(
     val appContext: Context,
     val dbEncryptionKey: ByteArray,
     val historySyncUrl: String = when (api.env) {
-        XMTPEnvironment.PRODUCTION -> "https://message-history.production.ephemera.network/"
-        XMTPEnvironment.LOCAL -> "http://0.0.0.0:5558"
+        XMTPEnvironment.PRODUCTION -> "https://message-history.production.ephemera.network"
+        XMTPEnvironment.LOCAL -> "http://10.0.2.2:5558"
         else -> "https://message-history.dev.ephemera.network/"
     },
     val dbDirectory: String? = null,

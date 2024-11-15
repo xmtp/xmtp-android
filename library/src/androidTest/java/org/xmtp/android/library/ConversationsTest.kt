@@ -205,14 +205,31 @@ class ConversationsTest {
 
         val state = runBlocking { alixClient2.inboxState(true) }
         assertEquals(state.installations.size, 2)
+        runBlocking {
+            // This will pull down the new sync group for the first installation
+            alixClient.conversations.sync()
+        }
 
         runBlocking {
             boClient.conversations.sync()
             boDm?.sync()
             alixClient2.conversations.sync()
-            val dm2 = alixClient2.findConversation(dm.id)!!
+
+
             alixClient2.syncConsent()
-            assertEquals(dm2.consentState(), ConsentState.DENIED)
+
+            // receive the history request
+            alixClient.conversations.syncAllConversations()
+
+            // allow processing
+            Thread.sleep(2000)
+
+            // receive the response
+            alixClient2.conversations.syncAllConversations()
+
+            Thread.sleep(2000)
+            val dm2 = alixClient2.findConversation(dm.id)!!
+            assertEquals(ConsentState.DENIED, dm2.consentState())
             alixClient2.preferences.consentList.setConsentState(
                 listOf(
                     ConsentListEntry(
@@ -226,7 +243,7 @@ class ConversationsTest {
                 alixClient2.preferences.consentList.conversationState(dm2.id),
                 ConsentState.ALLOWED
             )
-            assertEquals(dm2.consentState(), ConsentState.ALLOWED)
+            assertEquals(ConsentState.ALLOWED, dm2.consentState())
         }
     }
 }
