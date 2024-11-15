@@ -1167,6 +1167,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversation/addedByInboxId/#/PointingToDeclara
 $dokka.location:uniffi.xmtpv3/FfiConversation/adminList/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/admin-list.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/close.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/consentState/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/consent-state.html
+$dokka.location:uniffi.xmtpv3/FfiConversation/conversationType/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/conversation-type.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/createdAtNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/created-at-ns.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/destroy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/destroy.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/dmPeerInboxId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/dm-peer-inbox-id.html
@@ -1222,6 +1223,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversationInterface/addSuperAdmin/#kotlin.Str
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/addedByInboxId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/added-by-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/adminList/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/admin-list.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/consentState/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/consent-state.html
+$dokka.location:uniffi.xmtpv3/FfiConversationInterface/conversationType/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/conversation-type.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/createdAtNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/created-at-ns.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/dmPeerInboxId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/dm-peer-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/findMessages/#uniffi.xmtpv3.FfiListMessagesOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/find-messages.html
@@ -1280,6 +1282,13 @@ $dokka.location:uniffi.xmtpv3/FfiConversationMetadataInterface.Companion///Point
 $dokka.location:uniffi.xmtpv3/FfiConversationMetadataInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-metadata-interface/index.html
 $dokka.location:uniffi.xmtpv3/FfiConversationMetadataInterface/conversationType/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-metadata-interface/conversation-type.html
 $dokka.location:uniffi.xmtpv3/FfiConversationMetadataInterface/creatorInboxId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-metadata-interface/creator-inbox-id.html
+$dokka.location:uniffi.xmtpv3/FfiConversationType.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-type/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiConversationType.DM///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-conversation-type/-d-m/index.html
+$dokka.location:uniffi.xmtpv3/FfiConversationType.GROUP///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-conversation-type/-g-r-o-u-p/index.html
+$dokka.location:uniffi.xmtpv3/FfiConversationType.SYNC///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-conversation-type/-s-y-n-c/index.html
+$dokka.location:uniffi.xmtpv3/FfiConversationType///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-type/index.html
+$dokka.location:uniffi.xmtpv3/FfiConversationType/valueOf/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-type/value-of.html
+$dokka.location:uniffi.xmtpv3/FfiConversationType/values/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-type/values.html
 $dokka.location:uniffi.xmtpv3/FfiConversations.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiConversations///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/index.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/FfiConversations/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/-ffi-conversations.html
