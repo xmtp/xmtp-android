@@ -7,6 +7,7 @@ import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.XMTPLogger
 import org.xmtp.android.library.messages.rawData
+import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiDeviceSyncKind
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.createClient
@@ -218,12 +219,10 @@ class Client() {
     fun findConversation(conversationId: String): Conversation? {
         return try {
             val conversation = ffiClient.conversation(conversationId.hexToByteArray())
-            if (conversation.groupMetadata().conversationType() == "dm") {
-                Conversation.Dm(Dm(this, conversation))
-            } else if (conversation.groupMetadata().conversationType() == "group") {
-                Conversation.Group(Group(this, conversation))
-            } else {
-                null
+            when (conversation.conversationType()) {
+                FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
+                FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
+                else -> null
             }
         } catch (e: Exception) {
             null
@@ -236,12 +235,10 @@ class Client() {
         val conversationId = matchResult?.groupValues?.get(1) ?: ""
         return try {
             val conversation = ffiClient.conversation(conversationId.hexToByteArray())
-            if (conversation.groupMetadata().conversationType() == "dm") {
-                Conversation.Dm(Dm(this, conversation))
-            } else if (conversation.groupMetadata().conversationType() == "group") {
-                Conversation.Group(Group(this, conversation))
-            } else {
-                null
+            when (conversation.conversationType()) {
+                FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
+                FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
+                else -> null
             }
         } catch (e: Exception) {
             null
