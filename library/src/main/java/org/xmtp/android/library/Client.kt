@@ -208,10 +208,6 @@ class Client() {
         return Pair(ffiClient, dbPath)
     }
 
-    fun signWithInstallationKey(message: String): ByteArray {
-        return ffiClient.signWithInstallationKey(message)
-    }
-
     fun findGroup(groupId: String): Group? {
         return try {
             Group(this, ffiClient.conversation(groupId.hexToByteArray()))
