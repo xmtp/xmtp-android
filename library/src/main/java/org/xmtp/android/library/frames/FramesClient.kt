@@ -6,8 +6,6 @@ import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.frames.FramesConstants.PROTOCOL_VERSION
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.Signature
-import org.xmtp.android.library.messages.getPublicKeyBundle
-import org.xmtp.proto.message.contents.PublicKeyOuterClass.SignedPublicKeyBundle
 import java.security.MessageDigest
 import org.xmtp.proto.message.contents.Frames.FrameActionBody
 import org.xmtp.proto.message.contents.Frames.FrameAction
@@ -45,17 +43,14 @@ class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = 
         return FramePostPayload("xmtp@$PROTOCOL_VERSION", untrustedData, trustedData)
     }
 
-    private suspend fun signDigest(digest: ByteArray): Signature {
-        val signedPrivateKey = xmtpClient.keys.identityKey
-        val privateKey = PrivateKeyBuilder.buildFromSignedPrivateKey(signedPrivateKey)
-        return PrivateKeyBuilder(privateKey).sign(digest)
+    private fun signDigest(message: String): ByteArray {
+        return xmtpClient.signInstallationKey(message)
     }
 
     private suspend fun buildSignedFrameAction(actionBodyInputs: FrameActionBody): ByteArray {
-        val digest = sha256(actionBodyInputs.toByteArray())
+        val digest = sha256(actionBodyInputs.toByteArray()).toString()
         val signature = signDigest(digest)
 
-        val publicKeyBundle = getPublicKeyBundle()
         val frameAction = FrameAction.newBuilder().also {
             it.actionBody = actionBodyInputs.toByteString()
             it.signature = signature
