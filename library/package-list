@@ -813,6 +813,7 @@ $dokka.location:org.xmtp.android.library/Client/preferences/#/PointingToDeclarat
 $dokka.location:org.xmtp.android.library/Client/reconnectLocalDatabase/#/PointingToDeclaration/library/org.xmtp.android.library/-client/reconnect-local-database.html
 $dokka.location:org.xmtp.android.library/Client/requestMessageHistorySync/#/PointingToDeclaration/library/org.xmtp.android.library/-client/request-message-history-sync.html
 $dokka.location:org.xmtp.android.library/Client/revokeAllOtherInstallations/#org.xmtp.android.library.SigningKey/PointingToDeclaration/library/org.xmtp.android.library/-client/revoke-all-other-installations.html
+$dokka.location:org.xmtp.android.library/Client/signWithInstallationKey/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/sign-with-installation-key.html
 $dokka.location:org.xmtp.android.library/Client/syncConsent/#/PointingToDeclaration/library/org.xmtp.android.library/-client/sync-consent.html
 $dokka.location:org.xmtp.android.library/ClientOptions.Api///PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/index.html
 $dokka.location:org.xmtp.android.library/ClientOptions.Api/Api/#org.xmtp.android.library.XMTPEnvironment#kotlin.Boolean#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/-api.html
