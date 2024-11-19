@@ -1644,6 +1644,7 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClient/revokeAllOtherInstallations/#/Pointi
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/revokeWallet/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/revoke-wallet.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/sendSyncRequest/#uniffi.xmtpv3.FfiDeviceSyncKind/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/send-sync-request.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/setConsentStates/#kotlin.collections.List[uniffi.xmtpv3.FfiConsent]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/set-consent-states.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClient/signWithInstallationKey/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/sign-with-installation-key.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/signatureRequest/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/signature-request.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/uniffi-clone-pointer.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/-companion/index.html
@@ -1670,6 +1671,7 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/revokeAllOtherInstallations
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/revokeWallet/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/revoke-wallet.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/sendSyncRequest/#uniffi.xmtpv3.FfiDeviceSyncKind/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/send-sync-request.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/setConsentStates/#kotlin.collections.List[uniffi.xmtpv3.FfiConsent]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/set-consent-states.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/signWithInstallationKey/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/sign-with-installation-key.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/signatureRequest/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/signature-request.html
 $dokka.location:uniffi.xmtpv3/GenericException.ApiException///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-api-exception/index.html
 $dokka.location:uniffi.xmtpv3/GenericException.ApiException/ApiException/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-api-exception/-api-exception.html
@@ -1695,6 +1697,8 @@ $dokka.location:uniffi.xmtpv3/GenericException.GroupMetadata///PointingToDeclara
 $dokka.location:uniffi.xmtpv3/GenericException.GroupMetadata/GroupMetadata/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-group-metadata/-group-metadata.html
 $dokka.location:uniffi.xmtpv3/GenericException.GroupMutablePermissions///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-group-mutable-permissions/index.html
 $dokka.location:uniffi.xmtpv3/GenericException.GroupMutablePermissions/GroupMutablePermissions/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-group-mutable-permissions/-group-mutable-permissions.html
+$dokka.location:uniffi.xmtpv3/GenericException.Identity///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-identity/index.html
+$dokka.location:uniffi.xmtpv3/GenericException.Identity/Identity/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-identity/-identity.html
 $dokka.location:uniffi.xmtpv3/GenericException.Signature///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-signature/index.html
 $dokka.location:uniffi.xmtpv3/GenericException.Signature/Signature/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-signature/-signature.html
 $dokka.location:uniffi.xmtpv3/GenericException.SignatureRequestException///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-signature-request-exception/index.html
