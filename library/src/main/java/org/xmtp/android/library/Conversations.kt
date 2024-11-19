@@ -4,10 +4,10 @@ import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import org.xmtp.android.library.ConsentState.Companion.toFfiConsentState
 import org.xmtp.android.library.libxmtp.Message
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationCallback
+import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiCreateGroupOptions
 import uniffi.xmtpv3.FfiDirection
@@ -34,12 +34,17 @@ data class Conversations(
         LAST_MESSAGE;
     }
 
+    enum class ConversationType {
+        ALL,
+        GROUPS,
+        DMS;
+    }
+
     suspend fun fromWelcome(envelopeBytes: ByteArray): Conversation {
         val conversation = ffiConversations.processStreamedWelcomeMessage(envelopeBytes)
-        return if (conversation.groupMetadata().conversationType() == "dm") {
-            Conversation.Dm(Dm(client, conversation))
-        } else {
-            Conversation.Group(Group(client, conversation))
+        return when (conversation.conversationType()) {
+            FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
+            else -> Conversation.Group(Group(client, conversation))
         }
     }
 
@@ -114,12 +119,11 @@ data class Conversations(
                     customPermissionPolicySet = permissionsPolicySet
                 )
             )
-
         return Group(client, group)
     }
 
     // Sync from the network the latest list of conversations
-    suspend fun syncConversations() {
+    suspend fun sync() {
         ffiConversations.sync()
     }
 
@@ -142,7 +146,7 @@ data class Conversations(
         if (falseAddresses.isNotEmpty()) {
             throw XMTPException("${falseAddresses.joinToString()} not on network")
         }
-        var dm = client.findDm(peerAddress)
+        var dm = client.findDmByAddress(peerAddress)
         if (dm == null) {
             val dmConversation = ffiConversations.createDm(peerAddress.lowercase())
             dm = Dm(client, dmConversation)
@@ -154,16 +158,20 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
+        order: ConversationOrder = ConversationOrder.CREATED_AT,
+        consentState: ConsentState? = null,
     ): List<Group> {
         val ffiGroups = ffiConversations.listGroups(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit?.toLong()
+                limit?.toLong(),
+                if (consentState != null) ConsentState.toFfiConsentState(consentState) else null
             )
         )
+        val sortedConversations = sortConversations(ffiGroups, order)
 
-        return ffiGroups.map {
+        return sortedConversations.map {
             Group(client, it)
         }
     }
@@ -172,16 +180,20 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
+        order: ConversationOrder = ConversationOrder.CREATED_AT,
+        consentState: ConsentState? = null,
     ): List<Dm> {
         val ffiDms = ffiConversations.listDms(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit?.toLong()
+                limit?.toLong(),
+                if (consentState != null) ConsentState.toFfiConsentState(consentState) else null
             )
         )
+        val sortedConversations = sortConversations(ffiDms, order)
 
-        return ffiDms.map {
+        return sortedConversations.map {
             Dm(client, it)
         }
     }
@@ -197,12 +209,12 @@ data class Conversations(
             FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
-                limit?.toLong()
+                limit?.toLong(),
+                if (consentState != null) ConsentState.toFfiConsentState(consentState) else null
             )
         )
 
-        val filteredConversations = filterByConsentState(ffiConversations, consentState)
-        val sortedConversations = sortConversations(filteredConversations, order)
+        val sortedConversations = sortConversations(ffiConversations, order)
 
         return sortedConversations.map { it.toConversation() }
     }
@@ -237,31 +249,20 @@ data class Conversations(
         }
     }
 
-    private fun filterByConsentState(
-        conversations: List<FfiConversation>,
-        consentState: ConsentState?,
-    ): List<FfiConversation> {
-        return consentState?.let { state ->
-            conversations.filter { it.consentState() == toFfiConsentState(state) }
-        } ?: conversations
-    }
-
     private fun FfiConversation.toConversation(): Conversation {
-        return if (groupMetadata().conversationType() == "dm") {
-            Conversation.Dm(Dm(client, this))
-        } else {
-            Conversation.Group(Group(client, this))
+        return when (conversationType()) {
+            FfiConversationType.DM -> Conversation.Dm(Dm(client, this))
+            else -> Conversation.Group(Group(client, this))
         }
     }
 
-    fun stream(/*Maybe Put a way to specify group, dm, or both?*/): Flow<Conversation> =
+    fun stream(type: ConversationType = ConversationType.ALL): Flow<Conversation> =
         callbackFlow {
             val conversationCallback = object : FfiConversationCallback {
                 override fun onConversation(conversation: FfiConversation) {
-                    if (conversation.groupMetadata().conversationType() == "dm") {
-                        trySend(Conversation.Dm(Dm(client, conversation)))
-                    } else {
-                        trySend(Conversation.Group(Group(client, conversation)))
+                    when (conversation.conversationType()) {
+                        FfiConversationType.DM -> trySend(Conversation.Dm(Dm(client, conversation)))
+                        else -> trySend(Conversation.Group(Group(client, conversation)))
                     }
                 }
 
@@ -269,11 +270,17 @@ data class Conversations(
                     Log.e("XMTP Conversation stream", error.message.toString())
                 }
             }
-            val stream = ffiConversations.stream(conversationCallback)
+
+            val stream = when (type) {
+                ConversationType.ALL -> ffiConversations.stream(conversationCallback)
+                ConversationType.GROUPS -> ffiConversations.streamGroups(conversationCallback)
+                ConversationType.DMS -> ffiConversations.streamDms(conversationCallback)
+            }
+
             awaitClose { stream.end() }
         }
 
-    fun streamAllMessages(/*Maybe Put a way to specify group, dm, or both?*/): Flow<DecodedMessage> =
+    fun streamAllMessages(type: ConversationType = ConversationType.ALL): Flow<DecodedMessage> =
         callbackFlow {
             val messageCallback = object : FfiMessageCallback {
                 override fun onMessage(message: FfiMessage) {
@@ -286,7 +293,12 @@ data class Conversations(
                 }
             }
 
-            val stream = ffiConversations.streamAllMessages(messageCallback)
+            val stream = when (type) {
+                ConversationType.ALL -> ffiConversations.streamAllMessages(messageCallback)
+                ConversationType.GROUPS -> ffiConversations.streamAllGroupMessages(messageCallback)
+                ConversationType.DMS -> ffiConversations.streamAllDmMessages(messageCallback)
+            }
+
             awaitClose { stream.end() }
         }
 }

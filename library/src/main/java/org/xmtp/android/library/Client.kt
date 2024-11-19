@@ -7,6 +7,8 @@ import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.XMTPLogger
 import org.xmtp.android.library.messages.rawData
+import uniffi.xmtpv3.FfiConversationType
+import uniffi.xmtpv3.FfiDeviceSyncKind
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.createClient
 import uniffi.xmtpv3.generateInboxId
@@ -24,7 +26,7 @@ data class ClientOptions(
     val dbEncryptionKey: ByteArray,
     val historySyncUrl: String = when (api.env) {
         XMTPEnvironment.PRODUCTION -> "https://message-history.production.ephemera.network/"
-        XMTPEnvironment.LOCAL -> "http://0.0.0.0:5558"
+        XMTPEnvironment.LOCAL -> "http://10.0.2.2:5558"
         else -> "https://message-history.dev.ephemera.network/"
     },
     val dbDirectory: String? = null,
@@ -57,15 +59,15 @@ class Client() {
             registry
         }
 
-        suspend fun getOrCreateInboxId(options: ClientOptions, address: String): String {
+        suspend fun getOrCreateInboxId(environment: ClientOptions.Api, address: String): String {
             var inboxId = getInboxIdForAddress(
                 logger = XMTPLogger(),
-                host = options.api.env.getUrl(),
-                isSecure = options.api.isSecure,
-                accountAddress = address
+                host = environment.env.getUrl(),
+                isSecure = environment.isSecure,
+                accountAddress = address.lowercase()
             )
             if (inboxId.isNullOrBlank()) {
-                inboxId = generateInboxId(address, 0.toULong())
+                inboxId = generateInboxId(address.lowercase(), 0.toULong())
             }
             return inboxId
         }
@@ -83,7 +85,7 @@ class Client() {
         inboxId: String,
         environment: XMTPEnvironment,
     ) : this() {
-        this.address = address
+        this.address = address.lowercase()
         this.preferences = PrivatePreferences(client = this, ffiClient = libXMTPClient)
         this.ffiClient = libXMTPClient
         this.conversations =
@@ -100,7 +102,7 @@ class Client() {
         signingKey: SigningKey? = null,
     ): Client {
         val accountAddress = address.lowercase()
-        val inboxId = getOrCreateInboxId(clientOptions, accountAddress)
+        val inboxId = getOrCreateInboxId(clientOptions.api, accountAddress)
 
         val (ffiClient, dbPath) = createFfiClient(
             accountAddress,
@@ -168,7 +170,7 @@ class Client() {
             isSecure = options.api.isSecure,
             db = dbPath,
             encryptionKey = options.dbEncryptionKey,
-            accountAddress = accountAddress,
+            accountAddress = accountAddress.lowercase(),
             inboxId = inboxId,
             nonce = 0.toULong(),
             legacySignedPrivateKeyProto = null,
@@ -207,20 +209,22 @@ class Client() {
     }
 
     fun findGroup(groupId: String): Group? {
-        try {
-            return Group(this, ffiClient.conversation(groupId.hexToByteArray()))
+        return try {
+            Group(this, ffiClient.conversation(groupId.hexToByteArray()))
         } catch (e: Exception) {
-            return null
+            null
         }
     }
 
     fun findConversation(conversationId: String): Conversation? {
-        val conversation = ffiClient.conversation(conversationId.hexToByteArray())
-        return if (conversation.groupMetadata().conversationType() == "dm") {
-            Conversation.Dm(Dm(this, conversation))
-        } else if (conversation.groupMetadata().conversationType() == "group") {
-            Conversation.Group(Group(this, conversation))
-        } else {
+        return try {
+            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
+            when (conversation.conversationType()) {
+                FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
+                FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
+                else -> null
+            }
+        } catch (e: Exception) {
             null
         }
     }
@@ -229,24 +233,30 @@ class Client() {
         val regex = """/xmtp/mls/1/g-(.*?)/proto""".toRegex()
         val matchResult = regex.find(topic)
         val conversationId = matchResult?.groupValues?.get(1) ?: ""
-        val conversation = ffiClient.conversation(conversationId.hexToByteArray())
-        return if (conversation.groupMetadata().conversationType() == "dm") {
-            Conversation.Dm(Dm(this, conversation))
-        } else if (conversation.groupMetadata().conversationType() == "group") {
-            Conversation.Group(Group(this, conversation))
-        } else {
+        return try {
+            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
+            when (conversation.conversationType()) {
+                FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
+                FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
+                else -> null
+            }
+        } catch (e: Exception) {
             null
         }
     }
 
-    suspend fun findDm(address: String): Dm? {
+    fun findDmByInboxId(inboxId: String): Dm? {
+        return try {
+            Dm(this, ffiClient.dmConversation(inboxId))
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun findDmByAddress(address: String): Dm? {
         val inboxId =
             inboxIdFromAddress(address.lowercase()) ?: throw XMTPException("No inboxId present")
-        try {
-            return Dm(this, ffiClient.dmConversation(inboxId))
-        } catch (e: Exception) {
-            return null
-        }
+        return findDmByInboxId(inboxId)
     }
 
     fun findMessage(messageId: String): Message? {
@@ -282,7 +292,11 @@ class Client() {
     }
 
     suspend fun requestMessageHistorySync() {
-        ffiClient.requestHistorySync()
+        ffiClient.sendSyncRequest(FfiDeviceSyncKind.MESSAGES)
+    }
+
+    suspend fun syncConsent() {
+        ffiClient.sendSyncRequest(FfiDeviceSyncKind.CONSENT)
     }
 
     suspend fun revokeAllOtherInstallations(signingKey: SigningKey) {
@@ -291,6 +305,13 @@ class Client() {
             signatureRequest.addEcdsaSignature(it.rawData)
             ffiClient.applySignatureRequest(signatureRequest)
         }
+    }
+
+    suspend fun inboxStatesForInboxIds(
+        refreshFromNetwork: Boolean,
+        inboxIds: List<String>,
+    ): List<InboxState> {
+        return ffiClient.addressesFromInboxId(refreshFromNetwork, inboxIds).map { InboxState(it) }
     }
 
     suspend fun inboxState(refreshFromNetwork: Boolean): InboxState {
