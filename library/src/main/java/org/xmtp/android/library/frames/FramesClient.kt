@@ -1,11 +1,14 @@
 package org.xmtp.android.library.frames
 
 import android.util.Base64
+import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.frames.FramesConstants.PROTOCOL_VERSION
+import org.xmtp.android.library.hexToByteArray
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.Signature
+import org.xmtp.android.library.toHex
 import java.security.MessageDigest
 import org.xmtp.proto.message.contents.Frames.FrameActionBody
 import org.xmtp.proto.message.contents.Frames.FrameAction
@@ -24,7 +27,6 @@ class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = 
             frame.frameUrl = frameUrl
             frame.buttonIndex = buttonIndex
             frame.opaqueConversationIdentifier = opaqueConversationIdentifier
-            frame.timestamp = now
             frame.unixTimestamp = now.toInt()
             if (inputText != null) {
                 frame.inputText = inputText
@@ -44,17 +46,17 @@ class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = 
     }
 
     private fun signDigest(message: String): ByteArray {
-        return xmtpClient.signInstallationKey(message)
+        return xmtpClient.signWithInstallationKey(message)
     }
 
-    private suspend fun buildSignedFrameAction(actionBodyInputs: FrameActionBody): ByteArray {
-        val digest = sha256(actionBodyInputs.toByteArray()).toString()
+    private fun buildSignedFrameAction(actionBodyInputs: FrameActionBody): ByteArray {
+        val digest = sha256(actionBodyInputs.toByteArray()).toHex()
         val signature = signDigest(digest)
 
         val frameAction = FrameAction.newBuilder().also {
             it.actionBody = actionBodyInputs.toByteString()
-            it.signature = signature
-            it.signedPublicKeyBundle = publicKeyBundle
+            it.installationSignature = signature.toByteString()
+            it.installationId = xmtpClient.installationId.hexToByteArray().toByteString()
         }.build()
 
         return frameAction.toByteArray()
