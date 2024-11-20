@@ -358,6 +358,51 @@ class GroupTest {
     }
 
     @Test
+    fun testForkingGroupsWithSendingMessages() = runBlocking {
+        val alixGroup = runBlocking {
+            alixClient.conversations.newGroup(
+                listOf(
+                    boClient.address,
+                    caroClient.address)
+            )
+        }
+        boClient.conversations.sync()
+
+        val boGroup = boClient.conversations.listGroups().first()
+
+        alixGroup.send("Hello this is Alix")
+        boGroup.send("Hello this is Bo")
+
+        alixGroup.addMembers(listOf(daveClient.address))
+
+        Thread.sleep(1000)
+
+        alixClient.conversations.sync()
+
+        val removeMembersDeferred = listOf(
+            async { alixGroup.removeMembers(listOf(caroClient.address)) },
+            async { alixGroup.removeMembers(listOf(daveClient.address)) },
+        )
+        removeMembersDeferred.awaitAll()
+
+        Thread.sleep(1000)
+
+        for(i in 0..10){
+            alixClient.conversations.sync()
+            boClient.conversations.sync()
+            Thread.sleep(1000)
+            alixGroup.send("Hello this is Alix")
+            boGroup.send("Hello this is Bo")
+        }
+
+        val remainingMembers = alixGroup.members().map { it.inboxId }.sorted()
+        assertEquals(
+            listOf(alixClient.inboxId, boClient.inboxId).sorted(),
+            remainingMembers
+        )
+    }
+
+    @Test
     fun testMessageTimeIsCorrect() {
         val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(boClient.address)) }
         runBlocking { alixGroup.send("Hello") }
