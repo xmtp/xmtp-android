@@ -184,7 +184,6 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
 
     suspend fun removeMembers(addresses: List<String>) {
         try {
-            sync()
             libXMTPGroup.removeMembers(addresses)
         } catch (e: Exception) {
             throw XMTPException("Unable to remove member", e)

@@ -4,9 +4,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
@@ -38,6 +41,9 @@ class GroupTest {
     private lateinit var caroWallet: PrivateKeyBuilder
     private lateinit var caro: PrivateKey
     private lateinit var caroClient: Client
+    private lateinit var daveWallet: PrivateKeyBuilder
+    private lateinit var dave: PrivateKey
+    private lateinit var daveClient: Client
     private lateinit var fixtures: Fixtures
 
     @Before
@@ -49,10 +55,13 @@ class GroupTest {
         bo = fixtures.bo
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
+        daveWallet = fixtures.daveAccount
+        dave = fixtures.dave
 
         alixClient = fixtures.alixClient
         boClient = fixtures.boClient
         caroClient = fixtures.caroClient
+        daveClient = fixtures.daveClient
     }
 
     @Test
@@ -312,6 +321,39 @@ class GroupTest {
                 alixClient.inboxId,
                 boClient.inboxId
             ).sorted()
+        )
+    }
+
+    @Test
+    fun testForkingGroups() = runBlocking {
+        val alixGroup = runBlocking {
+            alixClient.conversations.newGroup(
+                listOf(
+                    boClient.address,
+                    caroClient.address,
+                    daveClient.address
+                )
+            )
+        }
+
+        alixClient.conversations.sync()
+        boClient.conversations.sync()
+        val boGroup = boClient.conversations.listGroups().first()
+        assertNotNull(boGroup)
+
+        val removeMembersDeferred = listOf(
+            async { alixGroup.removeMembers(listOf(caroClient.address)) },
+            async { alixGroup.removeMembers(listOf(daveClient.address)) },
+        )
+        removeMembersDeferred.awaitAll()
+
+        alixGroup.sync()
+        boGroup.sync()
+
+        val remainingMembers = alixGroup.members().map { it.inboxId }.sorted()
+        assertEquals(
+            listOf(alixClient.inboxId, boClient.inboxId).sorted(),
+            remainingMembers
         )
     }
 
