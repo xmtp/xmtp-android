@@ -208,7 +208,7 @@ class Client() {
         return Pair(ffiClient, dbPath)
     }
 
-    fun signInstallationKey(message: String): ByteArray {
+    fun signWithInstallationKey(message: String): ByteArray {
         return ffiClient.signWithInstallationKey(message)
     }
 
