@@ -1,5 +1,7 @@
 package org.xmtp.android.library
 
+import android.util.Base64
+import android.util.Base64.NO_WRAP
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
@@ -61,6 +63,233 @@ class GroupTest {
         alixClient = fixtures.aliceClient
         boClient = fixtures.bobClient
         caroClient = fixtures.caroClient
+    }
+
+    @Test
+    fun testCanCreateV3FromKeyBundleWithSigner() {
+        val keyBytes = byteArrayOf(
+            -23, 120, -58, 96, -102, 65, -124, 17, -124, 96, -6, 40, 103, 35, 125, 64,
+            -90, 83, -48, -32, -2, 44, -51, -29, -81, 49, -22, -127, 74, -4, -121, -111
+        )
+
+        // Create a V2 client
+        val bobWallet = PrivateKeyBuilder()
+        val bob = runBlocking {
+            Client().create(
+                account = bobWallet,
+                options = ClientOptions(
+                    api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = false,
+                    appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+        }
+
+        // Create a hybrid client
+        val alixWallet = PrivateKeyBuilder()
+        val alix = runBlocking {
+            Client().create(
+                account = alixWallet,
+                options = ClientOptions(
+                    api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    dbEncryptionKey = keyBytes,
+                    appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+        }
+
+        runBlocking {
+            alix.conversations.newConversation(bob.address)
+            val keyBundle = alix.privateKeyBundle
+            alix.deleteLocalDatabase()
+
+            // Create from key bundle a hybrid client
+            val alixKeyBundle = Client().buildFromBundle(
+                bundle = keyBundle,
+                account = alixWallet,
+                options = ClientOptions(
+                    api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    dbEncryptionKey = keyBytes,
+                    appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+
+            assertEquals(alixKeyBundle.address, alixWallet.address)
+
+            val convos = alixKeyBundle.conversations.list()
+            assertEquals(1, convos.size)
+        }
+    }
+
+    @Test
+    fun testCanCreateFromKeyBundleWithSigner() {
+        val keyBytes = byteArrayOf(
+            -23, 120, -58, 96, -102, 65, -124, 17, -124, 96, -6, 40, 103, 35, 125, 64,
+            -90, 83, -48, -32, -2, 44, -51, -29, -81, 49, -22, -127, 74, -4, -121, -111
+        )
+
+        // Create a V2 client
+        val bobWallet = PrivateKeyBuilder()
+        val bob = runBlocking {
+            Client().create(
+                account = bobWallet,
+                options = ClientOptions(
+                    api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = false,
+                    appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+        }
+
+        // Create a V2 client
+        val alixWallet = PrivateKeyBuilder()
+        val alix = runBlocking {
+            Client().create(
+                account = alixWallet,
+                options = ClientOptions(
+                    api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = false,
+                    appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+        }
+
+        runBlocking {
+            alix.conversations.newConversation(bob.address)
+            val keyBundle = alix.privateKeyBundle
+
+            // Create from key bundle a hybrid client
+            val alixKeyBundle = Client().buildFromBundle(
+                bundle = keyBundle,
+                account = alixWallet,
+                options = ClientOptions(
+                    api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    dbEncryptionKey = keyBytes,
+                    appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+
+            assertEquals(alixKeyBundle.address, alix.address)
+
+            val convos1 = alixKeyBundle.conversations.list()
+            val convos2 = alix.conversations.list()
+            assertEquals(convos1.size, convos2.size)
+        }
+    }
+
+    @Test
+    fun testCanCreateFromKeyBundleWithoutSigner() {
+        val keyBytes = byteArrayOf(
+            -23, 120, -58, 96, -102, 65, -124, 17, -124, 96, -6, 40, 103, 35, 125, 64,
+            -90, 83, -48, -32, -2, 44, -51, -29, -81, 49, -22, -127, 74, -4, -121, -111
+        )
+
+        // Create a V2 client
+        val bobWallet = PrivateKeyBuilder()
+        val bob = runBlocking {
+            Client().create(
+                account = bobWallet,
+                options = ClientOptions(
+                    api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = false,
+                    appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+        }
+
+        // Create a V2 client
+        val alixWallet = PrivateKeyBuilder()
+        val alix = runBlocking {
+            Client().create(
+                account = alixWallet,
+                options = ClientOptions(
+                    api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = false,
+                    appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+        }
+
+        runBlocking {
+            alix.conversations.newConversation(bob.address)
+            val keyBundle = alix.privateKeyBundle
+
+            // Create from key bundle a hybrid client without signer
+            val alixKeyBundle = Client().buildFromBundle(
+                bundle = keyBundle,
+                options = ClientOptions(
+                    api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    dbEncryptionKey = keyBytes,
+                    appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+
+            assertEquals(alixKeyBundle.address, alix.address)
+
+            val convos1 = alixKeyBundle.conversations.list()
+            val convos2 = alix.conversations.list()
+            assertEquals(convos1.size, convos2.size)
+        }
+    }
+
+    @Test
+    fun testCanCreateV3FromKeyBundleWithoutSignerShouldFail() {
+        val keyBytes = byteArrayOf(
+            -23, 120, -58, 96, -102, 65, -124, 17, -124, 96, -6, 40, 103, 35, 125, 64,
+            -90, 83, -48, -32, -2, 44, -51, -29, -81, 49, -22, -127, 74, -4, -121, -111
+        )
+
+        // Create a V2 client
+        val bobWallet = PrivateKeyBuilder()
+        val bob = runBlocking {
+            Client().create(
+                account = bobWallet,
+                options = ClientOptions(
+                    api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = false,
+                    appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+        }
+
+        // Create a hybrid client
+        val alixWallet = PrivateKeyBuilder()
+        val alix = runBlocking {
+            Client().create(
+                account = alixWallet,
+                options = ClientOptions(
+                    api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    enableV3 = true,
+                    dbEncryptionKey = keyBytes,
+                    appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+        }
+
+        runBlocking {
+            alix.conversations.newConversation(bob.address)
+            val keyBundle = alix.privateKeyBundle
+            alix.deleteLocalDatabase()
+
+            // Create from key bundle a hybrid client without signer should throw an error
+            assertThrows(XMTPException::class.java) {
+                runBlocking {
+                    Client().buildFromBundle(
+                        bundle = keyBundle,
+                        options = ClientOptions(
+                            api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                            enableV3 = true,
+                            dbEncryptionKey = keyBytes,
+                            appContext = InstrumentationRegistry.getInstrumentation().targetContext
+                        )
+                    )
+                }
+            }
+        }
     }
 
     @Test
@@ -749,7 +978,8 @@ class GroupTest {
                     .collect { message ->
                         allMessages.add(message.topic)
                     }
-            } catch (e: Exception) {}
+            } catch (e: Exception) {
+            }
         }
         Thread.sleep(2500)
 
