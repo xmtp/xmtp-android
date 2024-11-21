@@ -354,28 +354,32 @@ class ClientTest {
                 "Testing",
                 signature,
                 alixInstallationId
-            ), true
+            ),
+            true
         )
         assertEquals(
             fixtures.alixClient.verifySignatureWithInstallationId(
                 "Not Testing",
                 signature,
                 alixInstallationId
-            ), false
+            ),
+            false
         )
         assertEquals(
             fixtures.alixClient.verifySignatureWithInstallationId(
                 "Testing",
                 signature,
                 fixtures.boClient.installationId
-            ), false
+            ),
+            false
         )
         assertEquals(
             fixtures.boClient.verifySignatureWithInstallationId(
                 "Testing",
                 signature,
                 alixInstallationId
-            ), true
+            ),
+            true
         )
         fixtures.alixClient.deleteLocalDatabase()
 
@@ -397,14 +401,16 @@ class ClientTest {
                 "Testing",
                 signature,
                 alixInstallationId
-            ), true
+            ),
+            true
         )
         assertEquals(
             alixClient2.verifySignatureWithInstallationId(
                 "Testing2",
                 signature,
                 alixInstallationId
-            ), false
+            ),
+            false
         )
     }
 }
