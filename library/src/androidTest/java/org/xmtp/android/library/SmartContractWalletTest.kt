@@ -162,12 +162,12 @@ class SmartContractWalletTest {
                 )
             }
             assertEquals(
-                davonSCWClient.preferences.consentList.conversationState(davonGroup.id),
+                davonSCWClient.preferences.conversationState(davonGroup.id),
                 ConsentState.ALLOWED
             )
             assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
 
-            davonSCWClient.preferences.consentList.setConsentState(
+            davonSCWClient.preferences.setConsentState(
                 listOf(
                     ConsentListEntry(
                         davonGroup.id,
@@ -177,14 +177,14 @@ class SmartContractWalletTest {
                 )
             )
             assertEquals(
-                davonSCWClient.preferences.consentList.conversationState(davonGroup.id),
+                davonSCWClient.preferences.conversationState(davonGroup.id),
                 ConsentState.DENIED
             )
             assertEquals(davonGroup.consentState(), ConsentState.DENIED)
 
             davonGroup.updateConsentState(ConsentState.ALLOWED)
             assertEquals(
-                davonSCWClient.preferences.consentList.conversationState(davonGroup.id),
+                davonSCWClient.preferences.conversationState(davonGroup.id),
                 ConsentState.ALLOWED
             )
             assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
@@ -203,10 +203,10 @@ class SmartContractWalletTest {
                 )
             }
             assertEquals(
-                davonSCWClient.preferences.consentList.inboxIdState(boV3Client.inboxId),
+                davonSCWClient.preferences.inboxIdState(boV3Client.inboxId),
                 ConsentState.UNKNOWN
             )
-            davonSCWClient.preferences.consentList.setConsentState(
+            davonSCWClient.preferences.setConsentState(
                 listOf(
                     ConsentListEntry(
                         boV3Client.inboxId,
@@ -219,11 +219,11 @@ class SmartContractWalletTest {
             assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
 
             assertEquals(
-                davonSCWClient.preferences.consentList.inboxIdState(boV3Client.inboxId),
+                davonSCWClient.preferences.inboxIdState(boV3Client.inboxId),
                 ConsentState.ALLOWED
             )
 
-            davonSCWClient.preferences.consentList.setConsentState(
+            davonSCWClient.preferences.setConsentState(
                 listOf(
                     ConsentListEntry(
                         boV3Client.inboxId,
@@ -236,11 +236,11 @@ class SmartContractWalletTest {
             assertEquals(alixMember!!.consentState, ConsentState.DENIED)
 
             assertEquals(
-                davonSCWClient.preferences.consentList.inboxIdState(boV3Client.inboxId),
+                davonSCWClient.preferences.inboxIdState(boV3Client.inboxId),
                 ConsentState.DENIED
             )
 
-            davonSCWClient.preferences.consentList.setConsentState(
+            davonSCWClient.preferences.setConsentState(
                 listOf(
                     ConsentListEntry(
                         eriSCWClient.address,
@@ -252,11 +252,11 @@ class SmartContractWalletTest {
             alixMember = davonGroup.members().firstOrNull { it.inboxId == eriSCWClient.inboxId }
             assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
             assertEquals(
-                davonSCWClient.preferences.consentList.inboxIdState(eriSCWClient.inboxId),
+                davonSCWClient.preferences.inboxIdState(eriSCWClient.inboxId),
                 ConsentState.ALLOWED
             )
             assertEquals(
-                davonSCWClient.preferences.consentList.addressState(eriSCWClient.address),
+                davonSCWClient.preferences.addressState(eriSCWClient.address),
                 ConsentState.ALLOWED
             )
         }

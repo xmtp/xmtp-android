@@ -299,10 +299,6 @@ class Client() {
         ffiClient.sendSyncRequest(FfiDeviceSyncKind.MESSAGES)
     }
 
-    suspend fun syncConsent() {
-        ffiClient.sendSyncRequest(FfiDeviceSyncKind.CONSENT)
-    }
-
     suspend fun revokeAllOtherInstallations(signingKey: SigningKey) {
         val signatureRequest = ffiClient.revokeAllOtherInstallations()
         signingKey.sign(signatureRequest.signatureText())?.let {
