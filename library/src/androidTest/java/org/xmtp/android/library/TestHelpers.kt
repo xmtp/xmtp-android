@@ -153,6 +153,7 @@ class Fixtures {
     val alixAccount = PrivateKeyBuilder()
     val boAccount = PrivateKeyBuilder()
     val caroAccount = PrivateKeyBuilder()
+    val davonAccount = PrivateKeyBuilder()
 
     var alix: PrivateKey = alixAccount.getPrivateKey()
     var alixClient: Client =
@@ -165,6 +166,10 @@ class Fixtures {
     var caro: PrivateKey = caroAccount.getPrivateKey()
     var caroClient: Client =
         runBlocking { Client().create(account = caroAccount, options = clientOptions) }
+
+    var davon: PrivateKey = davonAccount.getPrivateKey()
+    var davonClient: Client =
+        runBlocking { Client().create(account = davonAccount, options = clientOptions) }
 }
 
 fun fixtures(): Fixtures =
