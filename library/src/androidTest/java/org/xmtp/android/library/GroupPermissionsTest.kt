@@ -12,7 +12,7 @@ import org.xmtp.android.library.libxmtp.PermissionLevel
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import uniffi.xmtpv3.GroupPermissions
+import uniffi.xmtpv3.FfiGroupPermissionsOptions
 
 @RunWith(AndroidJUnit4::class)
 class GroupPermissionsTest {
@@ -76,7 +76,7 @@ class GroupPermissionsTest {
 
     @Test
     fun testGroupCanUpdateAdminList() {
-        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), GroupPermissions.ADMIN_ONLY) }
+        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), FfiGroupPermissionsOptions.ADMIN_ONLY) }
         runBlocking { alixClient.conversations.syncGroups() }
         val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
 
@@ -170,7 +170,7 @@ class GroupPermissionsTest {
 
     @Test
     fun testGroupCanUpdateSuperAdminList() {
-        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), GroupPermissions.ADMIN_ONLY) }
+        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), FfiGroupPermissionsOptions.ADMIN_ONLY) }
         runBlocking { alixClient.conversations.syncGroups() }
         val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
 
@@ -211,7 +211,7 @@ class GroupPermissionsTest {
 
     @Test
     fun testGroupMembersAndPermissionLevel() {
-        val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), GroupPermissions.ADMIN_ONLY) }
+        val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), FfiGroupPermissionsOptions.ADMIN_ONLY) }
         runBlocking { alixClient.conversations.syncGroups() }
         val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
 
@@ -260,7 +260,7 @@ class GroupPermissionsTest {
 
     @Test
     fun testCanCommitAfterInvalidPermissionsCommit() {
-        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), GroupPermissions.ALL_MEMBERS) }
+        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress, caro.walletAddress), FfiGroupPermissionsOptions.ALL_MEMBERS) }
         runBlocking { alixClient.conversations.syncGroups() }
         val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
 

@@ -17,10 +17,10 @@ import uniffi.xmtpv3.FfiDeliveryStatus
 import uniffi.xmtpv3.FfiGroup
 import uniffi.xmtpv3.FfiGroupMetadata
 import uniffi.xmtpv3.FfiGroupPermissions
+import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
-import uniffi.xmtpv3.GroupPermissions
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -165,7 +165,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiGroup) {
         return libXMTPGroup.addedByInboxId()
     }
 
-    fun permissionLevel(): GroupPermissions {
+    fun permissionLevel(): FfiGroupPermissionsOptions {
         return permissions.policyType()
     }
 

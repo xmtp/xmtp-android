@@ -25,7 +25,7 @@ import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.mls.message.contents.TranscriptMessages
-import uniffi.xmtpv3.GroupPermissions
+import uniffi.xmtpv3.FfiGroupPermissionsOptions
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
@@ -94,8 +94,8 @@ class GroupTest {
         assertEquals(alixGroup.members().size, 3)
         assertEquals(boGroup.members().size, 3)
 
-        assertEquals(boGroup.permissionLevel(), GroupPermissions.ALL_MEMBERS)
-        assertEquals(alixGroup.permissionLevel(), GroupPermissions.ALL_MEMBERS)
+        assertEquals(boGroup.permissionLevel(), FfiGroupPermissionsOptions.ALL_MEMBERS)
+        assertEquals(alixGroup.permissionLevel(), FfiGroupPermissionsOptions.ALL_MEMBERS)
         assertEquals(boGroup.isAdmin(boClient.inboxId), true)
         assertEquals(boGroup.isAdmin(alixClient.inboxId), false)
         assertEquals(alixGroup.isAdmin(boClient.inboxId), true)
@@ -110,7 +110,7 @@ class GroupTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(alix.walletAddress),
-                permissions = GroupPermissions.ADMIN_ONLY
+                permissions = FfiGroupPermissionsOptions.ADMIN_ONLY
             )
         }
         runBlocking { alixClient.conversations.syncGroups() }
@@ -152,8 +152,8 @@ class GroupTest {
         assertEquals(alixGroup.members().size, 2)
         assertEquals(boGroup.members().size, 2)
 
-        assertEquals(boGroup.permissionLevel(), GroupPermissions.ADMIN_ONLY)
-        assertEquals(alixGroup.permissionLevel(), GroupPermissions.ADMIN_ONLY)
+        assertEquals(boGroup.permissionLevel(), FfiGroupPermissionsOptions.ADMIN_ONLY)
+        assertEquals(alixGroup.permissionLevel(), FfiGroupPermissionsOptions.ADMIN_ONLY)
         assertEquals(boGroup.isAdmin(boClient.inboxId), true)
         assertEquals(boGroup.isAdmin(alixClient.inboxId), false)
         assertEquals(alixGroup.isAdmin(boClient.inboxId), true)
