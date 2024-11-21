@@ -16,7 +16,6 @@ import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.GenericException
-import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
 class SmartContractWalletTest {
