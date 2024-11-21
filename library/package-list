@@ -787,6 +787,7 @@ $dokka.location:org.xmtp.android.library/Client.Companion/register/#org.xmtp.and
 $dokka.location:org.xmtp.android.library/Client///PointingToDeclaration/library/org.xmtp.android.library/-client/index.html
 $dokka.location:org.xmtp.android.library/Client/Client/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
 $dokka.location:org.xmtp.android.library/Client/Client/#kotlin.String#uniffi.xmtpv3.FfiXmtpClient#kotlin.String#kotlin.String#kotlin.String#org.xmtp.android.library.XMTPEnvironment/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
+$dokka.location:org.xmtp.android.library/Client/addAccount/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.SigningKey/PointingToDeclaration/library/org.xmtp.android.library/-client/add-account.html
 $dokka.location:org.xmtp.android.library/Client/address/#/PointingToDeclaration/library/org.xmtp.android.library/-client/address.html
 $dokka.location:org.xmtp.android.library/Client/build/#kotlin.String#org.xmtp.android.library.ClientOptions/PointingToDeclaration/library/org.xmtp.android.library/-client/build.html
 $dokka.location:org.xmtp.android.library/Client/canMessage/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-client/can-message.html
@@ -811,6 +812,7 @@ $dokka.location:org.xmtp.android.library/Client/libXMTPVersion/#/PointingToDecla
 $dokka.location:org.xmtp.android.library/Client/logger/#/PointingToDeclaration/library/org.xmtp.android.library/-client/logger.html
 $dokka.location:org.xmtp.android.library/Client/preferences/#/PointingToDeclaration/library/org.xmtp.android.library/-client/preferences.html
 $dokka.location:org.xmtp.android.library/Client/reconnectLocalDatabase/#/PointingToDeclaration/library/org.xmtp.android.library/-client/reconnect-local-database.html
+$dokka.location:org.xmtp.android.library/Client/removeAccount/#org.xmtp.android.library.SigningKey#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/remove-account.html
 $dokka.location:org.xmtp.android.library/Client/requestMessageHistorySync/#/PointingToDeclaration/library/org.xmtp.android.library/-client/request-message-history-sync.html
 $dokka.location:org.xmtp.android.library/Client/revokeAllOtherInstallations/#org.xmtp.android.library.SigningKey/PointingToDeclaration/library/org.xmtp.android.library/-client/revoke-all-other-installations.html
 $dokka.location:org.xmtp.android.library/Client/signWithInstallationKey/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/sign-with-installation-key.html
