@@ -22,24 +22,24 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
       - name: Run build with Gradle Wrapper
         run: ./gradlew build
-      - name: Tag version 0.14.1-patch
+      - name: Tag version 0.14.1-patch1
         run: |
-          git tag 0.14.1-patch
-          git push origin 0.14.1-patch
+          git tag 0.14.1-patch1
+          git push origin 0.14.1-patch1
 
       - name: Create a GitHub release for version 0.14.1-patch
         uses: ncipollo/release-action@v1
         with:
-          tag: "0.14.1-patch"
-          name: "Release 0.14.1-patch"
+          tag: "0.14.1-patch1"
+          name: "Release 0.14.1-patch1"
           body: "Patch release for inboxId and group fixes 0.14.1-patch"
 
       - name: Gradle Publish
         env:
-          RELEASE_VERSION: "0.14.1-patch"
+          RELEASE_VERSION: "0.14.1-patch1"
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
           SIGN_KEY: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
           SIGN_PASSWORD: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
           MAVEN_PROFILE_ID: ${{ secrets.MAVEN_PROFILE_ID }}
-        run: ./gradlew publishToSonatype 
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
