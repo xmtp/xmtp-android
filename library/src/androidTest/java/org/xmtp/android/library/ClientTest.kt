@@ -413,7 +413,7 @@ class ClientTest {
             false
         )
     }
-    
+
     @Test
     fun testAddAccounts() {
         val fixtures = fixtures()
