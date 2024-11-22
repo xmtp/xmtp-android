@@ -22,26 +22,24 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
       - name: Run build with Gradle Wrapper
         run: ./gradlew build
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.1
-        with:
-          custom_tag: "0.14.1-patch"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          dry_run: true
-      - name: Create a GitHub release
+      - name: Tag version 0.14.1-patch
+        run: |
+          git tag 0.14.1-patch
+          git push origin 0.14.1-patch
+
+      - name: Create a GitHub release for version 0.14.1-patch
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ steps.tag_version.outputs.new_version }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
-          body: ${{ steps.tag_version.outputs.changelog }}
-          dryRun: true 
+          tag: "0.14.1-patch"
+          name: "Release 0.14.1-patch"
+          body: "Patch release for inboxId and group fixes 0.14.1-patch"
+
       - name: Gradle Publish
         env:
-          RELEASE_VERSION: ${{ steps.tag_version.outputs.new_version }}
+          RELEASE_VERSION: "0.14.1-patch"
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
           SIGN_KEY: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
           SIGN_PASSWORD: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
           MAVEN_PROFILE_ID: ${{ secrets.MAVEN_PROFILE_ID }}
-        run: ./gradlew publishToSonatype --dry-run
+        run: ./gradlew publishToSonatype 
