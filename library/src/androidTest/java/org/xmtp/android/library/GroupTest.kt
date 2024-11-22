@@ -1,7 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Base64
-import android.util.Base64.NO_WRAP
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
