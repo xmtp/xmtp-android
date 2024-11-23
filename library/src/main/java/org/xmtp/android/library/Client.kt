@@ -175,7 +175,7 @@ class Client() {
             inboxId = inboxId,
             nonce = 0.toULong(),
             legacySignedPrivateKeyProto = null,
-            historySyncUrl = options.historySyncUrl
+            historySyncUrl = null
         )
 
         options.preAuthenticateToInboxCallback?.let {
