@@ -251,7 +251,7 @@ class ConversationsTest {
                 )
             )
         }
-        val alixDm = runBlocking { alixClient.conversations.newGroup(listOf(bo.walletAddress)) }
+        val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(bo.walletAddress)) }
 
         val alixClient2 = runBlocking {
             Client().create(
@@ -266,12 +266,12 @@ class ConversationsTest {
         }
 
         runBlocking {
-            alixClient.conversations.sync()
+            alixGroup.send("Hello")
             alixClient2.conversations.sync()
             alixClient.conversations.syncAllConversations()
             alixClient2.conversations.syncAllConversations()
         }
-        val alix2Dm = alixClient2.findGroup(alixDm.id)!!
+        val alix2Group = alixClient2.findGroup(alixGroup.id)!!
         val consent = mutableListOf<ConsentListEntry>()
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -286,7 +286,7 @@ class ConversationsTest {
         Thread.sleep(1000)
 
         runBlocking {
-            alix2Dm.updateConsentState(ConsentState.DENIED)
+            alix2Group.updateConsentState(ConsentState.DENIED)
             val dm3 = alixClient2.conversations.newConversation(caro.walletAddress)
             dm3.updateConsentState(ConsentState.DENIED)
             alixClient.conversations.sync()
@@ -296,7 +296,8 @@ class ConversationsTest {
         }
 
         Thread.sleep(2000)
-        assertEquals(2, consent)
+        assertEquals(3, consent.size)
+        assertEquals(alixGroup.consentState(), ConsentState.DENIED)
         job.cancel()
     }
 }
