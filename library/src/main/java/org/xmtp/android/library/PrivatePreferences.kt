@@ -8,9 +8,6 @@ import uniffi.xmtpv3.FfiConsent
 import uniffi.xmtpv3.FfiConsentCallback
 import uniffi.xmtpv3.FfiConsentEntityType
 import uniffi.xmtpv3.FfiConsentState
-import uniffi.xmtpv3.FfiConversation
-import uniffi.xmtpv3.FfiConversationCallback
-import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiDeviceSyncKind
 import uniffi.xmtpv3.FfiSubscribeException
 import uniffi.xmtpv3.FfiXmtpClient
