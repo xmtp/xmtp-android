@@ -103,7 +103,7 @@ data class PrivatePreferences(
     suspend fun streamConsent(): Flow<ConsentListEntry> = callbackFlow {
         val consentCallback = object : FfiConsentCallback {
             override fun onConsentUpdate(consent: List<FfiConsent>) {
-                consent.forEach {
+                consent.iterator().forEach {
                     trySend(it.fromFfiConsent())
                 }
             }
