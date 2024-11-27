@@ -112,11 +112,11 @@ class GroupTest {
 
         runBlocking {
             assertEquals(
-                boClient.preferences.consentList.conversationState(boGroup.id),
+                boClient.preferences.conversationState(boGroup.id),
                 ConsentState.ALLOWED
             )
             assertEquals(
-                alixClient.preferences.consentList.conversationState(alixGroup.id),
+                alixClient.preferences.conversationState(alixGroup.id),
                 ConsentState.UNKNOWN
             )
         }
@@ -420,7 +420,7 @@ class GroupTest {
             group.sync()
             assertEquals(group.consentState(), ConsentState.ALLOWED)
             assertEquals(
-                boClient.preferences.consentList.conversationState(group.id),
+                boClient.preferences.conversationState(group.id),
                 ConsentState.ALLOWED
             )
         }
@@ -731,14 +731,14 @@ class GroupTest {
                     )
                 )
             assertEquals(
-                boClient.preferences.consentList.conversationState(group.id),
+                boClient.preferences.conversationState(group.id),
                 ConsentState.ALLOWED
             )
             assertEquals(group.consentState(), ConsentState.ALLOWED)
 
-            boClient.preferences.consentList.setConsentState(
+            boClient.preferences.setConsentState(
                 listOf(
-                    ConsentListEntry(
+                    ConsentRecord(
                         group.id,
                         EntryType.CONVERSATION_ID,
                         ConsentState.DENIED
@@ -746,14 +746,14 @@ class GroupTest {
                 )
             )
             assertEquals(
-                boClient.preferences.consentList.conversationState(group.id),
+                boClient.preferences.conversationState(group.id),
                 ConsentState.DENIED
             )
             assertEquals(group.consentState(), ConsentState.DENIED)
 
             group.updateConsentState(ConsentState.ALLOWED)
             assertEquals(
-                boClient.preferences.consentList.conversationState(group.id),
+                boClient.preferences.conversationState(group.id),
                 ConsentState.ALLOWED
             )
             assertEquals(group.consentState(), ConsentState.ALLOWED)
@@ -765,12 +765,12 @@ class GroupTest {
         runBlocking {
             val boGroup = boClient.conversations.newGroup(listOf(alix.walletAddress))
             assertEquals(
-                boClient.preferences.consentList.inboxIdState(alixClient.inboxId),
+                boClient.preferences.inboxIdState(alixClient.inboxId),
                 ConsentState.UNKNOWN
             )
-            boClient.preferences.consentList.setConsentState(
+            boClient.preferences.setConsentState(
                 listOf(
-                    ConsentListEntry(
+                    ConsentRecord(
                         alixClient.inboxId,
                         EntryType.INBOX_ID,
                         ConsentState.ALLOWED
@@ -781,13 +781,13 @@ class GroupTest {
             assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
 
             assertEquals(
-                boClient.preferences.consentList.inboxIdState(alixClient.inboxId),
+                boClient.preferences.inboxIdState(alixClient.inboxId),
                 ConsentState.ALLOWED
             )
 
-            boClient.preferences.consentList.setConsentState(
+            boClient.preferences.setConsentState(
                 listOf(
-                    ConsentListEntry(
+                    ConsentRecord(
                         alixClient.inboxId,
                         EntryType.INBOX_ID,
                         ConsentState.DENIED
@@ -798,13 +798,13 @@ class GroupTest {
             assertEquals(alixMember!!.consentState, ConsentState.DENIED)
 
             assertEquals(
-                boClient.preferences.consentList.inboxIdState(alixClient.inboxId),
+                boClient.preferences.inboxIdState(alixClient.inboxId),
                 ConsentState.DENIED
             )
 
-            boClient.preferences.consentList.setConsentState(
+            boClient.preferences.setConsentState(
                 listOf(
-                    ConsentListEntry(
+                    ConsentRecord(
                         alixClient.address,
                         EntryType.ADDRESS,
                         ConsentState.ALLOWED
@@ -814,11 +814,11 @@ class GroupTest {
             alixMember = boGroup.members().firstOrNull { it.inboxId == alixClient.inboxId }
             assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
             assertEquals(
-                boClient.preferences.consentList.inboxIdState(alixClient.inboxId),
+                boClient.preferences.inboxIdState(alixClient.inboxId),
                 ConsentState.ALLOWED
             )
             assertEquals(
-                boClient.preferences.consentList.addressState(alixClient.address),
+                boClient.preferences.addressState(alixClient.address),
                 ConsentState.ALLOWED
             )
         }

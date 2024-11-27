@@ -331,7 +331,147 @@ class ClientTest {
                 listOf(fixtures.boClient.inboxId, fixtures.caroClient.inboxId)
             )
         }
-        assertEquals(states.first().recoveryAddress.lowercase(), fixtures.bo.walletAddress.lowercase())
-        assertEquals(states.last().recoveryAddress.lowercase(), fixtures.caro.walletAddress.lowercase())
+        assertEquals(
+            states.first().recoveryAddress.lowercase(),
+            fixtures.bo.walletAddress.lowercase()
+        )
+        assertEquals(
+            states.last().recoveryAddress.lowercase(),
+            fixtures.caro.walletAddress.lowercase()
+        )
+    }
+
+    @Test
+    fun testsSignatures() {
+        val fixtures = fixtures()
+        val signature = fixtures.alixClient.signWithInstallationKey("Testing")
+        assertEquals(fixtures.alixClient.verifySignature("Testing", signature), true)
+        assertEquals(fixtures.alixClient.verifySignature("Not Testing", signature), false)
+
+        val alixInstallationId = fixtures.alixClient.installationId
+        assertEquals(
+            fixtures.alixClient.verifySignatureWithInstallationId(
+                "Testing",
+                signature,
+                alixInstallationId
+            ),
+            true
+        )
+        assertEquals(
+            fixtures.alixClient.verifySignatureWithInstallationId(
+                "Not Testing",
+                signature,
+                alixInstallationId
+            ),
+            false
+        )
+        assertEquals(
+            fixtures.alixClient.verifySignatureWithInstallationId(
+                "Testing",
+                signature,
+                fixtures.boClient.installationId
+            ),
+            false
+        )
+        assertEquals(
+            fixtures.boClient.verifySignatureWithInstallationId(
+                "Testing",
+                signature,
+                alixInstallationId
+            ),
+            true
+        )
+        fixtures.alixClient.deleteLocalDatabase()
+
+        val key = SecureRandom().generateSeed(32)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val alixClient2 = runBlocking {
+            Client().create(
+                account = fixtures.alixAccount,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
+
+        assertEquals(
+            alixClient2.verifySignatureWithInstallationId(
+                "Testing",
+                signature,
+                alixInstallationId
+            ),
+            true
+        )
+        assertEquals(
+            alixClient2.verifySignatureWithInstallationId(
+                "Testing2",
+                signature,
+                alixInstallationId
+            ),
+            false
+        )
+    }
+
+    @Test
+    fun testAddAccounts() {
+        val fixtures = fixtures()
+        val alix2Wallet = PrivateKeyBuilder()
+        val alix3Wallet = PrivateKeyBuilder()
+        runBlocking { fixtures.alixClient.addAccount(alix2Wallet) }
+        runBlocking { fixtures.alixClient.addAccount(alix3Wallet) }
+
+        val state = runBlocking { fixtures.alixClient.inboxState(true) }
+        assertEquals(state.installations.size, 1)
+        assertEquals(state.addresses.size, 3)
+        assertEquals(state.recoveryAddress, fixtures.alixClient.address.lowercase())
+        assertEquals(
+            state.addresses.sorted(),
+            listOf(
+                alix2Wallet.address.lowercase(),
+                alix3Wallet.address.lowercase(),
+                fixtures.alixClient.address.lowercase()
+            ).sorted()
+        )
+    }
+
+    @Test
+    fun testRemovingAccounts() {
+        val fixtures = fixtures()
+        val alix2Wallet = PrivateKeyBuilder()
+        val alix3Wallet = PrivateKeyBuilder()
+        runBlocking { fixtures.alixClient.addAccount(alix2Wallet) }
+        runBlocking { fixtures.alixClient.addAccount(alix3Wallet) }
+
+        var state = runBlocking { fixtures.alixClient.inboxState(true) }
+        assertEquals(state.addresses.size, 3)
+        assertEquals(state.recoveryAddress, fixtures.alixClient.address.lowercase())
+
+        runBlocking { fixtures.alixClient.removeAccount(fixtures.alixAccount, alix2Wallet.address) }
+        state = runBlocking { fixtures.alixClient.inboxState(true) }
+        assertEquals(state.addresses.size, 2)
+        assertEquals(state.recoveryAddress, fixtures.alixClient.address.lowercase())
+        assertEquals(
+            state.addresses.sorted(),
+            listOf(
+                alix3Wallet.address.lowercase(),
+                fixtures.alixClient.address.lowercase()
+            ).sorted()
+        )
+        assertEquals(state.installations.size, 1)
+
+        // Cannot remove the recovery address
+        assertThrows(
+            "Client error: Unknown Signer",
+            GenericException::class.java
+        ) {
+            runBlocking {
+                fixtures.alixClient.removeAccount(
+                    alix3Wallet,
+                    fixtures.alixClient.address
+                )
+            }
+        }
     }
 }

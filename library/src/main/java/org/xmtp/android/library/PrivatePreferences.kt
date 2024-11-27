@@ -1,8 +1,15 @@
 package org.xmtp.android.library
 
+import android.util.Log
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import uniffi.xmtpv3.FfiConsent
+import uniffi.xmtpv3.FfiConsentCallback
 import uniffi.xmtpv3.FfiConsentEntityType
 import uniffi.xmtpv3.FfiConsentState
+import uniffi.xmtpv3.FfiDeviceSyncKind
+import uniffi.xmtpv3.FfiSubscribeException
 import uniffi.xmtpv3.FfiXmtpClient
 
 enum class ConsentState {
@@ -53,7 +60,7 @@ enum class EntryType {
     }
 }
 
-data class ConsentListEntry(
+data class ConsentRecord(
     val value: String,
     val entryType: EntryType,
     val consentType: ConsentState,
@@ -62,22 +69,22 @@ data class ConsentListEntry(
         fun address(
             address: String,
             type: ConsentState = ConsentState.UNKNOWN,
-        ): ConsentListEntry {
-            return ConsentListEntry(address, EntryType.ADDRESS, type)
+        ): ConsentRecord {
+            return ConsentRecord(address, EntryType.ADDRESS, type)
         }
 
         fun conversationId(
             groupId: String,
             type: ConsentState = ConsentState.UNKNOWN,
-        ): ConsentListEntry {
-            return ConsentListEntry(groupId, EntryType.CONVERSATION_ID, type)
+        ): ConsentRecord {
+            return ConsentRecord(groupId, EntryType.CONVERSATION_ID, type)
         }
 
         fun inboxId(
             inboxId: String,
             type: ConsentState = ConsentState.UNKNOWN,
-        ): ConsentListEntry {
-            return ConsentListEntry(inboxId, EntryType.INBOX_ID, type)
+        ): ConsentRecord {
+            return ConsentRecord(inboxId, EntryType.INBOX_ID, type)
         }
     }
 
@@ -85,19 +92,49 @@ data class ConsentListEntry(
         get() = "${entryType.name}-$value"
 }
 
-class ConsentList(
-    val client: Client,
+data class PrivatePreferences(
+    var client: Client,
     private val ffiClient: FfiXmtpClient,
 ) {
-    suspend fun setConsentState(entries: List<ConsentListEntry>) {
+    suspend fun syncConsent() {
+        ffiClient.sendSyncRequest(FfiDeviceSyncKind.CONSENT)
+    }
+
+    suspend fun streamConsent(): Flow<ConsentRecord> = callbackFlow {
+        val consentCallback = object : FfiConsentCallback {
+            override fun onConsentUpdate(consent: List<FfiConsent>) {
+                consent.iterator().forEach {
+                    trySend(it.fromFfiConsent())
+                }
+            }
+
+            override fun onError(error: FfiSubscribeException) {
+                Log.e("XMTP consent stream", error.message.toString())
+            }
+        }
+
+        val stream = ffiClient.conversations().streamConsent(consentCallback)
+
+        awaitClose { stream.end() }
+    }
+
+    suspend fun setConsentState(entries: List<ConsentRecord>) {
         ffiClient.setConsentStates(entries.map { it.toFfiConsent() })
     }
 
-    private fun ConsentListEntry.toFfiConsent(): FfiConsent {
+    private fun ConsentRecord.toFfiConsent(): FfiConsent {
         return FfiConsent(
             EntryType.toFfiConsentEntityType(entryType),
             ConsentState.toFfiConsentState(consentType),
             value
+        )
+    }
+
+    private fun FfiConsent.fromFfiConsent(): ConsentRecord {
+        return ConsentRecord(
+            entity,
+            EntryType.fromFfiConsentEntityType(entityType),
+            ConsentState.fromFfiConsentState(state),
         )
     }
 
@@ -128,9 +165,3 @@ class ConsentList(
         )
     }
 }
-
-data class PrivatePreferences(
-    var client: Client,
-    private val ffiClient: FfiXmtpClient,
-    var consentList: ConsentList = ConsentList(client, ffiClient),
-)
