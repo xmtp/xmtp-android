@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
@@ -12,6 +13,7 @@ import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.GenericException
 import java.security.SecureRandom
+import java.util.Date
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -473,5 +475,43 @@ class ClientTest {
                 )
             }
         }
+    }
+
+    @Test
+    fun testCreatesADevClientPerformance() {
+        val key = SecureRandom().generateSeed(32)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val start = Date()
+        runBlocking {
+            Client().create(
+                account = fakeWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.DEV, true),
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
+        val end = Date()
+        val time1 = end.time - start.time
+        Log.d("PERF", "Created a client in ${time1 / 1000.0}s")
+
+        val start2 = Date()
+        runBlocking {
+            Client().build(
+                fakeWallet.address,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.DEV, true),
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
+        val end2 = Date()
+        val time2 = end2.time - start2.time
+        Log.d("PERF", "Built a client in ${time2 / 1000.0}s")
+
+        assert(time2 < time1)
     }
 }
