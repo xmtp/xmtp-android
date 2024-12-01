@@ -63,20 +63,14 @@ class Client() {
         }
 
         suspend fun getOrCreateInboxId(environment: ClientOptions.Api, address: String): String {
-            val start = Date()
             var inboxId = getInboxIdForAddress(
                 logger = XMTPLogger(),
                 host = environment.env.getUrl(),
                 isSecure = environment.isSecure,
                 accountAddress = address.lowercase()
             )
-            val end = Date()
-            Log.d("PERF", "Get inboxId in ${(end.time - start.time) / 1000.0}s")
             if (inboxId.isNullOrBlank()) {
-                val start2 = Date()
                 inboxId = generateInboxId(address.lowercase(), 0.toULong())
-                val end2 = Date()
-                Log.d("PERF", "Create inboxId in ${(end2.time - start2.time) / 1000.0}s")
             }
             return inboxId
         }
@@ -111,10 +105,7 @@ class Client() {
         signingKey: SigningKey? = null,
     ): Client {
         val accountAddress = address.lowercase()
-        val start2 = Date()
         val inboxId = generateInboxId(address.lowercase(), 0.toULong())
-        val end2 = Date()
-        Log.d("PERF", "Create inboxId in ${(end2.time - start2.time) / 1000.0}s")
 
         val (ffiClient, dbPath) = createFfiClient(
             accountAddress,
@@ -176,7 +167,6 @@ class Client() {
         directoryFile.mkdir()
         dbPath = directoryFile.absolutePath + "/$alias.db3"
 
-        val start = Date()
         val ffiClient = createClient(
             logger = logger,
             host = options.api.env.getUrl(),
@@ -189,8 +179,6 @@ class Client() {
             legacySignedPrivateKeyProto = null,
             historySyncUrl = options.historySyncUrl
         )
-        val end = Date()
-        Log.d("PERF", "Create ffi client in ${(end.time - start.time) / 1000.0}s")
 
         options.preAuthenticateToInboxCallback?.let {
             runBlocking {
