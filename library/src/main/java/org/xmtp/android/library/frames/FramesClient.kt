@@ -57,6 +57,7 @@ class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = 
             it.actionBody = actionBodyInputs.toByteString()
             it.installationSignature = signature.toByteString()
             it.installationId = xmtpClient.installationId.hexToByteArray().toByteString()
+            it.inboxId = xmtpClient.inboxId
         }.build()
 
         return frameAction.toByteArray()
