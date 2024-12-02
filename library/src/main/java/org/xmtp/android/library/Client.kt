@@ -103,17 +103,24 @@ class Client() {
         address: String,
         clientOptions: ClientOptions,
         signingKey: SigningKey? = null,
+        inboxId: String? = null
     ): Client {
         val accountAddress = address.lowercase()
-        val inboxId = generateInboxId(address.lowercase(), 0.toULong())
+        val start2 = Date()
+        val recoveredInboxId = inboxId ?: getOrCreateInboxId(clientOptions.api, accountAddress)
+        val end2 = Date()
+        Log.d("PERF", "Get or create inboxId in ${(end2.time - start2.time) / 1000.0}s")
 
+        val start = Date()
         val (ffiClient, dbPath) = createFfiClient(
             accountAddress,
-            inboxId,
+            recoveredInboxId,
             clientOptions,
             signingKey,
             clientOptions.appContext,
         )
+        val end = Date()
+        Log.d("PERF", "Create ffiClient with sigs ${(end.time - start.time) / 1000.0}s")
 
         return Client(
             accountAddress,
@@ -141,9 +148,10 @@ class Client() {
     suspend fun build(
         address: String,
         options: ClientOptions,
+        inboxId: String? = null
     ): Client {
         return try {
-            initializeV3Client(address, options)
+            initializeV3Client(address, options, inboxId = inboxId)
         } catch (e: Exception) {
             throw XMTPException("Error creating V3 client: ${e.message}", e)
         }

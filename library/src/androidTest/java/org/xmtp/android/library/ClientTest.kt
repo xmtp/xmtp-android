@@ -483,7 +483,7 @@ class ClientTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fakeWallet = PrivateKeyBuilder()
         val start = Date()
-        runBlocking {
+        val client = runBlocking {
             Client().create(
                 account = fakeWallet,
                 options = ClientOptions(
@@ -498,7 +498,7 @@ class ClientTest {
         Log.d("PERF", "Created a client in ${time1 / 1000.0}s")
 
         val start2 = Date()
-        runBlocking {
+        val buildClient1 = runBlocking {
             Client().build(
                 fakeWallet.address,
                 options = ClientOptions(
@@ -512,6 +512,26 @@ class ClientTest {
         val time2 = end2.time - start2.time
         Log.d("PERF", "Built a client in ${time2 / 1000.0}s")
 
+        val start3 = Date()
+        val buildClient2 = runBlocking {
+            Client().build(
+                fakeWallet.address,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.DEV, true),
+                    appContext = context,
+                    dbEncryptionKey = key
+                ),
+                inboxId =  client.inboxId
+            )
+        }
+        val end3 = Date()
+        val time3 = end3.time - start3.time
+        Log.d("PERF", "Built a client with inboxId in ${time3 / 1000.0}s")
+
         assert(time2 < time1)
+        assert(time3 < time1)
+        assert(time3 < time2)
+        assertEquals(client.inboxId, buildClient1.inboxId)
+        assertEquals(client.inboxId, buildClient2.inboxId)
     }
 }
