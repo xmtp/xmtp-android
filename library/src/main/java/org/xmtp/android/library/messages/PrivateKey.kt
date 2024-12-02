@@ -1,5 +1,6 @@
 package org.xmtp.android.library.messages
 
+import android.util.Log
 import com.google.protobuf.kotlin.toByteString
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
@@ -63,6 +64,7 @@ class PrivateKeyBuilder : SigningKey {
     }
 
     override suspend fun sign(data: ByteArray): SignatureOuterClass.Signature {
+        val start = Date()
         val signatureData =
             Sign.signMessage(
                 data,
@@ -71,12 +73,17 @@ class PrivateKeyBuilder : SigningKey {
             )
         val signatureKey = KeyUtil.getSignatureBytes(signatureData)
 
-        return SignatureOuterClass.Signature.newBuilder().also {
+        val sign = SignatureOuterClass.Signature.newBuilder().also {
             it.ecdsaCompact = it.ecdsaCompact.toBuilder().also { builder ->
                 builder.bytes = signatureKey.take(64).toByteArray().toByteString()
                 builder.recovery = signatureKey[64].toInt()
             }.build()
         }.build()
+        val end = Date()
+        val time1 = end.time - start.time
+        Log.d("PERF", "Did the signature ${time1 / 1000.0}s")
+
+        return sign
     }
 
     override suspend fun sign(message: String): SignatureOuterClass.Signature {
