@@ -789,7 +789,7 @@ $dokka.location:org.xmtp.android.library/Client/Client/#/PointingToDeclaration/
 $dokka.location:org.xmtp.android.library/Client/Client/#kotlin.String#uniffi.xmtpv3.FfiXmtpClient#kotlin.String#kotlin.String#kotlin.String#org.xmtp.android.library.XMTPEnvironment/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
 $dokka.location:org.xmtp.android.library/Client/addAccount/#org.xmtp.android.library.SigningKey/PointingToDeclaration/library/org.xmtp.android.library/-client/add-account.html
 $dokka.location:org.xmtp.android.library/Client/address/#/PointingToDeclaration/library/org.xmtp.android.library/-client/address.html
-$dokka.location:org.xmtp.android.library/Client/build/#kotlin.String#org.xmtp.android.library.ClientOptions/PointingToDeclaration/library/org.xmtp.android.library/-client/build.html
+$dokka.location:org.xmtp.android.library/Client/build/#kotlin.String#org.xmtp.android.library.ClientOptions#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library/-client/build.html
 $dokka.location:org.xmtp.android.library/Client/canMessage/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-client/can-message.html
 $dokka.location:org.xmtp.android.library/Client/conversations/#/PointingToDeclaration/library/org.xmtp.android.library/-client/conversations.html
 $dokka.location:org.xmtp.android.library/Client/create/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.ClientOptions/PointingToDeclaration/library/org.xmtp.android.library/-client/create.html
