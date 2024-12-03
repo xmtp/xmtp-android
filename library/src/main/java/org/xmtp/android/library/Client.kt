@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
@@ -18,7 +17,6 @@ import uniffi.xmtpv3.getInboxIdForAddress
 import uniffi.xmtpv3.getVersionInfo
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.InboxState
 import java.io.File
-import java.util.Date
 
 typealias PreEventCallback = suspend () -> Unit
 
@@ -63,15 +61,12 @@ class Client() {
         }
 
         suspend fun getOrCreateInboxId(environment: ClientOptions.Api, address: String): String {
-            val start = Date()
             var inboxId = getInboxIdForAddress(
                 logger = XMTPLogger(),
                 host = environment.env.getUrl(),
                 isSecure = environment.isSecure,
                 accountAddress = address.lowercase()
             )
-            val end = Date()
-            Log.d("PERF", "Get inboxId in ${(end.time - start.time) / 1000.0}s")
             if (inboxId.isNullOrBlank()) {
                 inboxId = generateInboxId(address.lowercase(), 0.toULong())
             }
@@ -109,12 +104,8 @@ class Client() {
         inboxId: String? = null
     ): Client {
         val accountAddress = address.lowercase()
-        val start2 = Date()
         val recoveredInboxId = inboxId ?: getOrCreateInboxId(clientOptions.api, accountAddress)
-        val end2 = Date()
-        Log.d("PERF", "Get or create inboxId in ${(end2.time - start2.time) / 1000.0}s")
 
-        val start = Date()
         val (ffiClient, dbPath) = createFfiClient(
             accountAddress,
             recoveredInboxId,
@@ -122,8 +113,6 @@ class Client() {
             signingKey,
             clientOptions.appContext,
         )
-        val end = Date()
-        Log.d("PERF", "Create ffiClient with sigs ${(end.time - start.time) / 1000.0}s")
 
         return Client(
             accountAddress,
@@ -169,7 +158,6 @@ class Client() {
     ): Pair<FfiXmtpClient, String> {
         val alias = "xmtp-${options.api.env}-$inboxId"
 
-        val start1 = Date()
         val mlsDbDirectory = options.dbDirectory
         val directoryFile = if (mlsDbDirectory != null) {
             File(mlsDbDirectory)
@@ -178,10 +166,7 @@ class Client() {
         }
         directoryFile.mkdir()
         dbPath = directoryFile.absolutePath + "/$alias.db3"
-        val end1 = Date()
-        Log.d("PERF", "Create database ${(end1.time - start1.time) / 1000.0}s")
 
-        val start = Date()
         val ffiClient = createClient(
             logger = logger,
             host = options.api.env.getUrl(),
@@ -194,25 +179,17 @@ class Client() {
             legacySignedPrivateKeyProto = null,
             historySyncUrl = options.historySyncUrl
         )
-        val end = Date()
-        Log.d("PERF", "Create ffi client in ${(end.time - start.time) / 1000.0}s")
 
         options.preAuthenticateToInboxCallback?.let {
             runBlocking {
                 it.invoke()
             }
         }
-        val start2 = Date()
         ffiClient.signatureRequest()?.let { signatureRequest ->
             signingKey?.let { handleSignature(signatureRequest, it) }
                 ?: throw XMTPException("No signer passed but signer was required.")
-            val start3 = Date()
             ffiClient.registerIdentity(signatureRequest)
-            val end3 = Date()
-            Log.d("PERF", "Register identity ${(end3.time - start3.time) / 1000.0}s")
         }
-        val end2 = Date()
-        Log.d("PERF", "Handle signatures ${(end2.time - start2.time) / 1000.0}s")
         return Pair(ffiClient, dbPath)
     }
 
@@ -249,15 +226,9 @@ class Client() {
                 signingKey.blockNumber?.toULong()
             )
         } else {
-            val start1 = Date()
             signingKey.sign(signatureRequest.signatureText())?.let {
-                val start3 = Date()
                 signatureRequest.addEcdsaSignature(it.rawData)
-                val end3 = Date()
-                Log.d("PERF", "Add signature ${(end3.time - start3.time) / 1000.0}s")
             }
-            val end1 = Date()
-            Log.d("PERF", "Do signing ${(end1.time - start1.time) / 1000.0}s")
         }
     }
 
