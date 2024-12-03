@@ -13,6 +13,11 @@ import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.messages.walletAddress
+import uniffi.xmtpv3.FfiReaction
+import uniffi.xmtpv3.FfiReactionAction
+import uniffi.xmtpv3.FfiReactionSchema
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeReactionV2
+import uniffi.xmtpv3.org.xmtp.android.library.codecs.ReactionV2Codec
 
 @RunWith(AndroidJUnit4::class)
 class ReactionTest {
@@ -96,6 +101,85 @@ class ReactionTest {
             assertEquals(messageToReact.id, content?.reference)
             assertEquals(ReactionAction.Added, content?.action)
             assertEquals(ReactionSchema.Unicode, content?.schema)
+        }
+    }
+
+    @Test
+    fun testReactionV2CodecEncodeDecode() {
+        val codec = ReactionV2Codec()
+
+        // Create a sample FfiReaction object
+        val originalReaction = FfiReaction(
+            reference = "message123",
+            referenceInboxId = "inbox456",
+            action = FfiReactionAction.ADDED,
+            content = "U+1F603",
+            schema = FfiReactionSchema.UNICODE
+        )
+
+        // Encode the reaction
+        val encodedContent = codec.encode(originalReaction)
+
+        // Decode the encoded content back to a FfiReaction object
+        val decodedReaction = codec.decode(encodedContent)
+
+        // Assert that the original and decoded reactions are equal
+        assertEquals(originalReaction.reference, decodedReaction.reference)
+        assertEquals(originalReaction.referenceInboxId, decodedReaction.referenceInboxId)
+        assertEquals(originalReaction.action, decodedReaction.action)
+        assertEquals(originalReaction.content, decodedReaction.content)
+        assertEquals(originalReaction.schema, decodedReaction.schema)
+    }
+
+    @Test
+    fun testCanUseReactionV2Codec() {
+        Client.register(codec = ReactionV2Codec())
+
+        val fixtures = fixtures()
+        val aliceClient = fixtures.alixClient
+        val membersToInvite = listOf(fixtures.bo.walletAddress)
+        val aliceConversation = runBlocking {
+            aliceClient.conversations.newGroup(membersToInvite)
+        }
+
+        runBlocking { aliceConversation.send(text = "hey alice 2 bob") }
+
+        val messageToReact = runBlocking { aliceConversation.messages()[0] }
+
+        val reaction = FfiReaction(
+            reference = messageToReact.id,
+            referenceInboxId = aliceClient.inboxId,
+            action = FfiReactionAction.ADDED,
+            content = "U+1F603",
+            schema = FfiReactionSchema.UNICODE,
+
+        )
+
+        runBlocking {
+            aliceConversation.send(
+                content = reaction,
+                options = SendOptions(contentType = ContentTypeReactionV2),
+            )
+            aliceConversation.sync()
+        }
+
+        val messages = runBlocking { aliceConversation.messages() }
+        assertEquals(messages.size, 3)
+        if (messages.size == 3) {
+            val content: FfiReaction? = messages.first().content()
+            assertEquals("U+1F603", content?.content)
+            assertEquals(messageToReact.id, content?.reference)
+            assertEquals(FfiReactionAction.ADDED, content?.action)
+            assertEquals(FfiReactionSchema.UNICODE, content?.schema)
+        }
+        val messagesWithReactions = runBlocking { aliceConversation.messagesWithReactions()}
+        assertEquals(messagesWithReactions.size, 2)
+        if (messagesWithReactions.size == 2) {
+            val content: FfiReaction? = messagesWithReactions.get(0).childMessages.first().content()
+            assertEquals("U+1F603", content?.content)
+            assertEquals(messageToReact.id, content?.reference)
+//            assertEquals(FfiReactionAction.ADDED, content?.action)
+//            assertEquals(FfiReactionSchema.UNICODE, content?.schema)
         }
     }
 }

@@ -105,6 +105,19 @@ sealed class Conversation {
         }
     }
 
+    suspend fun messagesWithReactions(
+        limit: Int? = null,
+        beforeNs: Long? = null,
+        afterNs: Long? = null,
+        direction: Message.SortDirection = Message.SortDirection.DESCENDING,
+        deliveryStatus: Message.MessageDeliveryStatus = Message.MessageDeliveryStatus.ALL,
+    ): List<DecodedMessageWithChildMessages> {
+        return when (this) {
+            is Group -> group.messagesWithReactions(limit, beforeNs, afterNs, direction, deliveryStatus)
+            is Dm -> throw NotImplementedError("messagesWithReactions not implemented for DMs")
+        }
+    }
+
     suspend fun processMessage(messageBytes: ByteArray): Message {
         return when (this) {
             is Group -> group.processMessage(messageBytes)

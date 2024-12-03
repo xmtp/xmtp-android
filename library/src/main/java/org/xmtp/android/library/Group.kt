@@ -140,6 +140,51 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
         }
     }
 
+    suspend fun messagesWithReactions(
+        limit: Int? = null,
+        beforeNs: Long? = null,
+        afterNs: Long? = null,
+        direction: SortDirection = SortDirection.DESCENDING,
+        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
+    ): List<DecodedMessageWithChildMessages> {
+        val reactions = libXMTPGroup.findMessagesWithReactions(
+            opts = FfiListMessagesOptions(
+                sentBeforeNs = beforeNs,
+                sentAfterNs = afterNs,
+                limit = limit?.toLong(),
+                deliveryStatus = when (deliveryStatus) {
+                    MessageDeliveryStatus.PUBLISHED -> FfiDeliveryStatus.PUBLISHED
+                    MessageDeliveryStatus.UNPUBLISHED -> FfiDeliveryStatus.UNPUBLISHED
+                    MessageDeliveryStatus.FAILED -> FfiDeliveryStatus.FAILED
+                    else -> null
+                },
+                direction = when (direction) {
+                    SortDirection.ASCENDING -> FfiDirection.ASCENDING
+                    else -> FfiDirection.DESCENDING
+                }
+            )
+        )
+        
+        return reactions.mapNotNull { messageWithReactions ->
+            val parentMessage = Message(client, messageWithReactions.message).decodeOrNull() ?: return@mapNotNull null
+            val childMessages = messageWithReactions.reactions.mapNotNull { childMessage ->
+                Message(client, childMessage).decodeOrNull()
+            }
+    
+            DecodedMessageWithChildMessages(
+                id = parentMessage.id,
+                client = parentMessage.client,
+                topic = parentMessage.topic,
+                encodedContent = parentMessage.encodedContent,
+                senderAddress = parentMessage.senderAddress,
+                sent = parentMessage.sent,
+                sentNs = parentMessage.sentNs,
+                deliveryStatus = parentMessage.deliveryStatus,
+                childMessages = childMessages
+            )
+        }
+    }
+
     suspend fun processMessage(messageBytes: ByteArray): Message {
         val message = libXMTPGroup.processStreamedConversationMessage(messageBytes)
         return Message(client, message)
