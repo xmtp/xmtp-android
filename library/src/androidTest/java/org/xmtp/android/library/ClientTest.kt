@@ -521,7 +521,7 @@ class ClientTest {
                     appContext = context,
                     dbEncryptionKey = key
                 ),
-                inboxId =  client.inboxId
+                inboxId = client.inboxId
             )
         }
         val end3 = Date()
