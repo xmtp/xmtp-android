@@ -84,7 +84,9 @@ class ClientTest {
                     fixtures.alix.walletAddress,
                     notOnNetwork.address,
                     fixtures.bo.walletAddress
-                ), context, ClientOptions.Api(XMTPEnvironment.LOCAL, false)
+                ),
+                context,
+                ClientOptions.Api(XMTPEnvironment.LOCAL, false)
             )
         }
 

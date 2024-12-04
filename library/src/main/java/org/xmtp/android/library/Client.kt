@@ -77,7 +77,11 @@ class Client() {
             codecRegistry.register(codec = codec)
         }
 
-        suspend fun canMessage(accountAddresses: List<String>, appContext: Context, api: ClientOptions.Api): Map<String, Boolean> {
+        suspend fun canMessage(
+            accountAddresses: List<String>,
+            appContext: Context,
+            api: ClientOptions.Api,
+        ): Map<String, Boolean> {
             val accountAddress = "0x0000000000000000000000000000000000000000"
             val inboxId = getOrCreateInboxId(api, accountAddress)
             val alias = "xmtp-${api.env}-$inboxId"
@@ -130,7 +134,7 @@ class Client() {
         address: String,
         clientOptions: ClientOptions,
         signingKey: SigningKey? = null,
-        inboxId: String? = null
+        inboxId: String? = null,
     ): Client {
         val accountAddress = address.lowercase()
         val recoveredInboxId = inboxId ?: getOrCreateInboxId(clientOptions.api, accountAddress)
@@ -169,7 +173,7 @@ class Client() {
     suspend fun build(
         address: String,
         options: ClientOptions,
-        inboxId: String? = null
+        inboxId: String? = null,
     ): Client {
         return try {
             initializeV3Client(address, options, inboxId = inboxId)
@@ -274,7 +278,11 @@ class Client() {
         }
     }
 
-    fun verifySignatureWithInstallationId(message: String, signature: ByteArray, installationId: String): Boolean {
+    fun verifySignatureWithInstallationId(
+        message: String,
+        signature: ByteArray,
+        installationId: String,
+    ): Boolean {
         return try {
             ffiClient.verifySignedWithPublicKey(message, signature, installationId.hexToByteArray())
             true
