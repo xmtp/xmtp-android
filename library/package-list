@@ -781,6 +781,7 @@ $dokka.location:org.xmtp.android.library////PointingToDeclaration/library/org.x
 $dokka.location:org.xmtp.android.library//hexToByteArray/kotlin.String#/PointingToDeclaration/library/org.xmtp.android.library/hex-to-byte-array.html
 $dokka.location:org.xmtp.android.library//toHex/kotlin.ByteArray#/PointingToDeclaration/library/org.xmtp.android.library/to-hex.html
 $dokka.location:org.xmtp.android.library/Client.Companion///PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/index.html
+$dokka.location:org.xmtp.android.library/Client.Companion/canMessage/#kotlin.collections.List[kotlin.String]#android.content.Context#org.xmtp.android.library.ClientOptions.Api/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/can-message.html
 $dokka.location:org.xmtp.android.library/Client.Companion/codecRegistry/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/codec-registry.html
 $dokka.location:org.xmtp.android.library/Client.Companion/getOrCreateInboxId/#org.xmtp.android.library.ClientOptions.Api#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/get-or-create-inbox-id.html
 $dokka.location:org.xmtp.android.library/Client.Companion/register/#org.xmtp.android.library.codecs.ContentCodec[*]/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/register.html
