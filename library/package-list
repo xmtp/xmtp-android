@@ -280,9 +280,6 @@ $dokka.location:org.xmtp.android.library.libxmtp/PermissionLevel.SUPER_ADMIN///P
 $dokka.location:org.xmtp.android.library.libxmtp/PermissionLevel///PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-permission-level/index.html
 $dokka.location:org.xmtp.android.library.libxmtp/PermissionLevel/valueOf/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-permission-level/value-of.html
 $dokka.location:org.xmtp.android.library.libxmtp/PermissionLevel/values/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-permission-level/values.html
-$dokka.location:org.xmtp.android.library.libxmtp/XMTPLogger///PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-x-m-t-p-logger/index.html
-$dokka.location:org.xmtp.android.library.libxmtp/XMTPLogger/XMTPLogger/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-x-m-t-p-logger/-x-m-t-p-logger.html
-$dokka.location:org.xmtp.android.library.libxmtp/XMTPLogger/log/#kotlin.UInt#kotlin.String#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-x-m-t-p-logger/log.html
 $dokka.location:org.xmtp.android.library.messages////PointingToDeclaration/library/org.xmtp.android.library.messages/index.html
 $dokka.location:org.xmtp.android.library.messages//consentProofText/org.xmtp.proto.message.contents.SignatureOuterClass.Signature#kotlin.String#kotlin.Long/PointingToDeclaration/library/org.xmtp.android.library.messages/consent-proof-text.html
 $dokka.location:org.xmtp.android.library.messages//ensureWalletSignature/org.xmtp.proto.message.contents.SignatureOuterClass.Signature#/PointingToDeclaration/library/org.xmtp.android.library.messages/ensure-wallet-signature.html
@@ -810,7 +807,6 @@ $dokka.location:org.xmtp.android.library/Client/inboxState/#kotlin.Boolean/Point
 $dokka.location:org.xmtp.android.library/Client/inboxStatesForInboxIds/#kotlin.Boolean#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-client/inbox-states-for-inbox-ids.html
 $dokka.location:org.xmtp.android.library/Client/installationId/#/PointingToDeclaration/library/org.xmtp.android.library/-client/installation-id.html
 $dokka.location:org.xmtp.android.library/Client/libXMTPVersion/#/PointingToDeclaration/library/org.xmtp.android.library/-client/lib-x-m-t-p-version.html
-$dokka.location:org.xmtp.android.library/Client/logger/#/PointingToDeclaration/library/org.xmtp.android.library/-client/logger.html
 $dokka.location:org.xmtp.android.library/Client/preferences/#/PointingToDeclaration/library/org.xmtp.android.library/-client/preferences.html
 $dokka.location:org.xmtp.android.library/Client/reconnectLocalDatabase/#/PointingToDeclaration/library/org.xmtp.android.library/-client/reconnect-local-database.html
 $dokka.location:org.xmtp.android.library/Client/removeAccount/#org.xmtp.android.library.SigningKey#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/remove-account.html
@@ -1118,12 +1114,12 @@ $dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/PermissionPolicyS
 $dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroupNamePolicy/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-permission-policy-set/update-group-name-policy.html
 $dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroupPinnedFrameUrlPolicy/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-permission-policy-set/update-group-pinned-frame-url-policy.html
 $dokka.location:uniffi.xmtpv3////PointingToDeclaration/library/uniffi.xmtpv3/index.html
-$dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.FfiLogger#kotlin.String#kotlin.Boolean#kotlin.String?#kotlin.ByteArray?#kotlin.String#kotlin.String#kotlin.ULong#kotlin.ByteArray?#kotlin.String?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
+$dokka.location:uniffi.xmtpv3//createClient/#kotlin.String#kotlin.Boolean#kotlin.String?#kotlin.ByteArray?#kotlin.String#kotlin.String#kotlin.ULong#kotlin.ByteArray?#kotlin.String?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
 $dokka.location:uniffi.xmtpv3//createV2Client/#kotlin.String#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtpv3/create-v2-client.html
 $dokka.location:uniffi.xmtpv3//diffieHellmanK256/#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/diffie-hellman-k256.html
 $dokka.location:uniffi.xmtpv3//generateInboxId/#kotlin.String#kotlin.ULong/PointingToDeclaration/library/uniffi.xmtpv3/generate-inbox-id.html
 $dokka.location:uniffi.xmtpv3//generatePrivatePreferencesTopicIdentifier/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/generate-private-preferences-topic-identifier.html
-$dokka.location:uniffi.xmtpv3//getInboxIdForAddress/#uniffi.xmtpv3.FfiLogger#kotlin.String#kotlin.Boolean#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/get-inbox-id-for-address.html
+$dokka.location:uniffi.xmtpv3//getInboxIdForAddress/#kotlin.String#kotlin.Boolean#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/get-inbox-id-for-address.html
 $dokka.location:uniffi.xmtpv3//getVersionInfo/#/PointingToDeclaration/library/uniffi.xmtpv3/get-version-info.html
 $dokka.location:uniffi.xmtpv3//keccak256/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/keccak256.html
 $dokka.location:uniffi.xmtpv3//publicKeyFromPrivateKeyK256/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/public-key-from-private-key-k256.html
@@ -1436,9 +1432,6 @@ $dokka.location:uniffi.xmtpv3/FfiListMessagesOptions/direction/#/PointingToDecla
 $dokka.location:uniffi.xmtpv3/FfiListMessagesOptions/limit/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-list-messages-options/limit.html
 $dokka.location:uniffi.xmtpv3/FfiListMessagesOptions/sentAfterNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-list-messages-options/sent-after-ns.html
 $dokka.location:uniffi.xmtpv3/FfiListMessagesOptions/sentBeforeNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-list-messages-options/sent-before-ns.html
-$dokka.location:uniffi.xmtpv3/FfiLogger.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-logger/-companion/index.html
-$dokka.location:uniffi.xmtpv3/FfiLogger///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-logger/index.html
-$dokka.location:uniffi.xmtpv3/FfiLogger/log/#kotlin.UInt#kotlin.String#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-logger/log.html
 $dokka.location:uniffi.xmtpv3/FfiMessage.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiMessage///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message/index.html
 $dokka.location:uniffi.xmtpv3/FfiMessage/FfiMessage/#kotlin.ByteArray#kotlin.Long#kotlin.ByteArray#kotlin.String#kotlin.ByteArray#uniffi.xmtpv3.FfiConversationMessageKind#uniffi.xmtpv3.FfiDeliveryStatus/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message/-ffi-message.html
