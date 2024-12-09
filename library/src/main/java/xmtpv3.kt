@@ -1229,7 +1229,7 @@ internal interface UniffiLib : Library {
     ): Long
 
     fun uniffi_xmtpv3_fn_method_fficonversations_sync_all_conversations(
-        `ptr`: Pointer,
+        `ptr`: Pointer, `consentState`: RustBuffer.ByValue,
     ): Long
 
     fun uniffi_xmtpv3_fn_clone_ffigrouppermissions(
@@ -1455,10 +1455,6 @@ internal interface UniffiLib : Library {
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_installation_id(
         `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_maybe_start_sync_worker(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
 
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_message(
         `ptr`: Pointer, `messageId`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
@@ -2171,9 +2167,6 @@ internal interface UniffiLib : Library {
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_installation_id(
     ): Short
 
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_maybe_start_sync_worker(
-    ): Short
-
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_message(
     ): Short
 
@@ -2458,7 +2451,7 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_sync() != 9054.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_sync_all_conversations() != 1140.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_sync_all_conversations() != 2613.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigrouppermissions_policy_set() != 24928.toShort()) {
@@ -2570,9 +2563,6 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_installation_id() != 37173.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_maybe_start_sync_worker() != 56811.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_message() != 26932.toShort()) {
@@ -5191,7 +5181,7 @@ public interface FfiConversationsInterface {
 
     suspend fun `sync`()
 
-    suspend fun `syncAllConversations`(): kotlin.UInt
+    suspend fun `syncAllConversations`(`consentState`: FfiConsentState?): kotlin.UInt
 
     companion object
 }
@@ -5740,13 +5730,13 @@ open class FfiConversations : Disposable, AutoCloseable, FfiConversationsInterfa
 
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `syncAllConversations`(): kotlin.UInt {
+    override suspend fun `syncAllConversations`(`consentState`: FfiConsentState?): kotlin.UInt {
         return uniffiRustCallAsync(
             callWithPointer { thisPtr ->
                 UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_sync_all_conversations(
                     thisPtr,
-
-                    )
+                    FfiConverterOptionalTypeFfiConsentState.lower(`consentState`),
+                )
             },
             { future, callback, continuation ->
                 UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_u32(
@@ -8243,11 +8233,6 @@ public interface FfiXmtpClientInterface {
 
     fun `installationId`(): kotlin.ByteArray
 
-    /**
-     * Starts the sync worker if the history sync url is present.
-     */
-    fun `maybeStartSyncWorker`()
-
     fun `message`(`messageId`: kotlin.ByteArray): FfiMessage
 
     suspend fun `registerIdentity`(`signatureRequest`: FfiSignatureRequest)
@@ -8744,19 +8729,6 @@ open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
             }
         )
     }
-
-
-    /**
-     * Starts the sync worker if the history sync url is present.
-     */
-    override fun `maybeStartSyncWorker`() =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_maybe_start_sync_worker(
-                    it, _status
-                )
-            }
-        }
 
 
     @Throws(GenericException::class)
