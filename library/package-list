@@ -876,6 +876,7 @@ $dokka.location:org.xmtp.android.library/Conversation/processMessage/#kotlin.Byt
 $dokka.location:org.xmtp.android.library/Conversation/publishMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/publish-messages.html
 $dokka.location:org.xmtp.android.library/Conversation/send/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-conversation/send.html
 $dokka.location:org.xmtp.android.library/Conversation/send/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversation/send.html
+$dokka.location:org.xmtp.android.library/Conversation/send/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library/-conversation/send.html
 $dokka.location:org.xmtp.android.library/Conversation/streamMessages/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/stream-messages.html
 $dokka.location:org.xmtp.android.library/Conversation/sync/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/sync.html
 $dokka.location:org.xmtp.android.library/Conversation/topic/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/topic.html
