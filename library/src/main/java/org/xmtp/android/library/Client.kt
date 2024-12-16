@@ -5,7 +5,6 @@ import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.libxmtp.XMTPLogger
 import org.xmtp.android.library.messages.rawData
 import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiDeviceSyncKind
@@ -47,7 +46,6 @@ class Client() {
     lateinit var conversations: Conversations
     lateinit var environment: XMTPEnvironment
     lateinit var dbPath: String
-    var logger: XMTPLogger = XMTPLogger()
     val libXMTPVersion: String = getVersionInfo()
     private lateinit var ffiClient: FfiXmtpClient
 
@@ -62,7 +60,6 @@ class Client() {
 
         suspend fun getOrCreateInboxId(environment: ClientOptions.Api, address: String): String {
             var inboxId = getInboxIdForAddress(
-                logger = XMTPLogger(),
                 host = environment.env.getUrl(),
                 isSecure = environment.isSecure,
                 accountAddress = address.lowercase()
@@ -75,6 +72,38 @@ class Client() {
 
         fun register(codec: ContentCodec<*>) {
             codecRegistry.register(codec = codec)
+        }
+
+        suspend fun canMessage(
+            accountAddresses: List<String>,
+            appContext: Context,
+            api: ClientOptions.Api,
+        ): Map<String, Boolean> {
+            val accountAddress = "0x0000000000000000000000000000000000000000"
+            val inboxId = getOrCreateInboxId(api, accountAddress)
+            val alias = "xmtp-${api.env}-$inboxId"
+
+            val directoryFile = File(appContext.filesDir.absolutePath, "xmtp_db")
+            directoryFile.mkdir()
+            val dbPath = directoryFile.absolutePath + "/$alias.db3"
+
+            val ffiClient = createClient(
+                host = api.env.getUrl(),
+                isSecure = api.isSecure,
+                db = dbPath,
+                encryptionKey = null,
+                accountAddress = accountAddress.lowercase(),
+                inboxId = inboxId,
+                nonce = 0.toULong(),
+                legacySignedPrivateKeyProto = null,
+                historySyncUrl = null
+            )
+
+            val result = ffiClient.canMessage(accountAddresses)
+            ffiClient.releaseDbConnection()
+            File(dbPath).delete()
+
+            return result
         }
     }
 
@@ -101,13 +130,14 @@ class Client() {
         address: String,
         clientOptions: ClientOptions,
         signingKey: SigningKey? = null,
+        inboxId: String? = null,
     ): Client {
         val accountAddress = address.lowercase()
-        val inboxId = getOrCreateInboxId(clientOptions.api, accountAddress)
+        val recoveredInboxId = inboxId ?: getOrCreateInboxId(clientOptions.api, accountAddress)
 
         val (ffiClient, dbPath) = createFfiClient(
             accountAddress,
-            inboxId,
+            recoveredInboxId,
             clientOptions,
             signingKey,
             clientOptions.appContext,
@@ -139,9 +169,10 @@ class Client() {
     suspend fun build(
         address: String,
         options: ClientOptions,
+        inboxId: String? = null,
     ): Client {
         return try {
-            initializeV3Client(address, options)
+            initializeV3Client(address, options, inboxId = inboxId)
         } catch (e: Exception) {
             throw XMTPException("Error creating V3 client: ${e.message}", e)
         }
@@ -166,7 +197,6 @@ class Client() {
         dbPath = directoryFile.absolutePath + "/$alias.db3"
 
         val ffiClient = createClient(
-            logger = logger,
             host = options.api.env.getUrl(),
             isSecure = options.api.isSecure,
             db = dbPath,
@@ -175,7 +205,7 @@ class Client() {
             inboxId = inboxId,
             nonce = 0.toULong(),
             legacySignedPrivateKeyProto = null,
-            historySyncUrl = options.historySyncUrl
+            historySyncUrl = null
         )
 
         options.preAuthenticateToInboxCallback?.let {
@@ -188,7 +218,6 @@ class Client() {
                 ?: throw XMTPException("No signer passed but signer was required.")
             ffiClient.registerIdentity(signatureRequest)
         }
-
         return Pair(ffiClient, dbPath)
     }
 
@@ -244,7 +273,11 @@ class Client() {
         }
     }
 
-    fun verifySignatureWithInstallationId(message: String, signature: ByteArray, installationId: String): Boolean {
+    fun verifySignatureWithInstallationId(
+        message: String,
+        signature: ByteArray,
+        installationId: String,
+    ): Boolean {
         return try {
             ffiClient.verifySignedWithPublicKey(message, signature, installationId.hexToByteArray())
             true
