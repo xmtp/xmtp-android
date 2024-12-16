@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -61,10 +62,10 @@ class HistorySyncTest {
         val dm = runBlocking { alixClient.conversations.findOrCreateDm(bo.walletAddress) }
         runBlocking {
             dm.updateConsentState(ConsentState.DENIED)
-            Assert.assertEquals(dm.consentState(), ConsentState.DENIED)
-            boClient.conversations.sync()
+            assertEquals(dm.consentState(), ConsentState.DENIED)
+//            boClient.conversations.sync()
         }
-        val boDm = runBlocking { boClient.findConversation(dm.id) }
+//        val boDm = runBlocking { boClient.findConversation(dm.id) }
 
         val alixClient2 = runBlocking {
             Client().create(
@@ -79,18 +80,19 @@ class HistorySyncTest {
         }
 
         val state = runBlocking { alixClient2.inboxState(true) }
-        Assert.assertEquals(state.installations.size, 2)
+        assertEquals(state.installations.size, 2)
 
         runBlocking {
-            boClient.conversations.sync()
-            boDm?.sync()
+//            boClient.conversations.sync()
+//            boDm?.sync()
+            dm.send("Hello")
             alixClient2.preferences.syncConsent()
             alixClient.conversations.syncAllConversations()
             Thread.sleep(2000)
             alixClient2.conversations.syncAllConversations()
             Thread.sleep(2000)
             val dm2 = alixClient2.findConversation(dm.id)!!
-            Assert.assertEquals(ConsentState.DENIED, dm2.consentState())
+            assertEquals(ConsentState.DENIED, dm2.consentState())
             alixClient2.preferences.setConsentState(
                 listOf(
                     ConsentRecord(
@@ -100,11 +102,11 @@ class HistorySyncTest {
                     )
                 )
             )
-            Assert.assertEquals(
+            assertEquals(
                 alixClient2.preferences.conversationState(dm2.id),
                 ConsentState.ALLOWED
             )
-            Assert.assertEquals(dm2.consentState(), ConsentState.ALLOWED)
+            assertEquals(dm2.consentState(), ConsentState.ALLOWED)
         }
     }
 
@@ -166,8 +168,8 @@ class HistorySyncTest {
         }
 
         Thread.sleep(2000)
-        Assert.assertEquals(3, consent.size)
-        Assert.assertEquals(alixGroup.consentState(), ConsentState.DENIED)
+        assertEquals(3, consent.size)
+        assertEquals(alixGroup.consentState(), ConsentState.DENIED)
         job.cancel()
     }
 }
