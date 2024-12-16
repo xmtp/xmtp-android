@@ -96,6 +96,10 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
         }
     }
 
+    fun prepareMessage(encodedContent: EncodedContent): String {
+        return libXMTPGroup.sendOptimistic(encodedContent.toByteArray()).toHex()
+    }
+
     fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
         if (consentState() == ConsentState.UNKNOWN) {
             updateConsentState(ConsentState.ALLOWED)
