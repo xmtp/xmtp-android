@@ -908,7 +908,7 @@ $dokka.location:org.xmtp.android.library/Conversations/newGroupCustomPermissions
 $dokka.location:org.xmtp.android.library/Conversations/stream/#org.xmtp.android.library.Conversations.ConversationType/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream.html
 $dokka.location:org.xmtp.android.library/Conversations/streamAllMessages/#org.xmtp.android.library.Conversations.ConversationType/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream-all-messages.html
 $dokka.location:org.xmtp.android.library/Conversations/sync/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/sync.html
-$dokka.location:org.xmtp.android.library/Conversations/syncAllConversations/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/sync-all-conversations.html
+$dokka.location:org.xmtp.android.library/Conversations/syncAllConversations/#org.xmtp.android.library.ConsentState?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/sync-all-conversations.html
 $dokka.location:org.xmtp.android.library/Crypto.Companion///PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/index.html
 $dokka.location:org.xmtp.android.library/Crypto.Companion/calculateMac/#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/calculate-mac.html
 $dokka.location:org.xmtp.android.library/Crypto.Companion/decrypt/#kotlin.ByteArray#org.xmtp.proto.message.contents.CiphertextOuterClass.Ciphertext#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/decrypt.html
@@ -1118,7 +1118,8 @@ $dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/PermissionPolicyS
 $dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroupNamePolicy/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-permission-policy-set/update-group-name-policy.html
 $dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroupPinnedFrameUrlPolicy/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-permission-policy-set/update-group-pinned-frame-url-policy.html
 $dokka.location:uniffi.xmtpv3////PointingToDeclaration/library/uniffi.xmtpv3/index.html
-$dokka.location:uniffi.xmtpv3//createClient/#kotlin.String#kotlin.Boolean#kotlin.String?#kotlin.ByteArray?#kotlin.String#kotlin.String#kotlin.ULong#kotlin.ByteArray?#kotlin.String?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
+$dokka.location:uniffi.xmtpv3//connectToBackend/#kotlin.String#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtpv3/connect-to-backend.html
+$dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.XmtpApiClient#kotlin.String?#kotlin.ByteArray?#kotlin.String#kotlin.String#kotlin.ULong#kotlin.ByteArray?#kotlin.String?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
 $dokka.location:uniffi.xmtpv3//createV2Client/#kotlin.String#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtpv3/create-v2-client.html
 $dokka.location:uniffi.xmtpv3//diffieHellmanK256/#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/diffie-hellman-k256.html
 $dokka.location:uniffi.xmtpv3//generateInboxId/#kotlin.String#kotlin.ULong/PointingToDeclaration/library/uniffi.xmtpv3/generate-inbox-id.html
@@ -1766,6 +1767,15 @@ $dokka.location:uniffi.xmtpv3/SigningException.ErrorHandler/lift/#uniffi.xmtpv3.
 $dokka.location:uniffi.xmtpv3/SigningException.Generic///PointingToDeclaration/library/uniffi.xmtpv3/-signing-exception/-generic/index.html
 $dokka.location:uniffi.xmtpv3/SigningException.Generic/Generic/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-signing-exception/-generic/-generic.html
 $dokka.location:uniffi.xmtpv3/SigningException///PointingToDeclaration/library/uniffi.xmtpv3/-signing-exception/index.html
+$dokka.location:uniffi.xmtpv3/XmtpApiClient.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-xmtp-api-client/-companion/index.html
+$dokka.location:uniffi.xmtpv3/XmtpApiClient///PointingToDeclaration/library/uniffi.xmtpv3/-xmtp-api-client/index.html
+$dokka.location:uniffi.xmtpv3/XmtpApiClient/XmtpApiClient/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-xmtp-api-client/-xmtp-api-client.html
+$dokka.location:uniffi.xmtpv3/XmtpApiClient/XmtpApiClient/#uniffi.xmtpv3.NoPointer/PointingToDeclaration/library/uniffi.xmtpv3/-xmtp-api-client/-xmtp-api-client.html
+$dokka.location:uniffi.xmtpv3/XmtpApiClient/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-xmtp-api-client/close.html
+$dokka.location:uniffi.xmtpv3/XmtpApiClient/destroy/#/PointingToDeclaration/library/uniffi.xmtpv3/-xmtp-api-client/destroy.html
+$dokka.location:uniffi.xmtpv3/XmtpApiClient/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-xmtp-api-client/uniffi-clone-pointer.html
+$dokka.location:uniffi.xmtpv3/XmtpApiClientInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-xmtp-api-client-interface/-companion/index.html
+$dokka.location:uniffi.xmtpv3/XmtpApiClientInterface///PointingToDeclaration/library/uniffi.xmtpv3/-xmtp-api-client-interface/index.html
 org.xmtp.android.library
 org.xmtp.android.library.codecs
 org.xmtp.android.library.frames
