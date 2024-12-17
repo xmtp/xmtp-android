@@ -79,7 +79,8 @@ class GroupPermissionsTest {
                 listOf(
                     alix.walletAddress,
                     caro.walletAddress
-                ), GroupPermissionPreconfiguration.ADMIN_ONLY
+                ),
+                GroupPermissionPreconfiguration.ADMIN_ONLY
             )
         }
         runBlocking { alixClient.conversations.sync() }
@@ -180,7 +181,8 @@ class GroupPermissionsTest {
                 listOf(
                     alix.walletAddress,
                     caro.walletAddress
-                ), GroupPermissionPreconfiguration.ADMIN_ONLY
+                ),
+                GroupPermissionPreconfiguration.ADMIN_ONLY
             )
         }
         runBlocking { alixClient.conversations.sync() }
@@ -228,7 +230,8 @@ class GroupPermissionsTest {
                 listOf(
                     alix.walletAddress,
                     caro.walletAddress
-                ), GroupPermissionPreconfiguration.ADMIN_ONLY
+                ),
+                GroupPermissionPreconfiguration.ADMIN_ONLY
             )
         }
         runBlocking { alixClient.conversations.sync() }
@@ -284,7 +287,8 @@ class GroupPermissionsTest {
                 listOf(
                     alix.walletAddress,
                     caro.walletAddress
-                ), GroupPermissionPreconfiguration.ALL_MEMBERS
+                ),
+                GroupPermissionPreconfiguration.ALL_MEMBERS
             )
         }
         runBlocking { alixClient.conversations.sync() }
@@ -322,7 +326,8 @@ class GroupPermissionsTest {
                 listOf(
                     alix.walletAddress,
                     caro.walletAddress
-                ), GroupPermissionPreconfiguration.ADMIN_ONLY
+                ),
+                GroupPermissionPreconfiguration.ADMIN_ONLY
             )
         }
         runBlocking { alixClient.conversations.sync() }
@@ -373,7 +378,8 @@ class GroupPermissionsTest {
                 listOf(
                     alix.walletAddress,
                     caro.walletAddress
-                ), GroupPermissionPreconfiguration.ADMIN_ONLY
+                ),
+                GroupPermissionPreconfiguration.ADMIN_ONLY
             )
         }
         runBlocking { alixClient.conversations.sync() }

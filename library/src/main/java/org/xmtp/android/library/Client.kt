@@ -10,7 +10,6 @@ import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiDeviceSyncKind
 import uniffi.xmtpv3.FfiSignatureRequest
 import uniffi.xmtpv3.FfiXmtpClient
-import uniffi.xmtpv3.XmtpApiClient
 import uniffi.xmtpv3.connectToBackend
 import uniffi.xmtpv3.createClient
 import uniffi.xmtpv3.generateInboxId
