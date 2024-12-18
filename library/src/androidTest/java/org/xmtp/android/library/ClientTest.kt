@@ -574,7 +574,6 @@ class ClientTest {
         val time4 = end4.time - start4.time
         Log.d("PERF", "Built a client with inboxId and apiClient in ${time4 / 1000.0}s")
 
-
         assert(time2 < time1)
         assert(time3 < time1)
         assert(time3 < time2)
