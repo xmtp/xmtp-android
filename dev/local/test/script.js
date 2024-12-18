@@ -19,12 +19,12 @@ async function checkAll() {
 
   try {
     for await (const message of await client.conversations.streamAllMessages()) {
-      if (message.senderAddress === wallet.address) {
+      if (message.senderInboxId === wallet.address) {
         continue;
       }
 
-      await message.conversation.send("HI " + message.senderAddress);
-      console.log(`Replied to ${message.senderAddress}`);
+      await message.conversation.send("HI " + message.senderInboxId);
+      console.log(`Replied to ${message.senderInboxId}`);
     }
   } catch (e) {
     console.info(`Error:`, e);
