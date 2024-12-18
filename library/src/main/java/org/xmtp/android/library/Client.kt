@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import android.content.Context
+import com.google.protobuf.api
 import kotlinx.coroutines.runBlocking
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
@@ -61,6 +62,10 @@ class Client() {
             registry
         }
 
+        suspend fun connectToApiBackend(api: ClientOptions.Api): XmtpApiClient {
+            return connectToBackend(api.env.getUrl(), api.isSecure)
+        }
+
         suspend fun getOrCreateInboxId(environment: ClientOptions.Api, address: String): String {
             var inboxId = getInboxIdForAddress(
                 host = environment.env.getUrl(),
@@ -81,6 +86,7 @@ class Client() {
             accountAddresses: List<String>,
             appContext: Context,
             api: ClientOptions.Api,
+            apiClient: XmtpApiClient? = null
         ): Map<String, Boolean> {
             val accountAddress = "0x0000000000000000000000000000000000000000"
             val inboxId = getOrCreateInboxId(api, accountAddress)
@@ -91,7 +97,7 @@ class Client() {
             val dbPath = directoryFile.absolutePath + "/$alias.db3"
 
             val ffiClient = createClient(
-                api = connectToBackend(api.env.getUrl(), api.isSecure),
+                api = apiClient ?: connectToApiBackend(api),
                 db = dbPath,
                 encryptionKey = null,
                 accountAddress = accountAddress.lowercase(),
@@ -164,9 +170,10 @@ class Client() {
     suspend fun create(
         account: SigningKey,
         options: ClientOptions,
+        apiClient: XmtpApiClient? = null
     ): Client {
         return try {
-            initializeV3Client(account.address, options, account)
+            initializeV3Client(account.address, options, account, apiClient = apiClient)
         } catch (e: Exception) {
             throw XMTPException("Error creating V3 client: ${e.message}", e)
         }
@@ -206,7 +213,7 @@ class Client() {
         dbPath = directoryFile.absolutePath + "/$alias.db3"
 
         val xmtpApiClient =
-            apiClient ?: connectToBackend(options.api.env.getUrl(), options.api.isSecure)
+            apiClient ?: connectToApiBackend(options.api)
         val ffiClient = createClient(
             api = xmtpApiClient,
             db = dbPath,
