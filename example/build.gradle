@@ -64,7 +64,7 @@ dependencies {
     implementation 'org.web3j:crypto:5.0.0'
 
     // WalletConnect V2: core library + WalletConnectModal
-    implementation(platform("com.walletconnect:android-bom:1.35.2"))
+    implementation(platform("com.walletconnect:android-bom:1.19.1"))
     implementation("com.walletconnect:android-core")
     implementation("com.walletconnect:walletconnect-modal")
 
