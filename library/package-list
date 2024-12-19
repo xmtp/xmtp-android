@@ -174,6 +174,10 @@ $dokka.location:org.xmtp.android.library.frames/FramePostUntrustedData/timestamp
 $dokka.location:org.xmtp.android.library.frames/FramePostUntrustedData/unixTimestamp/#/PointingToDeclaration/library/org.xmtp.android.library.frames/-frame-post-untrusted-data/unix-timestamp.html
 $dokka.location:org.xmtp.android.library.frames/FramePostUntrustedData/url/#/PointingToDeclaration/library/org.xmtp.android.library.frames/-frame-post-untrusted-data/url.html
 $dokka.location:org.xmtp.android.library.frames/FramePostUntrustedData/walletAddress/#/PointingToDeclaration/library/org.xmtp.android.library.frames/-frame-post-untrusted-data/wallet-address.html
+$dokka.location:org.xmtp.android.library.frames/FramesClient///PointingToDeclaration/library/org.xmtp.android.library.frames/-frames-client/index.html
+$dokka.location:org.xmtp.android.library.frames/FramesClient/FramesClient/#org.xmtp.android.library.Client#org.xmtp.android.library.frames.OpenFramesProxy/PointingToDeclaration/library/org.xmtp.android.library.frames/-frames-client/-frames-client.html
+$dokka.location:org.xmtp.android.library.frames/FramesClient/proxy/#/PointingToDeclaration/library/org.xmtp.android.library.frames/-frames-client/proxy.html
+$dokka.location:org.xmtp.android.library.frames/FramesClient/signFrameAction/#org.xmtp.android.library.frames.FrameActionInputs/PointingToDeclaration/library/org.xmtp.android.library.frames/-frames-client/sign-frame-action.html
 $dokka.location:org.xmtp.android.library.frames/FramesConstants///PointingToDeclaration/library/org.xmtp.android.library.frames/-frames-constants/index.html
 $dokka.location:org.xmtp.android.library.frames/FramesConstants/OPEN_FRAMES_PROXY_URL/#/PointingToDeclaration/library/org.xmtp.android.library.frames/-frames-constants/-o-p-e-n_-f-r-a-m-e-s_-p-r-o-x-y_-u-r-l.html
 $dokka.location:org.xmtp.android.library.frames/FramesConstants/PROTOCOL_VERSION/#/PointingToDeclaration/library/org.xmtp.android.library.frames/-frames-constants/-p-r-o-t-o-c-o-l_-v-e-r-s-i-o-n.html
