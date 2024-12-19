@@ -6,12 +6,10 @@ import org.xmtp.android.library.Client
 import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.frames.FramesConstants.PROTOCOL_VERSION
 import org.xmtp.android.library.hexToByteArray
-import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.toHex
-import java.security.MessageDigest
-import org.xmtp.proto.message.contents.Frames.FrameActionBody
 import org.xmtp.proto.message.contents.Frames.FrameAction
+import org.xmtp.proto.message.contents.Frames.FrameActionBody
+import java.security.MessageDigest
 import java.util.Date
 
 class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = OpenFramesProxy()) {
@@ -39,7 +37,16 @@ class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = 
         val toSign = frameActionBuilder.build()
         val signedAction = Base64.encodeToString(buildSignedFrameAction(toSign), Base64.NO_WRAP)
 
-        val untrustedData = FramePostUntrustedData(frameUrl, now, buttonIndex, inputText, state, xmtpClient.address, opaqueConversationIdentifier, now.toInt())
+        val untrustedData = FramePostUntrustedData(
+            frameUrl,
+            now,
+            buttonIndex,
+            inputText,
+            state,
+            xmtpClient.address,
+            opaqueConversationIdentifier,
+            now.toInt()
+        )
         val trustedData = FramePostTrustedData(signedAction)
 
         return FramePostPayload("xmtp@$PROTOCOL_VERSION", untrustedData, trustedData)
@@ -71,11 +78,15 @@ class FramesClient(private val xmtpClient: Client, var proxy: OpenFramesProxy = 
                 val digest = sha256(combined)
                 Base64.encodeToString(digest, Base64.NO_WRAP)
             }
+
             is ConversationActionInputs.Dm -> {
                 val dmInputs = inputs.conversationInputs.inputs
-                val conversationTopic = dmInputs.conversationTopic ?: throw XMTPException("No conversation topic")
-                val combined = (conversationTopic.lowercase() + dmInputs.participantAccountAddresses.map { it.lowercase() }.sorted().joinToString("")).toByteArray()
-                val digest = sha256(combined)
+                val conversationTopic =
+                    dmInputs.conversationTopic ?: throw XMTPException("No conversation topic")
+                val combined =
+                    conversationTopic.lowercase() + dmInputs.participantAccountAddresses.map { it.lowercase() }
+                        .sorted().joinToString("")
+                val digest = sha256(combined.toByteArray())
                 Base64.encodeToString(digest, Base64.NO_WRAP)
             }
         }

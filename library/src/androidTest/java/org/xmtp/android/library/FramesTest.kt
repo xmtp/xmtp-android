@@ -19,7 +19,8 @@ import java.net.URL
 class FramesTest {
     @Test
     fun testFramesClient() {
-        val frameUrl = "https://fc-polls-five.vercel.app/polls/03710836-bc1d-4921-9e24-89d82015c53b?env=dev"
+        val frameUrl =
+            "https://fc-polls-five.vercel.app/polls/03710836-bc1d-4921-9e24-89d82015c53b?env=dev"
         val fixtures = fixtures(ClientOptions.Api(XMTPEnvironment.DEV, isSecure = true))
         val framesClient = FramesClient(xmtpClient = fixtures.alixClient)
         val conversationTopic = "foo"
