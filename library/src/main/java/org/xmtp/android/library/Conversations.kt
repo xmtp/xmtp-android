@@ -1,9 +1,11 @@
 package org.xmtp.android.library
 
 import android.util.Log
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import org.xmtp.android.library.libxmtp.Message
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationCallback
@@ -128,8 +130,8 @@ data class Conversations(
     }
 
     // Sync all new and existing conversations data from the network
-    suspend fun syncAllConversations(): UInt {
-        return ffiConversations.syncAllConversations()
+    suspend fun syncAllConversations(consentState: ConsentState? = null): UInt {
+        return ffiConversations.syncAllConversations(consentState?.let { ConsentState.toFfiConsentState(it) })
     }
 
     suspend fun newConversation(peerAddress: String): Conversation {
@@ -166,7 +168,7 @@ data class Conversations(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                if (consentState != null) ConsentState.toFfiConsentState(consentState) else null
+                consentState?.let { ConsentState.toFfiConsentState(it) }
             )
         )
         val sortedConversations = sortConversations(ffiGroups, order)
@@ -188,7 +190,7 @@ data class Conversations(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                if (consentState != null) ConsentState.toFfiConsentState(consentState) else null
+                consentState?.let { ConsentState.toFfiConsentState(it) }
             )
         )
         val sortedConversations = sortConversations(ffiDms, order)
@@ -210,7 +212,7 @@ data class Conversations(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                if (consentState != null) ConsentState.toFfiConsentState(consentState) else null
+                consentState?.let { ConsentState.toFfiConsentState(it) }
             )
         )
 
@@ -219,7 +221,7 @@ data class Conversations(
         return sortedConversations.map { it.toConversation() }
     }
 
-    private fun sortConversations(
+    private suspend fun sortConversations(
         conversations: List<FfiConversation>,
         order: ConversationOrder,
     ): List<FfiConversation> {
@@ -249,7 +251,7 @@ data class Conversations(
         }
     }
 
-    private fun FfiConversation.toConversation(): Conversation {
+    private suspend fun FfiConversation.toConversation(): Conversation {
         return when (conversationType()) {
             FfiConversationType.DM -> Conversation.Dm(Dm(client, this))
             else -> Conversation.Group(Group(client, this))
@@ -260,9 +262,11 @@ data class Conversations(
         callbackFlow {
             val conversationCallback = object : FfiConversationCallback {
                 override fun onConversation(conversation: FfiConversation) {
-                    when (conversation.conversationType()) {
-                        FfiConversationType.DM -> trySend(Conversation.Dm(Dm(client, conversation)))
-                        else -> trySend(Conversation.Group(Group(client, conversation)))
+                    launch(Dispatchers.IO) {
+                        when (conversation.conversationType()) {
+                            FfiConversationType.DM -> trySend(Conversation.Dm(Dm(client, conversation)))
+                            else -> trySend(Conversation.Group(Group(client, conversation)))
+                        }
                     }
                 }
 

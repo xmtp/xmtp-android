@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import kotlinx.coroutines.flow.Flow
+import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
 import java.util.Date
@@ -71,10 +72,24 @@ sealed class Conversation {
         }
     }
 
+    fun prepareMessage(encodedContent: EncodedContent): String {
+        return when (this) {
+            is Group -> group.prepareMessage(encodedContent)
+            is Dm -> dm.prepareMessage(encodedContent)
+        }
+    }
+
     suspend fun <T> send(content: T, options: SendOptions? = null): String {
         return when (this) {
             is Group -> group.send(content = content, options = options)
             is Dm -> dm.send(content = content, options = options)
+        }
+    }
+
+    suspend fun send(encodedContent: EncodedContent): String {
+        return when (this) {
+            is Group -> group.send(encodedContent)
+            is Dm -> dm.send(encodedContent)
         }
     }
 
@@ -92,7 +107,7 @@ sealed class Conversation {
         }
     }
 
-    fun messages(
+    suspend fun messages(
         limit: Int? = null,
         beforeNs: Long? = null,
         afterNs: Long? = null,
