@@ -75,7 +75,7 @@ class HistorySyncTest {
 
         runBlocking {
             alixClient2.preferences.syncConsent()
-            Thread.sleep(1000)
+            Thread.sleep(2000)
             alixClient.conversations.syncAllConversations()
             Thread.sleep(2000)
             alixClient2.conversations.syncAllConversations()
