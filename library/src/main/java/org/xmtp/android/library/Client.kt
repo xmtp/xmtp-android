@@ -66,10 +66,13 @@ class Client() {
             return connectToBackend(api.env.getUrl(), api.isSecure)
         }
 
-        suspend fun getOrCreateInboxId(environment: ClientOptions.Api, address: String): String {
+        suspend fun getOrCreateInboxId(
+            api: ClientOptions.Api,
+            address: String,
+            apiClient: XmtpApiClient? = null,
+        ): String {
             var inboxId = getInboxIdForAddress(
-                host = environment.env.getUrl(),
-                isSecure = environment.isSecure,
+                api = apiClient ?: connectToApiBackend(api),
                 accountAddress = address.lowercase()
             )
             if (inboxId.isNullOrBlank()) {
@@ -86,7 +89,7 @@ class Client() {
             accountAddresses: List<String>,
             appContext: Context,
             api: ClientOptions.Api,
-            apiClient: XmtpApiClient? = null
+            apiClient: XmtpApiClient? = null,
         ): Map<String, Boolean> {
             val accountAddress = "0x0000000000000000000000000000000000000000"
             val inboxId = getOrCreateInboxId(api, accountAddress)
@@ -144,9 +147,10 @@ class Client() {
         apiClient: XmtpApiClient? = null,
     ): Client {
         val accountAddress = address.lowercase()
-        val recoveredInboxId = inboxId ?: getOrCreateInboxId(clientOptions.api, accountAddress)
+        val recoveredInboxId =
+            inboxId ?: getOrCreateInboxId(clientOptions.api, accountAddress, apiClient)
 
-        val (ffiClient, dbPath, apiClient) = createFfiClient(
+        val (ffiClient, dbPath, xmtpApiClient) = createFfiClient(
             accountAddress,
             recoveredInboxId,
             clientOptions,
@@ -162,7 +166,7 @@ class Client() {
             ffiClient.installationId().toHex(),
             ffiClient.inboxId(),
             clientOptions.api.env,
-            apiClient
+            xmtpApiClient
         )
     }
 
@@ -170,7 +174,7 @@ class Client() {
     suspend fun create(
         account: SigningKey,
         options: ClientOptions,
-        apiClient: XmtpApiClient? = null
+        apiClient: XmtpApiClient? = null,
     ): Client {
         return try {
             initializeV3Client(account.address, options, account, apiClient = apiClient)
