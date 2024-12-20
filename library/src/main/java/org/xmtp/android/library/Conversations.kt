@@ -23,7 +23,6 @@ import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiPermissionPolicySet
 import uniffi.xmtpv3.FfiSubscribeException
-import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionPolicySet
 import java.util.Date
@@ -135,11 +134,11 @@ data class Conversations(
 
     // Sync all new and existing conversations data from the network
     suspend fun syncAllConversations(consentState: ConsentState? = null): UInt {
-        return ffiConversations.syncAllConversations(consentState?.let {
-            ConsentState.toFfiConsentState(
-                it
-            )
-        })
+        return ffiConversations.syncAllConversations(
+            consentState?.let {
+                ConsentState.toFfiConsentState(it)
+            }
+        )
     }
 
     suspend fun newConversation(peerAddress: String): Conversation {
