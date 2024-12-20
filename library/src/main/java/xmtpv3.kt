@@ -52,8 +52,10 @@ open class RustBuffer : Structure() {
     // When dealing with these fields, make sure to call `toULong()`.
     @JvmField
     var capacity: Long = 0
+
     @JvmField
     var len: Long = 0
+
     @JvmField
     var data: Pointer? = null
 
@@ -140,6 +142,7 @@ class RustBufferByReference : ByReference(16) {
 internal open class ForeignBytes : Structure() {
     @JvmField
     var len: Int = 0
+
     @JvmField
     var data: Pointer? = null
 
@@ -236,6 +239,7 @@ internal const val UNIFFI_CALL_UNEXPECTED_ERROR = 2.toByte()
 internal open class UniffiRustCallStatus : Structure() {
     @JvmField
     var code: Byte = 0
+
     @JvmField
     var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
 
