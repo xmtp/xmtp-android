@@ -74,6 +74,7 @@ class HistorySyncTest {
         assertEquals(state.installations.size, 2)
 
         runBlocking {
+            alixClient2.preferences.syncConsent()
             alixClient.conversations.syncAllConversations()
             Thread.sleep(2000)
             alixClient2.conversations.syncAllConversations()

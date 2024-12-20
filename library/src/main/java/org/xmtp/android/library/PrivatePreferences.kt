@@ -8,6 +8,7 @@ import uniffi.xmtpv3.FfiConsent
 import uniffi.xmtpv3.FfiConsentCallback
 import uniffi.xmtpv3.FfiConsentEntityType
 import uniffi.xmtpv3.FfiConsentState
+import uniffi.xmtpv3.FfiDeviceSyncKind
 import uniffi.xmtpv3.FfiPreferenceCallback
 import uniffi.xmtpv3.FfiPreferenceUpdate
 import uniffi.xmtpv3.FfiSubscribeException
@@ -101,6 +102,10 @@ data class PrivatePreferences(
     var client: Client,
     private val ffiClient: FfiXmtpClient,
 ) {
+    suspend fun syncConsent() {
+        ffiClient.sendSyncRequest(FfiDeviceSyncKind.CONSENT)
+    }
+
     suspend fun streamPreferenceUpdates(): Flow<PreferenceType> = callbackFlow {
         val preferenceCallback = object : FfiPreferenceCallback {
             override fun onPreferenceUpdate(preference: List<FfiPreferenceUpdate>) {
