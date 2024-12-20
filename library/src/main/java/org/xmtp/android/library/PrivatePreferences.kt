@@ -64,6 +64,10 @@ enum class EntryType {
     }
 }
 
+enum class PreferenceType {
+    HMAC_KEYS;
+}
+
 data class ConsentRecord(
     val value: String,
     val entryType: EntryType,
@@ -100,18 +104,18 @@ data class PrivatePreferences(
     var client: Client,
     private val ffiClient: FfiXmtpClient,
 ) {
-    suspend fun streamHmacKeys(): Flow<Keystore.GetConversationHmacKeysResponse> = callbackFlow {
+    suspend fun streamPreferenceUpdates(): Flow<PreferenceType> = callbackFlow {
         val preferenceCallback = object : FfiPreferenceCallback {
             override fun onPreferenceUpdate(preference: List<FfiPreferenceUpdate>) {
                 preference.iterator().forEach {
-                    when(it) {
-                        is FfiPreferenceUpdate.Hmac -> it.key
+                    when (it) {
+                        is FfiPreferenceUpdate.Hmac -> trySend(PreferenceType.HMAC_KEYS)
                     }
                 }
             }
 
             override fun onError(error: FfiSubscribeException) {
-                Log.e("XMTP hmac key stream", error.message.toString())
+                Log.e("XMTP preference update stream", error.message.toString())
             }
         }
 

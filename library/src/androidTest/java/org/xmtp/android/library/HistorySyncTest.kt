@@ -167,4 +167,45 @@ class HistorySyncTest {
         assertEquals(alixGroup.consentState(), ConsentState.DENIED)
         job.cancel()
     }
+
+    @Test
+    fun testStreamPreferenceUpdates() {
+        var preferences = 0
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                alixClient.preferences.streamPreferenceUpdates()
+                    .collect { entry ->
+                        preferences++
+                    }
+            } catch (e: Exception) {
+            }
+        }
+
+        Thread.sleep(2000)
+
+        runBlocking {
+            val alixClient3 = runBlocking {
+                Client().create(
+                    account = alixWallet,
+                    options = ClientOptions(
+                        ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                        appContext = fixtures.context,
+                        dbEncryptionKey = fixtures.key,
+                        dbDirectory = File(fixtures.context.filesDir.absolutePath, "xmtp_db3").toPath()
+                            .toString()
+                    )
+                )
+            }
+            alixClient3.conversations.syncAllConversations()
+            Thread.sleep(2000)
+            alixClient.conversations.syncAllConversations()
+            Thread.sleep(2000)
+            alixClient2.conversations.syncAllConversations()
+            Thread.sleep(2000)
+        }
+
+        Thread.sleep(2000)
+        assertEquals(2, preferences)
+        job.cancel()
+    }
 }
