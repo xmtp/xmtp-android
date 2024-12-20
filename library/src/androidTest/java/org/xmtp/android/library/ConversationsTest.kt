@@ -13,7 +13,6 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import java.time.Instant
 
 @RunWith(AndroidJUnit4::class)
 class ConversationsTest {

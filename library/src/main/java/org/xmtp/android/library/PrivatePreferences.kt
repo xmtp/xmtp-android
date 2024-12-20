@@ -4,13 +4,10 @@ import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import org.xmtp.proto.keystore.api.v1.Keystore
-import org.xmtp.proto.keystore.api.v1.Keystore.GetConversationHmacKeysResponse.HmacKeys
 import uniffi.xmtpv3.FfiConsent
 import uniffi.xmtpv3.FfiConsentCallback
 import uniffi.xmtpv3.FfiConsentEntityType
 import uniffi.xmtpv3.FfiConsentState
-import uniffi.xmtpv3.FfiDeviceSyncKind
 import uniffi.xmtpv3.FfiPreferenceCallback
 import uniffi.xmtpv3.FfiPreferenceUpdate
 import uniffi.xmtpv3.FfiSubscribeException
