@@ -74,8 +74,6 @@ class HistorySyncTest {
         assertEquals(state.installations.size, 2)
 
         runBlocking {
-            alixClient2.preferences.syncConsent()
-            Thread.sleep(2000)
             alixClient.conversations.syncAllConversations()
             Thread.sleep(2000)
             alixClient2.conversations.syncAllConversations()
@@ -125,8 +123,7 @@ class HistorySyncTest {
         runBlocking {
             alix2Group.send("A message")
             alix2Group.send("A second message")
-            alixClient3.requestMessageHistorySync()
-            Thread.sleep(1000)
+            Thread.sleep(2000)
             alixClient.conversations.syncAllConversations()
             Thread.sleep(2000)
             alixClient2.conversations.syncAllConversations()

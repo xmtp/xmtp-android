@@ -96,10 +96,6 @@ data class PrivatePreferences(
     var client: Client,
     private val ffiClient: FfiXmtpClient,
 ) {
-    suspend fun syncConsent() {
-        ffiClient.sendSyncRequest(FfiDeviceSyncKind.CONSENT)
-    }
-
     suspend fun streamConsent(): Flow<ConsentRecord> = callbackFlow {
         val consentCallback = object : FfiConsentCallback {
             override fun onConsentUpdate(consent: List<FfiConsent>) {

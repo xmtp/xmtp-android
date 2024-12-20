@@ -1,12 +1,15 @@
 package org.xmtp.android.library
 
 import android.util.Log
+import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.xmtp.android.library.libxmtp.Message
+import org.xmtp.android.library.messages.Topic
+import org.xmtp.proto.keystore.api.v1.Keystore
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversationType
@@ -20,6 +23,7 @@ import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiPermissionPolicySet
 import uniffi.xmtpv3.FfiSubscribeException
+import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionPolicySet
 import java.util.Date
@@ -131,7 +135,11 @@ data class Conversations(
 
     // Sync all new and existing conversations data from the network
     suspend fun syncAllConversations(consentState: ConsentState? = null): UInt {
-        return ffiConversations.syncAllConversations(consentState?.let { ConsentState.toFfiConsentState(it) })
+        return ffiConversations.syncAllConversations(consentState?.let {
+            ConsentState.toFfiConsentState(
+                it
+            )
+        })
     }
 
     suspend fun newConversation(peerAddress: String): Conversation {
@@ -264,7 +272,15 @@ data class Conversations(
                 override fun onConversation(conversation: FfiConversation) {
                     launch(Dispatchers.IO) {
                         when (conversation.conversationType()) {
-                            FfiConversationType.DM -> trySend(Conversation.Dm(Dm(client, conversation)))
+                            FfiConversationType.DM -> trySend(
+                                Conversation.Dm(
+                                    Dm(
+                                        client,
+                                        conversation
+                                    )
+                                )
+                            )
+
                             else -> trySend(Conversation.Group(Group(client, conversation)))
                         }
                     }
@@ -305,4 +321,23 @@ data class Conversations(
 
             awaitClose { stream.end() }
         }
+
+    fun getHmacKeys(): Keystore.GetConversationHmacKeysResponse {
+        val hmacKeysResponse = Keystore.GetConversationHmacKeysResponse.newBuilder()
+        val conversations = ffiConversations.getHmacKeys()
+        conversations.iterator().forEach {
+            val hmacKeys = Keystore.GetConversationHmacKeysResponse.HmacKeys.newBuilder()
+            it.value.forEach { key ->
+                val hmacKeyData = Keystore.GetConversationHmacKeysResponse.HmacKeyData.newBuilder()
+                hmacKeyData.hmacKey = key.key.toByteString()
+                hmacKeyData.thirtyDayPeriodsSinceEpoch = key.epoch.toInt()
+                hmacKeys.addValues(hmacKeyData)
+            }
+            hmacKeysResponse.putHmacKeys(
+                Topic.groupMessage(it.key.toHex()).description,
+                hmacKeys.build()
+            )
+        }
+        return hmacKeysResponse.build()
+    }
 }

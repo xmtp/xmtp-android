@@ -6,12 +6,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
+import java.time.Instant
 
 @RunWith(AndroidJUnit4::class)
 class ConversationsTest {
@@ -185,5 +187,25 @@ class ConversationsTest {
         Thread.sleep(2000)
         assertEquals(2, allMessages.size)
         job.cancel()
+    }
+
+    @Test
+    fun testReturnsAllHMACKeys() {
+        val conversations = mutableListOf<Conversation>()
+        repeat(5) {
+            val account = PrivateKeyBuilder()
+            val client = runBlocking { Client().create(account, fixtures.clientOptions) }
+            runBlocking {
+                conversations.add(
+                    alixClient.conversations.newConversation(client.address)
+                )
+            }
+        }
+        val hmacKeys = alixClient.conversations.getHmacKeys()
+
+        val topics = hmacKeys.hmacKeysMap.keys
+        conversations.forEach { convo ->
+            assertTrue(topics.contains(convo.topic))
+        }
     }
 }

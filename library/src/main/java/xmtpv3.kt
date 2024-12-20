@@ -1219,6 +1219,10 @@ internal interface UniffiLib : Library {
         `ptr`: Pointer, `accountAddresses`: RustBuffer.ByValue, `opts`: RustBuffer.ByValue,
     ): Long
 
+    fun uniffi_xmtpv3_fn_method_fficonversations_get_hmac_keys(
+        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
+
     fun uniffi_xmtpv3_fn_method_fficonversations_get_sync_group(
         `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
     ): Pointer
@@ -1510,10 +1514,6 @@ internal interface UniffiLib : Library {
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_get_consent_state(
         `ptr`: Pointer, `entityType`: RustBuffer.ByValue, `entity`: RustBuffer.ByValue,
     ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_get_hmac_keys(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
 
     fun uniffi_xmtpv3_fn_method_ffixmtpclient_get_latest_inbox_state(
         `ptr`: Pointer, `inboxId`: RustBuffer.ByValue,
@@ -2103,6 +2103,9 @@ internal interface UniffiLib : Library {
     fun uniffi_xmtpv3_checksum_method_fficonversations_create_group(
     ): Short
 
+    fun uniffi_xmtpv3_checksum_method_fficonversations_get_hmac_keys(
+    ): Short
+
     fun uniffi_xmtpv3_checksum_method_fficonversations_get_sync_group(
     ): Short
 
@@ -2254,9 +2257,6 @@ internal interface UniffiLib : Library {
     ): Short
 
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_get_consent_state(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_get_hmac_keys(
     ): Short
 
     fun uniffi_xmtpv3_checksum_method_ffixmtpclient_get_latest_inbox_state(
@@ -2519,6 +2519,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_create_group() != 7282.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_get_hmac_keys() != 44064.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_get_sync_group() != 42973.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2670,9 +2673,6 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_get_consent_state() != 58208.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_get_hmac_keys() != 36015.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_get_latest_inbox_state() != 3165.toShort()) {
@@ -5330,6 +5330,8 @@ public interface FfiConversationsInterface {
         `opts`: FfiCreateGroupOptions,
     ): FfiConversation
 
+    fun `getHmacKeys`(): Map<kotlin.ByteArray, List<FfiHmacKey>>
+
     fun `getSyncGroup`(): FfiConversation
 
     suspend fun `list`(`opts`: FfiListConversationsOptions): List<FfiConversation>
@@ -5522,6 +5524,20 @@ open class FfiConversations : Disposable, AutoCloseable, FfiConversationsInterfa
             { FfiConverterTypeFfiConversation.lift(it) },
             // Error FFI converter
             GenericException.ErrorHandler,
+        )
+    }
+
+
+    @Throws(GenericException::class)
+    override fun `getHmacKeys`(): Map<kotlin.ByteArray, List<FfiHmacKey>> {
+        return FfiConverterMapByteArraySequenceTypeFfiHmacKey.lift(
+            callWithPointer {
+                uniffiRustCallWithError(GenericException) { _status ->
+                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_get_hmac_keys(
+                        it, _status
+                    )
+                }
+            }
         )
     }
 
@@ -8783,8 +8799,6 @@ public interface FfiXmtpClientInterface {
         `entity`: kotlin.String,
     ): FfiConsentState
 
-    fun `getHmacKeys`(): List<FfiHmacKey>
-
     suspend fun `getLatestInboxState`(`inboxId`: kotlin.String): FfiInboxState
 
     fun `inboxId`(): kotlin.String
@@ -9199,20 +9213,6 @@ open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
             { FfiConverterTypeFfiConsentState.lift(it) },
             // Error FFI converter
             GenericException.ErrorHandler,
-        )
-    }
-
-
-    @Throws(GenericException::class)
-    override fun `getHmacKeys`(): List<FfiHmacKey> {
-        return FfiConverterSequenceTypeFfiHmacKey.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_get_hmac_keys(
-                        it, _status
-                    )
-                }
-            }
         )
     }
 
@@ -12073,6 +12073,44 @@ public object FfiConverterMapStringBoolean :
         value.iterator().forEach { (k, v) ->
             FfiConverterString.write(k, buf)
             FfiConverterBoolean.write(v, buf)
+        }
+    }
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterMapByteArraySequenceTypeFfiHmacKey :
+    FfiConverterRustBuffer<Map<kotlin.ByteArray, List<FfiHmacKey>>> {
+    override fun read(buf: ByteBuffer): Map<kotlin.ByteArray, List<FfiHmacKey>> {
+        val len = buf.getInt()
+        return buildMap<kotlin.ByteArray, List<FfiHmacKey>>(len) {
+            repeat(len) {
+                val k = FfiConverterByteArray.read(buf)
+                val v = FfiConverterSequenceTypeFfiHmacKey.read(buf)
+                this[k] = v
+            }
+        }
+    }
+
+    override fun allocationSize(value: Map<kotlin.ByteArray, List<FfiHmacKey>>): ULong {
+        val spaceForMapSize = 4UL
+        val spaceForChildren = value.map { (k, v) ->
+            FfiConverterByteArray.allocationSize(k) +
+                    FfiConverterSequenceTypeFfiHmacKey.allocationSize(v)
+        }.sum()
+        return spaceForMapSize + spaceForChildren
+    }
+
+    override fun write(value: Map<kotlin.ByteArray, List<FfiHmacKey>>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        // The parens on `(k, v)` here ensure we're calling the right method,
+        // which is important for compatibility with older android devices.
+        // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
+        value.forEach { (k, v) ->
+            FfiConverterByteArray.write(k, buf)
+            FfiConverterSequenceTypeFfiHmacKey.write(v, buf)
         }
     }
 }

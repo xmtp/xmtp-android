@@ -386,10 +386,6 @@ class Client() {
         ffiClient.dbReconnect()
     }
 
-    suspend fun requestMessageHistorySync() {
-        ffiClient.sendSyncRequest(FfiDeviceSyncKind.MESSAGES)
-    }
-
     suspend fun inboxStatesForInboxIds(
         refreshFromNetwork: Boolean,
         inboxIds: List<String>,
