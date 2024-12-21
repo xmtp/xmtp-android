@@ -10430,6 +10430,7 @@ data class FfiListMessagesOptions(
     var `limit`: kotlin.Long?,
     var `deliveryStatus`: FfiDeliveryStatus?,
     var `direction`: FfiDirection?,
+    var `contentTypes`: List<FfiContentType>?,
 ) {
 
     companion object
@@ -10447,6 +10448,7 @@ public object FfiConverterTypeFfiListMessagesOptions :
             FfiConverterOptionalLong.read(buf),
             FfiConverterOptionalTypeFfiDeliveryStatus.read(buf),
             FfiConverterOptionalTypeFfiDirection.read(buf),
+            FfiConverterOptionalSequenceTypeFfiContentType.read(buf),
         )
     }
 
@@ -10455,7 +10457,8 @@ public object FfiConverterTypeFfiListMessagesOptions :
                     FfiConverterOptionalLong.allocationSize(value.`sentAfterNs`) +
                     FfiConverterOptionalLong.allocationSize(value.`limit`) +
                     FfiConverterOptionalTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`) +
-                    FfiConverterOptionalTypeFfiDirection.allocationSize(value.`direction`)
+                    FfiConverterOptionalTypeFfiDirection.allocationSize(value.`direction`) +
+                    FfiConverterOptionalSequenceTypeFfiContentType.allocationSize(value.`contentTypes`)
             )
 
     override fun write(value: FfiListMessagesOptions, buf: ByteBuffer) {
@@ -10464,6 +10467,7 @@ public object FfiConverterTypeFfiListMessagesOptions :
         FfiConverterOptionalLong.write(value.`limit`, buf)
         FfiConverterOptionalTypeFfiDeliveryStatus.write(value.`deliveryStatus`, buf)
         FfiConverterOptionalTypeFfiDirection.write(value.`direction`, buf)
+        FfiConverterOptionalSequenceTypeFfiContentType.write(value.`contentTypes`, buf)
     }
 }
 
@@ -10842,6 +10846,41 @@ public object FfiConverterTypeFfiConsentState : FfiConverterRustBuffer<FfiConsen
     override fun allocationSize(value: FfiConsentState) = 4UL
 
     override fun write(value: FfiConsentState, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+enum class FfiContentType {
+
+    UNKNOWN,
+    TEXT,
+    GROUP_MEMBERSHIP_CHANGE,
+    GROUP_UPDATED,
+    REACTION,
+    READ_RECEIPT,
+    REPLY,
+    ATTACHMENT,
+    REMOTE_ATTACHMENT,
+    TRANSACTION_REFERENCE;
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiContentType : FfiConverterRustBuffer<FfiContentType> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiContentType.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: FfiContentType) = 4UL
+
+    override fun write(value: FfiContentType, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
     }
 }
@@ -11968,6 +12007,37 @@ public object FfiConverterOptionalTypeFfiMetadataField : FfiConverterRustBuffer<
 /**
  * @suppress
  */
+public object FfiConverterOptionalSequenceTypeFfiContentType :
+    FfiConverterRustBuffer<List<FfiContentType>?> {
+    override fun read(buf: ByteBuffer): List<FfiContentType>? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterSequenceTypeFfiContentType.read(buf)
+    }
+
+    override fun allocationSize(value: List<FfiContentType>?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterSequenceTypeFfiContentType.allocationSize(value)
+        }
+    }
+
+    override fun write(value: List<FfiContentType>?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterSequenceTypeFfiContentType.write(value, buf)
+        }
+    }
+}
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceString : FfiConverterRustBuffer<List<kotlin.String>> {
     override fun read(buf: ByteBuffer): List<kotlin.String> {
         val len = buf.getInt()
@@ -12306,6 +12376,33 @@ public object FfiConverterSequenceTypeFfiV2QueryResponse :
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeFfiV2QueryResponse.write(it, buf)
+        }
+    }
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeFfiContentType :
+    FfiConverterRustBuffer<List<FfiContentType>> {
+    override fun read(buf: ByteBuffer): List<FfiContentType> {
+        val len = buf.getInt()
+        return List<FfiContentType>(len) {
+            FfiConverterTypeFfiContentType.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<FfiContentType>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeFfiContentType.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<FfiContentType>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeFfiContentType.write(it, buf)
         }
     }
 }

@@ -242,7 +242,8 @@ data class Conversations(
                                 null,
                                 1,
                                 null,
-                                FfiDirection.DESCENDING
+                                FfiDirection.DESCENDING,
+                                null
                             )
                         )
                             .firstOrNull()
