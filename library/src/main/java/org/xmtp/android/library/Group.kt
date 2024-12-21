@@ -12,6 +12,7 @@ import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.Message.SortDirection
 import org.xmtp.android.library.messages.Topic
+import uniffi.xmtpv3.FfiContentType
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
 import uniffi.xmtpv3.FfiDeliveryStatus
@@ -126,6 +127,7 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
         afterNs: Long? = null,
         direction: SortDirection = SortDirection.DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
+        contentTypes: List<FfiContentType>? = null
     ): List<DecodedMessage> {
         return libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
@@ -141,7 +143,8 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
                 direction = when (direction) {
                     SortDirection.ASCENDING -> FfiDirection.ASCENDING
                     else -> FfiDirection.DESCENDING
-                }
+                },
+                contentTypes = contentTypes
             )
         ).mapNotNull {
             Message(client, it).decodeOrNull()
