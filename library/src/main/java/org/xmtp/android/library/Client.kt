@@ -2,6 +2,8 @@ package org.xmtp.android.library
 
 import android.content.Context
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.Message
@@ -10,7 +12,6 @@ import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiDeviceSyncKind
 import uniffi.xmtpv3.FfiSignatureRequest
 import uniffi.xmtpv3.FfiXmtpClient
-import uniffi.xmtpv3.XmtpApiClient
 import uniffi.xmtpv3.connectToBackend
 import uniffi.xmtpv3.createClient
 import uniffi.xmtpv3.generateInboxId
@@ -20,6 +21,7 @@ import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.InboxState
 import java.io.File
 
 typealias PreEventCallback = suspend () -> Unit
+typealias ApiClient = uniffi.xmtpv3.XmtpApiClient
 
 data class ClientOptions(
     val api: Api = Api(),
@@ -60,16 +62,14 @@ class Client() {
             registry
         }
 
-        private val apiClientCache = mutableMapOf<String, XmtpApiClient>()
-        private val cacheLock = Any()
+        private val apiClientCache = mutableMapOf<String, ApiClient>()
+        private val cacheLock = Mutex()
 
-        suspend fun connectToApiBackend(api: ClientOptions.Api): XmtpApiClient {
+        suspend fun connectToApiBackend(api: ClientOptions.Api): ApiClient {
             val cacheKey = api.env.getUrl()
-            return synchronized(cacheLock) {
+            return cacheLock.withLock {
                 apiClientCache.getOrPut(cacheKey) {
-                    runBlocking {
-                        connectToBackend(api.env.getUrl(), api.isSecure)
-                    }
+                    connectToBackend(api.env.getUrl(), api.isSecure)
                 }
             }
         }
