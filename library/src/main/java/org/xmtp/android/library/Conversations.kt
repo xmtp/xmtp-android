@@ -20,8 +20,8 @@ import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiPermissionPolicySet
 import uniffi.xmtpv3.FfiSubscribeException
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionPolicySet
+import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
+import org.xmtp.android.library.libxmtp.PermissionPolicySet
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit

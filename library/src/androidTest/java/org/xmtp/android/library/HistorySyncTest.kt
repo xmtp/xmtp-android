@@ -125,7 +125,7 @@ class HistorySyncTest {
         runBlocking {
             alix2Group.send("A message")
             alix2Group.send("A second message")
-            alixClient3.requestMessageHistorySync()
+            alixClient3.conversations.syncAllConversations()
             Thread.sleep(1000)
             alixClient.conversations.syncAllConversations()
             Thread.sleep(2000)

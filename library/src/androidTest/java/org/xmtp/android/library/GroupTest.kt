@@ -24,8 +24,8 @@ import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.mls.message.contents.TranscriptMessages
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionOption
+import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
+import org.xmtp.android.library.libxmtp.PermissionOption
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
