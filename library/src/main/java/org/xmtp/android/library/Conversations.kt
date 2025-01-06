@@ -13,10 +13,8 @@ import uniffi.xmtpv3.FfiConversationListItem
 import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiCreateGroupOptions
-import uniffi.xmtpv3.FfiDirection
 import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiListConversationsOptions
-import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiPermissionPolicySet
@@ -31,11 +29,6 @@ data class Conversations(
     var client: Client,
     private val ffiConversations: FfiConversations,
 ) {
-
-    enum class ConversationOrder {
-        CREATED_AT,
-        LAST_MESSAGE;
-    }
 
     enum class ConversationType {
         ALL,
@@ -161,7 +154,6 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        order: ConversationOrder = ConversationOrder.CREATED_AT,
         consentState: ConsentState? = null,
     ): List<Group> {
         val ffiGroups = ffiConversations.listGroups(
@@ -183,7 +175,6 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        order: ConversationOrder = ConversationOrder.CREATED_AT,
         consentState: ConsentState? = null,
     ): List<Dm> {
         val ffiDms = ffiConversations.listDms(

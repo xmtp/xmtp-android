@@ -98,16 +98,16 @@ class ConversationsTest {
             runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
         val group2 =
             runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
-        runBlocking { dm.send("Howdy") }
-        runBlocking { group2.send("Howdy") }
+        val dmMessage = runBlocking { dm.send("Howdy") }
+        val groupMessage = runBlocking { group2.send("Howdy") }
         runBlocking { boClient.conversations.syncAllConversations() }
         val conversations = runBlocking { boClient.conversations.list() }
-        val conversationsOrdered =
-            runBlocking { boClient.conversations.list(order = Conversations.ConversationOrder.LAST_MESSAGE) }
         assertEquals(conversations.size, 3)
-        assertEquals(conversationsOrdered.size, 3)
-        assertEquals(conversations.map { it.id }, listOf(dm.id, group1.id, group2.id))
-        assertEquals(conversationsOrdered.map { it.id }, listOf(group2.id, dm.id, group1.id))
+        assertEquals(conversations.map { it.id }, listOf(group2.id, dm.id, group1.id))
+        runBlocking {
+            assertEquals(group2.lastMessage()!!.id, groupMessage)
+            assertEquals(dm.lastMessage()!!.id, dmMessage)
+        }
     }
 
     @Test
