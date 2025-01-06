@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import org.xmtp.android.library.libxmtp.Message
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationCallback
+import uniffi.xmtpv3.FfiConversationListItem
 import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiCreateGroupOptions
@@ -168,13 +169,13 @@ data class Conversations(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) }
+                consentState?.let { ConsentState.toFfiConsentState(it) },
+                false
             )
         )
-        val sortedConversations = sortConversations(ffiGroups, order)
 
-        return sortedConversations.map {
-            Group(client, it)
+        return ffiGroups.map {
+            Group(client, it.conversation(), it.lastMessage())
         }
     }
 
@@ -191,12 +192,12 @@ data class Conversations(
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
                 consentState?.let { ConsentState.toFfiConsentState(it) }
+                false
             )
         )
-        val sortedConversations = sortConversations(ffiDms, order)
 
-        return sortedConversations.map {
-            Dm(client, it)
+        return ffiDms.map {
+            Dm(client, it.conversation(), it.lastMessage())
         }
     }
 
@@ -206,7 +207,7 @@ data class Conversations(
         limit: Int? = null,
         consentState: ConsentState? = null,
     ): List<Conversation> {
-        val ffiConversations = ffiConversations.list(
+        val ffiConversation = ffiConversations.list(
             FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
@@ -216,13 +217,13 @@ data class Conversations(
             )
         )
 
-        return ffiConversations.map { it.conversation.toConversation() }
+        return ffiConversation.map { it.toConversation()}
     }
 
-    private suspend fun FfiConversation.toConversation(): Conversation {
-        return when (conversationType()) {
-            FfiConversationType.DM -> Conversation.Dm(Dm(client, this))
-            else -> Conversation.Group(Group(client, this))
+    private suspend fun FfiConversationListItem.toConversation(): Conversation {
+        return when (conversation().conversationType()) {
+            FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation(), lastMessage()))
+            else -> Conversation.Group(Group(client, conversation(), lastMessage()))
         }
     }
 

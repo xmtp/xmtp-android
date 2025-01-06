@@ -1195,6 +1195,14 @@ internal interface UniffiLib : Library {
         `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
     ): Unit
 
+    fun uniffi_xmtpv3_fn_method_fficonversationlistitem_conversation(
+        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
+    ): Pointer
+
+    fun uniffi_xmtpv3_fn_method_fficonversationlistitem_last_message(
+        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
+
     fun uniffi_xmtpv3_fn_clone_fficonversationmetadata(
         `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
     ): Pointer
@@ -2103,6 +2111,12 @@ internal interface UniffiLib : Library {
     fun uniffi_xmtpv3_checksum_method_fficonversationcallback_on_error(
     ): Short
 
+    fun uniffi_xmtpv3_checksum_method_fficonversationlistitem_conversation(
+    ): Short
+
+    fun uniffi_xmtpv3_checksum_method_fficonversationlistitem_last_message(
+    ): Short
+
     fun uniffi_xmtpv3_checksum_method_fficonversationmetadata_conversation_type(
     ): Short
 
@@ -2520,6 +2534,12 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversationcallback_on_error() != 461.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversationlistitem_conversation() != 20525.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversationlistitem_last_message() != 42510.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversationmetadata_conversation_type() != 22241.toShort()) {
@@ -5093,6 +5113,10 @@ public object FfiConverterTypeFfiConversationCallback :
 
 public interface FfiConversationListItemInterface {
 
+    fun `conversation`(): FfiConversation
+
+    fun `lastMessage`(): FfiMessage?
+
     companion object
 }
 
@@ -5175,6 +5199,31 @@ open class FfiConversationListItem : Disposable, AutoCloseable, FfiConversationL
         return uniffiRustCall() { status ->
             UniffiLib.INSTANCE.uniffi_xmtpv3_fn_clone_fficonversationlistitem(pointer!!, status)
         }
+    }
+
+    override fun `conversation`(): FfiConversation {
+        return FfiConverterTypeFfiConversation.lift(
+            callWithPointer {
+                uniffiRustCall() { _status ->
+                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationlistitem_conversation(
+                        it, _status
+                    )
+                }
+            }
+        )
+    }
+
+
+    override fun `lastMessage`(): FfiMessage? {
+        return FfiConverterOptionalTypeFfiMessage.lift(
+            callWithPointer {
+                uniffiRustCall() { _status ->
+                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationlistitem_last_message(
+                        it, _status
+                    )
+                }
+            }
+        )
     }
 
 
@@ -11765,6 +11814,36 @@ public object FfiConverterOptionalTypeFfiCursor : FfiConverterRustBuffer<FfiCurs
         } else {
             buf.put(1)
             FfiConverterTypeFfiCursor.write(value, buf)
+        }
+    }
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalTypeFfiMessage : FfiConverterRustBuffer<FfiMessage?> {
+    override fun read(buf: ByteBuffer): FfiMessage? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeFfiMessage.read(buf)
+    }
+
+    override fun allocationSize(value: FfiMessage?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeFfiMessage.allocationSize(value)
+        }
+    }
+
+    override fun write(value: FfiMessage?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeFfiMessage.write(value, buf)
         }
     }
 }
