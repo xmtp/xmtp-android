@@ -244,11 +244,11 @@ data class Conversations(
             awaitClose { stream.end() }
         }
 
-    fun streamAllMessages(type: ConversationType = ConversationType.ALL): Flow<DecodedMessage> =
+    fun streamAllMessages(type: ConversationType = ConversationType.ALL): Flow<Message> =
         callbackFlow {
             val messageCallback = object : FfiMessageCallback {
                 override fun onMessage(message: FfiMessage) {
-                    val decodedMessage = Message(client, message).decodeOrNull()
+                    val decodedMessage = Message.create(message)
                     decodedMessage?.let { trySend(it) }
                 }
 

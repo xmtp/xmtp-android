@@ -19,6 +19,7 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -325,7 +326,7 @@ class GroupTest {
         runBlocking { alixGroup.sync() }
         val message3 = runBlocking { alixGroup.messages().last() }
         assertEquals(message3.id, message2.id)
-        assertEquals(message3.sent.time, message2.sent.time)
+        assertEquals(message3.sentAtNs, message2.sentAtNs)
     }
 
     @Test
@@ -656,7 +657,7 @@ class GroupTest {
 
         runBlocking { alixClient.conversations.sync() }
 
-        val allMessages = mutableListOf<DecodedMessage>()
+        val allMessages = mutableListOf<Message>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {

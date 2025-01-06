@@ -356,7 +356,7 @@ class Client() {
 
     fun findMessage(messageId: String): Message? {
         return try {
-            Message(this, ffiClient.message(messageId.hexToByteArray()))
+            Message.create(ffiClient.message(messageId.hexToByteArray()))
         } catch (e: Exception) {
             null
         }
