@@ -120,6 +120,14 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation, priva
         libXMTPGroup.sync()
     }
 
+    suspend fun lastMessage(): DecodedMessage? {
+       return if (ffiLastMessage != null) {
+            Message(client, ffiLastMessage).decode()
+        } else {
+            messages(limit = 1).firstOrNull()
+        }
+    }
+
     suspend fun messages(
         limit: Int? = null,
         beforeNs: Long? = null,
@@ -141,7 +149,8 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation, priva
                 direction = when (direction) {
                     SortDirection.ASCENDING -> FfiDirection.ASCENDING
                     else -> FfiDirection.DESCENDING
-                }
+                },
+                contentTypes = null
             )
         ).mapNotNull {
             Message(client, it).decodeOrNull()

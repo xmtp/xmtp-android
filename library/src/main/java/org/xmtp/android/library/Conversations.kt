@@ -191,7 +191,7 @@ data class Conversations(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) }
+                consentState?.let { ConsentState.toFfiConsentState(it) },
                 false
             )
         )
