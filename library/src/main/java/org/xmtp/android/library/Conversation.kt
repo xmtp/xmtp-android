@@ -44,6 +44,14 @@ sealed class Conversation {
             }
         }
 
+    val lastMessage: Message?
+        get() {
+            return when (this) {
+                is Group -> group.lastMessage
+                is Dm -> dm.lastMessage
+            }
+        }
+
     suspend fun members(): List<Member> {
         return when (this) {
             is Group -> group.members()

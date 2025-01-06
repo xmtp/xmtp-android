@@ -204,7 +204,6 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        order: ConversationOrder = ConversationOrder.CREATED_AT,
         consentState: ConsentState? = null,
     ): List<Conversation> {
         val ffiConversations = ffiConversations.list(
@@ -212,43 +211,12 @@ data class Conversations(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) }
+                consentState?.let { ConsentState.toFfiConsentState(it) },
+                false
             )
         )
 
-        val sortedConversations = sortConversations(ffiConversations, order)
-
-        return sortedConversations.map { it.toConversation() }
-    }
-
-    private suspend fun sortConversations(
-        conversations: List<FfiConversation>,
-        order: ConversationOrder,
-    ): List<FfiConversation> {
-        return when (order) {
-            ConversationOrder.LAST_MESSAGE -> {
-                conversations.map { conversation ->
-                    val message =
-                        conversation.findMessages(
-                            FfiListMessagesOptions(
-                                null,
-                                null,
-                                1,
-                                null,
-                                FfiDirection.DESCENDING
-                            )
-                        )
-                            .firstOrNull()
-                    conversation to message?.sentAtNs
-                }.sortedByDescending {
-                    it.second ?: 0L
-                }.map {
-                    it.first
-                }
-            }
-
-            ConversationOrder.CREATED_AT -> conversations
-        }
+        return ffiConversations.map { it.conversation.toConversation() }
     }
 
     private suspend fun FfiConversation.toConversation(): Conversation {
