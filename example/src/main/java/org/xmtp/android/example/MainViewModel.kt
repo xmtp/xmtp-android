@@ -96,7 +96,7 @@ class MainViewModel : ViewModel() {
 
     @WorkerThread
     private fun fetchMostRecentMessage(conversation: Conversation): Message? {
-        return runBlocking { conversation.messages(limit = 1).firstOrNull() }
+        return runBlocking { conversation.lastMessage() }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -135,7 +135,7 @@ class MainViewModel : ViewModel() {
         data class ConversationItem(
             override val id: String,
             val conversation: Conversation,
-            val mostRecentMessage: DecodedMessage?,
+            val mostRecentMessage: Message?,
         ) : MainListItem(id, ITEM_TYPE_CONVERSATION)
 
         data class Footer(
