@@ -183,7 +183,7 @@ class DmTest {
         runBlocking { boClient.conversations.syncAllConversations() }
         val conversations = runBlocking { boClient.conversations.listDms() }
         assertEquals(conversations.size, 2)
-        assertEquals(conversations.map { it.id }, listOf(dm1.id, dm2.id))
+        assertEquals(conversations.map { it.id }, listOf(dm2.id, dm1.id))
     }
 
     @Test
