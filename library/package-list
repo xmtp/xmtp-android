@@ -859,7 +859,6 @@ $dokka.location:org.xmtp.android.library/Client/libXMTPVersion/#/PointingToDecla
 $dokka.location:org.xmtp.android.library/Client/preferences/#/PointingToDeclaration/library/org.xmtp.android.library/-client/preferences.html
 $dokka.location:org.xmtp.android.library/Client/reconnectLocalDatabase/#/PointingToDeclaration/library/org.xmtp.android.library/-client/reconnect-local-database.html
 $dokka.location:org.xmtp.android.library/Client/removeAccount/#org.xmtp.android.library.SigningKey#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/remove-account.html
-$dokka.location:org.xmtp.android.library/Client/requestMessageHistorySync/#/PointingToDeclaration/library/org.xmtp.android.library/-client/request-message-history-sync.html
 $dokka.location:org.xmtp.android.library/Client/revokeAllOtherInstallations/#org.xmtp.android.library.SigningKey/PointingToDeclaration/library/org.xmtp.android.library/-client/revoke-all-other-installations.html
 $dokka.location:org.xmtp.android.library/Client/signWithInstallationKey/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/sign-with-installation-key.html
 $dokka.location:org.xmtp.android.library/Client/verifySignature/#kotlin.String#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-client/verify-signature.html
@@ -944,6 +943,7 @@ $dokka.location:org.xmtp.android.library/Conversations/Conversations/#org.xmtp.a
 $dokka.location:org.xmtp.android.library/Conversations/client/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/client.html
 $dokka.location:org.xmtp.android.library/Conversations/findOrCreateDm/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversations/find-or-create-dm.html
 $dokka.location:org.xmtp.android.library/Conversations/fromWelcome/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-conversations/from-welcome.html
+$dokka.location:org.xmtp.android.library/Conversations/getHmacKeys/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/get-hmac-keys.html
 $dokka.location:org.xmtp.android.library/Conversations/list/#java.util.Date?#java.util.Date?#kotlin.Int?#org.xmtp.android.library.ConsentState?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/list.html
 $dokka.location:org.xmtp.android.library/Conversations/listDms/#java.util.Date?#java.util.Date?#kotlin.Int?#org.xmtp.android.library.ConsentState?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/list-dms.html
 $dokka.location:org.xmtp.android.library/Conversations/listGroups/#java.util.Date?#java.util.Date?#kotlin.Int?#org.xmtp.android.library.ConsentState?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/list-groups.html
@@ -955,11 +955,8 @@ $dokka.location:org.xmtp.android.library/Conversations/streamAllMessages/#org.xm
 $dokka.location:org.xmtp.android.library/Conversations/sync/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/sync.html
 $dokka.location:org.xmtp.android.library/Conversations/syncAllConversations/#org.xmtp.android.library.ConsentState?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/sync-all-conversations.html
 $dokka.location:org.xmtp.android.library/Crypto.Companion///PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/index.html
-$dokka.location:org.xmtp.android.library/Crypto.Companion/calculateMac/#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/calculate-mac.html
 $dokka.location:org.xmtp.android.library/Crypto.Companion/decrypt/#kotlin.ByteArray#org.xmtp.proto.message.contents.CiphertextOuterClass.Ciphertext#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/decrypt.html
-$dokka.location:org.xmtp.android.library/Crypto.Companion/deriveKey/#kotlin.ByteArray#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/derive-key.html
 $dokka.location:org.xmtp.android.library/Crypto.Companion/encrypt/#kotlin.ByteArray#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/encrypt.html
-$dokka.location:org.xmtp.android.library/Crypto.Companion/verifyHmacSignature/#kotlin.ByteArray#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-crypto/-companion/verify-hmac-signature.html
 $dokka.location:org.xmtp.android.library/Crypto///PointingToDeclaration/library/org.xmtp.android.library/-crypto/index.html
 $dokka.location:org.xmtp.android.library/Crypto/Crypto/#/PointingToDeclaration/library/org.xmtp.android.library/-crypto/-crypto.html
 $dokka.location:org.xmtp.android.library/Dm///PointingToDeclaration/library/org.xmtp.android.library/-dm/index.html
@@ -1063,6 +1060,10 @@ $dokka.location:org.xmtp.android.library/KeyUtil/getPublicKey/#kotlin.ByteArray/
 $dokka.location:org.xmtp.android.library/KeyUtil/getSignatureBytes/#org.web3j.crypto.Sign.SignatureData/PointingToDeclaration/library/org.xmtp.android.library/-key-util/get-signature-bytes.html
 $dokka.location:org.xmtp.android.library/KeyUtil/getSignatureData/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-key-util/get-signature-data.html
 $dokka.location:org.xmtp.android.library/KeyUtil/validateConsentSignature/#kotlin.String#kotlin.String#kotlin.String#kotlin.Long/PointingToDeclaration/library/org.xmtp.android.library/-key-util/validate-consent-signature.html
+$dokka.location:org.xmtp.android.library/PreferenceType.HMAC_KEYS///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-preference-type/-h-m-a-c_-k-e-y-s/index.html
+$dokka.location:org.xmtp.android.library/PreferenceType///PointingToDeclaration/library/org.xmtp.android.library/-preference-type/index.html
+$dokka.location:org.xmtp.android.library/PreferenceType/valueOf/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-preference-type/value-of.html
+$dokka.location:org.xmtp.android.library/PreferenceType/values/#/PointingToDeclaration/library/org.xmtp.android.library/-preference-type/values.html
 $dokka.location:org.xmtp.android.library/PrivatePreferences///PointingToDeclaration/library/org.xmtp.android.library/-private-preferences/index.html
 $dokka.location:org.xmtp.android.library/PrivatePreferences/PrivatePreferences/#org.xmtp.android.library.Client#uniffi.xmtpv3.FfiXmtpClient/PointingToDeclaration/library/org.xmtp.android.library/-private-preferences/-private-preferences.html
 $dokka.location:org.xmtp.android.library/PrivatePreferences/addressState/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-private-preferences/address-state.html
@@ -1071,6 +1072,7 @@ $dokka.location:org.xmtp.android.library/PrivatePreferences/conversationState/#k
 $dokka.location:org.xmtp.android.library/PrivatePreferences/inboxIdState/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-private-preferences/inbox-id-state.html
 $dokka.location:org.xmtp.android.library/PrivatePreferences/setConsentState/#kotlin.collections.List[org.xmtp.android.library.ConsentRecord]/PointingToDeclaration/library/org.xmtp.android.library/-private-preferences/set-consent-state.html
 $dokka.location:org.xmtp.android.library/PrivatePreferences/streamConsent/#/PointingToDeclaration/library/org.xmtp.android.library/-private-preferences/stream-consent.html
+$dokka.location:org.xmtp.android.library/PrivatePreferences/streamPreferenceUpdates/#/PointingToDeclaration/library/org.xmtp.android.library/-private-preferences/stream-preference-updates.html
 $dokka.location:org.xmtp.android.library/PrivatePreferences/syncConsent/#/PointingToDeclaration/library/org.xmtp.android.library/-private-preferences/sync-consent.html
 $dokka.location:org.xmtp.android.library/SendOptions///PointingToDeclaration/library/org.xmtp.android.library/-send-options/index.html
 $dokka.location:org.xmtp.android.library/SendOptions/SendOptions/#org.xmtp.android.library.EncodedContentCompression?#org.xmtp.proto.message.contents.Content.ContentTypeId?#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-send-options/-send-options.html
