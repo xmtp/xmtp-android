@@ -22,7 +22,7 @@ import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiSubscribeException
 import java.util.Date
 
-class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
+class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private val ffiLastMessage: FfiMessage? = null) {
     val id: String
         get() = libXMTPGroup.id().toHex()
 
@@ -103,13 +103,21 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         libXMTPGroup.sync()
     }
 
+    suspend fun lastMessage(): Message? {
+        return if (ffiLastMessage != null) {
+            Message.create(ffiLastMessage)
+        } else {
+            messages(limit = 1).firstOrNull()
+        }
+    }
+
     suspend fun messages(
         limit: Int? = null,
         beforeNs: Long? = null,
         afterNs: Long? = null,
         direction: SortDirection = SortDirection.DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
-    ): List<DecodedMessage> {
+    ): List<Message> {
         return libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = beforeNs,
@@ -124,16 +132,17 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
                 direction = when (direction) {
                     SortDirection.ASCENDING -> FfiDirection.ASCENDING
                     else -> FfiDirection.DESCENDING
-                }
+                },
+                contentTypes = null
             )
         ).mapNotNull {
-            Message(client, it).decodeOrNull()
+            Message.create(it)
         }
     }
 
-    suspend fun processMessage(messageBytes: ByteArray): Message {
+    suspend fun processMessage(messageBytes: ByteArray): Message? {
         val message = libXMTPGroup.processStreamedConversationMessage(messageBytes)
-        return Message(client, message)
+        return Message.create(message)
     }
 
     suspend fun creatorInboxId(): String {
@@ -148,10 +157,10 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation) {
         return libXMTPGroup.listMembers().map { Member(it) }
     }
 
-    fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
+    fun streamMessages(): Flow<Message> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                val decodedMessage = Message(client, message).decodeOrNull()
+                val decodedMessage = Message.create(message)
                 decodedMessage?.let {
                     trySend(it)
                 }

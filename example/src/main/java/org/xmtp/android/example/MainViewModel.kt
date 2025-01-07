@@ -20,7 +20,7 @@ import org.xmtp.android.example.extension.flowWhileShared
 import org.xmtp.android.example.extension.stateFlow
 import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
 import org.xmtp.android.library.Conversation
-import org.xmtp.android.library.DecodedMessage
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.android.library.push.Service
 
@@ -46,9 +46,20 @@ class MainViewModel : ViewModel() {
             val listItems = mutableListOf<MainListItem>()
             try {
                 val conversations = ClientManager.client.conversations.list()
-                val subscriptions: MutableList<Service.Subscription> = conversations.map {
+                val subscriptions = conversations.map {
+                    val hmacKeysResult = ClientManager.client.conversations.getHmacKeys()
+                    val hmacKeys = hmacKeysResult.hmacKeysMap
+                    val result = hmacKeys[it.topic]?.valuesList?.map { hmacKey ->
+                        Service.Subscription.HmacKey.newBuilder().also { sub_key ->
+                            sub_key.key = hmacKey.hmacKey
+                            sub_key.thirtyDayPeriodsSinceEpoch = hmacKey.thirtyDayPeriodsSinceEpoch
+                        }.build()
+                    }
+
                     Service.Subscription.newBuilder().also { sub ->
+                        sub.addAllHmacKeys(result)
                         sub.topic = it.topic
+                        sub.isSilent = false
                     }.build()
                 }.toMutableList()
 
@@ -84,8 +95,8 @@ class MainViewModel : ViewModel() {
     }
 
     @WorkerThread
-    private fun fetchMostRecentMessage(conversation: Conversation): DecodedMessage? {
-        return runBlocking { conversation.messages(limit = 1).firstOrNull() }
+    private fun fetchMostRecentMessage(conversation: Conversation): Message? {
+        return runBlocking { conversation.lastMessage() }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -124,7 +135,7 @@ class MainViewModel : ViewModel() {
         data class ConversationItem(
             override val id: String,
             val conversation: Conversation,
-            val mostRecentMessage: DecodedMessage?,
+            val mostRecentMessage: Message?,
         ) : MainListItem(id, ITEM_TYPE_CONVERSATION)
 
         data class Footer(

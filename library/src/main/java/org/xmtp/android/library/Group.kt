@@ -11,6 +11,8 @@ import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.Message.SortDirection
+import org.xmtp.android.library.libxmtp.PermissionOption
+import org.xmtp.android.library.libxmtp.PermissionPolicySet
 import org.xmtp.android.library.messages.Topic
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
@@ -23,11 +25,14 @@ import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiMetadataField
 import uniffi.xmtpv3.FfiPermissionUpdateType
 import uniffi.xmtpv3.FfiSubscribeException
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionOption
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionPolicySet
+
 import java.util.Date
 
-class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
+class Group(
+    val client: Client,
+    private val libXMTPGroup: FfiConversation,
+    private val ffiLastMessage: FfiMessage? = null,
+) {
     val id: String
         get() = libXMTPGroup.id().toHex()
 
@@ -120,13 +125,21 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
         libXMTPGroup.sync()
     }
 
+    suspend fun lastMessage(): Message? {
+        return if (ffiLastMessage != null) {
+            Message.create(ffiLastMessage)
+        } else {
+            messages(limit = 1).firstOrNull()
+        }
+    }
+
     suspend fun messages(
         limit: Int? = null,
         beforeNs: Long? = null,
         afterNs: Long? = null,
         direction: SortDirection = SortDirection.DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
-    ): List<DecodedMessage> {
+    ): List<Message> {
         return libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = beforeNs,
@@ -141,16 +154,17 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
                 direction = when (direction) {
                     SortDirection.ASCENDING -> FfiDirection.ASCENDING
                     else -> FfiDirection.DESCENDING
-                }
+                },
+                contentTypes = null
             )
         ).mapNotNull {
-            Message(client, it).decodeOrNull()
+            Message.create(it)
         }
     }
 
-    suspend fun processMessage(messageBytes: ByteArray): Message {
+    suspend fun processMessage(messageBytes: ByteArray): Message? {
         val message = libXMTPGroup.processStreamedConversationMessage(messageBytes)
-        return Message(client, message)
+        return Message.create(message)
     }
 
     fun updateConsentState(state: ConsentState) {
@@ -368,10 +382,10 @@ class Group(val client: Client, private val libXMTPGroup: FfiConversation) {
         return libXMTPGroup.superAdminList()
     }
 
-    fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
+    fun streamMessages(): Flow<Message> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                val decodedMessage = Message(client, message).decodeOrNull()
+                val decodedMessage = Message.create(message)
                 decodedMessage?.let {
                     trySend(it)
                 }

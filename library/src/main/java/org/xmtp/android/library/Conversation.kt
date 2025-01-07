@@ -44,6 +44,13 @@ sealed class Conversation {
             }
         }
 
+    suspend fun lastMessage(): Message? {
+        return when (this) {
+            is Group -> group.lastMessage()
+            is Dm -> dm.lastMessage()
+        }
+    }
+
     suspend fun members(): List<Member> {
         return when (this) {
             is Group -> group.members()
@@ -113,14 +120,14 @@ sealed class Conversation {
         afterNs: Long? = null,
         direction: Message.SortDirection = Message.SortDirection.DESCENDING,
         deliveryStatus: Message.MessageDeliveryStatus = Message.MessageDeliveryStatus.ALL,
-    ): List<DecodedMessage> {
+    ): List<Message> {
         return when (this) {
             is Group -> group.messages(limit, beforeNs, afterNs, direction, deliveryStatus)
             is Dm -> dm.messages(limit, beforeNs, afterNs, direction, deliveryStatus)
         }
     }
 
-    suspend fun processMessage(messageBytes: ByteArray): Message {
+    suspend fun processMessage(messageBytes: ByteArray): Message? {
         return when (this) {
             is Group -> group.processMessage(messageBytes)
             is Dm -> dm.processMessage(messageBytes)
@@ -142,7 +149,7 @@ sealed class Conversation {
             }
         }
 
-    fun streamMessages(): Flow<DecodedMessage> {
+    fun streamMessages(): Flow<Message> {
         return when (this) {
             is Group -> group.streamMessages()
             is Dm -> dm.streamMessages()

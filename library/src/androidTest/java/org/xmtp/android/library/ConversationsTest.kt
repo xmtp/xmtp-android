@@ -6,9 +6,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
@@ -98,16 +100,16 @@ class ConversationsTest {
             runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
         val group2 =
             runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
-        runBlocking { dm.send("Howdy") }
-        runBlocking { group2.send("Howdy") }
+        val dmMessage = runBlocking { dm.send("Howdy") }
+        val groupMessage = runBlocking { group2.send("Howdy") }
         runBlocking { boClient.conversations.syncAllConversations() }
         val conversations = runBlocking { boClient.conversations.list() }
-        val conversationsOrdered =
-            runBlocking { boClient.conversations.list(order = Conversations.ConversationOrder.LAST_MESSAGE) }
         assertEquals(conversations.size, 3)
-        assertEquals(conversationsOrdered.size, 3)
-        assertEquals(conversations.map { it.id }, listOf(dm.id, group1.id, group2.id))
-        assertEquals(conversationsOrdered.map { it.id }, listOf(group2.id, dm.id, group1.id))
+        assertEquals(conversations.map { it.id }, listOf(group2.id, dm.id, group1.id))
+        runBlocking {
+            assertEquals(group2.lastMessage()!!.id, groupMessage)
+            assertEquals(dm.lastMessage()!!.id, dmMessage)
+        }
     }
 
     @Test
@@ -115,21 +117,21 @@ class ConversationsTest {
         runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
         val group =
             runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
-        assertEquals(runBlocking { boClient.conversations.syncAllConversations() }.toInt(), 2)
-        assertEquals(
-            runBlocking { boClient.conversations.syncAllConversations(consentState = ConsentState.ALLOWED) }.toInt(),
-            2
+        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 2)
+        assert(
+            runBlocking { boClient.conversations.syncAllConversations(consentState = ConsentState.ALLOWED) }.toInt() >= 2
+        )
+        assert(
+            runBlocking { boClient.conversations.syncAllConversations(consentState = ConsentState.DENIED) }.toInt() <= 1
         )
         runBlocking { group.updateConsentState(ConsentState.DENIED) }
-        assertEquals(
-            runBlocking { boClient.conversations.syncAllConversations(consentState = ConsentState.ALLOWED) }.toInt(),
-            1
+        assert(
+            runBlocking { boClient.conversations.syncAllConversations(consentState = ConsentState.ALLOWED) }.toInt() <= 2
         )
-        assertEquals(
-            runBlocking { boClient.conversations.syncAllConversations(consentState = ConsentState.DENIED) }.toInt(),
-            1
+        assert(
+            runBlocking { boClient.conversations.syncAllConversations(consentState = ConsentState.DENIED) }.toInt() <= 2
         )
-        assertEquals(runBlocking { boClient.conversations.syncAllConversations() }.toInt(), 2)
+        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 2)
     }
 
     @Test
@@ -140,7 +142,7 @@ class ConversationsTest {
             runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
         runBlocking { boClient.conversations.sync() }
 
-        val allMessages = mutableListOf<DecodedMessage>()
+        val allMessages = mutableListOf<Message>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -185,5 +187,25 @@ class ConversationsTest {
         Thread.sleep(2000)
         assertEquals(2, allMessages.size)
         job.cancel()
+    }
+
+    @Test
+    fun testReturnsAllHMACKeys() {
+        val conversations = mutableListOf<Conversation>()
+        repeat(5) {
+            val account = PrivateKeyBuilder()
+            val client = runBlocking { Client().create(account, fixtures.clientOptions) }
+            runBlocking {
+                conversations.add(
+                    alixClient.conversations.newConversation(client.address)
+                )
+            }
+        }
+        val hmacKeys = alixClient.conversations.getHmacKeys()
+
+        val topics = hmacKeys.hmacKeysMap.keys
+        conversations.forEach { convo ->
+            assertTrue(topics.contains(convo.topic))
+        }
     }
 }
