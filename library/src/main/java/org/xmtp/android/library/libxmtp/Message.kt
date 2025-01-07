@@ -12,7 +12,11 @@ import uniffi.xmtpv3.FfiDeliveryStatus
 import uniffi.xmtpv3.FfiMessage
 import java.util.Date
 
-class Message private constructor(private val libXMTPMessage: FfiMessage) {
+class Message private constructor(
+    private val libXMTPMessage: FfiMessage,
+    val encodedContent: Content.EncodedContent,
+    private val decodedContent: Any?,
+) {
     enum class MessageDeliveryStatus {
         ALL, PUBLISHED, UNPUBLISHED, FAILED
     }
@@ -47,18 +51,15 @@ class Message private constructor(private val libXMTPMessage: FfiMessage) {
     val topic: String
         get() = Topic.groupMessage(convoId).description
 
-    val encodedContent: Content.EncodedContent
-        get() = EncodedContent.parseFrom(libXMTPMessage.content)
-
-    fun <T> content(): T? =
-        encodedContent.decoded()
+    @Suppress("UNCHECKED_CAST")
+    fun <T> content(): T? = decodedContent as? T
 
     val fallbackContent: String
         get() = encodedContent.fallback
 
     val body: String
         get() {
-            return content() as String? ?: fallbackContent
+            return content() as? String ?: fallbackContent
         }
 
     companion object {
@@ -68,7 +69,9 @@ class Message private constructor(private val libXMTPMessage: FfiMessage) {
                 if (encodedContent.type == ContentTypeGroupUpdated && libXMTPMessage.kind != FfiConversationMessageKind.MEMBERSHIP_CHANGE) {
                     throw XMTPException("Error decoding group membership change")
                 }
-                Message(libXMTPMessage)
+                // Decode the content once during creation
+                val decodedContent = encodedContent.decoded<Any>()
+                Message(libXMTPMessage, encodedContent, decodedContent)
             } catch (e: Exception) {
                 null // Return null if decoding fails
             }
