@@ -18,6 +18,7 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -181,12 +182,8 @@ class DmTest {
         runBlocking { group.send("Howdy") }
         runBlocking { boClient.conversations.syncAllConversations() }
         val conversations = runBlocking { boClient.conversations.listDms() }
-        val conversationsOrdered =
-            runBlocking { boClient.conversations.listDms(order = Conversations.ConversationOrder.LAST_MESSAGE) }
         assertEquals(conversations.size, 2)
-        assertEquals(conversationsOrdered.size, 2)
-        assertEquals(conversations.map { it.id }, listOf(dm1.id, dm2.id))
-        assertEquals(conversationsOrdered.map { it.id }, listOf(dm2.id, dm1.id))
+        assertEquals(conversations.map { it.id }, listOf(dm2.id, dm1.id))
     }
 
     @Test
@@ -294,7 +291,7 @@ class DmTest {
         val boDm = runBlocking { boClient.conversations.findOrCreateDm(alix.walletAddress) }
         runBlocking { alixClient.conversations.sync() }
 
-        val allMessages = mutableListOf<DecodedMessage>()
+        val allMessages = mutableListOf<Message>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {

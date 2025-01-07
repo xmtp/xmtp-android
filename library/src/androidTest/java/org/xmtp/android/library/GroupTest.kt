@@ -19,13 +19,14 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
+import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
+import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.mls.message.contents.TranscriptMessages
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.PermissionOption
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
@@ -325,7 +326,7 @@ class GroupTest {
         runBlocking { alixGroup.sync() }
         val message3 = runBlocking { alixGroup.messages().last() }
         assertEquals(message3.id, message2.id)
-        assertEquals(message3.sent.time, message2.sent.time)
+        assertEquals(message3.sentAtNs, message2.sentAtNs)
     }
 
     @Test
@@ -513,12 +514,8 @@ class GroupTest {
         runBlocking { group2.send("Howdy") }
         runBlocking { boClient.conversations.syncAllConversations() }
         val conversations = runBlocking { boClient.conversations.listGroups() }
-        val conversationsOrdered =
-            runBlocking { boClient.conversations.listGroups(order = Conversations.ConversationOrder.LAST_MESSAGE) }
         assertEquals(conversations.size, 2)
-        assertEquals(conversationsOrdered.size, 2)
-        assertEquals(conversations.map { it.id }, listOf(group1.id, group2.id))
-        assertEquals(conversationsOrdered.map { it.id }, listOf(group2.id, group1.id))
+        assertEquals(conversations.map { it.id }, listOf(group2.id, group1.id))
     }
 
     @Test
@@ -660,7 +657,7 @@ class GroupTest {
 
         runBlocking { alixClient.conversations.sync() }
 
-        val allMessages = mutableListOf<DecodedMessage>()
+        val allMessages = mutableListOf<Message>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
