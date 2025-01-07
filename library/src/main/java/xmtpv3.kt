@@ -1244,16 +1244,16 @@ internal interface UniffiLib : Library {
     ): Pointer
 
     fun uniffi_xmtpv3_fn_method_fficonversations_list(
-        `ptr`: Pointer, `opts`: RustBuffer.ByValue,
-    ): Long
+        `ptr`: Pointer, `opts`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
 
     fun uniffi_xmtpv3_fn_method_fficonversations_list_dms(
-        `ptr`: Pointer, `opts`: RustBuffer.ByValue,
-    ): Long
+        `ptr`: Pointer, `opts`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
 
     fun uniffi_xmtpv3_fn_method_fficonversations_list_groups(
-        `ptr`: Pointer, `opts`: RustBuffer.ByValue,
-    ): Long
+        `ptr`: Pointer, `opts`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
 
     fun uniffi_xmtpv3_fn_method_fficonversations_process_streamed_welcome_message(
         `ptr`: Pointer, `envelopeBytes`: RustBuffer.ByValue,
@@ -2560,13 +2560,13 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_get_sync_group() != 42973.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_list() != 32264.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_list() != 23197.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_list_dms() != 59074.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_list_dms() != 39437.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_list_groups() != 55611.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_list_groups() != 7791.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_process_streamed_welcome_message() != 57376.toShort()) {
@@ -5620,11 +5620,11 @@ public interface FfiConversationsInterface {
 
     fun `getSyncGroup`(): FfiConversation
 
-    suspend fun `list`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem>
+    fun `list`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem>
 
-    suspend fun `listDms`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem>
+    fun `listDms`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem>
 
-    suspend fun `listGroups`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem>
+    fun `listGroups`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem>
 
     suspend fun `processStreamedWelcomeMessage`(`envelopeBytes`: kotlin.ByteArray): FfiConversation
 
@@ -5843,97 +5843,43 @@ open class FfiConversations : Disposable, AutoCloseable, FfiConversationsInterfa
 
 
     @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `list`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list(
-                    thisPtr,
-                    FfiConverterTypeFfiListConversationsOptions.lower(`opts`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterSequenceTypeFfiConversationListItem.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
+    override fun `list`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
+        return FfiConverterSequenceTypeFfiConversationListItem.lift(
+            callWithPointer {
+                uniffiRustCallWithError(GenericException) { _status ->
+                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list(
+                        it, FfiConverterTypeFfiListConversationsOptions.lower(`opts`), _status
+                    )
+                }
+            }
         )
     }
 
 
     @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `listDms`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list_dms(
-                    thisPtr,
-                    FfiConverterTypeFfiListConversationsOptions.lower(`opts`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterSequenceTypeFfiConversationListItem.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
+    override fun `listDms`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
+        return FfiConverterSequenceTypeFfiConversationListItem.lift(
+            callWithPointer {
+                uniffiRustCallWithError(GenericException) { _status ->
+                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list_dms(
+                        it, FfiConverterTypeFfiListConversationsOptions.lower(`opts`), _status
+                    )
+                }
+            }
         )
     }
 
 
     @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `listGroups`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list_groups(
-                    thisPtr,
-                    FfiConverterTypeFfiListConversationsOptions.lower(`opts`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterSequenceTypeFfiConversationListItem.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
+    override fun `listGroups`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
+        return FfiConverterSequenceTypeFfiConversationListItem.lift(
+            callWithPointer {
+                uniffiRustCallWithError(GenericException) { _status ->
+                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list_groups(
+                        it, FfiConverterTypeFfiListConversationsOptions.lower(`opts`), _status
+                    )
+                }
+            }
         )
     }
 
