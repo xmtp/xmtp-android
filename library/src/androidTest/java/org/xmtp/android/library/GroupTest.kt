@@ -515,7 +515,7 @@ class GroupTest {
         runBlocking { boClient.conversations.syncAllConversations() }
         val conversations = runBlocking { boClient.conversations.listGroups() }
         assertEquals(conversations.size, 2)
-        assertEquals(conversations.map { it.id }, listOf(group1.id, group2.id))
+        assertEquals(conversations.map { it.id }, listOf(group2.id, group1.id))
     }
 
     @Test
