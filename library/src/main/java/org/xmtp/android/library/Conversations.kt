@@ -125,7 +125,11 @@ data class Conversations(
 
     // Sync all new and existing conversations data from the network
     suspend fun syncAllConversations(consentState: ConsentState? = null): UInt {
-        return ffiConversations.syncAllConversations(consentState?.let { ConsentState.toFfiConsentState(it) })
+        return ffiConversations.syncAllConversations(
+            consentState?.let {
+                ConsentState.toFfiConsentState(it)
+            }
+        )
     }
 
     suspend fun newConversation(peerAddress: String): Conversation {
@@ -208,7 +212,7 @@ data class Conversations(
             )
         )
 
-        return ffiConversation.map { it.toConversation()}
+        return ffiConversation.map { it.toConversation() }
     }
 
     private suspend fun FfiConversationListItem.toConversation(): Conversation {
@@ -224,7 +228,15 @@ data class Conversations(
                 override fun onConversation(conversation: FfiConversation) {
                     launch(Dispatchers.IO) {
                         when (conversation.conversationType()) {
-                            FfiConversationType.DM -> trySend(Conversation.Dm(Dm(client, conversation)))
+                            FfiConversationType.DM -> trySend(
+                                Conversation.Dm(
+                                    Dm(
+                                        client,
+                                        conversation
+                                    )
+                                )
+                            )
+
                             else -> trySend(Conversation.Group(Group(client, conversation)))
                         }
                     }
