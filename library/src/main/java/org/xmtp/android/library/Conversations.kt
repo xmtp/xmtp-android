@@ -299,4 +299,17 @@ data class Conversations(
         }
         return hmacKeysResponse.build()
     }
+
+    fun allTopics(): List<String> {
+        val conversations = ffiConversations.list(
+            FfiListConversationsOptions(
+                null,
+                null,
+                null,
+                null,
+                includeDuplicateDms = true
+            )
+        )
+        return conversations.map { Topic.groupMessage(it.conversation().id().toHex()).description }
+    }
 }
