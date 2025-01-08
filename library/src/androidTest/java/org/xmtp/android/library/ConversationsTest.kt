@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,6 +15,7 @@ import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
+import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
 class ConversationsTest {
@@ -206,6 +208,58 @@ class ConversationsTest {
         val topics = hmacKeys.hmacKeysMap.keys
         conversations.forEach { convo ->
             assertTrue(topics.contains(convo.topic))
+        }
+    }
+
+    @Test
+    fun testReturnsAllTopics() {
+        val key = SecureRandom().generateSeed(32)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val eriWallet = PrivateKeyBuilder()
+
+        val eriClient = runBlocking {
+            Client().create(
+                account = eriWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
+        val dm1 = runBlocking { eriClient.conversations.newConversation(boClient.address) }
+
+        val eriClient2 = runBlocking {
+            Client().create(
+                account = eriWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    appContext = context,
+                    dbEncryptionKey = key,
+                    dbDirectory = context.filesDir.absolutePath.toString()
+                )
+            )
+        }
+        val dm2 = runBlocking { eriClient2.conversations.newConversation(boClient.address) }
+
+        runBlocking {
+            eriClient2.conversations.syncAllConversations()
+            eriClient.conversations.syncAllConversations()
+        }
+
+        val topics = eriClient.conversations.allTopics()
+        val conversations = runBlocking { eriClient.conversations.list() }
+        val conversations2 = runBlocking { eriClient2.conversations.list() }
+        val hmacKeys = eriClient.conversations.getHmacKeys()
+
+        assertEquals(topics.size, 2)
+        assertEquals(conversations.size, 1)
+        assertEquals(conversations2.size, 1)
+        assertEquals(conversations2.first().id, conversations.first().id)
+
+        val hmacTopics = hmacKeys.hmacKeysMap.keys
+        topics.forEach { topic ->
+            assertTrue(hmacTopics.contains(topic))
         }
     }
 }
