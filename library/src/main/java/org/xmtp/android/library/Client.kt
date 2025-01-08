@@ -116,7 +116,7 @@ class Client() {
             )
 
             return try {
-                useClient(ffiClient) // Supports suspending calls now
+                useClient(ffiClient)
             } finally {
                 ffiClient.releaseDbConnection()
                 File(dbPath).delete()
