@@ -243,19 +243,16 @@ class ConversationsTest {
         val dm2 = runBlocking { eriClient2.conversations.newConversation(boClient.address) }
 
         runBlocking {
-            eriClient2.conversations.syncAllConversations()
-            eriClient.conversations.syncAllConversations()
+            boClient.conversations.syncAllConversations()
         }
 
-        val topics = eriClient.conversations.allTopics()
-        val conversations = runBlocking { eriClient.conversations.list() }
-        val conversations2 = runBlocking { eriClient2.conversations.list() }
-        val hmacKeys = eriClient.conversations.getHmacKeys()
+        val topics = boClient.conversations.allTopics()
+        val conversations = runBlocking { boClient.conversations.list() }
+        val hmacKeys = boClient.conversations.getHmacKeys()
 
         assertEquals(topics.size, 2)
         assertEquals(conversations.size, 1)
-        assertEquals(conversations2.size, 1)
-        assertEquals(conversations2.first().id, conversations.first().id)
+        assertEquals(conversations.first().id, dm1.id)
 
         val hmacTopics = hmacKeys.hmacKeysMap.keys
         topics.forEach { topic ->
