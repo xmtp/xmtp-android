@@ -1,3 +1,3 @@
-Version: 13846991
-Branch: cv/01-02-save_parent_id_to_db_and_add_get_group_messages_with_reactions_function
-Date: 2025-01-07 17:52:41 +0000
+Version: 76983ce7
+Branch: cv/01-10-json_deserialization_for_legacy_reactions
+Date: 2025-01-11 00:19:35 +0000

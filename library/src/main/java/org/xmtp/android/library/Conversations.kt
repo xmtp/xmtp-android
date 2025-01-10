@@ -115,7 +115,9 @@ data class Conversations(
                     groupImageUrlSquare = groupImageUrlSquare,
                     groupDescription = groupDescription,
                     groupPinnedFrameUrl = groupPinnedFrameUrl,
-                    customPermissionPolicySet = permissionsPolicySet
+                    customPermissionPolicySet = permissionsPolicySet,
+                    messageExpirationFromMs = null,
+                    messageExpirationMs = null
                 )
             )
         return Group(client, group)

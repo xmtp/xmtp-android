@@ -39,7 +39,7 @@ enum class GroupPermissionPreconfiguration {
     companion object {
         fun toFfiGroupPermissionOptions(option: GroupPermissionPreconfiguration): FfiGroupPermissionsOptions {
             return when (option) {
-                ALL_MEMBERS -> FfiGroupPermissionsOptions.ALL_MEMBERS
+                ALL_MEMBERS -> FfiGroupPermissionsOptions.DEFAULT
                 ADMIN_ONLY -> FfiGroupPermissionsOptions.ADMIN_ONLY
             }
         }
@@ -66,7 +66,8 @@ data class PermissionPolicySet(
                 updateGroupNamePolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.updateGroupNamePolicy),
                 updateGroupDescriptionPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.updateGroupDescriptionPolicy),
                 updateGroupImageUrlSquarePolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.updateGroupImagePolicy),
-                updateGroupPinnedFrameUrlPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.updateGroupPinnedFrameUrlPolicy)
+                updateGroupPinnedFrameUrlPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.updateGroupPinnedFrameUrlPolicy),
+                updateMessageExpirationMsPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.addAdminPolicy)
             )
         }
 

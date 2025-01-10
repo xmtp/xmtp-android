@@ -140,6 +140,42 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
         }
     }
 
+    suspend fun messagesWithReactions(
+        limit: Int? = null,
+        beforeNs: Long? = null,
+        afterNs: Long? = null,
+        direction: SortDirection = SortDirection.DESCENDING,
+        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
+    ): List<Message.MessageWithChildMessages> {
+        val ffiMessageWithReactions = libXMTPGroup.findMessagesWithReactions(
+            opts = FfiListMessagesOptions(
+                sentBeforeNs = beforeNs,
+                sentAfterNs = afterNs,
+                limit = limit?.toLong(),
+                deliveryStatus = when (deliveryStatus) {
+                    MessageDeliveryStatus.PUBLISHED -> FfiDeliveryStatus.PUBLISHED
+                    MessageDeliveryStatus.UNPUBLISHED -> FfiDeliveryStatus.UNPUBLISHED
+                    MessageDeliveryStatus.FAILED -> FfiDeliveryStatus.FAILED
+                    else -> null
+                },
+                when (direction) {
+                    SortDirection.ASCENDING -> FfiDirection.ASCENDING
+                    else -> FfiDirection.DESCENDING
+                },
+                contentTypes = null
+            )
+        )
+
+        return ffiMessageWithReactions.mapNotNull { ffiMessageWithReactions ->
+            val parentMessage = Message.create(ffiMessageWithReactions.message)!!
+            val childMessages = ffiMessageWithReactions.reactions.mapNotNull { childMessage ->
+                Message.create(childMessage)!!
+            }
+
+            Message.MessageWithChildMessages(parentMessage, childMessages)
+        }
+    }
+
     suspend fun processMessage(messageBytes: ByteArray): Message? {
         val message = libXMTPGroup.processStreamedConversationMessage(messageBytes)
         return Message.create(message)

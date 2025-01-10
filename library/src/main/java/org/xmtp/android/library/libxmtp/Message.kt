@@ -77,4 +77,41 @@ class Message private constructor(
             }
         }
     }
+
+    data class MessageWithChildMessages(
+        var message: Message,
+        var childMessages: List<Message>
+    ) {
+        val id: String
+            get() = message.id
+
+        val convoId: String
+            get() = message.convoId
+
+        val senderInboxId: String
+            get() = message.senderInboxId
+
+        val sentAt: Date
+            get() = message.sentAt
+
+        val sentAtNs: Long
+            get() = message.sentAtNs
+
+        val deliveryStatus: MessageDeliveryStatus
+            get() = message.deliveryStatus
+
+        val topic: String
+            get() = message.topic
+
+        @Suppress("UNCHECKED_CAST")
+        fun <T> content(): T? = message.content() as? T
+
+        val fallbackContent: String
+            get() = message.fallbackContent
+
+        val body: String
+            get() {
+                return content() as? String ?: fallbackContent
+            }
+    }
 }

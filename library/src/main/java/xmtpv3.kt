@@ -10241,6 +10241,8 @@ data class FfiCreateGroupOptions(
     var `groupDescription`: kotlin.String?,
     var `groupPinnedFrameUrl`: kotlin.String?,
     var `customPermissionPolicySet`: FfiPermissionPolicySet?,
+    var `messageExpirationFromMs`: kotlin.Long?,
+    var `messageExpirationMs`: kotlin.Long?,
 ) {
 
     companion object
@@ -10259,6 +10261,8 @@ public object FfiConverterTypeFfiCreateGroupOptions :
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalTypeFfiPermissionPolicySet.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
         )
     }
 
@@ -10268,7 +10272,9 @@ public object FfiConverterTypeFfiCreateGroupOptions :
                     FfiConverterOptionalString.allocationSize(value.`groupImageUrlSquare`) +
                     FfiConverterOptionalString.allocationSize(value.`groupDescription`) +
                     FfiConverterOptionalString.allocationSize(value.`groupPinnedFrameUrl`) +
-                    FfiConverterOptionalTypeFfiPermissionPolicySet.allocationSize(value.`customPermissionPolicySet`)
+                    FfiConverterOptionalTypeFfiPermissionPolicySet.allocationSize(value.`customPermissionPolicySet`) +
+                    FfiConverterOptionalLong.allocationSize(value.`messageExpirationFromMs`) +
+                    FfiConverterOptionalLong.allocationSize(value.`messageExpirationMs`)
             )
 
     override fun write(value: FfiCreateGroupOptions, buf: ByteBuffer) {
@@ -10278,6 +10284,8 @@ public object FfiConverterTypeFfiCreateGroupOptions :
         FfiConverterOptionalString.write(value.`groupDescription`, buf)
         FfiConverterOptionalString.write(value.`groupPinnedFrameUrl`, buf)
         FfiConverterOptionalTypeFfiPermissionPolicySet.write(value.`customPermissionPolicySet`, buf)
+        FfiConverterOptionalLong.write(value.`messageExpirationFromMs`, buf)
+        FfiConverterOptionalLong.write(value.`messageExpirationMs`, buf)
     }
 }
 
@@ -10668,6 +10676,7 @@ data class FfiPermissionPolicySet(
     var `updateGroupDescriptionPolicy`: FfiPermissionPolicy,
     var `updateGroupImageUrlSquarePolicy`: FfiPermissionPolicy,
     var `updateGroupPinnedFrameUrlPolicy`: FfiPermissionPolicy,
+    var `updateMessageExpirationMsPolicy`: FfiPermissionPolicy,
 ) {
 
     companion object
@@ -10688,6 +10697,7 @@ public object FfiConverterTypeFfiPermissionPolicySet :
             FfiConverterTypeFfiPermissionPolicy.read(buf),
             FfiConverterTypeFfiPermissionPolicy.read(buf),
             FfiConverterTypeFfiPermissionPolicy.read(buf),
+            FfiConverterTypeFfiPermissionPolicy.read(buf),
         )
     }
 
@@ -10699,7 +10709,8 @@ public object FfiConverterTypeFfiPermissionPolicySet :
                     FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupNamePolicy`) +
                     FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupDescriptionPolicy`) +
                     FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupImageUrlSquarePolicy`) +
-                    FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupPinnedFrameUrlPolicy`)
+                    FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupPinnedFrameUrlPolicy`) +
+                    FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateMessageExpirationMsPolicy`)
             )
 
     override fun write(value: FfiPermissionPolicySet, buf: ByteBuffer) {
@@ -10711,6 +10722,7 @@ public object FfiConverterTypeFfiPermissionPolicySet :
         FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupDescriptionPolicy`, buf)
         FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupImageUrlSquarePolicy`, buf)
         FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupPinnedFrameUrlPolicy`, buf)
+        FfiConverterTypeFfiPermissionPolicy.write(value.`updateMessageExpirationMsPolicy`, buf)
     }
 }
 
@@ -11170,7 +11182,7 @@ public object FfiConverterTypeFfiDirection : FfiConverterRustBuffer<FfiDirection
 
 enum class FfiGroupPermissionsOptions {
 
-    ALL_MEMBERS,
+    DEFAULT,
     ADMIN_ONLY,
     CUSTOM_POLICY;
 
