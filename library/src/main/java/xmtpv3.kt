@@ -1052,6 +1052,10 @@ internal interface UniffiLib : Library {
         `ptr`: Pointer, `opts`: RustBuffer.ByValue,
     ): Long
 
+    fun uniffi_xmtpv3_fn_method_fficonversation_find_messages_with_reactions(
+        `ptr`: Pointer, `opts`: RustBuffer.ByValue,
+    ): Long
+
     fun uniffi_xmtpv3_fn_method_fficonversation_group_description(
         `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
@@ -1633,10 +1637,18 @@ internal interface UniffiLib : Library {
         `host`: RustBuffer.ByValue, `isSecure`: Byte,
     ): Long
 
+    fun uniffi_xmtpv3_fn_func_decode_reaction(
+        `bytes`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
+
     fun uniffi_xmtpv3_fn_func_diffie_hellman_k256(
         `privateKeyBytes`: RustBuffer.ByValue,
         `publicKeyBytes`: RustBuffer.ByValue,
         uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
+
+    fun uniffi_xmtpv3_fn_func_encode_reaction(
+        `reaction`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
 
     fun uniffi_xmtpv3_fn_func_generate_inbox_id(
@@ -1940,7 +1952,13 @@ internal interface UniffiLib : Library {
     fun uniffi_xmtpv3_checksum_func_create_v2_client(
     ): Short
 
+    fun uniffi_xmtpv3_checksum_func_decode_reaction(
+    ): Short
+
     fun uniffi_xmtpv3_checksum_func_diffie_hellman_k256(
+    ): Short
+
+    fun uniffi_xmtpv3_checksum_func_encode_reaction(
     ): Short
 
     fun uniffi_xmtpv3_checksum_func_generate_inbox_id(
@@ -2019,6 +2037,9 @@ internal interface UniffiLib : Library {
     ): Short
 
     fun uniffi_xmtpv3_checksum_method_fficonversation_find_messages(
+    ): Short
+
+    fun uniffi_xmtpv3_checksum_method_fficonversation_find_messages_with_reactions(
     ): Short
 
     fun uniffi_xmtpv3_checksum_method_fficonversation_group_description(
@@ -2365,7 +2386,13 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_func_create_v2_client() != 48060.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_func_decode_reaction() != 28885.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_func_diffie_hellman_k256() != 37475.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_encode_reaction() != 6548.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_func_generate_inbox_id() != 47637.toShort()) {
@@ -2444,6 +2471,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_find_messages() != 19931.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_find_messages_with_reactions() != 33179.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_group_description() != 53570.toShort()) {
@@ -3566,6 +3596,8 @@ public interface FfiConversationInterface {
 
     suspend fun `findMessages`(`opts`: FfiListMessagesOptions): List<FfiMessage>
 
+    suspend fun `findMessagesWithReactions`(`opts`: FfiListMessagesOptions): List<FfiMessageWithReactions>
+
     fun `groupDescription`(): kotlin.String
 
     fun `groupImageUrlSquare`(): kotlin.String
@@ -3975,6 +4007,38 @@ open class FfiConversation : Disposable, AutoCloseable, FfiConversationInterface
             { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
             // lift function
             { FfiConverterSequenceTypeFfiMessage.lift(it) },
+            // Error FFI converter
+            GenericException.ErrorHandler,
+        )
+    }
+
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `findMessagesWithReactions`(`opts`: FfiListMessagesOptions): List<FfiMessageWithReactions> {
+        return uniffiRustCallAsync(
+            callWithPointer { thisPtr ->
+                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_find_messages_with_reactions(
+                    thisPtr,
+                    FfiConverterTypeFfiListMessagesOptions.lower(`opts`),
+                )
+            },
+            { future, callback, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
+                    future,
+                    callback,
+                    continuation
+                )
+            },
+            { future, continuation ->
+                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
+                    future,
+                    continuation
+                )
+            },
+            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+            // lift function
+            { FfiConverterSequenceTypeFfiMessageWithReactions.lift(it) },
             // Error FFI converter
             GenericException.ErrorHandler,
         )
@@ -10528,6 +10592,38 @@ public object FfiConverterTypeFfiMessage : FfiConverterRustBuffer<FfiMessage> {
 }
 
 
+data class FfiMessageWithReactions(
+    var `message`: FfiMessage,
+    var `reactions`: List<FfiMessage>,
+) {
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiMessageWithReactions :
+    FfiConverterRustBuffer<FfiMessageWithReactions> {
+    override fun read(buf: ByteBuffer): FfiMessageWithReactions {
+        return FfiMessageWithReactions(
+            FfiConverterTypeFfiMessage.read(buf),
+            FfiConverterSequenceTypeFfiMessage.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiMessageWithReactions) = (
+            FfiConverterTypeFfiMessage.allocationSize(value.`message`) +
+                    FfiConverterSequenceTypeFfiMessage.allocationSize(value.`reactions`)
+            )
+
+    override fun write(value: FfiMessageWithReactions, buf: ByteBuffer) {
+        FfiConverterTypeFfiMessage.write(value.`message`, buf)
+        FfiConverterSequenceTypeFfiMessage.write(value.`reactions`, buf)
+    }
+}
+
+
 data class FfiPagingInfo(
     var `limit`: kotlin.UInt,
     var `cursor`: FfiCursor?,
@@ -10642,6 +10738,49 @@ public object FfiConverterTypeFfiPublishRequest : FfiConverterRustBuffer<FfiPubl
 
     override fun write(value: FfiPublishRequest, buf: ByteBuffer) {
         FfiConverterSequenceTypeFfiEnvelope.write(value.`envelopes`, buf)
+    }
+}
+
+
+data class FfiReaction(
+    var `reference`: kotlin.String,
+    var `referenceInboxId`: kotlin.String,
+    var `action`: FfiReactionAction,
+    var `content`: kotlin.String,
+    var `schema`: FfiReactionSchema,
+) {
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiReaction : FfiConverterRustBuffer<FfiReaction> {
+    override fun read(buf: ByteBuffer): FfiReaction {
+        return FfiReaction(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeFfiReactionAction.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeFfiReactionSchema.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiReaction) = (
+            FfiConverterString.allocationSize(value.`reference`) +
+                    FfiConverterString.allocationSize(value.`referenceInboxId`) +
+                    FfiConverterTypeFfiReactionAction.allocationSize(value.`action`) +
+                    FfiConverterString.allocationSize(value.`content`) +
+                    FfiConverterTypeFfiReactionSchema.allocationSize(value.`schema`)
+            )
+
+    override fun write(value: FfiReaction, buf: ByteBuffer) {
+        FfiConverterString.write(value.`reference`, buf)
+        FfiConverterString.write(value.`referenceInboxId`, buf)
+        FfiConverterTypeFfiReactionAction.write(value.`action`, buf)
+        FfiConverterString.write(value.`content`, buf)
+        FfiConverterTypeFfiReactionSchema.write(value.`schema`, buf)
     }
 }
 
@@ -11221,6 +11360,63 @@ public object FfiConverterTypeFfiPreferenceUpdate : FfiConverterRustBuffer<FfiPr
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+}
+
+
+enum class FfiReactionAction {
+
+    UNKNOWN,
+    ADDED,
+    REMOVED;
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiReactionAction : FfiConverterRustBuffer<FfiReactionAction> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiReactionAction.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: FfiReactionAction) = 4UL
+
+    override fun write(value: FfiReactionAction, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+enum class FfiReactionSchema {
+
+    UNKNOWN,
+    UNICODE,
+    SHORTCODE,
+    CUSTOM;
+
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiReactionSchema : FfiConverterRustBuffer<FfiReactionSchema> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiReactionSchema.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: FfiReactionSchema) = 4UL
+
+    override fun write(value: FfiReactionSchema, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
     }
 }
 
@@ -12338,6 +12534,34 @@ public object FfiConverterSequenceTypeFfiMessage : FfiConverterRustBuffer<List<F
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeFfiMessageWithReactions :
+    FfiConverterRustBuffer<List<FfiMessageWithReactions>> {
+    override fun read(buf: ByteBuffer): List<FfiMessageWithReactions> {
+        val len = buf.getInt()
+        return List<FfiMessageWithReactions>(len) {
+            FfiConverterTypeFfiMessageWithReactions.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<FfiMessageWithReactions>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems =
+            value.map { FfiConverterTypeFfiMessageWithReactions.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<FfiMessageWithReactions>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeFfiMessageWithReactions.write(it, buf)
+        }
+    }
+}
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeFfiV2QueryRequest :
     FfiConverterRustBuffer<List<FfiV2QueryRequest>> {
     override fun read(buf: ByteBuffer): List<FfiV2QueryRequest> {
@@ -12646,6 +12870,18 @@ suspend fun `createV2Client`(`host`: kotlin.String, `isSecure`: kotlin.Boolean):
 }
 
 @Throws(GenericException::class)
+fun `decodeReaction`(`bytes`: kotlin.ByteArray): FfiReaction {
+    return FfiConverterTypeFfiReaction.lift(
+        uniffiRustCallWithError(GenericException) { _status ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_decode_reaction(
+                FfiConverterByteArray.lower(`bytes`), _status
+            )
+        }
+    )
+}
+
+
+@Throws(GenericException::class)
 fun `diffieHellmanK256`(
     `privateKeyBytes`: kotlin.ByteArray,
     `publicKeyBytes`: kotlin.ByteArray,
@@ -12656,6 +12892,18 @@ fun `diffieHellmanK256`(
                 FfiConverterByteArray.lower(`privateKeyBytes`),
                 FfiConverterByteArray.lower(`publicKeyBytes`),
                 _status
+            )
+        }
+    )
+}
+
+
+@Throws(GenericException::class)
+fun `encodeReaction`(`reaction`: FfiReaction): kotlin.ByteArray {
+    return FfiConverterByteArray.lift(
+        uniffiRustCallWithError(GenericException) { _status ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_encode_reaction(
+                FfiConverterTypeFfiReaction.lower(`reaction`), _status
             )
         }
     )
