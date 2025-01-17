@@ -139,10 +139,10 @@ data class Conversations(
     }
 
     // Sync all new and existing conversations data from the network
-    suspend fun syncAllConversations(consentState: ConsentState? = null): UInt {
+    suspend fun syncAllConversations(consentStates: List<ConsentState>? = null): UInt {
         return ffiConversations.syncAllConversations(
-            consentState?.let {
-                ConsentState.toFfiConsentState(it)
+            consentStates?.let { states ->
+                states.map { ConsentState.toFfiConsentState(it) }
             }
         )
     }
@@ -173,14 +173,16 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        consentState: ConsentState? = null,
+        consentStates: List<ConsentState>? = null,
     ): List<Group> {
         val ffiGroups = ffiConversations.listGroups(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) },
+                consentStates?.let { states ->
+                    states.map { ConsentState.toFfiConsentState(it) }
+                },
                 false
             )
         )
@@ -194,14 +196,16 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        consentState: ConsentState? = null,
+        consentStates: List<ConsentState>? = null,
     ): List<Dm> {
         val ffiDms = ffiConversations.listDms(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) },
+                consentStates?.let { states ->
+                    states.map { ConsentState.toFfiConsentState(it) }
+                },
                 false
             )
         )
@@ -215,14 +219,16 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        consentState: ConsentState? = null,
+        consentStates: List<ConsentState>? = null,
     ): List<Conversation> {
         val ffiConversation = ffiConversations.list(
             FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) },
+                consentStates?.let { states ->
+                    states.map { ConsentState.toFfiConsentState(it) }
+                },
                 false
             )
         )
@@ -232,7 +238,14 @@ data class Conversations(
 
     private suspend fun FfiConversationListItem.toConversation(): Conversation {
         return when (conversation().conversationType()) {
-            FfiConversationType.DM -> Conversation.Dm(Dm(client.inboxId, conversation(), lastMessage()))
+            FfiConversationType.DM -> Conversation.Dm(
+                Dm(
+                    client.inboxId,
+                    conversation(),
+                    lastMessage()
+                )
+            )
+
             else -> Conversation.Group(Group(client.inboxId, conversation(), lastMessage()))
         }
     }
