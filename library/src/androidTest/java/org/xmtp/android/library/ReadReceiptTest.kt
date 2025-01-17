@@ -39,8 +39,9 @@ class ReadReceiptTest {
             val contentType: String = messages.first().encodedContent.type.typeId
             assertEquals(contentType, "readReceipt")
         }
+        val convos = runBlocking { alixClient.conversations.list() }
         assertEquals(
-            runBlocking { alixConversation.lastMessage() }!!.encodedContent.type.typeId,
+            runBlocking { convos.first().lastMessage() }!!.encodedContent.type.typeId,
             "text"
         )
     }
