@@ -104,9 +104,7 @@ data class Conversations(
         messageExpirationFromMs: Long?,
         messageExpirationMs: Long?,
     ): Group {
-        if (accountAddresses.size == 1 &&
-            accountAddresses.first().lowercase() == client.address.lowercase()
-        ) {
+        if (accountAddresses.any { it.equals(client.address, ignoreCase = true) }) {
             throw XMTPException("Recipient is sender")
         }
         val falseAddresses =
@@ -119,6 +117,84 @@ data class Conversations(
         val group =
             ffiConversations.createGroup(
                 accountAddresses,
+                opts = FfiCreateGroupOptions(
+                    permissions = permissions,
+                    groupName = groupName,
+                    groupImageUrlSquare = groupImageUrlSquare,
+                    groupDescription = groupDescription,
+                    groupPinnedFrameUrl = groupPinnedFrameUrl,
+                    customPermissionPolicySet = permissionsPolicySet,
+                    messageExpirationFromMs = messageExpirationFromMs,
+                    messageExpirationMs = messageExpirationMs,
+                )
+            )
+        return Group(client.inboxId, group)
+    }
+
+    suspend fun newGroupWithInboxId(
+        inboxIds: List<String>,
+        permissions: GroupPermissionPreconfiguration = GroupPermissionPreconfiguration.ALL_MEMBERS,
+        groupName: String = "",
+        groupImageUrlSquare: String = "",
+        groupDescription: String = "",
+        groupPinnedFrameUrl: String = "",
+        messageExpirationFromMs: Long? = null,
+        messageExpirationMs: Long? = null,
+    ): Group {
+        return newGroupInternalWithInboxId(
+            inboxIds,
+            GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(permissions),
+            groupName,
+            groupImageUrlSquare,
+            groupDescription,
+            groupPinnedFrameUrl,
+            null,
+            messageExpirationFromMs,
+            messageExpirationMs,
+        )
+    }
+
+    suspend fun newGroupCustomPermissionsWithInboxId(
+        inboxIds: List<String>,
+        permissionPolicySet: PermissionPolicySet,
+        groupName: String = "",
+        groupImageUrlSquare: String = "",
+        groupDescription: String = "",
+        groupPinnedFrameUrl: String = "",
+        messageExpirationFromMs: Long? = null,
+        messageExpirationMs: Long? = null,
+    ): Group {
+        return newGroupInternalWithInboxId(
+            inboxIds,
+            FfiGroupPermissionsOptions.CUSTOM_POLICY,
+            groupName,
+            groupImageUrlSquare,
+            groupDescription,
+            groupPinnedFrameUrl,
+            PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet),
+            messageExpirationFromMs,
+            messageExpirationMs
+        )
+    }
+
+    private suspend fun newGroupInternalWithInboxId(
+        inboxIds: List<String>,
+        permissions: FfiGroupPermissionsOptions,
+        groupName: String,
+        groupImageUrlSquare: String,
+        groupDescription: String,
+        groupPinnedFrameUrl: String,
+        permissionsPolicySet: FfiPermissionPolicySet?,
+        messageExpirationFromMs: Long?,
+        messageExpirationMs: Long?,
+    ): Group {
+        if (inboxIds.any { it.equals(client.inboxId, ignoreCase = true) }) {
+            throw XMTPException("Recipient is sender")
+        }
+
+        val group =
+            ffiConversations.createGroupWithInboxIds(
+                inboxIds,
                 opts = FfiCreateGroupOptions(
                     permissions = permissions,
                     groupName = groupName,
@@ -164,6 +240,23 @@ data class Conversations(
         var dm = client.findDmByAddress(peerAddress)
         if (dm == null) {
             val dmConversation = ffiConversations.createDm(peerAddress.lowercase())
+            dm = Dm(client.inboxId, dmConversation)
+        }
+        return dm
+    }
+
+    suspend fun newConversationWithInboxId(inboxId: String): Conversation {
+        val dm = findOrCreateDmWithInboxId(inboxId)
+        return Conversation.Dm(dm)
+    }
+
+    suspend fun findOrCreateDmWithInboxId(inboxId: String): Dm {
+        if (inboxId.lowercase() == client.inboxId.lowercase()) {
+            throw XMTPException("Recipient is sender")
+        }
+        var dm = client.findDmByInboxId(inboxId)
+        if (dm == null) {
+            val dmConversation = ffiConversations.createDmWithInboxId(inboxId.lowercase())
             dm = Dm(client.inboxId, dmConversation)
         }
         return dm
