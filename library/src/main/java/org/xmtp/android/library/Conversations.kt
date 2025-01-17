@@ -131,7 +131,7 @@ data class Conversations(
         return Group(client.inboxId, group)
     }
 
-    suspend fun newGroupWithInboxId(
+    suspend fun newGroupWithInboxIds(
         inboxIds: List<String>,
         permissions: GroupPermissionPreconfiguration = GroupPermissionPreconfiguration.ALL_MEMBERS,
         groupName: String = "",
@@ -141,7 +141,7 @@ data class Conversations(
         messageExpirationFromMs: Long? = null,
         messageExpirationMs: Long? = null,
     ): Group {
-        return newGroupInternalWithInboxId(
+        return newGroupInternalWithInboxIds(
             inboxIds,
             GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(permissions),
             groupName,
@@ -154,7 +154,7 @@ data class Conversations(
         )
     }
 
-    suspend fun newGroupCustomPermissionsWithInboxId(
+    suspend fun newGroupCustomPermissionsWithInboxIds(
         inboxIds: List<String>,
         permissionPolicySet: PermissionPolicySet,
         groupName: String = "",
@@ -164,7 +164,7 @@ data class Conversations(
         messageExpirationFromMs: Long? = null,
         messageExpirationMs: Long? = null,
     ): Group {
-        return newGroupInternalWithInboxId(
+        return newGroupInternalWithInboxIds(
             inboxIds,
             FfiGroupPermissionsOptions.CUSTOM_POLICY,
             groupName,
@@ -177,7 +177,7 @@ data class Conversations(
         )
     }
 
-    private suspend fun newGroupInternalWithInboxId(
+    private suspend fun newGroupInternalWithInboxIds(
         inboxIds: List<String>,
         permissions: FfiGroupPermissionsOptions,
         groupName: String,
@@ -245,18 +245,18 @@ data class Conversations(
         return dm
     }
 
-    suspend fun newConversationWithInboxId(inboxId: String): Conversation {
-        val dm = findOrCreateDmWithInboxId(inboxId)
+    suspend fun newConversationWithInboxId(peerInboxId: String): Conversation {
+        val dm = findOrCreateDmWithInboxId(peerInboxId)
         return Conversation.Dm(dm)
     }
 
-    suspend fun findOrCreateDmWithInboxId(inboxId: String): Dm {
-        if (inboxId.lowercase() == client.inboxId.lowercase()) {
+    suspend fun findOrCreateDmWithInboxId(peerInboxId: String): Dm {
+        if (peerInboxId.lowercase() == client.inboxId.lowercase()) {
             throw XMTPException("Recipient is sender")
         }
-        var dm = client.findDmByInboxId(inboxId)
+        var dm = client.findDmByInboxId(peerInboxId)
         if (dm == null) {
-            val dmConversation = ffiConversations.createDmWithInboxId(inboxId.lowercase())
+            val dmConversation = ffiConversations.createDmWithInboxId(peerInboxId.lowercase())
             dm = Dm(client.inboxId, dmConversation)
         }
         return dm

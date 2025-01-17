@@ -521,7 +521,7 @@ class GroupPermissionsTest {
             updateMessageExpirationPolicy = PermissionOption.Admin,
         )
         val boGroup = runBlocking {
-            boClient.conversations.newGroupCustomPermissionsWithInboxId(
+            boClient.conversations.newGroupCustomPermissionsWithInboxIds(
                 inboxIds = listOf(alixClient.inboxId, caroClient.inboxId),
                 permissionPolicySet = permissionPolicySet,
             )

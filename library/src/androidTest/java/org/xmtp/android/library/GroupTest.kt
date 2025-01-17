@@ -167,7 +167,7 @@ class GroupTest {
     @Test
     fun testCanCreateAGroupWithInboxIdsDefaultPermissions() {
         val boGroup = runBlocking {
-            boClient.conversations.newGroupWithInboxId(listOf(alixClient.inboxId))
+            boClient.conversations.newGroupWithInboxIds(listOf(alixClient.inboxId))
         }
         runBlocking {
             alixClient.conversations.sync()
