@@ -27,11 +27,7 @@ data class ClientOptions(
     val preAuthenticateToInboxCallback: PreEventCallback? = null,
     val appContext: Context,
     val dbEncryptionKey: ByteArray,
-    val historySyncUrl: String = when (api.env) {
-        XMTPEnvironment.PRODUCTION -> "https://message-history.production.ephemera.network/"
-        XMTPEnvironment.LOCAL -> "http://10.0.2.2:5558"
-        else -> "https://message-history.dev.ephemera.network/"
-    },
+    val historySyncUrl: String? = null,
     val dbDirectory: String? = null,
 ) {
     data class Api(
@@ -91,22 +87,16 @@ class Client() {
             codecRegistry.register(codec = codec)
         }
 
-        suspend fun <T> withFfiClient(
-            appContext: Context,
+        private suspend fun <T> withFfiClient(
             api: ClientOptions.Api,
             useClient: suspend (ffiClient: FfiXmtpClient) -> T,
         ): T {
             val accountAddress = "0x0000000000000000000000000000000000000000"
             val inboxId = getOrCreateInboxId(api, accountAddress)
-            val alias = "xmtp-${api.env}-$inboxId"
-
-            val directoryFile = File(appContext.filesDir.absolutePath, "xmtp_db")
-            directoryFile.mkdir()
-            val dbPath = directoryFile.absolutePath + "/$alias.db3"
 
             val ffiClient = createClient(
                 api = connectToApiBackend(api),
-                db = dbPath,
+                db = null,
                 encryptionKey = null,
                 accountAddress = accountAddress.lowercase(),
                 inboxId = inboxId,
@@ -115,30 +105,23 @@ class Client() {
                 historySyncUrl = null
             )
 
-            return try {
-                useClient(ffiClient)
-            } finally {
-                ffiClient.releaseDbConnection()
-                File(dbPath).delete()
-            }
+            return useClient(ffiClient)
         }
 
         suspend fun inboxStatesForInboxIds(
             inboxIds: List<String>,
-            appContext: Context,
             api: ClientOptions.Api,
         ): List<InboxState> {
-            return withFfiClient(appContext, api) { ffiClient ->
+            return withFfiClient(api) { ffiClient ->
                 ffiClient.addressesFromInboxId(true, inboxIds).map { InboxState(it) }
             }
         }
 
         suspend fun canMessage(
             accountAddresses: List<String>,
-            appContext: Context,
             api: ClientOptions.Api,
         ): Map<String, Boolean> {
-            return withFfiClient(appContext, api) { ffiClient ->
+            return withFfiClient(api) { ffiClient ->
                 ffiClient.canMessage(accountAddresses)
             }
         }
@@ -332,7 +315,7 @@ class Client() {
 
     fun findGroup(groupId: String): Group? {
         return try {
-            Group(this, ffiClient.conversation(groupId.hexToByteArray()))
+            Group(this.inboxId, ffiClient.conversation(groupId.hexToByteArray()))
         } catch (e: Exception) {
             null
         }
@@ -342,8 +325,8 @@ class Client() {
         return try {
             val conversation = ffiClient.conversation(conversationId.hexToByteArray())
             when (conversation.conversationType()) {
-                FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
-                FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
+                FfiConversationType.GROUP -> Conversation.Group(Group(this.inboxId, conversation))
+                FfiConversationType.DM -> Conversation.Dm(Dm(this.inboxId, conversation))
                 else -> null
             }
         } catch (e: Exception) {
@@ -358,8 +341,8 @@ class Client() {
         return try {
             val conversation = ffiClient.conversation(conversationId.hexToByteArray())
             when (conversation.conversationType()) {
-                FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
-                FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
+                FfiConversationType.GROUP -> Conversation.Group(Group(this.inboxId, conversation))
+                FfiConversationType.DM -> Conversation.Dm(Dm(this.inboxId, conversation))
                 else -> null
             }
         } catch (e: Exception) {
@@ -369,7 +352,7 @@ class Client() {
 
     fun findDmByInboxId(inboxId: String): Dm? {
         return try {
-            Dm(this, ffiClient.dmConversation(inboxId))
+            Dm(this.inboxId, ffiClient.dmConversation(inboxId))
         } catch (e: Exception) {
             null
         }

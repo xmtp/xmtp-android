@@ -29,7 +29,7 @@ import uniffi.xmtpv3.FfiSubscribeException
 import java.util.Date
 
 class Group(
-    val client: Client,
+    private val clientInboxId: String,
     private val libXMTPGroup: FfiConversation,
     private val ffiLastMessage: FfiMessage? = null,
 ) {
@@ -71,9 +71,6 @@ class Group(
     }
 
     suspend fun send(encodedContent: EncodedContent): String {
-        if (consentState() == ConsentState.UNKNOWN) {
-            updateConsentState(ConsentState.ALLOWED)
-        }
         val messageId = libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
         return messageId.toHex()
     }
@@ -103,16 +100,10 @@ class Group(
     }
 
     fun prepareMessage(encodedContent: EncodedContent): String {
-        if (consentState() == ConsentState.UNKNOWN) {
-            updateConsentState(ConsentState.ALLOWED)
-        }
         return libXMTPGroup.sendOptimistic(encodedContent.toByteArray()).toHex()
     }
 
     fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
-        if (consentState() == ConsentState.UNKNOWN) {
-            updateConsentState(ConsentState.ALLOWED)
-        }
         val encodeContent = encodeContent(content = content, options = options)
         return libXMTPGroup.sendOptimistic(encodeContent.toByteArray()).toHex()
     }
@@ -229,7 +220,7 @@ class Group(
     }
 
     suspend fun isCreator(): Boolean {
-        return metadata().creatorInboxId() == client.inboxId
+        return metadata().creatorInboxId() == clientInboxId
     }
 
     suspend fun addMembers(addresses: List<String>) {
@@ -270,7 +261,7 @@ class Group(
 
     suspend fun peerInboxIds(): List<String> {
         val ids = members().map { it.inboxId }.toMutableList()
-        ids.remove(client.inboxId)
+        ids.remove(clientInboxId)
         return ids
     }
 

@@ -154,14 +154,6 @@ sealed class Conversation {
         }
     }
 
-    val client: Client
-        get() {
-            return when (this) {
-                is Group -> group.client
-                is Dm -> dm.client
-            }
-        }
-
     fun streamMessages(): Flow<Message> {
         return when (this) {
             is Group -> group.streamMessages()

@@ -42,8 +42,8 @@ data class Conversations(
     suspend fun fromWelcome(envelopeBytes: ByteArray): Conversation {
         val conversation = ffiConversations.processStreamedWelcomeMessage(envelopeBytes)
         return when (conversation.conversationType()) {
-            FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
-            else -> Conversation.Group(Group(client, conversation))
+            FfiConversationType.DM -> Conversation.Dm(Dm(client.inboxId, conversation))
+            else -> Conversation.Group(Group(client.inboxId, conversation))
         }
     }
 
@@ -54,6 +54,8 @@ data class Conversations(
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
         groupPinnedFrameUrl: String = "",
+        messageExpirationFromMs: Long? = null,
+        messageExpirationMs: Long? = null,
     ): Group {
         return newGroupInternal(
             accountAddresses,
@@ -62,7 +64,9 @@ data class Conversations(
             groupImageUrlSquare,
             groupDescription,
             groupPinnedFrameUrl,
-            null
+            null,
+            messageExpirationFromMs,
+            messageExpirationMs,
         )
     }
 
@@ -73,6 +77,8 @@ data class Conversations(
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
         groupPinnedFrameUrl: String = "",
+        messageExpirationFromMs: Long? = null,
+        messageExpirationMs: Long? = null,
     ): Group {
         return newGroupInternal(
             accountAddresses,
@@ -81,7 +87,9 @@ data class Conversations(
             groupImageUrlSquare,
             groupDescription,
             groupPinnedFrameUrl,
-            PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet)
+            PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet),
+            messageExpirationFromMs,
+            messageExpirationMs
         )
     }
 
@@ -93,10 +101,10 @@ data class Conversations(
         groupDescription: String,
         groupPinnedFrameUrl: String,
         permissionsPolicySet: FfiPermissionPolicySet?,
+        messageExpirationFromMs: Long?,
+        messageExpirationMs: Long?,
     ): Group {
-        if (accountAddresses.size == 1 &&
-            accountAddresses.first().lowercase() == client.address.lowercase()
-        ) {
+        if (accountAddresses.any { it.equals(client.address, ignoreCase = true) }) {
             throw XMTPException("Recipient is sender")
         }
         val falseAddresses =
@@ -116,11 +124,89 @@ data class Conversations(
                     groupDescription = groupDescription,
                     groupPinnedFrameUrl = groupPinnedFrameUrl,
                     customPermissionPolicySet = permissionsPolicySet,
-                    messageExpirationFromMs = null,
-                    messageExpirationMs = null
+                    messageExpirationFromMs = messageExpirationFromMs,
+                    messageExpirationMs = messageExpirationMs,
                 )
             )
-        return Group(client, group)
+        return Group(client.inboxId, group)
+    }
+
+    suspend fun newGroupWithInboxIds(
+        inboxIds: List<String>,
+        permissions: GroupPermissionPreconfiguration = GroupPermissionPreconfiguration.ALL_MEMBERS,
+        groupName: String = "",
+        groupImageUrlSquare: String = "",
+        groupDescription: String = "",
+        groupPinnedFrameUrl: String = "",
+        messageExpirationFromMs: Long? = null,
+        messageExpirationMs: Long? = null,
+    ): Group {
+        return newGroupInternalWithInboxIds(
+            inboxIds,
+            GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(permissions),
+            groupName,
+            groupImageUrlSquare,
+            groupDescription,
+            groupPinnedFrameUrl,
+            null,
+            messageExpirationFromMs,
+            messageExpirationMs,
+        )
+    }
+
+    suspend fun newGroupCustomPermissionsWithInboxIds(
+        inboxIds: List<String>,
+        permissionPolicySet: PermissionPolicySet,
+        groupName: String = "",
+        groupImageUrlSquare: String = "",
+        groupDescription: String = "",
+        groupPinnedFrameUrl: String = "",
+        messageExpirationFromMs: Long? = null,
+        messageExpirationMs: Long? = null,
+    ): Group {
+        return newGroupInternalWithInboxIds(
+            inboxIds,
+            FfiGroupPermissionsOptions.CUSTOM_POLICY,
+            groupName,
+            groupImageUrlSquare,
+            groupDescription,
+            groupPinnedFrameUrl,
+            PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet),
+            messageExpirationFromMs,
+            messageExpirationMs
+        )
+    }
+
+    private suspend fun newGroupInternalWithInboxIds(
+        inboxIds: List<String>,
+        permissions: FfiGroupPermissionsOptions,
+        groupName: String,
+        groupImageUrlSquare: String,
+        groupDescription: String,
+        groupPinnedFrameUrl: String,
+        permissionsPolicySet: FfiPermissionPolicySet?,
+        messageExpirationFromMs: Long?,
+        messageExpirationMs: Long?,
+    ): Group {
+        if (inboxIds.any { it.equals(client.inboxId, ignoreCase = true) }) {
+            throw XMTPException("Recipient is sender")
+        }
+
+        val group =
+            ffiConversations.createGroupWithInboxIds(
+                inboxIds,
+                opts = FfiCreateGroupOptions(
+                    permissions = permissions,
+                    groupName = groupName,
+                    groupImageUrlSquare = groupImageUrlSquare,
+                    groupDescription = groupDescription,
+                    groupPinnedFrameUrl = groupPinnedFrameUrl,
+                    customPermissionPolicySet = permissionsPolicySet,
+                    messageExpirationFromMs = messageExpirationFromMs,
+                    messageExpirationMs = messageExpirationMs,
+                )
+            )
+        return Group(client.inboxId, group)
     }
 
     // Sync from the network the latest list of conversations
@@ -129,10 +215,10 @@ data class Conversations(
     }
 
     // Sync all new and existing conversations data from the network
-    suspend fun syncAllConversations(consentState: ConsentState? = null): UInt {
+    suspend fun syncAllConversations(consentStates: List<ConsentState>? = null): UInt {
         return ffiConversations.syncAllConversations(
-            consentState?.let {
-                ConsentState.toFfiConsentState(it)
+            consentStates?.let { states ->
+                states.map { ConsentState.toFfiConsentState(it) }
             }
         )
     }
@@ -154,50 +240,71 @@ data class Conversations(
         var dm = client.findDmByAddress(peerAddress)
         if (dm == null) {
             val dmConversation = ffiConversations.createDm(peerAddress.lowercase())
-            dm = Dm(client, dmConversation)
+            dm = Dm(client.inboxId, dmConversation)
         }
         return dm
     }
 
-    suspend fun listGroups(
+    suspend fun newConversationWithInboxId(peerInboxId: String): Conversation {
+        val dm = findOrCreateDmWithInboxId(peerInboxId)
+        return Conversation.Dm(dm)
+    }
+
+    suspend fun findOrCreateDmWithInboxId(peerInboxId: String): Dm {
+        if (peerInboxId.lowercase() == client.inboxId.lowercase()) {
+            throw XMTPException("Recipient is sender")
+        }
+        var dm = client.findDmByInboxId(peerInboxId)
+        if (dm == null) {
+            val dmConversation = ffiConversations.createDmWithInboxId(peerInboxId.lowercase())
+            dm = Dm(client.inboxId, dmConversation)
+        }
+        return dm
+    }
+
+    fun listGroups(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        consentState: ConsentState? = null,
+        consentStates: List<ConsentState>? = null,
     ): List<Group> {
         val ffiGroups = ffiConversations.listGroups(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) },
+                consentStates?.let { states ->
+                    states.map { ConsentState.toFfiConsentState(it) }
+                },
                 false
             )
         )
 
         return ffiGroups.map {
-            Group(client, it.conversation(), it.lastMessage())
+            Group(client.inboxId, it.conversation(), it.lastMessage())
         }
     }
 
-    suspend fun listDms(
+    fun listDms(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        consentState: ConsentState? = null,
+        consentStates: List<ConsentState>? = null,
     ): List<Dm> {
         val ffiDms = ffiConversations.listDms(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) },
+                consentStates?.let { states ->
+                    states.map { ConsentState.toFfiConsentState(it) }
+                },
                 false
             )
         )
 
         return ffiDms.map {
-            Dm(client, it.conversation(), it.lastMessage())
+            Dm(client.inboxId, it.conversation(), it.lastMessage())
         }
     }
 
@@ -205,14 +312,16 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        consentState: ConsentState? = null,
+        consentStates: List<ConsentState>? = null,
     ): List<Conversation> {
         val ffiConversation = ffiConversations.list(
             FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) },
+                consentStates?.let { states ->
+                    states.map { ConsentState.toFfiConsentState(it) }
+                },
                 false
             )
         )
@@ -222,8 +331,15 @@ data class Conversations(
 
     private suspend fun FfiConversationListItem.toConversation(): Conversation {
         return when (conversation().conversationType()) {
-            FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation(), lastMessage()))
-            else -> Conversation.Group(Group(client, conversation(), lastMessage()))
+            FfiConversationType.DM -> Conversation.Dm(
+                Dm(
+                    client.inboxId,
+                    conversation(),
+                    lastMessage()
+                )
+            )
+
+            else -> Conversation.Group(Group(client.inboxId, conversation(), lastMessage()))
         }
     }
 
@@ -236,13 +352,13 @@ data class Conversations(
                             FfiConversationType.DM -> trySend(
                                 Conversation.Dm(
                                     Dm(
-                                        client,
+                                        client.inboxId,
                                         conversation
                                     )
                                 )
                             )
 
-                            else -> trySend(Conversation.Group(Group(client, conversation)))
+                            else -> trySend(Conversation.Group(Group(client.inboxId, conversation)))
                         }
                     }
                 }

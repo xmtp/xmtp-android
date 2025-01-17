@@ -22,7 +22,7 @@ import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiSubscribeException
 import java.util.Date
 
-class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private val ffiLastMessage: FfiMessage? = null) {
+class Dm(private val clientInboxId: String, private val libXMTPGroup: FfiConversation, private val ffiLastMessage: FfiMessage? = null) {
     val id: String
         get() = libXMTPGroup.id().toHex()
 
@@ -49,9 +49,6 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
     }
 
     suspend fun send(encodedContent: EncodedContent): String {
-        if (consentState() == ConsentState.UNKNOWN) {
-            updateConsentState(ConsentState.ALLOWED)
-        }
         val messageId = libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
         return messageId.toHex()
     }
@@ -81,16 +78,10 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
     }
 
     fun prepareMessage(encodedContent: EncodedContent): String {
-        if (consentState() == ConsentState.UNKNOWN) {
-            updateConsentState(ConsentState.ALLOWED)
-        }
         return libXMTPGroup.sendOptimistic(encodedContent.toByteArray()).toHex()
     }
 
     fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
-        if (consentState() == ConsentState.UNKNOWN) {
-            updateConsentState(ConsentState.ALLOWED)
-        }
         val encodeContent = encodeContent(content = content, options = options)
         return libXMTPGroup.sendOptimistic(encodeContent.toByteArray()).toHex()
     }
@@ -186,7 +177,7 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
     }
 
     suspend fun isCreator(): Boolean {
-        return metadata().creatorInboxId() == client.inboxId
+        return metadata().creatorInboxId() == clientInboxId
     }
 
     suspend fun members(): List<Member> {

@@ -55,6 +55,7 @@ data class PermissionPolicySet(
     val updateGroupDescriptionPolicy: PermissionOption,
     val updateGroupImagePolicy: PermissionOption,
     val updateGroupPinnedFrameUrlPolicy: PermissionOption,
+    val updateMessageExpirationPolicy: PermissionOption,
 ) {
     companion object {
         fun toFfiPermissionPolicySet(permissionPolicySet: PermissionPolicySet): FfiPermissionPolicySet {
@@ -67,7 +68,7 @@ data class PermissionPolicySet(
                 updateGroupDescriptionPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.updateGroupDescriptionPolicy),
                 updateGroupImageUrlSquarePolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.updateGroupImagePolicy),
                 updateGroupPinnedFrameUrlPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.updateGroupPinnedFrameUrlPolicy),
-                updateMessageExpirationMsPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.addAdminPolicy)
+                updateMessageExpirationMsPolicy = PermissionOption.toFfiPermissionPolicy(permissionPolicySet.updateMessageExpirationPolicy),
             )
         }
 
@@ -81,6 +82,7 @@ data class PermissionPolicySet(
                 updateGroupDescriptionPolicy = PermissionOption.fromFfiPermissionPolicy(ffiPermissionPolicySet.updateGroupDescriptionPolicy),
                 updateGroupImagePolicy = PermissionOption.fromFfiPermissionPolicy(ffiPermissionPolicySet.updateGroupImageUrlSquarePolicy),
                 updateGroupPinnedFrameUrlPolicy = PermissionOption.fromFfiPermissionPolicy(ffiPermissionPolicySet.updateGroupPinnedFrameUrlPolicy),
+                updateMessageExpirationPolicy = PermissionOption.fromFfiPermissionPolicy(ffiPermissionPolicySet.updateMessageExpirationMsPolicy)
             )
         }
     }
