@@ -2,7 +2,6 @@ package org.xmtp.android.library.codecs
 
 import uniffi.xmtpv3.FfiReaction
 import uniffi.xmtpv3.FfiReactionAction
-import uniffi.xmtpv3.FfiReactionSchema
 import uniffi.xmtpv3.decodeReaction
 import uniffi.xmtpv3.encodeReaction
 
@@ -12,23 +11,6 @@ val ContentTypeReactionV2 = ContentTypeIdBuilder.builderFromAuthorityId(
     versionMajor = 2,
     versionMinor = 0,
 )
-
-fun getReactionV2Schema(schema: String): FfiReactionSchema {
-    return when (schema) {
-        "unicode" -> FfiReactionSchema.UNICODE
-        "shortcode" -> FfiReactionSchema.SHORTCODE
-        "custom" -> FfiReactionSchema.CUSTOM
-        else -> FfiReactionSchema.UNKNOWN
-    }
-}
-
-fun getReactionV2Action(action: String): FfiReactionAction {
-    return when (action) {
-        "removed" -> FfiReactionAction.REMOVED
-        "added" -> FfiReactionAction.ADDED
-        else -> FfiReactionAction.UNKNOWN
-    }
-}
 
 data class ReactionV2Codec(override var contentType: ContentTypeId = ContentTypeReactionV2) :
     ContentCodec<FfiReaction> {
