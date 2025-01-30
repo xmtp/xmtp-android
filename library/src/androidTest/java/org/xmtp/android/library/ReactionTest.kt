@@ -7,18 +7,18 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.ContentTypeReaction
+import org.xmtp.android.library.codecs.ContentTypeReactionV2
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
+import org.xmtp.android.library.codecs.ReactionV2Codec
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.FfiReaction
 import uniffi.xmtpv3.FfiReactionAction
 import uniffi.xmtpv3.FfiReactionSchema
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.ContentTypeReactionV2
-import uniffi.xmtpv3.org.xmtp.android.library.codecs.ReactionV2Codec
 
 @RunWith(AndroidJUnit4::class)
 class ReactionTest {
@@ -143,12 +143,13 @@ class ReactionTest {
             assertEquals(FfiReactionSchema.UNICODE, content?.schema)
         }
 
-        val messagesWithReactions: List<Message.MessageWithChildMessages> = runBlocking {
+        val messagesWithReactions: List<Message> = runBlocking {
             aliceConversation.messagesWithReactions()
         }
         assertEquals(messagesWithReactions.size, 1)
         assertEquals(messagesWithReactions[0].id, messageToReact.id)
-        val reactionContent: FfiReaction? = messagesWithReactions[0].childMessages[0].content()
+        val reactionContent: FfiReaction? =
+            messagesWithReactions[0]?.childMessages!![0]?.let { it?.content()!! }
         assertEquals(reactionContent?.reference, messageToReact.id)
     }
 
@@ -163,7 +164,6 @@ class ReactionTest {
         val aliceConversation =
             aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
 
-
         // Send initial message
         aliceConversation.send(text = "hey alice 2 bob")
         val messageToReact = aliceConversation.messages()[0]
@@ -176,24 +176,22 @@ class ReactionTest {
             content = "U+1F603",
             schema = FfiReactionSchema.UNICODE,
         )
-            aliceConversation.send(
-                content = reactionV2,
-                options = SendOptions(contentType = ContentTypeReactionV2),
-            )
-
+        aliceConversation.send(
+            content = reactionV2,
+            options = SendOptions(contentType = ContentTypeReactionV2),
+        )
 
         // Send V1 reaction
         val reactionV1 = Reaction(
             reference = messageToReact.id,
             action = ReactionAction.Added,
-            content = "U+1F604",  // Different emoji to distinguish
+            content = "U+1F604", // Different emoji to distinguish
             schema = ReactionSchema.Unicode,
         )
-            aliceConversation.send(
-                content = reactionV1,
-                options = SendOptions(contentType = ContentTypeReaction),
-            )
-
+        aliceConversation.send(
+            content = reactionV1,
+            options = SendOptions(contentType = ContentTypeReaction),
+        )
 
         // Verify both reactions appear in messagesWithReactions
         val messagesWithReactions =
@@ -201,10 +199,10 @@ class ReactionTest {
 
         assertEquals(1, messagesWithReactions.size)
         assertEquals(messageToReact.id, messagesWithReactions[0].id)
-        assertEquals(2, messagesWithReactions[0].childMessages.size)
+        assertEquals(2, messagesWithReactions[0].childMessages!!.size)
 
         // Verify both reaction contents
-        val childContents = messagesWithReactions[0].childMessages.mapNotNull {
+        val childContents = messagesWithReactions[0].childMessages!!.mapNotNull {
             when (val content = it.content<Any>()) {
                 is FfiReaction -> content.content
                 is Reaction -> content.content

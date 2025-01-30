@@ -133,7 +133,7 @@ sealed class Conversation {
         afterNs: Long? = null,
         direction: Message.SortDirection = Message.SortDirection.DESCENDING,
         deliveryStatus: Message.MessageDeliveryStatus = Message.MessageDeliveryStatus.ALL,
-    ): List<Message.MessageWithChildMessages> {
+    ): List<Message> {
         return when (this) {
             is Group -> group.messagesWithReactions(limit, beforeNs, afterNs, direction, deliveryStatus)
             is Dm -> dm.messagesWithReactions(limit, beforeNs, afterNs, direction, deliveryStatus)

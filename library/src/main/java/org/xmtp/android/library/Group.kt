@@ -159,7 +159,7 @@ class Group(
         afterNs: Long? = null,
         direction: SortDirection = SortDirection.DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
-    ): List<Message.MessageWithChildMessages> {
+    ): List<Message> {
         val ffiMessageWithReactions = libXMTPGroup.findMessagesWithReactions(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = beforeNs,
@@ -180,12 +180,7 @@ class Group(
         )
 
         return ffiMessageWithReactions.mapNotNull { ffiMessageWithReactions ->
-            val parentMessage = Message.create(ffiMessageWithReactions.message)!!
-            val childMessages = ffiMessageWithReactions.reactions.mapNotNull { childMessage ->
-                Message.create(childMessage)!!
-            }
-
-            Message.MessageWithChildMessages(parentMessage, childMessages)
+            Message.create(ffiMessageWithReactions)
         }
     }
 

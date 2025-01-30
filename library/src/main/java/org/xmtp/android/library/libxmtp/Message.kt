@@ -10,12 +10,14 @@ import org.xmtp.proto.message.contents.Content
 import uniffi.xmtpv3.FfiConversationMessageKind
 import uniffi.xmtpv3.FfiDeliveryStatus
 import uniffi.xmtpv3.FfiMessage
+import uniffi.xmtpv3.FfiMessageWithReactions
 import java.util.Date
 
 class Message private constructor(
     private val libXMTPMessage: FfiMessage,
     val encodedContent: Content.EncodedContent,
     private val decodedContent: Any?,
+    val childMessages: List<Message>? = null
 ) {
     enum class MessageDeliveryStatus {
         ALL, PUBLISHED, UNPUBLISHED, FAILED
@@ -76,42 +78,28 @@ class Message private constructor(
                 null // Return null if decoding fails
             }
         }
-    }
 
-    data class MessageWithChildMessages(
-        var message: Message,
-        var childMessages: List<Message>
-    ) {
-        val id: String
-            get() = message.id
+        fun create(libXMTPMessageWithReactions: FfiMessageWithReactions): Message? {
+            return try {
+                val encodedContent = EncodedContent.parseFrom(libXMTPMessageWithReactions.message.content)
+                if (encodedContent.type == ContentTypeGroupUpdated && libXMTPMessageWithReactions.message.kind != FfiConversationMessageKind.MEMBERSHIP_CHANGE) {
+                    throw XMTPException("Error decoding group membership change")
+                }
+                // Decode the content once during creation
+                val decodedContent = encodedContent.decoded<Any>()
 
-        val convoId: String
-            get() = message.convoId
+                // Convert reactions to Message objects
+                val reactionMessages = libXMTPMessageWithReactions.reactions.mapNotNull { create(it) }
 
-        val senderInboxId: String
-            get() = message.senderInboxId
-
-        val sentAt: Date
-            get() = message.sentAt
-
-        val sentAtNs: Long
-            get() = message.sentAtNs
-
-        val deliveryStatus: MessageDeliveryStatus
-            get() = message.deliveryStatus
-
-        val topic: String
-            get() = message.topic
-
-        @Suppress("UNCHECKED_CAST")
-        fun <T> content(): T? = message.content() as? T
-
-        val fallbackContent: String
-            get() = message.fallbackContent
-
-        val body: String
-            get() {
-                return content() as? String ?: fallbackContent
+                Message(
+                    libXMTPMessageWithReactions.message,
+                    encodedContent,
+                    decodedContent,
+                    reactionMessages
+                )
+            } catch (e: Exception) {
+                null // Return null if decoding fails
             }
+        }
     }
 }
