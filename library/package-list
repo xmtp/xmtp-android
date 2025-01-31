@@ -4,6 +4,7 @@ $dokka.location:org.xmtp.android.library.codecs////PointingToDeclaration/librar
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeAttachment/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-attachment.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeGroupUpdated/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-group-updated.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeReaction/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-reaction.html
+$dokka.location:org.xmtp.android.library.codecs//ContentTypeReactionV2/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-reaction-v2.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeReadReceipt/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-read-receipt.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeRemoteAttachment/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-remote-attachment.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeReply/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-reply.html
@@ -81,6 +82,13 @@ $dokka.location:org.xmtp.android.library.codecs/ReactionSchema.Shortcode///Point
 $dokka.location:org.xmtp.android.library.codecs/ReactionSchema.Unicode///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-schema/-unicode/index.html
 $dokka.location:org.xmtp.android.library.codecs/ReactionSchema.Unknown///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-schema/-unknown/index.html
 $dokka.location:org.xmtp.android.library.codecs/ReactionSchema///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-schema/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/index.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/ReactionV2Codec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/-reaction-v2-codec.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/content-type.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/decode/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/decode.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/encode/#uniffi.xmtpv3.FfiReaction/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/encode.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/fallback/#uniffi.xmtpv3.FfiReaction/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/fallback.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/shouldPush/#uniffi.xmtpv3.FfiReaction/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/should-push.html
 $dokka.location:org.xmtp.android.library.codecs/ReadReceipt///PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt/index.html
 $dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec///PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/index.html
 $dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec/ReadReceiptCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/-read-receipt-codec.html
@@ -274,6 +282,7 @@ $dokka.location:org.xmtp.android.library.libxmtp/Member/inboxId/#/PointingToDecl
 $dokka.location:org.xmtp.android.library.libxmtp/Member/permissionLevel/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-member/permission-level.html
 $dokka.location:org.xmtp.android.library.libxmtp/Message.Companion///PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-message/-companion/index.html
 $dokka.location:org.xmtp.android.library.libxmtp/Message.Companion/create/#uniffi.xmtpv3.FfiMessage/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-message/-companion/create.html
+$dokka.location:org.xmtp.android.library.libxmtp/Message.Companion/create/#uniffi.xmtpv3.FfiMessageWithReactions/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-message/-companion/create.html
 $dokka.location:org.xmtp.android.library.libxmtp/Message.MessageDeliveryStatus.ALL///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library.libxmtp/-message/-message-delivery-status/-a-l-l/index.html
 $dokka.location:org.xmtp.android.library.libxmtp/Message.MessageDeliveryStatus.FAILED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library.libxmtp/-message/-message-delivery-status/-f-a-i-l-e-d/index.html
 $dokka.location:org.xmtp.android.library.libxmtp/Message.MessageDeliveryStatus.PUBLISHED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library.libxmtp/-message/-message-delivery-status/-p-u-b-l-i-s-h-e-d/index.html
@@ -288,6 +297,7 @@ $dokka.location:org.xmtp.android.library.libxmtp/Message.SortDirection/valueOf/#
 $dokka.location:org.xmtp.android.library.libxmtp/Message.SortDirection/values/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-message/-sort-direction/values.html
 $dokka.location:org.xmtp.android.library.libxmtp/Message///PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-message/index.html
 $dokka.location:org.xmtp.android.library.libxmtp/Message/body/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-message/body.html
+$dokka.location:org.xmtp.android.library.libxmtp/Message/childMessages/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-message/child-messages.html
 $dokka.location:org.xmtp.android.library.libxmtp/Message/content/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-message/content.html
 $dokka.location:org.xmtp.android.library.libxmtp/Message/convoId/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-message/convo-id.html
 $dokka.location:org.xmtp.android.library.libxmtp/Message/deliveryStatus/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-message/delivery-status.html
@@ -328,7 +338,7 @@ $dokka.location:org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroup
 $dokka.location:org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroupImagePolicy/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-permission-policy-set/update-group-image-policy.html
 $dokka.location:org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroupNamePolicy/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-permission-policy-set/update-group-name-policy.html
 $dokka.location:org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroupPinnedFrameUrlPolicy/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-permission-policy-set/update-group-pinned-frame-url-policy.html
-$dokka.location:org.xmtp.android.library.libxmtp/PermissionPolicySet/updateMessageExpirationPolicy/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-permission-policy-set/update-message-expiration-policy.html
+$dokka.location:org.xmtp.android.library.libxmtp/PermissionPolicySet/updateMessageDisappearingPolicy/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-permission-policy-set/update-message-disappearing-policy.html
 $dokka.location:org.xmtp.android.library.messages////PointingToDeclaration/library/org.xmtp.android.library.messages/index.html
 $dokka.location:org.xmtp.android.library.messages//consentProofText/org.xmtp.proto.message.contents.SignatureOuterClass.Signature#kotlin.String#kotlin.Long/PointingToDeclaration/library/org.xmtp.android.library.messages/consent-proof-text.html
 $dokka.location:org.xmtp.android.library.messages//ensureWalletSignature/org.xmtp.proto.message.contents.SignatureOuterClass.Signature#/PointingToDeclaration/library/org.xmtp.android.library.messages/ensure-wallet-signature.html
@@ -922,6 +932,7 @@ $dokka.location:org.xmtp.android.library/Conversation/id/#/PointingToDeclaration
 $dokka.location:org.xmtp.android.library/Conversation/lastMessage/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/last-message.html
 $dokka.location:org.xmtp.android.library/Conversation/members/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/members.html
 $dokka.location:org.xmtp.android.library/Conversation/messages/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.Message.SortDirection#org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-conversation/messages.html
+$dokka.location:org.xmtp.android.library/Conversation/messagesWithReactions/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.Message.SortDirection#org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-conversation/messages-with-reactions.html
 $dokka.location:org.xmtp.android.library/Conversation/prepareMessage/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-conversation/prepare-message.html
 $dokka.location:org.xmtp.android.library/Conversation/prepareMessage/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library/-conversation/prepare-message.html
 $dokka.location:org.xmtp.android.library/Conversation/processMessage/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-conversation/process-message.html
@@ -952,10 +963,10 @@ $dokka.location:org.xmtp.android.library/Conversations/listDms/#java.util.Date?#
 $dokka.location:org.xmtp.android.library/Conversations/listGroups/#java.util.Date?#java.util.Date?#kotlin.Int?#kotlin.collections.List[org.xmtp.android.library.ConsentState]?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/list-groups.html
 $dokka.location:org.xmtp.android.library/Conversations/newConversation/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversations/new-conversation.html
 $dokka.location:org.xmtp.android.library/Conversations/newConversationWithInboxId/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversations/new-conversation-with-inbox-id.html
-$dokka.location:org.xmtp.android.library/Conversations/newGroup/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.Long?#kotlin.Long?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/new-group.html
-$dokka.location:org.xmtp.android.library/Conversations/newGroupCustomPermissions/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.libxmtp.PermissionPolicySet#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.Long?#kotlin.Long?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/new-group-custom-permissions.html
-$dokka.location:org.xmtp.android.library/Conversations/newGroupCustomPermissionsWithInboxIds/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.libxmtp.PermissionPolicySet#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.Long?#kotlin.Long?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/new-group-custom-permissions-with-inbox-ids.html
-$dokka.location:org.xmtp.android.library/Conversations/newGroupWithInboxIds/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration#kotlin.String#kotlin.String#kotlin.String#kotlin.String#kotlin.Long?#kotlin.Long?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/new-group-with-inbox-ids.html
+$dokka.location:org.xmtp.android.library/Conversations/newGroup/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration#kotlin.String#kotlin.String#kotlin.String#kotlin.String#uniffi.xmtpv3.FfiMessageDisappearingSettings?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/new-group.html
+$dokka.location:org.xmtp.android.library/Conversations/newGroupCustomPermissions/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.libxmtp.PermissionPolicySet#kotlin.String#kotlin.String#kotlin.String#kotlin.String#uniffi.xmtpv3.FfiMessageDisappearingSettings?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/new-group-custom-permissions.html
+$dokka.location:org.xmtp.android.library/Conversations/newGroupCustomPermissionsWithInboxIds/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.libxmtp.PermissionPolicySet#kotlin.String#kotlin.String#kotlin.String#kotlin.String#uniffi.xmtpv3.FfiMessageDisappearingSettings?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/new-group-custom-permissions-with-inbox-ids.html
+$dokka.location:org.xmtp.android.library/Conversations/newGroupWithInboxIds/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration#kotlin.String#kotlin.String#kotlin.String#kotlin.String#uniffi.xmtpv3.FfiMessageDisappearingSettings?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/new-group-with-inbox-ids.html
 $dokka.location:org.xmtp.android.library/Conversations/stream/#org.xmtp.android.library.Conversations.ConversationType/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream.html
 $dokka.location:org.xmtp.android.library/Conversations/streamAllMessages/#org.xmtp.android.library.Conversations.ConversationType/PointingToDeclaration/library/org.xmtp.android.library/-conversations/stream-all-messages.html
 $dokka.location:org.xmtp.android.library/Conversations/sync/#/PointingToDeclaration/library/org.xmtp.android.library/-conversations/sync.html
@@ -976,6 +987,7 @@ $dokka.location:org.xmtp.android.library/Dm/isCreator/#/PointingToDeclaration/l
 $dokka.location:org.xmtp.android.library/Dm/lastMessage/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/last-message.html
 $dokka.location:org.xmtp.android.library/Dm/members/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/members.html
 $dokka.location:org.xmtp.android.library/Dm/messages/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.Message.SortDirection#org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-dm/messages.html
+$dokka.location:org.xmtp.android.library/Dm/messagesWithReactions/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.Message.SortDirection#org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-dm/messages-with-reactions.html
 $dokka.location:org.xmtp.android.library/Dm/peerInboxId/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/peer-inbox-id.html
 $dokka.location:org.xmtp.android.library/Dm/prepareMessage/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-dm/prepare-message.html
 $dokka.location:org.xmtp.android.library/Dm/prepareMessage/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library/-dm/prepare-message.html
@@ -1027,6 +1039,7 @@ $dokka.location:org.xmtp.android.library/Group/listAdmins/#/PointingToDeclaratio
 $dokka.location:org.xmtp.android.library/Group/listSuperAdmins/#/PointingToDeclaration/library/org.xmtp.android.library/-group/list-super-admins.html
 $dokka.location:org.xmtp.android.library/Group/members/#/PointingToDeclaration/library/org.xmtp.android.library/-group/members.html
 $dokka.location:org.xmtp.android.library/Group/messages/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.Message.SortDirection#org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-group/messages.html
+$dokka.location:org.xmtp.android.library/Group/messagesWithReactions/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.Message.SortDirection#org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-group/messages-with-reactions.html
 $dokka.location:org.xmtp.android.library/Group/name/#/PointingToDeclaration/library/org.xmtp.android.library/-group/name.html
 $dokka.location:org.xmtp.android.library/Group/peerInboxIds/#/PointingToDeclaration/library/org.xmtp.android.library/-group/peer-inbox-ids.html
 $dokka.location:org.xmtp.android.library/Group/permissionPolicySet/#/PointingToDeclaration/library/org.xmtp.android.library/-group/permission-policy-set.html
@@ -1198,6 +1211,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversation/addedByInboxId/#/PointingToDeclara
 $dokka.location:uniffi.xmtpv3/FfiConversation/adminList/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/admin-list.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/close.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/consentState/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/consent-state.html
+$dokka.location:uniffi.xmtpv3/FfiConversation/conversationMessageDisappearingSettings/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/conversation-message-disappearing-settings.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/conversationType/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/conversation-type.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/createdAtNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/created-at-ns.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/destroy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/destroy.html
@@ -1218,6 +1232,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversation/listMembers/#/PointingToDeclaratio
 $dokka.location:uniffi.xmtpv3/FfiConversation/processStreamedConversationMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/process-streamed-conversation-message.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/publishMessages/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/publish-messages.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/removeAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/remove-admin.html
+$dokka.location:uniffi.xmtpv3/FfiConversation/removeConversationMessageDisappearingSettings/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/remove-conversation-message-disappearing-settings.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/removeMembers/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/remove-members.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/removeMembersByInboxId/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/remove-members-by-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/removeSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/remove-super-admin.html
@@ -1228,6 +1243,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversation/superAdminList/#/PointingToDeclara
 $dokka.location:uniffi.xmtpv3/FfiConversation/sync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/sync.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/uniffi-clone-pointer.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/updateConsentState/#uniffi.xmtpv3.FfiConsentState/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/update-consent-state.html
+$dokka.location:uniffi.xmtpv3/FfiConversation/updateConversationMessageDisappearingSettings/#uniffi.xmtpv3.FfiMessageDisappearingSettings/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/update-conversation-message-disappearing-settings.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/updateGroupDescription/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/update-group-description.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/updateGroupImageUrlSquare/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/update-group-image-url-square.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/updateGroupName/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/update-group-name.html
@@ -1255,6 +1271,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversationInterface/addSuperAdmin/#kotlin.Str
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/addedByInboxId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/added-by-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/adminList/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/admin-list.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/consentState/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/consent-state.html
+$dokka.location:uniffi.xmtpv3/FfiConversationInterface/conversationMessageDisappearingSettings/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/conversation-message-disappearing-settings.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/conversationType/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/conversation-type.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/createdAtNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/created-at-ns.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/dmPeerInboxId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/dm-peer-inbox-id.html
@@ -1274,6 +1291,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversationInterface/listMembers/#/PointingToD
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/processStreamedConversationMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/process-streamed-conversation-message.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/publishMessages/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/publish-messages.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/removeAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/remove-admin.html
+$dokka.location:uniffi.xmtpv3/FfiConversationInterface/removeConversationMessageDisappearingSettings/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/remove-conversation-message-disappearing-settings.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/removeMembers/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/remove-members.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/removeMembersByInboxId/#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/remove-members-by-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/removeSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/remove-super-admin.html
@@ -1283,6 +1301,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversationInterface/stream/#uniffi.xmtpv3.Ffi
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/superAdminList/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/super-admin-list.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/sync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/sync.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/updateConsentState/#uniffi.xmtpv3.FfiConsentState/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/update-consent-state.html
+$dokka.location:uniffi.xmtpv3/FfiConversationInterface/updateConversationMessageDisappearingSettings/#uniffi.xmtpv3.FfiMessageDisappearingSettings/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/update-conversation-message-disappearing-settings.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/updateGroupDescription/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/update-group-description.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/updateGroupImageUrlSquare/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/update-group-image-url-square.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/updateGroupName/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/update-group-name.html
@@ -1340,11 +1359,11 @@ $dokka.location:uniffi.xmtpv3/FfiConversations///PointingToDeclaration/library/
 $dokka.location:uniffi.xmtpv3/FfiConversations/FfiConversations/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/-ffi-conversations.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/FfiConversations/#uniffi.xmtpv3.NoPointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/-ffi-conversations.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/close.html
-$dokka.location:uniffi.xmtpv3/FfiConversations/createDm/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/create-dm.html
-$dokka.location:uniffi.xmtpv3/FfiConversations/createDmWithInboxId/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/create-dm-with-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/createGroup/#kotlin.collections.List[kotlin.String]#uniffi.xmtpv3.FfiCreateGroupOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/create-group.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/createGroupWithInboxIds/#kotlin.collections.List[kotlin.String]#uniffi.xmtpv3.FfiCreateGroupOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/create-group-with-inbox-ids.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/destroy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/destroy.html
+$dokka.location:uniffi.xmtpv3/FfiConversations/findOrCreateDm/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/find-or-create-dm.html
+$dokka.location:uniffi.xmtpv3/FfiConversations/findOrCreateDmByInboxId/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/find-or-create-dm-by-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/getHmacKeys/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/get-hmac-keys.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/getSyncGroup/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/get-sync-group.html
 $dokka.location:uniffi.xmtpv3/FfiConversations/list/#uniffi.xmtpv3.FfiListConversationsOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/list.html
@@ -1365,10 +1384,10 @@ $dokka.location:uniffi.xmtpv3/FfiConversations/syncAllConversations/#kotlin.coll
 $dokka.location:uniffi.xmtpv3/FfiConversations/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations/uniffi-clone-pointer.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/index.html
-$dokka.location:uniffi.xmtpv3/FfiConversationsInterface/createDm/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/create-dm.html
-$dokka.location:uniffi.xmtpv3/FfiConversationsInterface/createDmWithInboxId/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/create-dm-with-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/createGroup/#kotlin.collections.List[kotlin.String]#uniffi.xmtpv3.FfiCreateGroupOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/create-group.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/createGroupWithInboxIds/#kotlin.collections.List[kotlin.String]#uniffi.xmtpv3.FfiCreateGroupOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/create-group-with-inbox-ids.html
+$dokka.location:uniffi.xmtpv3/FfiConversationsInterface/findOrCreateDm/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/find-or-create-dm.html
+$dokka.location:uniffi.xmtpv3/FfiConversationsInterface/findOrCreateDmByInboxId/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/find-or-create-dm-by-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/getHmacKeys/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/get-hmac-keys.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/getSyncGroup/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/get-sync-group.html
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/list/#uniffi.xmtpv3.FfiListConversationsOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/list.html
@@ -1388,14 +1407,13 @@ $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/sync/#/PointingToDeclara
 $dokka.location:uniffi.xmtpv3/FfiConversationsInterface/syncAllConversations/#kotlin.collections.List[uniffi.xmtpv3.FfiConsentState]?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversations-interface/sync-all-conversations.html
 $dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/index.html
-$dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions/FfiCreateGroupOptions/#uniffi.xmtpv3.FfiGroupPermissionsOptions?#kotlin.String?#kotlin.String?#kotlin.String?#kotlin.String?#uniffi.xmtpv3.FfiPermissionPolicySet?#kotlin.Long?#kotlin.Long?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/-ffi-create-group-options.html
+$dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions/FfiCreateGroupOptions/#uniffi.xmtpv3.FfiGroupPermissionsOptions?#kotlin.String?#kotlin.String?#kotlin.String?#kotlin.String?#uniffi.xmtpv3.FfiPermissionPolicySet?#uniffi.xmtpv3.FfiMessageDisappearingSettings?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/-ffi-create-group-options.html
 $dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions/customPermissionPolicySet/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/custom-permission-policy-set.html
 $dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions/groupDescription/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/group-description.html
 $dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions/groupImageUrlSquare/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/group-image-url-square.html
 $dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions/groupName/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/group-name.html
 $dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions/groupPinnedFrameUrl/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/group-pinned-frame-url.html
-$dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions/messageExpirationFromMs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/message-expiration-from-ms.html
-$dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions/messageExpirationMs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/message-expiration-ms.html
+$dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions/messageDisappearingSettings/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/message-disappearing-settings.html
 $dokka.location:uniffi.xmtpv3/FfiCreateGroupOptions/permissions/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-create-group-options/permissions.html
 $dokka.location:uniffi.xmtpv3/FfiCursor.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-cursor/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiCursor///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-cursor/index.html
@@ -1508,6 +1526,11 @@ $dokka.location:uniffi.xmtpv3/FfiMessageCallbackImpl/destroy/#/PointingToDeclara
 $dokka.location:uniffi.xmtpv3/FfiMessageCallbackImpl/onError/#uniffi.xmtpv3.FfiSubscribeException/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message-callback-impl/on-error.html
 $dokka.location:uniffi.xmtpv3/FfiMessageCallbackImpl/onMessage/#uniffi.xmtpv3.FfiMessage/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message-callback-impl/on-message.html
 $dokka.location:uniffi.xmtpv3/FfiMessageCallbackImpl/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message-callback-impl/uniffi-clone-pointer.html
+$dokka.location:uniffi.xmtpv3/FfiMessageDisappearingSettings.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message-disappearing-settings/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiMessageDisappearingSettings///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message-disappearing-settings/index.html
+$dokka.location:uniffi.xmtpv3/FfiMessageDisappearingSettings/FfiMessageDisappearingSettings/#kotlin.Long#kotlin.Long/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message-disappearing-settings/-ffi-message-disappearing-settings.html
+$dokka.location:uniffi.xmtpv3/FfiMessageDisappearingSettings/fromNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message-disappearing-settings/from-ns.html
+$dokka.location:uniffi.xmtpv3/FfiMessageDisappearingSettings/inNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message-disappearing-settings/in-ns.html
 $dokka.location:uniffi.xmtpv3/FfiMessageWithReactions.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message-with-reactions/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiMessageWithReactions///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message-with-reactions/index.html
 $dokka.location:uniffi.xmtpv3/FfiMessageWithReactions/FfiMessageWithReactions/#uniffi.xmtpv3.FfiMessage#kotlin.collections.List[uniffi.xmtpv3.FfiMessage]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-message-with-reactions/-ffi-message-with-reactions.html
@@ -1555,7 +1578,7 @@ $dokka.location:uniffi.xmtpv3/FfiPermissionPolicySet/updateGroupDescriptionPolic
 $dokka.location:uniffi.xmtpv3/FfiPermissionPolicySet/updateGroupImageUrlSquarePolicy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-permission-policy-set/update-group-image-url-square-policy.html
 $dokka.location:uniffi.xmtpv3/FfiPermissionPolicySet/updateGroupNamePolicy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-permission-policy-set/update-group-name-policy.html
 $dokka.location:uniffi.xmtpv3/FfiPermissionPolicySet/updateGroupPinnedFrameUrlPolicy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-permission-policy-set/update-group-pinned-frame-url-policy.html
-$dokka.location:uniffi.xmtpv3/FfiPermissionPolicySet/updateMessageExpirationMsPolicy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-permission-policy-set/update-message-expiration-ms-policy.html
+$dokka.location:uniffi.xmtpv3/FfiPermissionPolicySet/updateMessageDisappearingPolicy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-permission-policy-set/update-message-disappearing-policy.html
 $dokka.location:uniffi.xmtpv3/FfiPermissionUpdateType.ADD_ADMIN///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-permission-update-type/-a-d-d_-a-d-m-i-n/index.html
 $dokka.location:uniffi.xmtpv3/FfiPermissionUpdateType.ADD_MEMBER///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-permission-update-type/-a-d-d_-m-e-m-b-e-r/index.html
 $dokka.location:uniffi.xmtpv3/FfiPermissionUpdateType.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-permission-update-type/-companion/index.html
@@ -1825,6 +1848,8 @@ $dokka.location:uniffi.xmtpv3/GenericException.SignatureRequestException///Point
 $dokka.location:uniffi.xmtpv3/GenericException.SignatureRequestException/SignatureRequestException/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-signature-request-exception/-signature-request-exception.html
 $dokka.location:uniffi.xmtpv3/GenericException.Storage///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-storage/index.html
 $dokka.location:uniffi.xmtpv3/GenericException.Storage/Storage/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-storage/-storage.html
+$dokka.location:uniffi.xmtpv3/GenericException.Subscription///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-subscription/index.html
+$dokka.location:uniffi.xmtpv3/GenericException.Subscription/Subscription/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-subscription/-subscription.html
 $dokka.location:uniffi.xmtpv3/GenericException.Verifier///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-verifier/index.html
 $dokka.location:uniffi.xmtpv3/GenericException.Verifier/Verifier/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-verifier/-verifier.html
 $dokka.location:uniffi.xmtpv3/GenericException///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/index.html
