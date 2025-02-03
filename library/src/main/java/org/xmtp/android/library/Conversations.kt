@@ -43,8 +43,8 @@ data class Conversations(
     suspend fun fromWelcome(envelopeBytes: ByteArray): Conversation {
         val conversation = ffiConversations.processStreamedWelcomeMessage(envelopeBytes)
         return when (conversation.conversationType()) {
-            FfiConversationType.DM -> Conversation.Dm(Dm(client.inboxId, conversation))
-            else -> Conversation.Group(Group(client.inboxId, conversation))
+            FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
+            else -> Conversation.Group(Group(client, conversation))
         }
     }
 
@@ -117,7 +117,7 @@ data class Conversations(
                     messageDisappearingSettings = messageDisappearingSettings
                 )
             )
-        return Group(client.inboxId, group)
+        return Group(client, group)
     }
 
     suspend fun newGroupWithInboxIds(
@@ -183,7 +183,7 @@ data class Conversations(
                     messageDisappearingSettings = messageDisappearingSettings
                 )
             )
-        return Group(client.inboxId, group)
+        return Group(client, group)
     }
 
     // Sync from the network the latest list of conversations
@@ -215,7 +215,7 @@ data class Conversations(
             throw XMTPException("${falseAddresses.joinToString()} not on network")
         }
         val dmConversation = ffiConversations.findOrCreateDm(peerAddress.lowercase())
-        return Dm(client.inboxId, dmConversation)
+        return Dm(client, dmConversation)
     }
 
     suspend fun newConversationWithInboxId(peerInboxId: String): Conversation {
@@ -228,7 +228,7 @@ data class Conversations(
             throw XMTPException("Recipient is sender")
         }
         val dmConversation = ffiConversations.findOrCreateDmByInboxId(peerInboxId.lowercase())
-        return Dm(client.inboxId, dmConversation)
+        return Dm(client, dmConversation)
     }
 
     fun listGroups(
@@ -250,7 +250,7 @@ data class Conversations(
         )
 
         return ffiGroups.map {
-            Group(client.inboxId, it.conversation(), it.lastMessage())
+            Group(client, it.conversation(), it.lastMessage())
         }
     }
 
@@ -273,7 +273,7 @@ data class Conversations(
         )
 
         return ffiDms.map {
-            Dm(client.inboxId, it.conversation(), it.lastMessage())
+            Dm(client, it.conversation(), it.lastMessage())
         }
     }
 
@@ -302,13 +302,13 @@ data class Conversations(
         return when (conversation().conversationType()) {
             FfiConversationType.DM -> Conversation.Dm(
                 Dm(
-                    client.inboxId,
+                    client,
                     conversation(),
                     lastMessage()
                 )
             )
 
-            else -> Conversation.Group(Group(client.inboxId, conversation(), lastMessage()))
+            else -> Conversation.Group(Group(client, conversation(), lastMessage()))
         }
     }
 
@@ -321,13 +321,13 @@ data class Conversations(
                             FfiConversationType.DM -> trySend(
                                 Conversation.Dm(
                                     Dm(
-                                        client.inboxId,
+                                        client,
                                         conversation
                                     )
                                 )
                             )
 
-                            else -> trySend(Conversation.Group(Group(client.inboxId, conversation)))
+                            else -> trySend(Conversation.Group(Group(client, conversation)))
                         }
                     }
                 }
