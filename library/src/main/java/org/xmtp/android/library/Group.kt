@@ -23,6 +23,7 @@ import uniffi.xmtpv3.FfiGroupPermissions
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiMessageDisappearingSettings
 import uniffi.xmtpv3.FfiMetadataField
 import uniffi.xmtpv3.FfiPermissionUpdateType
 import uniffi.xmtpv3.FfiSubscribeException
@@ -282,6 +283,16 @@ class Group(
             return libXMTPGroup.updateGroupDescription(description)
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to update group description", e)
+        }
+    }
+
+    suspend fun updateMessageExpiration(startAtNs: Long, durationNs: Long) {
+        try {
+            return libXMTPGroup.updateConversationMessageDisappearingSettings(
+                FfiMessageDisappearingSettings(startAtNs, durationNs)
+            )
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to update group message expiration", e)
         }
     }
 

@@ -5,6 +5,7 @@ import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.MessageExpiration
+import uniffi.xmtpv3.FfiMessageDisappearingSettings
 import java.util.Date
 
 sealed class Conversation {
@@ -64,6 +65,13 @@ sealed class Conversation {
         return when (this) {
             is Group -> group.members()
             is Dm -> dm.members()
+        }
+    }
+
+    suspend fun updateMessageExpiration(startAtNs: Long, durationNs: Long) {
+        return when (this) {
+            is Group -> group.updateMessageExpiration(startAtNs, durationNs)
+            is Dm -> dm.updateMessageExpiration(startAtNs, durationNs)
         }
     }
 

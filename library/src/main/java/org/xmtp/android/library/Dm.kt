@@ -20,6 +20,7 @@ import uniffi.xmtpv3.FfiDirection
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiMessageDisappearingSettings
 import uniffi.xmtpv3.FfiSubscribeException
 import java.util.Date
 
@@ -199,6 +200,16 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
 
         val stream = libXMTPGroup.stream(messageCallback)
         awaitClose { stream.end() }
+    }
+
+    suspend fun updateMessageExpiration(startAtNs: Long, durationNs: Long) {
+        try {
+            return libXMTPGroup.updateConversationMessageDisappearingSettings(
+                FfiMessageDisappearingSettings(startAtNs, durationNs)
+            )
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to update group message expiration", e)
+        }
     }
 
     fun updateConsentState(state: ConsentState) {
