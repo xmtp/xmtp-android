@@ -352,6 +352,14 @@ class Group(
         )
     }
 
+    suspend fun updateMessageExpirationPermission(newPermissionOption: PermissionOption) {
+        return libXMTPGroup.updatePermissionPolicy(
+            FfiPermissionUpdateType.UPDATE_METADATA,
+            PermissionOption.toFfiPermissionPolicy(newPermissionOption),
+            FfiMetadataField.MESSAGE_EXPIRATION
+        )
+    }
+
     fun isAdmin(inboxId: String): Boolean {
         return libXMTPGroup.isAdmin(inboxId)
     }
