@@ -11,6 +11,7 @@ import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.Message.SortDirection
+import org.xmtp.android.library.libxmtp.MessageExpiration
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
 import org.xmtp.android.library.messages.Topic
@@ -57,6 +58,9 @@ class Group(
 
     val description: String
         get() = libXMTPGroup.groupDescription()
+
+    val messageExpiration: MessageExpiration
+        get() = MessageExpiration(libXMTPGroup.conversationMessageDisappearingSettings())
 
     suspend fun send(text: String): String {
         return send(encodeContent(content = text, options = null))

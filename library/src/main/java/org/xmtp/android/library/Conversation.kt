@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
+import org.xmtp.android.library.libxmtp.MessageExpiration
 import java.util.Date
 
 sealed class Conversation {
@@ -33,6 +34,14 @@ sealed class Conversation {
             return when (this) {
                 is Group -> group.topic
                 is Dm -> dm.topic
+            }
+        }
+
+    val messageExpiration: MessageExpiration
+        get() {
+            return when (this) {
+                is Group -> group.messageExpiration
+                is Dm -> dm.messageExpiration
             }
         }
 
@@ -135,7 +144,14 @@ sealed class Conversation {
         deliveryStatus: Message.MessageDeliveryStatus = Message.MessageDeliveryStatus.ALL,
     ): List<Message> {
         return when (this) {
-            is Group -> group.messagesWithReactions(limit, beforeNs, afterNs, direction, deliveryStatus)
+            is Group -> group.messagesWithReactions(
+                limit,
+                beforeNs,
+                afterNs,
+                direction,
+                deliveryStatus
+            )
+
             is Dm -> dm.messagesWithReactions(limit, beforeNs, afterNs, direction, deliveryStatus)
         }
     }
