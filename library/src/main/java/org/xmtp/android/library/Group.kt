@@ -11,7 +11,7 @@ import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.Message.SortDirection
-import org.xmtp.android.library.libxmtp.MessageExpiration
+import org.xmtp.android.library.libxmtp.MessageDisappearingSettings
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
 import org.xmtp.android.library.messages.Topic
@@ -60,8 +60,8 @@ class Group(
     val description: String
         get() = libXMTPGroup.groupDescription()
 
-    val messageExpiration: MessageExpiration
-        get() = MessageExpiration.createFromFfi(libXMTPGroup.conversationMessageDisappearingSettings())
+    val messageDisappearingSettings: MessageDisappearingSettings
+        get() = MessageDisappearingSettings.createFromFfi(libXMTPGroup.conversationMessageDisappearingSettings())
 
     suspend fun send(text: String): String {
         return send(encodeContent(content = text, options = null))
@@ -286,12 +286,12 @@ class Group(
         }
     }
 
-    suspend fun updateMessageExpiration(messageExpiration: MessageExpiration) {
+    suspend fun updateMessageExpiration(messageDisappearingSettings: MessageDisappearingSettings) {
         try {
             return libXMTPGroup.updateConversationMessageDisappearingSettings(
                 FfiMessageDisappearingSettings(
-                    messageExpiration.expirationStartAtNs,
-                    messageExpiration.expirationDurationInNs
+                    messageDisappearingSettings.disappearStartingAtNs,
+                    messageDisappearingSettings.disappearDurationInNs
                 )
             )
         } catch (e: Exception) {

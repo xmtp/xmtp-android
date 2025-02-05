@@ -22,12 +22,11 @@ import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
-import org.xmtp.android.library.libxmtp.MessageExpiration
+import org.xmtp.android.library.libxmtp.MessageDisappearingSettings
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import org.xmtp.proto.message.contents.message
 import org.xmtp.proto.mls.message.contents.TranscriptMessages
 
 @RunWith(AndroidJUnit4::class)
@@ -1031,7 +1030,7 @@ class GroupTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(alix.walletAddress),
-                messageExpiration = MessageExpiration(0L, 10L),
+                messageDisappearingSettings = MessageDisappearingSettings(0L, 10L),
             )
         }
         val messageId = runBlocking {
@@ -1058,9 +1057,9 @@ class GroupTest {
         assertEquals(runBlocking { alixGroup!!.messages() }.size, 0)
 
         // Can disable message expiration
-        val messageExpiration = MessageExpiration(0L, 0L)
+        val messageDisappearingSettings = MessageDisappearingSettings(0L, 0L)
         runBlocking {
-            alixGroup!!.updateMessageExpiration(messageExpiration)
+            alixGroup!!.updateMessageExpiration(messageDisappearingSettings)
             boGroup.sync()
             alixGroup.sync()
             boGroup.send("howdy")
@@ -1072,7 +1071,7 @@ class GroupTest {
 
         assertEquals(runBlocking { boGroup.messages() }.size, 2)
         assertEquals(runBlocking { alixGroup!!.messages() }.size, 2)
-        assertEquals(boGroup.messageExpiration, messageExpiration)
-        assertEquals(alixGroup!!.messageExpiration, messageExpiration)
+        assertEquals(boGroup.messageDisappearingSettings, messageDisappearingSettings)
+        assertEquals(alixGroup!!.messageDisappearingSettings, messageDisappearingSettings)
     }
 }

@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.libxmtp.MessageExpiration
+import org.xmtp.android.library.libxmtp.MessageDisappearingSettings
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.keystore.api.v1.Keystore
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
@@ -55,7 +55,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        messageExpiration: MessageExpiration? = null,
+        messageDisappearingSettings: MessageDisappearingSettings? = null,
     ): Group {
         return newGroupInternal(
             accountAddresses,
@@ -64,10 +64,10 @@ data class Conversations(
             groupImageUrlSquare,
             groupDescription,
             null,
-            messageExpiration?.let {
+            messageDisappearingSettings?.let {
                 FfiMessageDisappearingSettings(
-                    it.expirationStartAtNs,
-                    it.expirationDurationInNs
+                    it.disappearStartingAtNs,
+                    it.disappearDurationInNs
                 )
             },
         )
@@ -79,7 +79,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        messageExpiration: MessageExpiration? = null,
+        messageDisappearingSettings: MessageDisappearingSettings? = null,
     ): Group {
         return newGroupInternal(
             accountAddresses,
@@ -88,10 +88,10 @@ data class Conversations(
             groupImageUrlSquare,
             groupDescription,
             PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet),
-            messageExpiration?.let {
+            messageDisappearingSettings?.let {
                 FfiMessageDisappearingSettings(
-                    it.expirationStartAtNs,
-                    it.expirationDurationInNs
+                    it.disappearStartingAtNs,
+                    it.disappearDurationInNs
                 )
             }
         )
@@ -137,7 +137,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        messageExpiration: MessageExpiration? = null,
+        messageDisappearingSettings: MessageDisappearingSettings? = null,
     ): Group {
         return newGroupInternalWithInboxIds(
             inboxIds,
@@ -146,10 +146,10 @@ data class Conversations(
             groupImageUrlSquare,
             groupDescription,
             null,
-            messageExpiration?.let {
+            messageDisappearingSettings?.let {
                 FfiMessageDisappearingSettings(
-                    it.expirationStartAtNs,
-                    it.expirationDurationInNs
+                    it.disappearStartingAtNs,
+                    it.disappearDurationInNs
                 )
             }
         )
@@ -161,7 +161,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        messageExpiration: MessageExpiration? = null,
+        messageDisappearingSettings: MessageDisappearingSettings? = null,
     ): Group {
         return newGroupInternalWithInboxIds(
             inboxIds,
@@ -170,10 +170,10 @@ data class Conversations(
             groupImageUrlSquare,
             groupDescription,
             PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet),
-            messageExpiration?.let {
+            messageDisappearingSettings?.let {
                 FfiMessageDisappearingSettings(
-                    it.expirationStartAtNs,
-                    it.expirationDurationInNs
+                    it.disappearStartingAtNs,
+                    it.disappearDurationInNs
                 )
             }
         )

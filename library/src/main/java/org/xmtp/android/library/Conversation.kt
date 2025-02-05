@@ -4,8 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.libxmtp.MessageExpiration
-import uniffi.xmtpv3.FfiMessageDisappearingSettings
+import org.xmtp.android.library.libxmtp.MessageDisappearingSettings
 import java.util.Date
 
 sealed class Conversation {
@@ -38,11 +37,11 @@ sealed class Conversation {
             }
         }
 
-    val messageExpiration: MessageExpiration
+    val messageDisappearingSettings: MessageDisappearingSettings
         get() {
             return when (this) {
-                is Group -> group.messageExpiration
-                is Dm -> dm.messageExpiration
+                is Group -> group.messageDisappearingSettings
+                is Dm -> dm.messageDisappearingSettings
             }
         }
 
@@ -68,10 +67,10 @@ sealed class Conversation {
         }
     }
 
-    suspend fun updateMessageExpiration(messageExpiration: MessageExpiration) {
+    suspend fun updateMessageExpiration(messageDisappearingSettings: MessageDisappearingSettings) {
         return when (this) {
-            is Group -> group.updateMessageExpiration(messageExpiration)
-            is Dm -> dm.updateMessageExpiration(messageExpiration)
+            is Group -> group.updateMessageExpiration(messageDisappearingSettings)
+            is Dm -> dm.updateMessageExpiration(messageDisappearingSettings)
         }
     }
 

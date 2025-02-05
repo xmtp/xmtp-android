@@ -11,7 +11,7 @@ import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.Message.SortDirection
-import org.xmtp.android.library.libxmtp.MessageExpiration
+import org.xmtp.android.library.libxmtp.MessageDisappearingSettings
 import org.xmtp.android.library.messages.Topic
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
@@ -41,8 +41,8 @@ class Dm(
     val peerInboxId: String
         get() = libXMTPGroup.dmPeerInboxId()
 
-    val messageExpiration: MessageExpiration
-        get() = MessageExpiration.createFromFfi(libXMTPGroup.conversationMessageDisappearingSettings())
+    val messageDisappearingSettings: MessageDisappearingSettings
+        get() = MessageDisappearingSettings.createFromFfi(libXMTPGroup.conversationMessageDisappearingSettings())
 
     private suspend fun metadata(): FfiConversationMetadata {
         return libXMTPGroup.groupMetadata()
@@ -206,12 +206,12 @@ class Dm(
         awaitClose { stream.end() }
     }
 
-    suspend fun updateMessageExpiration(messageExpiration: MessageExpiration) {
+    suspend fun updateMessageExpiration(messageDisappearingSettings: MessageDisappearingSettings) {
         try {
             return libXMTPGroup.updateConversationMessageDisappearingSettings(
                 FfiMessageDisappearingSettings(
-                    messageExpiration.expirationStartAtNs,
-                    messageExpiration.expirationDurationInNs
+                    messageDisappearingSettings.disappearStartingAtNs,
+                    messageDisappearingSettings.disappearDurationInNs
                 )
             )
         } catch (e: Exception) {
