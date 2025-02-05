@@ -206,7 +206,7 @@ class Dm(
         awaitClose { stream.end() }
     }
 
-    suspend fun updateMessageExpiration(messageDisappearingSettings: MessageDisappearingSettings) {
+    suspend fun updateMessageDisappearingSettings(messageDisappearingSettings: MessageDisappearingSettings) {
         try {
             return libXMTPGroup.updateConversationMessageDisappearingSettings(
                 FfiMessageDisappearingSettings(

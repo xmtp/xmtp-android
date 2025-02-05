@@ -67,10 +67,10 @@ sealed class Conversation {
         }
     }
 
-    suspend fun updateMessageExpiration(messageDisappearingSettings: MessageDisappearingSettings) {
+    suspend fun updateMessageDisappearingSettings(messageDisappearingSettings: MessageDisappearingSettings) {
         return when (this) {
-            is Group -> group.updateMessageExpiration(messageDisappearingSettings)
-            is Dm -> dm.updateMessageExpiration(messageDisappearingSettings)
+            is Group -> group.updateMessageDisappearingSettings(messageDisappearingSettings)
+            is Dm -> dm.updateMessageDisappearingSettings(messageDisappearingSettings)
         }
     }
 
