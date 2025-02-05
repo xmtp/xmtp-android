@@ -68,10 +68,10 @@ sealed class Conversation {
         }
     }
 
-    suspend fun updateMessageExpiration(startAtNs: Long, durationNs: Long) {
+    suspend fun updateMessageExpiration(messageExpiration: MessageExpiration) {
         return when (this) {
-            is Group -> group.updateMessageExpiration(startAtNs, durationNs)
-            is Dm -> dm.updateMessageExpiration(startAtNs, durationNs)
+            is Group -> group.updateMessageExpiration(messageExpiration)
+            is Dm -> dm.updateMessageExpiration(messageExpiration)
         }
     }
 

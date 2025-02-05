@@ -61,7 +61,7 @@ class Group(
         get() = libXMTPGroup.groupDescription()
 
     val messageExpiration: MessageExpiration
-        get() = MessageExpiration(libXMTPGroup.conversationMessageDisappearingSettings())
+        get() = MessageExpiration.createFromFfi(libXMTPGroup.conversationMessageDisappearingSettings())
 
     suspend fun send(text: String): String {
         return send(encodeContent(content = text, options = null))
@@ -181,8 +181,8 @@ class Group(
             )
         )
 
-        return ffiMessageWithReactions.mapNotNull { ffiMessageWithReactions ->
-            Message.create(ffiMessageWithReactions)
+        return ffiMessageWithReactions.mapNotNull { ffiMessageWithReaction ->
+            Message.create(ffiMessageWithReaction)
         }
     }
 
@@ -286,10 +286,13 @@ class Group(
         }
     }
 
-    suspend fun updateMessageExpiration(startAtNs: Long, durationNs: Long) {
+    suspend fun updateMessageExpiration(messageExpiration: MessageExpiration) {
         try {
             return libXMTPGroup.updateConversationMessageDisappearingSettings(
-                FfiMessageDisappearingSettings(startAtNs, durationNs)
+                FfiMessageDisappearingSettings(
+                    messageExpiration.expirationStartAtNs,
+                    messageExpiration.expirationDurationInNs
+                )
             )
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to update group message expiration", e)
@@ -349,14 +352,6 @@ class Group(
             FfiPermissionUpdateType.UPDATE_METADATA,
             PermissionOption.toFfiPermissionPolicy(newPermissionOption),
             FfiMetadataField.IMAGE_URL_SQUARE
-        )
-    }
-
-    suspend fun updateMessageExpirationPermission(newPermissionOption: PermissionOption) {
-        return libXMTPGroup.updatePermissionPolicy(
-            FfiPermissionUpdateType.UPDATE_METADATA,
-            PermissionOption.toFfiPermissionPolicy(newPermissionOption),
-            FfiMetadataField.MESSAGE_EXPIRATION
         )
     }
 

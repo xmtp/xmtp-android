@@ -22,10 +22,12 @@ import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.MessageExpiration
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.message.contents.message
 import org.xmtp.proto.mls.message.contents.TranscriptMessages
 
 @RunWith(AndroidJUnit4::class)
@@ -1021,5 +1023,56 @@ class GroupTest {
         }
         // Next syncAllGroups will not include the inactive group
         assertEquals(numGroups, 2u)
+    }
+
+    @Test
+    fun testGroupDisappearingMessages() {
+        // Can enable message expiration on create
+        val boGroup = runBlocking {
+            boClient.conversations.newGroup(
+                listOf(alix.walletAddress),
+                messageExpiration = MessageExpiration(0L, 10L),
+            )
+        }
+        val messageId = runBlocking {
+            boGroup.send("howdy")
+        }
+        runBlocking { alixClient.conversations.syncAllConversations() }
+        var message = boClient.findMessage(messageId)
+        var alixMessage = alixClient.findMessage(messageId)
+        val alixGroup = alixClient.findGroup(boGroup.id)
+        assert(message != null)
+        assert(alixMessage != null)
+        assertEquals(runBlocking { boGroup.messages() }.size, 2)
+        assertEquals(runBlocking { alixGroup!!.messages() }.size, 1)
+        Thread.sleep(2000)
+        runBlocking {
+            boClient.conversations.syncAllConversations()
+            alixClient.conversations.syncAllConversations()
+        }
+        message = boClient.findMessage(messageId)
+        alixMessage = alixClient.findMessage(messageId)
+        assert(message == null)
+        assertEquals(runBlocking { boGroup.messages() }.size, 0)
+        assert(alixMessage == null)
+        assertEquals(runBlocking { alixGroup!!.messages() }.size, 0)
+
+        // Can disable message expiration
+        val messageExpiration = MessageExpiration(0L, 0L)
+        runBlocking {
+            alixGroup!!.updateMessageExpiration(messageExpiration)
+            boGroup.sync()
+            alixGroup.sync()
+            boGroup.send("howdy")
+            alixGroup.send("hi")
+            boGroup.sync()
+            alixGroup.sync()
+        }
+        Thread.sleep(2000)
+
+        assertEquals(runBlocking { boGroup.messages() }.size, 2)
+        assertEquals(runBlocking { alixGroup!!.messages() }.size, 2)
+        assertEquals(boGroup.messageExpiration, messageExpiration)
+        assertEquals(alixGroup!!.messageExpiration, messageExpiration)
     }
 }

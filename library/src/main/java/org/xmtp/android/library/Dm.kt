@@ -24,7 +24,11 @@ import uniffi.xmtpv3.FfiMessageDisappearingSettings
 import uniffi.xmtpv3.FfiSubscribeException
 import java.util.Date
 
-class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private val ffiLastMessage: FfiMessage? = null) {
+class Dm(
+    val client: Client,
+    private val libXMTPGroup: FfiConversation,
+    private val ffiLastMessage: FfiMessage? = null,
+) {
     val id: String
         get() = libXMTPGroup.id().toHex()
 
@@ -38,7 +42,7 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
         get() = libXMTPGroup.dmPeerInboxId()
 
     val messageExpiration: MessageExpiration
-        get() = MessageExpiration(libXMTPGroup.conversationMessageDisappearingSettings())
+        get() = MessageExpiration.createFromFfi(libXMTPGroup.conversationMessageDisappearingSettings())
 
     private suspend fun metadata(): FfiConversationMetadata {
         return libXMTPGroup.groupMetadata()
@@ -162,8 +166,8 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
             )
         )
 
-        return ffiMessageWithReactions.mapNotNull { ffiMessageWithReactions ->
-            Message.create(ffiMessageWithReactions)
+        return ffiMessageWithReactions.mapNotNull { ffiMessageWithReaction ->
+            Message.create(ffiMessageWithReaction)
         }
     }
 
@@ -202,10 +206,13 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
         awaitClose { stream.end() }
     }
 
-    suspend fun updateMessageExpiration(startAtNs: Long, durationNs: Long) {
+    suspend fun updateMessageExpiration(messageExpiration: MessageExpiration) {
         try {
             return libXMTPGroup.updateConversationMessageDisappearingSettings(
-                FfiMessageDisappearingSettings(startAtNs, durationNs)
+                FfiMessageDisappearingSettings(
+                    messageExpiration.expirationStartAtNs,
+                    messageExpiration.expirationDurationInNs
+                )
             )
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to update group message expiration", e)
