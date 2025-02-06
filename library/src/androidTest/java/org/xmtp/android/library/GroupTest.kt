@@ -1057,9 +1057,8 @@ class GroupTest {
         assertEquals(runBlocking { alixGroup!!.messages() }.size, 0)
 
         // Can disable message expiration
-        val messageDisappearingSettings = MessageDisappearingSettings(0L, 0L)
         runBlocking {
-            alixGroup!!.updateMessageExpiration(messageDisappearingSettings)
+            alixGroup!!.updateMessageDisappearingSettings(null)
             boGroup.sync()
             alixGroup.sync()
             boGroup.send("howdy")
@@ -1071,7 +1070,7 @@ class GroupTest {
 
         assertEquals(runBlocking { boGroup.messages() }.size, 2)
         assertEquals(runBlocking { alixGroup!!.messages() }.size, 2)
-        assertEquals(boGroup.messageDisappearingSettings, messageDisappearingSettings)
-        assertEquals(alixGroup!!.messageDisappearingSettings, messageDisappearingSettings)
+        assertEquals(boGroup.messageDisappearingSettings, null)
+        assertEquals(alixGroup!!.messageDisappearingSettings, null)
     }
 }

@@ -206,14 +206,18 @@ class Dm(
         awaitClose { stream.end() }
     }
 
-    suspend fun updateMessageDisappearingSettings(messageDisappearingSettings: MessageDisappearingSettings) {
+    suspend fun updateMessageDisappearingSettings(messageDisappearingSettings: MessageDisappearingSettings?) {
         try {
-            return libXMTPGroup.updateConversationMessageDisappearingSettings(
-                FfiMessageDisappearingSettings(
-                    messageDisappearingSettings.disappearStartingAtNs,
-                    messageDisappearingSettings.disappearDurationInNs
+            if (messageDisappearingSettings == null) {
+                libXMTPGroup.removeConversationMessageDisappearingSettings()
+            } else {
+                libXMTPGroup.updateConversationMessageDisappearingSettings(
+                    FfiMessageDisappearingSettings(
+                        messageDisappearingSettings.disappearStartingAtNs,
+                        messageDisappearingSettings.disappearDurationInNs
+                    )
                 )
-            )
+            }
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to update group message expiration", e)
         }
