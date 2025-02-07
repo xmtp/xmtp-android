@@ -1025,57 +1025,52 @@ class GroupTest {
     }
 
     @Test
-    fun testGroupDisappearingMessages() {
+    fun testGroupDisappearingMessages() = runBlocking {
         // Can enable message expiration on create
         val setting = MessageDisappearingSettings(0L, 1L)
-        val boGroup = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(alix.walletAddress),
-                messageDisappearingSettings = setting,
-            )
-        }
-        val messageId = runBlocking {
-            boGroup.send("howdy")
-        }
-        runBlocking { alixClient.conversations.syncAllConversations() }
-        var message = boClient.findMessage(messageId)
-        var alixMessage = alixClient.findMessage(messageId)
-        val alixGroup = alixClient.findGroup(boGroup.id)
-        assertEquals(
-            boGroup.messageDisappearingSettings()!!.disappearDurationInNs,
-            setting.disappearDurationInNs
+        val boGroup = boClient.conversations.newGroup(
+            listOf(alix.walletAddress),
+            messageDisappearingSettings = setting
         )
-        assert(message != null)
-        assert(alixMessage != null)
-        assertEquals(runBlocking { boGroup.messages() }.size, 2)
-        assertEquals(runBlocking { alixGroup!!.messages() }.size, 1)
-        runBlocking {
-            boClient.conversations.syncAllConversations()
-            alixClient.conversations.syncAllConversations()
-        }
+
+        val messageId = boGroup.send("howdy")
+        alixClient.conversations.syncAllConversations()
+
+        val message = boClient.findMessage(messageId)
+        val alixGroup = alixClient.findGroup(boGroup.id)
+
+        assertEquals(boGroup.messageDisappearingSettings()?.disappearDurationInNs, setting.disappearDurationInNs)
+
+        assertEquals(boGroup.messages().size, 2)
+        assertEquals(alixGroup?.messages()?.size, 1)
+
+        boGroup.updateMessageDisappearingSettings(MessageDisappearingSettings(message!!.sentAtNs, 1L))
+        boGroup.send("howdy2")
+        alixGroup!!.send("howdy howdy")
+
+        assertEquals(boGroup.messages().size, 4)
+        assertEquals(alixGroup.messages().size, 4)
+        boClient.conversations.syncAllConversations()
+        alixClient.conversations.syncAllConversations()
         Thread.sleep(4000)
-        message = boClient.findMessage(messageId)
-        alixMessage = alixClient.findMessage(messageId)
-        assert(message == null)
-        assertEquals(runBlocking { boGroup.messages() }.size, 0)
-        assert(alixMessage == null)
-        assertEquals(runBlocking { alixGroup!!.messages() }.size, 0)
+
+        assertEquals(boGroup.messages().size, 2)
+        assertEquals(alixGroup.messages().size, 1)
 
         // Can disable message expiration
-        runBlocking {
-            alixGroup!!.updateMessageDisappearingSettings(null)
-            boGroup.sync()
-            alixGroup.sync()
-            boGroup.send("howdy")
-            alixGroup.send("hi")
-            boGroup.sync()
-            alixGroup.sync()
-        }
+        alixGroup.updateMessageDisappearingSettings(null)
+        boGroup.sync()
+        alixGroup.sync()
+        boGroup.send("howdy")
+        alixGroup.send("hi")
+        boGroup.sync()
+        alixGroup.sync()
+
         Thread.sleep(2000)
 
-        assertEquals(runBlocking { boGroup.messages() }.size, 2)
-        assertEquals(runBlocking { alixGroup!!.messages() }.size, 2)
+        assertEquals(boGroup.messages().size, 4)
+        assertEquals(alixGroup.messages().size, 4)
         assertEquals(boGroup.messageDisappearingSettings(), null)
-        assertEquals(alixGroup!!.messageDisappearingSettings(), null)
+        assertEquals(alixGroup.messageDisappearingSettings(), null)
     }
 }
