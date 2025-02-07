@@ -66,7 +66,6 @@ class Group(
             null
         } else {
             MessageDisappearingSettings.createFromFfi(settings)
-
         }
     }
 
@@ -293,20 +292,32 @@ class Group(
         }
     }
 
-    suspend fun updateMessageDisappearingSettings(messageDisappearingSettings: MessageDisappearingSettings?) {
+    suspend fun updateMessageDisappearingSettings(messageDisappearingSettings: MessageDisappearingSettings) {
         try {
-            if (messageDisappearingSettings == null) {
-                libXMTPGroup.removeConversationMessageDisappearingSettings()
-            } else {
-                libXMTPGroup.updateConversationMessageDisappearingSettings(
-                    FfiMessageDisappearingSettings(
-                        messageDisappearingSettings.disappearStartingAtNs,
-                        messageDisappearingSettings.disappearDurationInNs
-                    )
+            libXMTPGroup.updateConversationMessageDisappearingSettings(
+                FfiMessageDisappearingSettings(
+                    messageDisappearingSettings.disappearStartingAtNs,
+                    messageDisappearingSettings.disappearDurationInNs
                 )
-            }
+            )
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to update group message expiration", e)
+        }
+    }
+
+    suspend fun clearMessageDisappearingSettings() {
+        try {
+            libXMTPGroup.removeConversationMessageDisappearingSettings()
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to update group message expiration", e)
+        }
+    }
+
+    fun isMessageDisappearingSettingsEnabled(): Boolean {
+        return try {
+            libXMTPGroup.isConversationMessageDisappearingEnabled()
+        } catch(e: Exception) {
+            false
         }
     }
 

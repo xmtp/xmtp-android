@@ -66,7 +66,7 @@ sealed class Conversation {
         }
     }
 
-    suspend fun updateMessageDisappearingSettings(messageDisappearingSettings: MessageDisappearingSettings?) {
+    suspend fun updateMessageDisappearingSettings(messageDisappearingSettings: MessageDisappearingSettings) {
         return when (this) {
             is Group -> group.updateMessageDisappearingSettings(messageDisappearingSettings)
             is Dm -> dm.updateMessageDisappearingSettings(messageDisappearingSettings)

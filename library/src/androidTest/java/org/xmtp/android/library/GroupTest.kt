@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
@@ -57,6 +58,7 @@ class GroupTest {
 
         alixClient = fixtures.alixClient
         boClient = fixtures.boClient
+        Thread.sleep(5000)
         caroClient = fixtures.caroClient
     }
 
@@ -1029,11 +1031,9 @@ class GroupTest {
 
     @Test
     fun testGroupDisappearingMessages() = runBlocking {
-        // Can enable message expiration on create
-//        val setting = MessageDisappearingSettings(0L, 1L)
+
         val boGroup = boClient.conversations.newGroup(
-            listOf(alix.walletAddress),
-//            messageDisappearingSettings = setting
+            listOf(alix.walletAddress)
         )
 
         val messageId = boGroup.send("howdy")
@@ -1042,33 +1042,53 @@ class GroupTest {
         val message = boClient.findMessage(messageId)
         val alixGroup = alixClient.findGroup(boGroup.id)
 
-//        assertEquals(boGroup.messageDisappearingSettings()?.disappearDurationInNs, setting.disappearDurationInNs)
-
         assertEquals(boGroup.messages().size, 2)
         assertEquals(alixGroup?.messages()?.size, 1)
+        assertFalse(boGroup.isMessageDisappearingSettingsEnabled())
 
-        boGroup.updateMessageDisappearingSettings(MessageDisappearingSettings(message!!.sentAtNs, 1L))
+        val settings = MessageDisappearingSettings(
+            message!!.sentAtNs + 1,
+            10L
+        )
+
+        boGroup.updateMessageDisappearingSettings(settings)
+
         boGroup.sync()
         alixGroup!!.sync()
+
+        assertEquals(
+            boGroup.messageDisappearingSettings()!!.disappearStartingAtNs,
+            settings.disappearStartingAtNs
+        )
+        assertEquals(
+            boGroup.messageDisappearingSettings()!!.disappearDurationInNs,
+            settings.disappearDurationInNs
+        )
+        assertEquals(
+            alixGroup.messageDisappearingSettings()!!.disappearStartingAtNs,
+            settings.disappearStartingAtNs
+        )
+        assertEquals(
+            alixGroup.messageDisappearingSettings()!!.disappearDurationInNs,
+            settings.disappearDurationInNs
+        )
+
         boGroup.send("howdy2")
         alixGroup.send("howdy howdy")
 
-        boGroup.sync()
-        alixGroup.sync()
         Thread.sleep(2000)
 
-        boGroup.messages()
-        assertEquals(3, boGroup.messages().size)
+        assertEquals(4, boGroup.messages().size)
         // update group membership 1
         // howdy
         // update start ns <- group membership
         // updated duration ns <- group membership
         // howdy2
         // howdy howdy
-        assertEquals(2, alixGroup.messages().size)
+        assertEquals(3, alixGroup.messages().size)
 
         // Can disable message expiration
-        alixGroup.updateMessageDisappearingSettings(null)
+        boGroup.clearMessageDisappearingSettings()
         boGroup.sync()
         alixGroup.sync()
         boGroup.send("howdy")
@@ -1078,9 +1098,11 @@ class GroupTest {
 
         Thread.sleep(2000)
 
-        assertEquals(boGroup.messages().size, 4)
-        assertEquals(alixGroup.messages().size, 4)
+        assertEquals(9, boGroup.messages().size)
+        assertEquals(7, alixGroup.messages().size)
         assertEquals(boGroup.messageDisappearingSettings(), null)
         assertEquals(alixGroup.messageDisappearingSettings(), null)
+        assertFalse(boGroup.isMessageDisappearingSettingsEnabled())
+        assertFalse(alixGroup.isMessageDisappearingSettingsEnabled())
     }
 }
