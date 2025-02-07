@@ -37,14 +37,6 @@ sealed class Conversation {
             }
         }
 
-    val messageDisappearingSettings: MessageDisappearingSettings
-        get() {
-            return when (this) {
-                is Group -> group.messageDisappearingSettings
-                is Dm -> dm.messageDisappearingSettings
-            }
-        }
-
     val createdAt: Date
         get() {
             return when (this) {
@@ -52,6 +44,13 @@ sealed class Conversation {
                 is Dm -> dm.createdAt
             }
         }
+
+    fun messageDisappearingSettings(): MessageDisappearingSettings? {
+        return when (this) {
+            is Group -> group.messageDisappearingSettings()
+            is Dm -> dm.messageDisappearingSettings()
+        }
+    }
 
     suspend fun lastMessage(): Message? {
         return when (this) {

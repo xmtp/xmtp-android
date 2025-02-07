@@ -60,8 +60,15 @@ class Group(
     val description: String
         get() = libXMTPGroup.groupDescription()
 
-    val messageDisappearingSettings: MessageDisappearingSettings
-        get() = MessageDisappearingSettings.createFromFfi(libXMTPGroup.conversationMessageDisappearingSettings())
+    fun messageDisappearingSettings(): MessageDisappearingSettings? {
+        val settings = libXMTPGroup.conversationMessageDisappearingSettings()
+        return if (settings.fromNs <= 0 && settings.inNs <= 0) {
+            null
+        } else {
+            MessageDisappearingSettings.createFromFfi(settings)
+
+        }
+    }
 
     suspend fun send(text: String): String {
         return send(encodeContent(content = text, options = null))
