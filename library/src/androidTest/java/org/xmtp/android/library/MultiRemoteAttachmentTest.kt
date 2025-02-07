@@ -29,6 +29,7 @@ import org.xmtp.android.library.codecs.decoded
 import org.xmtp.android.library.codecs.id
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.walletAddress
+import uniffi.xmtpv3.FfiMultiEncryptedAttachment
 import uniffi.xmtpv3.FfiMultiRemoteAttachment
 import uniffi.xmtpv3.FfiReaction
 import uniffi.xmtpv3.FfiReactionAction
@@ -43,6 +44,21 @@ import java.net.URL
 
 @RunWith(AndroidJUnit4::class)
 class MultiRemoteAttachmentTest {
+
+    val attachment1 = Attachment(
+        filename = "test123.txt",
+        mimeType = "text/plain",
+        data = "hello world".toByteStringUtf8(),
+    )
+
+    val attachment2 = Attachment(
+        filename = "test456.txt",
+        mimeType = "text/plain",
+        data = "hello world".toByteStringUtf8(),
+    )
+
+    lateinit var encryptedAttachment1: ByteArray
+    lateinit var encryptedAttachment2: ByteArray
 
     @Test
     fun testEncryptedContentShouldBeDecryptable() {
@@ -82,46 +98,23 @@ class MultiRemoteAttachmentTest {
         Assert.assertEquals("test2.txt", decoded2?.filename)
     }
 
-    val context = ApplicationProvider.getApplicationContext<Context>()
-
     @Test
     fun testCanUseMultiRemoteAttachmentCodec() {
-        val attachment1 = Attachment(
-            filename = "test123.txt",
-            mimeType = "text/plain",
-            data = "hello world".toByteStringUtf8(),
-        )
-
-        val attachment2 = Attachment(
-            filename = "test456.txt",
-            mimeType = "text/plain",
-            data = "hello world".toByteStringUtf8(),
-        )
 
         Client.register(codec = AttachmentCodec())
         Client.register(codec = MultiRemoteAttachmentCodec())
 
         val codec = AttachmentCodec()
 
-        val multiEncryptedAttachment = encryptEncodedContentArray(
+        val multiEncryptedAttachment: FfiMultiEncryptedAttachment = encryptEncodedContentArray(
             listOf(
                 codec.encode(attachment1).toByteArray(),
                 codec.encode(attachment2).toByteArray()
             )
         )
 
-//        val decryptedEncodedContentBytesList = decryptMultiEncryptedAttachment(multiEncryptedAttachment)
-//        var encodedContentList: MutableList<EncodedContent> = ArrayList()
-//        for (decryptedEncodedContentBytes in decryptedEncodedContentBytesList) {
-//            val encodedContent = EncodedContent.parseFrom(decryptedEncodedContentBytes)
-//            encodedContentList.add(encodedContent)
-//        }
-//        runBlocking {
-//                val attachment1: Attachment? =
-//                    encodedContentList[0].decoded<Attachment>()
-//                Assert.assertEquals("test123.txt", attachment1?.filename)
-//            }
-
+        encryptedAttachment1 = multiEncryptedAttachment.encryptedAttachments[0].payload
+        encryptedAttachment2 = multiEncryptedAttachment.encryptedAttachments[1].payload
 
         val uploadLocations = listOf("https://uploadlocation1.com", "https://uploadLocation2.com")
         val multiRemoteAttachment: FfiMultiRemoteAttachment =
@@ -136,72 +129,55 @@ class MultiRemoteAttachmentTest {
         val aliceConversation = runBlocking {
             aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
         }
-
         runBlocking {
             aliceConversation.send(
                 content = multiRemoteAttachment,
                 options = SendOptions(contentType = ContentTypeMultiRemoteAttachment),
             )
         }
-
         val messages = runBlocking { aliceConversation.messages() }
         Assert.assertEquals(messages.size, 1)
-//
-//        if (messages.size == 1) {
-//            val loadedMultiRemoteAttachment: FfiMultiRemoteAttachment = messages[0].content()!!
-//            val downloadedEncryptedAttachment1 =
-//                simulateDownload(loadedMultiRemoteAttachment.attachments[0].url)
-//            val downloadedEncryptedAttachment2 =
-//                simulateDownload(loadedMultiRemoteAttachment.attachments[1].url)
-//
-//            val encodedContentList: List<EncodedContent> = decryptMultiRemoteAttachment(
-//                loadedMultiRemoteAttachment.also {
-//                    Log.d("XMTP", "MultiRemoteAttachment nonce[PLZ]: ${it.secret.contentToString()}")
-//                },
-//                listOf(downloadedEncryptedAttachment1, downloadedEncryptedAttachment2)
-//            )
-//
-//
-//            runBlocking {
-//                val attachment1: Attachment? =
-//                    encodedContentList[0].decoded<Attachment>()
-//                Assert.assertEquals("test123.txt", attachment1?.filename)
-//            }
-//        }
+
+        if (messages.size == 1) {
+            val loadedMultiRemoteAttachment: FfiMultiRemoteAttachment = messages[0].content()!!
+
+            // QUESTION => How do I construct a FfiMultiEncryptedAttachment out of a FfiMultiRemoteAttachment
+
+            // Step 1 => utilize the URLs in loadedMultiRemoteAttachment to download 2 encrypted payloads.
+            //IMMEDIATELY make sure that these 2 encrypted payloads match the two encrypted payloads that were an input to `generateMultiRemoteAttachment`
+            val url1 = loadedMultiRemoteAttachment.attachments[0].url
+            val url2 = loadedMultiRemoteAttachment.attachments[1].url
+            val download1 = simulateDownload(url1)
+            val download2 = simulateDownload(url2)
+            Assert.assertEquals(download1.contentToString(), multiEncryptedAttachment.encryptedAttachments[0].payload.contentToString())
+            Assert.assertEquals(download2.contentToString(), multiEncryptedAttachment.encryptedAttachments[1].payload.contentToString())
+
+            // Step 2 => call the function decryptMultiRemoteAttachment with the two arguments of a) the multiRemoteAttachment
+            // and b) a list of the encrypted payloads that you downloaded
+
+            val encodedContentList: List<EncodedContent> = decryptMultiRemoteAttachment(
+                loadedMultiRemoteAttachment,
+                listOf(download1, download2)
+            )
+
+            // Step 3 => verify that the encoded content returned matched the encoded content passed in
+            // through the multiRemoteAttachment to begin with
+            runBlocking {
+                val attachment1: Attachment? =
+                    encodedContentList[0].decoded<Attachment>()
+                Assert.assertEquals("test123.txt", attachment1?.filename)
+            }
+        }
     }
 
     fun simulateDownload(url: String): ByteArray {
-        val attachment1 = Attachment(
-            filename = "test1.txt",
-            mimeType = "text/plain",
-            data = "hello world".toByteStringUtf8(),
-        )
-
-        val attachment2 = Attachment(
-            filename = "test2.txt",
-            mimeType = "text/plain",
-            data = "hello world".toByteStringUtf8(),
-        )
-
-        val codec = AttachmentCodec()
-
-        val multiEncryptedAttachment = encryptEncodedContentArray(
-            listOf(
-                codec.encode(attachment1).toByteArray(),
-                codec.encode(attachment2).toByteArray()
-            )
-        )
         when (url) {
             "https://uploadlocation1.com" -> {
-                return multiEncryptedAttachment.encryptedAttachments[0].payload.also {
-                    Log.d("XMTP", "MultiRemoteAttachment payload[https://uploadlocation1.com]: ${it.contentToString()}")
-                }
+                return encryptedAttachment1
             }
 
             "https://uploadLocation2.com" -> {
-                return multiEncryptedAttachment.encryptedAttachments[1].payload.also {
-                    Log.d("XMTP", "MultiRemoteAttachment payload[https://uploadlocation2.com]: ${it.contentToString()}")
-                }
+                return encryptedAttachment2
             }
         }
         return byteArrayOf()
