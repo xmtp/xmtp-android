@@ -39,7 +39,6 @@ enum class BackupElement {
     }
 }
 
-
 data class BackupMetadata(private val ffiBackupMetadata: FfiBackupMetadata) {
     val backupVersion: UShort get() = ffiBackupMetadata.backupVersion
     val elements: List<BackupElement>
@@ -52,4 +51,3 @@ data class BackupMetadata(private val ffiBackupMetadata: FfiBackupMetadata) {
     val startNs: Long? get() = ffiBackupMetadata.startNs
     val endNs: Long? get() = ffiBackupMetadata.endNs
 }
-
