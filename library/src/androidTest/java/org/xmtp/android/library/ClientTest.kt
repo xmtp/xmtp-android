@@ -683,10 +683,24 @@ class ClientTest {
         val allPath = directoryFile.absolutePath + "/testAll.zstd"
         val consentPath = consentFile.absolutePath + "/testConsent.zstd"
 
-        runBlocking {
+        val boGroup = runBlocking {
             val group = alixClient.conversations.newGroup(listOf(fixtures.boClient.address))
             group.send("hi")
             alixClient.conversations.syncAllConversations()
+            fixtures.boClient.conversations.syncAllConversations()
+            fixtures.boClient.findGroup(group.id)!!
+        }
+
+        val alixClient2 = runBlocking {
+            Client().create(
+                account = alixWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    appContext = context,
+                    dbEncryptionKey = key,
+                    dbDirectory = context.filesDir.absolutePath.toString()
+                )
+            )
         }
 
         runBlocking { alixClient.backupToFile(allPath, encryptionKey) }
@@ -704,21 +718,16 @@ class ClientTest {
         assertEquals(metadataAll.elements.size, 2)
         assertEquals(metadataConsent.elements, listOf(BackupElement.CONSENT))
 
-        val alixClient2 = runBlocking {
-            Client().create(
-                account = alixWallet,
-                options = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                    appContext = context,
-                    dbEncryptionKey = key,
-                    dbDirectory = context.filesDir.absolutePath.toString()
-                )
-            )
+        runBlocking {
+            alixClient2.importFromFile(allPath, encryptionKey)
+            alixClient2.conversations.syncAllConversations()
+//            boGroup.send("hey")
+//            fixtures.boClient.conversations.syncAllConversations()
+//            Thread.sleep(2000)
+//            alixClient2.conversations.syncAllConversations()
         }
-
-        runBlocking { alixClient2.importFromFile(allPath, encryptionKey) }
         val convosList = runBlocking { alixClient2.conversations.list() }
-        assertEquals(convosList.size, 1)
+        assertEquals(1, convosList.size)
         assertEquals(runBlocking { convosList.first().messages() }.size, 2)
         assertEquals(convosList.first().consentState(), ConsentState.ALLOWED)
     }
