@@ -12,6 +12,8 @@ val ContentTypeAttachment = ContentTypeIdBuilder.builderFromAuthorityId(
 
 data class Attachment(val filename: String, val mimeType: String, val data: ByteString)
 
+data class LocalAttachment(val filename: String, val mimeType: String, val absoluteFilePath: String)
+
 data class AttachmentCodec(override var contentType: ContentTypeId = ContentTypeAttachment) : ContentCodec<Attachment> {
     override fun encode(content: Attachment): EncodedContent {
         return EncodedContent.newBuilder().also {
