@@ -750,7 +750,7 @@ class GroupTest {
                 alixClient.conversations.newGroup(listOf(bo.walletAddress))
             assertEquals(group.id, awaitItem().id)
             val group2 =
-                caroClient.conversations.newGroup(listOf(bo.walletAddress))
+                boClient.conversations.newGroup(listOf(caro.walletAddress))
             assertEquals(group2.id, awaitItem().id)
         }
     }
