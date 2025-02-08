@@ -138,13 +138,12 @@ class MultiRemoteAttachmentTest {
         val messages = runBlocking { aliceConversation.messages() }
         Assert.assertEquals(messages.size, 1)
 
-        if (messages.size == 1) {
+        // Below steps outlines how to handle receiving a MultiRemoteAttachment message
+        if (messages.size == 1 && messages[0].encodedContent.type.id.equals(ContentTypeMultiRemoteAttachment)) {
             val loadedMultiRemoteAttachment: FfiMultiRemoteAttachment = messages[0].content()!!
 
-            // QUESTION => How do I construct a FfiMultiEncryptedAttachment out of a FfiMultiRemoteAttachment
-
             // Step 1 => utilize the URLs in loadedMultiRemoteAttachment to download 2 encrypted payloads.
-            //IMMEDIATELY make sure that these 2 encrypted payloads match the two encrypted payloads that were an input to `generateMultiRemoteAttachment`
+            // Next, make sure that these 2 encrypted payloads match the two encrypted payloads that were an input to `generateMultiRemoteAttachment`
             val url1 = loadedMultiRemoteAttachment.attachments[0].url
             val url2 = loadedMultiRemoteAttachment.attachments[1].url
             val download1 = simulateDownload(url1)
@@ -154,7 +153,6 @@ class MultiRemoteAttachmentTest {
 
             // Step 2 => call the function decryptMultiRemoteAttachment with the two arguments of a) the multiRemoteAttachment
             // and b) a list of the encrypted payloads that you downloaded
-
             val encodedContentList: List<EncodedContent> = decryptMultiRemoteAttachment(
                 loadedMultiRemoteAttachment,
                 listOf(download1, download2)
@@ -167,6 +165,8 @@ class MultiRemoteAttachmentTest {
                     encodedContentList[0].decoded<Attachment>()
                 Assert.assertEquals("test123.txt", attachment1?.filename)
             }
+        } else {
+            AssertionError("expected a MultiRemoteAttachment message")
         }
     }
 
