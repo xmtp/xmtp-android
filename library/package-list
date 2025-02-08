@@ -1246,6 +1246,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversation/groupPermissions/#/PointingToDecla
 $dokka.location:uniffi.xmtpv3/FfiConversation/id/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/id.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/isActive/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/is-active.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/isAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/is-admin.html
+$dokka.location:uniffi.xmtpv3/FfiConversation/isConversationMessageDisappearingEnabled/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/is-conversation-message-disappearing-enabled.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/isSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/is-super-admin.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/listMembers/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/list-members.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/processStreamedConversationMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/process-streamed-conversation-message.html
@@ -1304,6 +1305,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversationInterface/groupPermissions/#/Pointi
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/id/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/id.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/isActive/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/is-active.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/isAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/is-admin.html
+$dokka.location:uniffi.xmtpv3/FfiConversationInterface/isConversationMessageDisappearingEnabled/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/is-conversation-message-disappearing-enabled.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/isSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/is-super-admin.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/listMembers/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/list-members.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/processStreamedConversationMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/process-streamed-conversation-message.html
