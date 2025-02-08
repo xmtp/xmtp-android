@@ -6,9 +6,13 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
+import org.xmtp.android.library.libxmtp.BackupMetadata
+import org.xmtp.android.library.libxmtp.BackupOptions
 import org.xmtp.android.library.libxmtp.InboxState
 import org.xmtp.android.library.libxmtp.Message
+import org.xmtp.android.library.libxmtp.toFfi
 import org.xmtp.android.library.messages.rawData
+import uniffi.xmtpv3.FfiBackupOptions
 import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiSignatureRequest
 import uniffi.xmtpv3.FfiXmtpClient
@@ -409,5 +413,21 @@ class Client() {
 
     suspend fun inboxState(refreshFromNetwork: Boolean): InboxState {
         return InboxState(ffiClient.inboxState(refreshFromNetwork))
+    }
+
+    suspend fun backupToFile(
+        path: String,
+        encryptionKey: ByteArray,
+        opts: BackupOptions = BackupOptions(),
+    ) {
+        ffiClient.backupToFile(path, opts.toFfi(), encryptionKey)
+    }
+
+    suspend fun importFromFile(path: String, encryptionKey: ByteArray) {
+        ffiClient.importFromFile(path, encryptionKey)
+    }
+
+    suspend fun backupMetadata(path: String, encryptionKey: ByteArray): BackupMetadata {
+        return BackupMetadata(ffiClient.backupMetadata(path, encryptionKey))
     }
 }
