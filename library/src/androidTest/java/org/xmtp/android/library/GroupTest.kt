@@ -1048,12 +1048,12 @@ class GroupTest {
         val alixGroup = alixClient.findGroup(boGroup.id)
 
         // Validate messages exist and settings are applied
-        assertEquals(boGroup.messages().size, 4) // memberAdd, disappearing settings 1, disappearing settings 2, howdy
+        assertEquals(boGroup.messages().size, 2) // memberAdd, howdy
         assertEquals(alixGroup?.messages()?.size, 1) // howdy
         assertNotNull(boGroup.messageDisappearingSettings)
         Thread.sleep(2000)
         // Validate messages are deleted
-        assertEquals(boGroup.messages().size, 3) // memberAdd, disappearing settings 1, disappearing settings 2
+        assertEquals(boGroup.messages().size, 1) // memberAdd
         assertEquals(alixGroup?.messages()?.size, 0)
 
         // Set message disappearing settings to null
@@ -1071,7 +1071,7 @@ class GroupTest {
         Thread.sleep(2000)
 
         // Ensure messages persist
-        assertEquals(boGroup.messages().size, 7) // memberAdd, disappearing settings 1, disappearing settings 2, disappearing settings 1, disappearing settings 2, boMessage, alixMessage
+        assertEquals(boGroup.messages().size, 5) // memberAdd, disappearing settings 1, disappearing settings 2, boMessage, alixMessage
         assertEquals(alixGroup.messages().size, 4) // disappearing settings 1, disappearing settings 2, boMessage, alixMessage
 
         // Re-enable disappearing messages
@@ -1093,13 +1093,13 @@ class GroupTest {
 
         Thread.sleep(1000)
 
-        assertEquals(boGroup.messages().size, 11) // memberAdd, disappearing settings 1, disappearing settings 2, disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
+        assertEquals(boGroup.messages().size, 9) // memberAdd, disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
         assertEquals(alixGroup.messages().size, 8) // disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
 
         Thread.sleep(2000) // Wait for messages to disappear
 
         // Validate messages were deleted
-        assertEquals(boGroup.messages().size, 3) // memberAdd, disappearing settings 1, disappearing settings 2, disappearing settings 3, disappearing settings 4, disappearing settings 5, disappearing settings 6
+        assertEquals(boGroup.messages().size, 5) // memberAdd, disappearing settings 3, disappearing settings 4, disappearing settings 5, disappearing settings 6
         assertEquals(alixGroup.messages().size, 4) // disappearing settings 3, disappearing settings 4, disappearing settings 5, disappearing settings 6
 
         // Final validation that settings persist
