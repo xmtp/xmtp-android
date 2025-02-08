@@ -8,6 +8,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
@@ -57,6 +60,7 @@ class GroupTest {
 
         alixClient = fixtures.alixClient
         boClient = fixtures.boClient
+        Thread.sleep(5000)
         caroClient = fixtures.caroClient
     }
 
@@ -940,7 +944,6 @@ class GroupTest {
         val alixGroup: Group = alixClient.findGroup(boGroup.id)!!
         runBlocking { assertEquals(alixGroup.consentState(), ConsentState.UNKNOWN) }
         val preparedMessageId = runBlocking { alixGroup.prepareMessage("Test text") }
-        runBlocking { assertEquals(alixGroup.consentState(), ConsentState.ALLOWED) }
         assertEquals(runBlocking { alixGroup.messages() }.size, 1)
         assertEquals(
             runBlocking { alixGroup.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED) }.size,
@@ -955,7 +958,7 @@ class GroupTest {
             alixGroup.publishMessages()
             alixGroup.sync()
         }
-
+        runBlocking { assertEquals(alixGroup.consentState(), ConsentState.ALLOWED) }
         assertEquals(
             runBlocking { alixGroup.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED) }.size,
             1
@@ -1029,58 +1032,78 @@ class GroupTest {
 
     @Test
     fun testGroupDisappearingMessages() = runBlocking {
-        // Can enable message expiration on create
-//        val setting = MessageDisappearingSettings(0L, 1L)
-        val boGroup = boClient.conversations.newGroup(
-            listOf(alix.walletAddress),
-//            messageDisappearingSettings = setting
+        val initialSettings = MessageDisappearingSettings(
+            System.nanoTime() - 1_000_000_000,
+            2_000_000_000 // 2s duration
         )
 
-        val messageId = boGroup.send("howdy")
+        // Create group with disappearing messages enabled
+        val boGroup = boClient.conversations.newGroup(
+            listOf(alix.walletAddress),
+            messageDisappearingSettings = initialSettings
+        )
+        boGroup.send("howdy")
         alixClient.conversations.syncAllConversations()
 
-        val message = boClient.findMessage(messageId)
         val alixGroup = alixClient.findGroup(boGroup.id)
 
-//        assertEquals(boGroup.messageDisappearingSettings()?.disappearDurationInNs, setting.disappearDurationInNs)
+        // Validate messages exist and settings are applied
+        assertEquals(boGroup.messages().size, 4) // memberAdd, disappearing settings 1, disappearing settings 2, howdy
+        assertEquals(alixGroup?.messages()?.size, 1) // howdy
+        assertNotNull(boGroup.messageDisappearingSettings)
+        Thread.sleep(2000)
+        // Validate messages are deleted
+        assertEquals(boGroup.messages().size, 3) // memberAdd, disappearing settings 1, disappearing settings 2
+        assertEquals(alixGroup?.messages()?.size, 0)
 
-        assertEquals(boGroup.messages().size, 2)
-        assertEquals(alixGroup?.messages()?.size, 1)
-
-        boGroup.updateMessageDisappearingSettings(MessageDisappearingSettings(message!!.sentAtNs, 1L))
+        // Set message disappearing settings to null
+        boGroup.updateMessageDisappearingSettings(null)
         boGroup.sync()
         alixGroup!!.sync()
-        boGroup.send("howdy2")
-        alixGroup.send("howdy howdy")
 
-        boGroup.sync()
-        alixGroup.sync()
-        Thread.sleep(2000)
+        assertNull(boGroup.messageDisappearingSettings)
+        assertNull(alixGroup.messageDisappearingSettings)
 
-        boGroup.messages()
-        assertEquals(3, boGroup.messages().size)
-        // update group membership 1
-        // howdy
-        // update start ns <- group membership
-        // updated duration ns <- group membership
-        // howdy2
-        // howdy howdy
-        assertEquals(2, alixGroup.messages().size)
-
-        // Can disable message expiration
-        alixGroup.updateMessageDisappearingSettings(null)
-        boGroup.sync()
-        alixGroup.sync()
-        boGroup.send("howdy")
-        alixGroup.send("hi")
-        boGroup.sync()
-        alixGroup.sync()
+        // Send messages after disabling disappearing settings
+        boGroup.send("message after disabling disappearing")
+        alixGroup.send("another message after disabling")
 
         Thread.sleep(2000)
 
-        assertEquals(boGroup.messages().size, 4)
-        assertEquals(alixGroup.messages().size, 4)
-        assertEquals(boGroup.messageDisappearingSettings(), null)
-        assertEquals(alixGroup.messageDisappearingSettings(), null)
+        // Ensure messages persist
+        assertEquals(boGroup.messages().size, 7) // memberAdd, disappearing settings 1, disappearing settings 2, disappearing settings 1, disappearing settings 2, boMessage, alixMessage
+        assertEquals(alixGroup.messages().size, 4) // disappearing settings 1, disappearing settings 2, boMessage, alixMessage
+
+        // Re-enable disappearing messages
+        val updatedSettings = MessageDisappearingSettings(
+            System.nanoTime() + 1_000_000_000, // 1s from now
+            2_000_000_000 // 2s duration
+        )
+        boGroup.updateMessageDisappearingSettings(updatedSettings)
+        boGroup.sync()
+        alixGroup.sync()
+
+        assertEquals(boGroup.messageDisappearingSettings, updatedSettings)
+        assertEquals(alixGroup.messageDisappearingSettings, updatedSettings)
+
+        // Send new messages
+        boGroup.send("this will disappear soon")
+        alixGroup.send("so will this")
+        boGroup.sync()
+
+        Thread.sleep(1000)
+
+        assertEquals(boGroup.messages().size, 11) // memberAdd, disappearing settings 1, disappearing settings 2, disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
+        assertEquals(alixGroup.messages().size, 8) // disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
+
+        Thread.sleep(2000) // Wait for messages to disappear
+
+        // Validate messages were deleted
+        assertEquals(boGroup.messages().size, 3) // memberAdd, disappearing settings 1, disappearing settings 2, disappearing settings 3, disappearing settings 4, disappearing settings 5, disappearing settings 6
+        assertEquals(alixGroup.messages().size, 4) // disappearing settings 3, disappearing settings 4, disappearing settings 5, disappearing settings 6
+
+        // Final validation that settings persist
+        assertEquals(boGroup.messageDisappearingSettings, updatedSettings)
+        assertEquals(alixGroup.messageDisappearingSettings, updatedSettings)
     }
 }

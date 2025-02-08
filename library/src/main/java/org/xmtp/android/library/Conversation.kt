@@ -45,12 +45,13 @@ sealed class Conversation {
             }
         }
 
-    fun messageDisappearingSettings(): MessageDisappearingSettings? {
-        return when (this) {
-            is Group -> group.messageDisappearingSettings()
-            is Dm -> dm.messageDisappearingSettings()
+    val messageDisappearingSettings: MessageDisappearingSettings?
+        get() {
+            return when (this) {
+                is Group -> group.messageDisappearingSettings
+                is Dm -> dm.messageDisappearingSettings
+            }
         }
-    }
 
     suspend fun lastMessage(): Message? {
         return when (this) {
