@@ -1099,7 +1099,7 @@ class GroupTest {
         assertEquals(boGroup.messages().size, 9) // memberAdd, disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
         assertEquals(alixGroup.messages().size, 8) // disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
 
-        Thread.sleep(5000) // Wait for messages to disappear
+        Thread.sleep(6000) // Wait for messages to disappear
 
         // Validate messages were deleted
         assertEquals(boGroup.messages().size, 7) // memberAdd, disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6
