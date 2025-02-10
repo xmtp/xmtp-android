@@ -43,8 +43,11 @@ class Dm(
 
     val disappearingMessageSettings: DisappearingMessageSettings?
         get() = runCatching {
-            libXMTPGroup.conversationMessageDisappearingSettings()
-                ?.let { DisappearingMessageSettings.createFromFfi(it) }
+            libXMTPGroup.takeIf { isDisappearingMessagesEnabled }
+                ?.let { group ->
+                    group.conversationMessageDisappearingSettings()
+                        ?.let { DisappearingMessageSettings.createFromFfi(it) }
+                }
         }.getOrNull()
 
     val isDisappearingMessagesEnabled: Boolean

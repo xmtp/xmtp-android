@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -438,6 +439,8 @@ class DmTest {
 
         assertNull(boDm.disappearingMessageSettings)
         assertNull(alixDm.disappearingMessageSettings)
+        assertFalse(boDm.isDisappearingMessagesEnabled)
+        assertFalse(alixDm.isDisappearingMessagesEnabled)
 
         // Send messages after disabling disappearing settings
         boDm.send("message after disabling disappearing")
@@ -511,5 +514,7 @@ class DmTest {
             alixDm.disappearingMessageSettings!!.disappearDurationInNs,
             updatedSettings.disappearDurationInNs
         )
+        assert(boDm.isDisappearingMessagesEnabled)
+        assert(alixDm.isDisappearingMessagesEnabled)
     }
 }

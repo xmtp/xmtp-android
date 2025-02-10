@@ -1055,12 +1055,14 @@ class GroupTest {
         assertEquals(alixGroup?.messages()?.size, 0)
 
         // Set message disappearing settings to null
-        boGroup.updateMessageDisappearingSettings(null)
+        boGroup.updateDisappearingMessageSettings(null)
         boGroup.sync()
         alixGroup!!.sync()
 
         assertNull(boGroup.disappearingMessageSettings)
         assertNull(alixGroup.disappearingMessageSettings)
+        assert(!boGroup.isDisappearingMessagesEnabled)
+        assert(!alixGroup.isDisappearingMessagesEnabled)
 
         // Send messages after disabling disappearing settings
         boGroup.send("message after disabling disappearing")
@@ -1084,7 +1086,7 @@ class GroupTest {
             boGroup.messages().first().sentAtNs + 1_000_000_000, // 1s from now
             1_000_000_000 // 1s duration
         )
-        boGroup.updateMessageDisappearingSettings(updatedSettings)
+        boGroup.updateDisappearingMessageSettings(updatedSettings)
         boGroup.sync()
         alixGroup.sync()
 
@@ -1134,5 +1136,7 @@ class GroupTest {
             alixGroup.disappearingMessageSettings!!.disappearDurationInNs,
             updatedSettings.disappearDurationInNs
         )
+        assert(boGroup.isDisappearingMessagesEnabled)
+        assert(alixGroup.isDisappearingMessagesEnabled)
     }
 }
