@@ -11,7 +11,7 @@ import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.Message.SortDirection
-import org.xmtp.android.library.libxmtp.MessageDisappearingSettings
+import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.messages.Topic
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
@@ -41,14 +41,14 @@ class Dm(
     val peerInboxId: String
         get() = libXMTPGroup.dmPeerInboxId()
 
-    val messageDisappearingSettings: MessageDisappearingSettings?
+    val disappearingMessageSettings: DisappearingMessageSettings?
         get() = runCatching {
-            libXMTPGroup.takeIf { it.isConversationMessageDisappearingEnabled() }
-                ?.let { group ->
-                    group.conversationMessageDisappearingSettings()
-                        ?.let { MessageDisappearingSettings.createFromFfi(it) }
-                }
+            libXMTPGroup.conversationMessageDisappearingSettings()
+                ?.let { DisappearingMessageSettings.createFromFfi(it) }
         }.getOrNull()
+
+    val isDisappearingMessagesEnabled: Boolean
+        get() = libXMTPGroup.isConversationMessageDisappearingEnabled()
 
     private suspend fun metadata(): FfiConversationMetadata {
         return libXMTPGroup.groupMetadata()
@@ -212,15 +212,23 @@ class Dm(
         awaitClose { stream.end() }
     }
 
-    suspend fun updateMessageDisappearingSettings(messageDisappearingSettings: MessageDisappearingSettings?) {
+    suspend fun clearDisappearingMessageSettings() {
         try {
-            if (messageDisappearingSettings == null) {
-                libXMTPGroup.removeConversationMessageDisappearingSettings()
+            libXMTPGroup.removeConversationMessageDisappearingSettings()
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to clear group message expiration", e)
+        }
+    }
+
+    suspend fun updateDisappearingMessageSettings(disappearingMessageSettings: DisappearingMessageSettings?) {
+        try {
+            if (disappearingMessageSettings == null) {
+                clearDisappearingMessageSettings()
             } else {
                 libXMTPGroup.updateConversationMessageDisappearingSettings(
                     FfiMessageDisappearingSettings(
-                        messageDisappearingSettings.disappearStartingAtNs,
-                        messageDisappearingSettings.disappearDurationInNs
+                        disappearingMessageSettings.disappearStartingAtNs,
+                        disappearingMessageSettings.disappearDurationInNs
                     )
                 )
             }

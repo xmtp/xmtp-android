@@ -24,7 +24,7 @@ import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
-import org.xmtp.android.library.libxmtp.MessageDisappearingSettings
+import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -1028,7 +1028,7 @@ class GroupTest {
 
     @Test
     fun testGroupDisappearingMessages() = runBlocking {
-        val initialSettings = MessageDisappearingSettings(
+        val initialSettings = DisappearingMessageSettings(
             1_000_000_000,
             1_000_000_000 // 1s duration
         )
@@ -1036,7 +1036,7 @@ class GroupTest {
         // Create group with disappearing messages enabled
         val boGroup = boClient.conversations.newGroup(
             listOf(alix.walletAddress),
-            messageDisappearingSettings = initialSettings
+            disappearingMessageSettings = initialSettings
         )
         boGroup.send("howdy")
         alixClient.conversations.syncAllConversations()
@@ -1046,9 +1046,9 @@ class GroupTest {
         // Validate messages exist and settings are applied
         assertEquals(boGroup.messages().size, 2) // memberAdd, howdy
         assertEquals(alixGroup?.messages()?.size, 1) // howdy
-        assertNotNull(boGroup.messageDisappearingSettings)
-        assertEquals(boGroup.messageDisappearingSettings!!.disappearDurationInNs, 1_000_000_000)
-        assertEquals(boGroup.messageDisappearingSettings!!.disappearStartingAtNs, 1_000_000_000)
+        assertNotNull(boGroup.disappearingMessageSettings)
+        assertEquals(boGroup.disappearingMessageSettings!!.disappearDurationInNs, 1_000_000_000)
+        assertEquals(boGroup.disappearingMessageSettings!!.disappearStartingAtNs, 1_000_000_000)
         Thread.sleep(5000)
         // Validate messages are deleted
         assertEquals(boGroup.messages().size, 1) // memberAdd
@@ -1059,8 +1059,8 @@ class GroupTest {
         boGroup.sync()
         alixGroup!!.sync()
 
-        assertNull(boGroup.messageDisappearingSettings)
-        assertNull(alixGroup.messageDisappearingSettings)
+        assertNull(boGroup.disappearingMessageSettings)
+        assertNull(alixGroup.disappearingMessageSettings)
 
         // Send messages after disabling disappearing settings
         boGroup.send("message after disabling disappearing")
@@ -1080,7 +1080,7 @@ class GroupTest {
         ) // disappearing settings 1, disappearing settings 2, boMessage, alixMessage
 
         // Re-enable disappearing messages
-        val updatedSettings = MessageDisappearingSettings(
+        val updatedSettings = DisappearingMessageSettings(
             boGroup.messages().first().sentAtNs + 1_000_000_000, // 1s from now
             1_000_000_000 // 1s duration
         )
@@ -1091,11 +1091,11 @@ class GroupTest {
         Thread.sleep(1000)
 
         assertEquals(
-            boGroup.messageDisappearingSettings!!.disappearStartingAtNs,
+            boGroup.disappearingMessageSettings!!.disappearStartingAtNs,
             updatedSettings.disappearStartingAtNs
         )
         assertEquals(
-            alixGroup.messageDisappearingSettings!!.disappearStartingAtNs,
+            alixGroup.disappearingMessageSettings!!.disappearStartingAtNs,
             updatedSettings.disappearStartingAtNs
         )
 
@@ -1127,11 +1127,11 @@ class GroupTest {
 
         // Final validation that settings persist
         assertEquals(
-            boGroup.messageDisappearingSettings!!.disappearDurationInNs,
+            boGroup.disappearingMessageSettings!!.disappearDurationInNs,
             updatedSettings.disappearDurationInNs
         )
         assertEquals(
-            alixGroup.messageDisappearingSettings!!.disappearDurationInNs,
+            alixGroup.disappearingMessageSettings!!.disappearDurationInNs,
             updatedSettings.disappearDurationInNs
         )
     }

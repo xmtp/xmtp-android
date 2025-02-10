@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.libxmtp.MessageDisappearingSettings
+import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import java.util.Date
 
 sealed class Conversation {
@@ -45,11 +45,19 @@ sealed class Conversation {
             }
         }
 
-    val messageDisappearingSettings: MessageDisappearingSettings?
+    val disappearingMessageSettings: DisappearingMessageSettings?
         get() {
             return when (this) {
-                is Group -> group.messageDisappearingSettings
-                is Dm -> dm.messageDisappearingSettings
+                is Group -> group.disappearingMessageSettings
+                is Dm -> dm.disappearingMessageSettings
+            }
+        }
+
+    val isDisappearingMessagesEnabled: Boolean
+        get() {
+            return when (this) {
+                is Group -> group.isDisappearingMessagesEnabled
+                is Dm -> dm.isDisappearingMessagesEnabled
             }
         }
 
@@ -67,10 +75,17 @@ sealed class Conversation {
         }
     }
 
-    suspend fun updateMessageDisappearingSettings(messageDisappearingSettings: MessageDisappearingSettings?) {
+    suspend fun clearDisappearingMessageSettings() {
         return when (this) {
-            is Group -> group.updateMessageDisappearingSettings(messageDisappearingSettings)
-            is Dm -> dm.updateMessageDisappearingSettings(messageDisappearingSettings)
+            is Group -> group.clearDisappearingMessageSettings()
+            is Dm -> dm.clearDisappearingMessageSettings()
+        }
+    }
+
+    suspend fun updateDisappearingMessageSettings(disappearingMessageSettings: DisappearingMessageSettings?) {
+        return when (this) {
+            is Group -> group.updateDisappearingMessageSettings(disappearingMessageSettings)
+            is Dm -> dm.updateDisappearingMessageSettings(disappearingMessageSettings)
         }
     }
 

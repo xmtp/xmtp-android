@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.libxmtp.MessageDisappearingSettings
+import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.keystore.api.v1.Keystore
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
@@ -56,7 +56,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        messageDisappearingSettings: MessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Group {
         return newGroupInternal(
             accountAddresses,
@@ -65,7 +65,7 @@ data class Conversations(
             groupImageUrlSquare,
             groupDescription,
             null,
-            messageDisappearingSettings?.let {
+            disappearingMessageSettings?.let {
                 FfiMessageDisappearingSettings(
                     it.disappearStartingAtNs,
                     it.disappearDurationInNs
@@ -80,7 +80,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        messageDisappearingSettings: MessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Group {
         return newGroupInternal(
             accountAddresses,
@@ -89,7 +89,7 @@ data class Conversations(
             groupImageUrlSquare,
             groupDescription,
             PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet),
-            messageDisappearingSettings?.let {
+            disappearingMessageSettings?.let {
                 FfiMessageDisappearingSettings(
                     it.disappearStartingAtNs,
                     it.disappearDurationInNs
@@ -138,7 +138,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        messageDisappearingSettings: MessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Group {
         return newGroupInternalWithInboxIds(
             inboxIds,
@@ -147,7 +147,7 @@ data class Conversations(
             groupImageUrlSquare,
             groupDescription,
             null,
-            messageDisappearingSettings?.let {
+            disappearingMessageSettings?.let {
                 FfiMessageDisappearingSettings(
                     it.disappearStartingAtNs,
                     it.disappearDurationInNs
@@ -162,7 +162,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        messageDisappearingSettings: MessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Group {
         return newGroupInternalWithInboxIds(
             inboxIds,
@@ -171,7 +171,7 @@ data class Conversations(
             groupImageUrlSquare,
             groupDescription,
             PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet),
-            messageDisappearingSettings?.let {
+            disappearingMessageSettings?.let {
                 FfiMessageDisappearingSettings(
                     it.disappearStartingAtNs,
                     it.disappearDurationInNs
@@ -224,15 +224,15 @@ data class Conversations(
 
     suspend fun newConversation(
         peerAddress: String,
-        messageDisappearingSettings: MessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Conversation {
-        val dm = findOrCreateDm(peerAddress, messageDisappearingSettings)
+        val dm = findOrCreateDm(peerAddress, disappearingMessageSettings)
         return Conversation.Dm(dm)
     }
 
     suspend fun findOrCreateDm(
         peerAddress: String,
-        messageDisappearingSettings: MessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Dm {
         if (peerAddress.lowercase() == client.address.lowercase()) {
             throw XMTPException("Recipient is sender")
@@ -244,7 +244,7 @@ data class Conversations(
         }
         val dmConversation = ffiConversations.findOrCreateDm(
             peerAddress.lowercase(), opts = FfiCreateDmOptions(
-                messageDisappearingSettings?.let {
+                disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(
                         it.disappearStartingAtNs,
                         it.disappearDurationInNs
@@ -256,22 +256,22 @@ data class Conversations(
 
     suspend fun newConversationWithInboxId(
         peerInboxId: String,
-        messageDisappearingSettings: MessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Conversation {
-        val dm = findOrCreateDmWithInboxId(peerInboxId, messageDisappearingSettings)
+        val dm = findOrCreateDmWithInboxId(peerInboxId, disappearingMessageSettings)
         return Conversation.Dm(dm)
     }
 
     suspend fun findOrCreateDmWithInboxId(
         peerInboxId: String,
-        messageDisappearingSettings: MessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Dm {
         if (peerInboxId.lowercase() == client.inboxId.lowercase()) {
             throw XMTPException("Recipient is sender")
         }
         val dmConversation = ffiConversations.findOrCreateDmByInboxId(
             peerInboxId.lowercase(), opts = FfiCreateDmOptions(
-                messageDisappearingSettings?.let {
+                disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(
                         it.disappearStartingAtNs,
                         it.disappearDurationInNs

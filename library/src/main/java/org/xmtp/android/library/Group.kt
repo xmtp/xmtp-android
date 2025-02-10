@@ -11,7 +11,7 @@ import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.Message.SortDirection
-import org.xmtp.android.library.libxmtp.MessageDisappearingSettings
+import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
 import org.xmtp.android.library.messages.Topic
@@ -60,14 +60,14 @@ class Group(
     val description: String
         get() = libXMTPGroup.groupDescription()
 
-    val messageDisappearingSettings: MessageDisappearingSettings?
+    val disappearingMessageSettings: DisappearingMessageSettings?
         get() = runCatching {
-            libXMTPGroup.takeIf { it.isConversationMessageDisappearingEnabled() }
-                ?.let { group ->
-                    group.conversationMessageDisappearingSettings()
-                        ?.let { MessageDisappearingSettings.createFromFfi(it) }
-                }
+            libXMTPGroup.conversationMessageDisappearingSettings()
+                ?.let { DisappearingMessageSettings.createFromFfi(it) }
         }.getOrNull()
+
+    val isDisappearingMessagesEnabled: Boolean
+        get() = libXMTPGroup.isConversationMessageDisappearingEnabled()
 
     suspend fun send(text: String): String {
         return send(encodeContent(content = text, options = null))
@@ -292,16 +292,23 @@ class Group(
         }
     }
 
-    suspend fun updateMessageDisappearingSettings(messageDisappearingSettings: MessageDisappearingSettings?) {
+    suspend fun clearDisappearingMessageSettings() {
         try {
-            if (messageDisappearingSettings == null) {
-                Log.d("LOPI", "is this getting hit?")
-                libXMTPGroup.removeConversationMessageDisappearingSettings()
+            libXMTPGroup.removeConversationMessageDisappearingSettings()
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to clear group message expiration", e)
+        }
+    }
+
+    suspend fun updateDisappearingMessageSettings(disappearingMessageSettings: DisappearingMessageSettings?) {
+        try {
+            if (disappearingMessageSettings == null) {
+                clearDisappearingMessageSettings()
             } else {
                 libXMTPGroup.updateConversationMessageDisappearingSettings(
                     FfiMessageDisappearingSettings(
-                        messageDisappearingSettings.disappearStartingAtNs,
-                        messageDisappearingSettings.disappearDurationInNs
+                        disappearingMessageSettings.disappearStartingAtNs,
+                        disappearingMessageSettings.disappearDurationInNs
                     )
                 )
             }
