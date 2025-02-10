@@ -41,10 +41,14 @@ class Dm(
     val peerInboxId: String
         get() = libXMTPGroup.dmPeerInboxId()
 
-    val messageDisappearingSettings: MessageDisappearingSettings? = runCatching {
-        libXMTPGroup.takeIf { it.isConversationMessageDisappearingEnabled() }
-            ?.let { MessageDisappearingSettings.createFromFfi(it.conversationMessageDisappearingSettings()) }
-    }.getOrNull()
+    val messageDisappearingSettings: MessageDisappearingSettings?
+        get() = runCatching {
+            libXMTPGroup.takeIf { it.isConversationMessageDisappearingEnabled() }
+                ?.let { group ->
+                    group.conversationMessageDisappearingSettings()
+                        ?.let { MessageDisappearingSettings.createFromFfi(it) }
+                }
+        }.getOrNull()
 
     private suspend fun metadata(): FfiConversationMetadata {
         return libXMTPGroup.groupMetadata()

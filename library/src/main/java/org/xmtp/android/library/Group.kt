@@ -60,12 +60,14 @@ class Group(
     val description: String
         get() = libXMTPGroup.groupDescription()
 
-    val messageDisappearingSettings: MessageDisappearingSettings? get() = runCatching {
-        Log.d("LOPI", libXMTPGroup.isConversationMessageDisappearingEnabled().toString())
-        Log.d("LOPI", libXMTPGroup.conversationMessageDisappearingSettings().toString())
-        libXMTPGroup.takeIf { it.isConversationMessageDisappearingEnabled() }
-            ?.let { MessageDisappearingSettings.createFromFfi(it.conversationMessageDisappearingSettings()) }
-    }.getOrNull()
+    val messageDisappearingSettings: MessageDisappearingSettings?
+        get() = runCatching {
+            libXMTPGroup.takeIf { it.isConversationMessageDisappearingEnabled() }
+                ?.let { group ->
+                    group.conversationMessageDisappearingSettings()
+                        ?.let { MessageDisappearingSettings.createFromFfi(it) }
+                }
+        }.getOrNull()
 
     suspend fun send(text: String): String {
         return send(encodeContent(content = text, options = null))

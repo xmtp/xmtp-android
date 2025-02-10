@@ -18,6 +18,7 @@ import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversationListItem
 import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiConversations
+import uniffi.xmtpv3.FfiCreateDmOptions
 import uniffi.xmtpv3.FfiCreateGroupOptions
 import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiListConversationsOptions
@@ -221,12 +222,18 @@ data class Conversations(
         )
     }
 
-    suspend fun newConversation(peerAddress: String): Conversation {
-        val dm = findOrCreateDm(peerAddress)
+    suspend fun newConversation(
+        peerAddress: String,
+        messageDisappearingSettings: MessageDisappearingSettings? = null,
+    ): Conversation {
+        val dm = findOrCreateDm(peerAddress, messageDisappearingSettings)
         return Conversation.Dm(dm)
     }
 
-    suspend fun findOrCreateDm(peerAddress: String): Dm {
+    suspend fun findOrCreateDm(
+        peerAddress: String,
+        messageDisappearingSettings: MessageDisappearingSettings? = null,
+    ): Dm {
         if (peerAddress.lowercase() == client.address.lowercase()) {
             throw XMTPException("Recipient is sender")
         }
@@ -235,20 +242,42 @@ data class Conversations(
         if (falseAddresses.isNotEmpty()) {
             throw XMTPException("${falseAddresses.joinToString()} not on network")
         }
-        val dmConversation = ffiConversations.findOrCreateDm(peerAddress.lowercase())
+        val dmConversation = ffiConversations.findOrCreateDm(
+            peerAddress.lowercase(), opts = FfiCreateDmOptions(
+                messageDisappearingSettings?.let {
+                    FfiMessageDisappearingSettings(
+                        it.disappearStartingAtNs,
+                        it.disappearDurationInNs
+                    )
+                })
+        )
         return Dm(client, dmConversation)
     }
 
-    suspend fun newConversationWithInboxId(peerInboxId: String): Conversation {
-        val dm = findOrCreateDmWithInboxId(peerInboxId)
+    suspend fun newConversationWithInboxId(
+        peerInboxId: String,
+        messageDisappearingSettings: MessageDisappearingSettings? = null,
+    ): Conversation {
+        val dm = findOrCreateDmWithInboxId(peerInboxId, messageDisappearingSettings)
         return Conversation.Dm(dm)
     }
 
-    suspend fun findOrCreateDmWithInboxId(peerInboxId: String): Dm {
+    suspend fun findOrCreateDmWithInboxId(
+        peerInboxId: String,
+        messageDisappearingSettings: MessageDisappearingSettings? = null,
+    ): Dm {
         if (peerInboxId.lowercase() == client.inboxId.lowercase()) {
             throw XMTPException("Recipient is sender")
         }
-        val dmConversation = ffiConversations.findOrCreateDmByInboxId(peerInboxId.lowercase())
+        val dmConversation = ffiConversations.findOrCreateDmByInboxId(
+            peerInboxId.lowercase(), opts = FfiCreateDmOptions(
+                messageDisappearingSettings?.let {
+                    FfiMessageDisappearingSettings(
+                        it.disappearStartingAtNs,
+                        it.disappearDurationInNs
+                    )
+                })
+        )
         return Dm(client, dmConversation)
     }
 
