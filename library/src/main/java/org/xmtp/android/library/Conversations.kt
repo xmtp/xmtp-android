@@ -243,13 +243,15 @@ data class Conversations(
             throw XMTPException("${falseAddresses.joinToString()} not on network")
         }
         val dmConversation = ffiConversations.findOrCreateDm(
-            peerAddress.lowercase(), opts = FfiCreateDmOptions(
+            peerAddress.lowercase(),
+            opts = FfiCreateDmOptions(
                 disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(
                         it.disappearStartingAtNs,
                         it.disappearDurationInNs
                     )
-                })
+                }
+            )
         )
         return Dm(client, dmConversation)
     }
@@ -270,13 +272,15 @@ data class Conversations(
             throw XMTPException("Recipient is sender")
         }
         val dmConversation = ffiConversations.findOrCreateDmByInboxId(
-            peerInboxId.lowercase(), opts = FfiCreateDmOptions(
+            peerInboxId.lowercase(),
+            opts = FfiCreateDmOptions(
                 disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(
                         it.disappearStartingAtNs,
                         it.disappearDurationInNs
                     )
-                })
+                }
+            )
         )
         return Dm(client, dmConversation)
     }
