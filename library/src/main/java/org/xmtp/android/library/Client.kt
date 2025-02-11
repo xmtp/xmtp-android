@@ -258,11 +258,17 @@ class Client() {
         ffiClient.applySignatureRequest(signatureRequest)
     }
 
-    suspend fun addAccount(newAccount: SigningKey) {
-        val signatureRequest =
-            ffiClient.addWallet(newAccount.address.lowercase())
-        handleSignature(signatureRequest, newAccount)
-        ffiClient.applySignatureRequest(signatureRequest)
+    @DelicateApi("This function is delicate and should be used with caution. Adding a wallet already associated with an inboxId will cause the wallet to loose access to that inbox. See: inboxIdFromAddress(address)")
+    suspend fun addAccount(newAccount: SigningKey, changeInboxId: Boolean = false) {
+        val inboxId = inboxIdFromAddress(newAccount.address)
+        if (inboxId.isNullOrBlank() || changeInboxId) {
+            val signatureRequest =
+                ffiClient.addWallet(newAccount.address.lowercase())
+            handleSignature(signatureRequest, newAccount)
+            ffiClient.applySignatureRequest(signatureRequest)
+        } else {
+            throw XMTPException("This wallet is already associated with inbox $inboxId")
+        }
     }
 
     suspend fun removeAccount(recoverAccount: SigningKey, addressToRemove: String) {
@@ -389,9 +395,7 @@ class Client() {
         File(dbPath).delete()
     }
 
-    @Deprecated(
-        message = "This function is delicate and should be used with caution. App will error if database not properly reconnected. See: reconnectLocalDatabase()",
-    )
+    @DelicateApi("This function is delicate and should be used with caution. App will error if database not properly reconnected. See: reconnectLocalDatabase()")
     fun dropLocalDatabaseConnection() {
         ffiClient.releaseDbConnection()
     }
