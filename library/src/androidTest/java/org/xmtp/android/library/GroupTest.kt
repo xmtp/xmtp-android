@@ -56,7 +56,6 @@ class GroupTest {
 
         alixClient = fixtures.alixClient
         boClient = fixtures.boClient
-        Thread.sleep(5000)
         caroClient = fixtures.caroClient
     }
 
