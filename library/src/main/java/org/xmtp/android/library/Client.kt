@@ -260,10 +260,10 @@ class Client() {
 
     @DelicateApi("This function is delicate and should be used with caution. Adding a wallet already associated with an inboxId will cause the wallet to loose access to that inbox. See: inboxIdFromAddress(address)")
     suspend fun addAccount(newAccount: SigningKey, changeInboxId: Boolean = false) {
-        val inboxId = inboxIdFromAddress(newAccount.address)
-        if (inboxId.isNullOrBlank() || changeInboxId) {
-            val signatureRequest =
-                ffiClient.addWallet(newAccount.address.lowercase())
+        val inboxId: String? = if (!changeInboxId) inboxIdFromAddress(newAccount.address) else null
+
+        if (changeInboxId || inboxId.isNullOrBlank()) {
+            val signatureRequest = ffiClient.addWallet(newAccount.address.lowercase())
             handleSignature(signatureRequest, newAccount)
             ffiClient.applySignatureRequest(signatureRequest)
         } else {
