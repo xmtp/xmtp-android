@@ -5,6 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.fail
 import org.junit.Test
@@ -517,6 +518,7 @@ class ClientTest {
         )
     }
 
+    @OptIn(DelicateApi::class)
     @Test
     fun testAddAccounts() {
         val fixtures = fixtures()
@@ -539,6 +541,29 @@ class ClientTest {
         )
     }
 
+    @OptIn(DelicateApi::class)
+    @Test
+    fun testAddAccountsWithExistingInboxIds() {
+        val fixtures = fixtures()
+
+        assertThrows(
+            "This wallet is already associated with inbox ${fixtures.boClient.inboxId}",
+            XMTPException::class.java
+        ) {
+            runBlocking { fixtures.alixClient.addAccount(fixtures.boAccount) }
+        }
+
+        assert(fixtures.boClient.inboxId != fixtures.alixClient.inboxId)
+        runBlocking { fixtures.alixClient.addAccount(fixtures.boAccount, true) }
+
+        val state = runBlocking { fixtures.alixClient.inboxState(true) }
+        assertEquals(state.addresses.size, 2)
+
+        val inboxId = runBlocking { fixtures.alixClient.inboxIdFromAddress(fixtures.boClient.address) }
+        assertEquals(inboxId, fixtures.alixClient.inboxId)
+    }
+
+    @OptIn(DelicateApi::class)
     @Test
     fun testRemovingAccounts() {
         val fixtures = fixtures()
