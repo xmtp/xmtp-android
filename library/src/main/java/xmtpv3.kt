@@ -1207,6 +1207,12 @@ internal open class UniffiVTableCallbackInterfaceFfiV2SubscriptionCallback(
 
 
 
+
+
+
+
+
+
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
 
@@ -1560,6 +1566,12 @@ internal interface UniffiLib : Library {
     ): Unit
     fun uniffi_xmtpv3_fn_init_callback_vtable_ffiinboxowner(`vtable`: UniffiVTableCallbackInterfaceFfiInboxOwner,
     ): Unit
+    fun uniffi_xmtpv3_fn_func_build_encrypt_attachment_result(`remoteAttachmentInfo`: RustBuffer.ByValue,`payload`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    fun uniffi_xmtpv3_fn_func_build_multi_remote_attachment(`remoteAttachmentInfos`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    fun uniffi_xmtpv3_fn_func_build_remote_attachment_info(`encryptedAttachment`: RustBuffer.ByValue,`remoteUrl`: RustBuffer.ByValue,`scheme`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_func_connect_to_backend(`host`: RustBuffer.ByValue,`isSecure`: Byte,
     ): Long
     fun uniffi_xmtpv3_fn_func_create_client(`api`: Pointer,`db`: RustBuffer.ByValue,`encryptionKey`: RustBuffer.ByValue,`inboxId`: RustBuffer.ByValue,`accountAddress`: RustBuffer.ByValue,`nonce`: Long,`legacySignedPrivateKeyProto`: RustBuffer.ByValue,`historySyncUrl`: RustBuffer.ByValue,
@@ -1570,7 +1582,7 @@ internal interface UniffiLib : Library {
     ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_func_decode_reaction(`bytes`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_xmtpv3_fn_func_decrypt_multi_encrypted_attachment(`multiEncryptedAttachment`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    fun uniffi_xmtpv3_fn_func_decrypt_attachment(`encryptedAttachment`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_func_diffie_hellman_k256(`privateKeyBytes`: RustBuffer.ByValue,`publicKeyBytes`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -1578,7 +1590,7 @@ internal interface UniffiLib : Library {
     ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_func_encode_reaction(`reaction`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_xmtpv3_fn_func_encrypt_encoded_content_array(`encodedContentBytes`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    fun uniffi_xmtpv3_fn_func_encrypt_bytes_for_local_attachment(`bytesToEncrypt`: RustBuffer.ByValue,`filename`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     fun uniffi_xmtpv3_fn_func_generate_inbox_id(`accountAddress`: RustBuffer.ByValue,`nonce`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -1718,6 +1730,12 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_xmtpv3_rust_future_complete_void(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    fun uniffi_xmtpv3_checksum_func_build_encrypt_attachment_result(
+    ): Short
+    fun uniffi_xmtpv3_checksum_func_build_multi_remote_attachment(
+    ): Short
+    fun uniffi_xmtpv3_checksum_func_build_remote_attachment_info(
+    ): Short
     fun uniffi_xmtpv3_checksum_func_connect_to_backend(
     ): Short
     fun uniffi_xmtpv3_checksum_func_create_client(
@@ -1728,7 +1746,7 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_xmtpv3_checksum_func_decode_reaction(
     ): Short
-    fun uniffi_xmtpv3_checksum_func_decrypt_multi_encrypted_attachment(
+    fun uniffi_xmtpv3_checksum_func_decrypt_attachment(
     ): Short
     fun uniffi_xmtpv3_checksum_func_diffie_hellman_k256(
     ): Short
@@ -1736,7 +1754,7 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_xmtpv3_checksum_func_encode_reaction(
     ): Short
-    fun uniffi_xmtpv3_checksum_func_encrypt_encoded_content_array(
+    fun uniffi_xmtpv3_checksum_func_encrypt_bytes_for_local_attachment(
     ): Short
     fun uniffi_xmtpv3_checksum_func_generate_inbox_id(
     ): Short
@@ -2037,6 +2055,15 @@ private fun uniffiCheckContractApiVersion(lib: UniffiLib) {
 
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: UniffiLib) {
+    if (lib.uniffi_xmtpv3_checksum_func_build_encrypt_attachment_result() != 44532.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_build_multi_remote_attachment() != 46441.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_build_remote_attachment_info() != 11212.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_func_connect_to_backend() != 26018.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2052,7 +2079,7 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_func_decode_reaction() != 28885.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_func_decrypt_multi_encrypted_attachment() != 56603.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_func_decrypt_attachment() != 51581.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_func_diffie_hellman_k256() != 37475.toShort()) {
@@ -2064,7 +2091,7 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_func_encode_reaction() != 6548.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_func_encrypt_encoded_content_array() != 1576.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_func_encrypt_bytes_for_local_attachment() != 33801.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_func_generate_inbox_id() != 47637.toShort()) {
@@ -9518,12 +9545,13 @@ public object FfiConverterTypeFfiCursor: FfiConverterRustBuffer<FfiCursor> {
 
 
 
-data class FfiEncryptedEncodedContent (
+data class FfiEncryptAttachmentResult (
+    var `secret`: kotlin.ByteArray, 
     var `contentDigest`: kotlin.String, 
     var `nonce`: kotlin.ByteArray, 
     var `payload`: kotlin.ByteArray, 
     var `salt`: kotlin.ByteArray, 
-    var `contentLength`: kotlin.UInt?, 
+    var `contentLengthKb`: kotlin.UInt?, 
     var `filename`: kotlin.String?
 ) {
     
@@ -9533,9 +9561,10 @@ data class FfiEncryptedEncodedContent (
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiEncryptedEncodedContent: FfiConverterRustBuffer<FfiEncryptedEncodedContent> {
-    override fun read(buf: ByteBuffer): FfiEncryptedEncodedContent {
-        return FfiEncryptedEncodedContent(
+public object FfiConverterTypeFfiEncryptAttachmentResult: FfiConverterRustBuffer<FfiEncryptAttachmentResult> {
+    override fun read(buf: ByteBuffer): FfiEncryptAttachmentResult {
+        return FfiEncryptAttachmentResult(
+            FfiConverterByteArray.read(buf),
             FfiConverterString.read(buf),
             FfiConverterByteArray.read(buf),
             FfiConverterByteArray.read(buf),
@@ -9545,21 +9574,23 @@ public object FfiConverterTypeFfiEncryptedEncodedContent: FfiConverterRustBuffer
         )
     }
 
-    override fun allocationSize(value: FfiEncryptedEncodedContent) = (
+    override fun allocationSize(value: FfiEncryptAttachmentResult) = (
+            FfiConverterByteArray.allocationSize(value.`secret`) +
             FfiConverterString.allocationSize(value.`contentDigest`) +
             FfiConverterByteArray.allocationSize(value.`nonce`) +
             FfiConverterByteArray.allocationSize(value.`payload`) +
             FfiConverterByteArray.allocationSize(value.`salt`) +
-            FfiConverterOptionalUInt.allocationSize(value.`contentLength`) +
+            FfiConverterOptionalUInt.allocationSize(value.`contentLengthKb`) +
             FfiConverterOptionalString.allocationSize(value.`filename`)
     )
 
-    override fun write(value: FfiEncryptedEncodedContent, buf: ByteBuffer) {
+    override fun write(value: FfiEncryptAttachmentResult, buf: ByteBuffer) {
+            FfiConverterByteArray.write(value.`secret`, buf)
             FfiConverterString.write(value.`contentDigest`, buf)
             FfiConverterByteArray.write(value.`nonce`, buf)
             FfiConverterByteArray.write(value.`payload`, buf)
             FfiConverterByteArray.write(value.`salt`, buf)
-            FfiConverterOptionalUInt.write(value.`contentLength`, buf)
+            FfiConverterOptionalUInt.write(value.`contentLengthKb`, buf)
             FfiConverterOptionalString.write(value.`filename`, buf)
     }
 }
@@ -9922,51 +9953,8 @@ public object FfiConverterTypeFfiMessageWithReactions: FfiConverterRustBuffer<Ff
 
 
 
-data class FfiMultiEncryptedAttachment (
-    var `secret`: kotlin.ByteArray, 
-    var `encryptedAttachments`: List<FfiEncryptedEncodedContent>, 
-    var `numAttachments`: kotlin.UInt?, 
-    var `maxAttachmentContentLength`: kotlin.UInt?
-) {
-    
-    companion object
-}
-
-/**
- * @suppress
- */
-public object FfiConverterTypeFfiMultiEncryptedAttachment: FfiConverterRustBuffer<FfiMultiEncryptedAttachment> {
-    override fun read(buf: ByteBuffer): FfiMultiEncryptedAttachment {
-        return FfiMultiEncryptedAttachment(
-            FfiConverterByteArray.read(buf),
-            FfiConverterSequenceTypeFfiEncryptedEncodedContent.read(buf),
-            FfiConverterOptionalUInt.read(buf),
-            FfiConverterOptionalUInt.read(buf),
-        )
-    }
-
-    override fun allocationSize(value: FfiMultiEncryptedAttachment) = (
-            FfiConverterByteArray.allocationSize(value.`secret`) +
-            FfiConverterSequenceTypeFfiEncryptedEncodedContent.allocationSize(value.`encryptedAttachments`) +
-            FfiConverterOptionalUInt.allocationSize(value.`numAttachments`) +
-            FfiConverterOptionalUInt.allocationSize(value.`maxAttachmentContentLength`)
-    )
-
-    override fun write(value: FfiMultiEncryptedAttachment, buf: ByteBuffer) {
-            FfiConverterByteArray.write(value.`secret`, buf)
-            FfiConverterSequenceTypeFfiEncryptedEncodedContent.write(value.`encryptedAttachments`, buf)
-            FfiConverterOptionalUInt.write(value.`numAttachments`, buf)
-            FfiConverterOptionalUInt.write(value.`maxAttachmentContentLength`, buf)
-    }
-}
-
-
-
 data class FfiMultiRemoteAttachment (
-    var `secret`: kotlin.ByteArray, 
-    var `attachments`: List<FfiRemoteAttachmentInfo>, 
-    var `numAttachments`: kotlin.UInt?, 
-    var `maxAttachmentContentLength`: kotlin.UInt?
+    var `attachments`: List<FfiRemoteAttachmentInfo>
 ) {
     
     companion object
@@ -9978,25 +9966,16 @@ data class FfiMultiRemoteAttachment (
 public object FfiConverterTypeFfiMultiRemoteAttachment: FfiConverterRustBuffer<FfiMultiRemoteAttachment> {
     override fun read(buf: ByteBuffer): FfiMultiRemoteAttachment {
         return FfiMultiRemoteAttachment(
-            FfiConverterByteArray.read(buf),
             FfiConverterSequenceTypeFfiRemoteAttachmentInfo.read(buf),
-            FfiConverterOptionalUInt.read(buf),
-            FfiConverterOptionalUInt.read(buf),
         )
     }
 
     override fun allocationSize(value: FfiMultiRemoteAttachment) = (
-            FfiConverterByteArray.allocationSize(value.`secret`) +
-            FfiConverterSequenceTypeFfiRemoteAttachmentInfo.allocationSize(value.`attachments`) +
-            FfiConverterOptionalUInt.allocationSize(value.`numAttachments`) +
-            FfiConverterOptionalUInt.allocationSize(value.`maxAttachmentContentLength`)
+            FfiConverterSequenceTypeFfiRemoteAttachmentInfo.allocationSize(value.`attachments`)
     )
 
     override fun write(value: FfiMultiRemoteAttachment, buf: ByteBuffer) {
-            FfiConverterByteArray.write(value.`secret`, buf)
             FfiConverterSequenceTypeFfiRemoteAttachmentInfo.write(value.`attachments`, buf)
-            FfiConverterOptionalUInt.write(value.`numAttachments`, buf)
-            FfiConverterOptionalUInt.write(value.`maxAttachmentContentLength`, buf)
     }
 }
 
@@ -10167,12 +10146,14 @@ public object FfiConverterTypeFfiReaction: FfiConverterRustBuffer<FfiReaction> {
 
 
 data class FfiRemoteAttachmentInfo (
+    var `secret`: kotlin.ByteArray, 
     var `contentDigest`: kotlin.String, 
     var `nonce`: kotlin.ByteArray, 
     var `scheme`: kotlin.String, 
     var `url`: kotlin.String, 
-    var `filename`: kotlin.String, 
-    var `salt`: kotlin.ByteArray
+    var `salt`: kotlin.ByteArray, 
+    var `contentLengthKb`: kotlin.UInt?, 
+    var `filename`: kotlin.String?
 ) {
     
     companion object
@@ -10184,31 +10165,37 @@ data class FfiRemoteAttachmentInfo (
 public object FfiConverterTypeFfiRemoteAttachmentInfo: FfiConverterRustBuffer<FfiRemoteAttachmentInfo> {
     override fun read(buf: ByteBuffer): FfiRemoteAttachmentInfo {
         return FfiRemoteAttachmentInfo(
+            FfiConverterByteArray.read(buf),
             FfiConverterString.read(buf),
             FfiConverterByteArray.read(buf),
             FfiConverterString.read(buf),
             FfiConverterString.read(buf),
-            FfiConverterString.read(buf),
             FfiConverterByteArray.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+            FfiConverterOptionalString.read(buf),
         )
     }
 
     override fun allocationSize(value: FfiRemoteAttachmentInfo) = (
+            FfiConverterByteArray.allocationSize(value.`secret`) +
             FfiConverterString.allocationSize(value.`contentDigest`) +
             FfiConverterByteArray.allocationSize(value.`nonce`) +
             FfiConverterString.allocationSize(value.`scheme`) +
             FfiConverterString.allocationSize(value.`url`) +
-            FfiConverterString.allocationSize(value.`filename`) +
-            FfiConverterByteArray.allocationSize(value.`salt`)
+            FfiConverterByteArray.allocationSize(value.`salt`) +
+            FfiConverterOptionalUInt.allocationSize(value.`contentLengthKb`) +
+            FfiConverterOptionalString.allocationSize(value.`filename`)
     )
 
     override fun write(value: FfiRemoteAttachmentInfo, buf: ByteBuffer) {
+            FfiConverterByteArray.write(value.`secret`, buf)
             FfiConverterString.write(value.`contentDigest`, buf)
             FfiConverterByteArray.write(value.`nonce`, buf)
             FfiConverterString.write(value.`scheme`, buf)
             FfiConverterString.write(value.`url`, buf)
-            FfiConverterString.write(value.`filename`, buf)
             FfiConverterByteArray.write(value.`salt`, buf)
+            FfiConverterOptionalUInt.write(value.`contentLengthKb`, buf)
+            FfiConverterOptionalString.write(value.`filename`, buf)
     }
 }
 
@@ -12007,34 +11994,6 @@ public object FfiConverterSequenceTypeFfiConversationMember: FfiConverterRustBuf
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiEncryptedEncodedContent: FfiConverterRustBuffer<List<FfiEncryptedEncodedContent>> {
-    override fun read(buf: ByteBuffer): List<FfiEncryptedEncodedContent> {
-        val len = buf.getInt()
-        return List<FfiEncryptedEncodedContent>(len) {
-            FfiConverterTypeFfiEncryptedEncodedContent.read(buf)
-        }
-    }
-
-    override fun allocationSize(value: List<FfiEncryptedEncodedContent>): ULong {
-        val sizeForLength = 4UL
-        val sizeForItems = value.map { FfiConverterTypeFfiEncryptedEncodedContent.allocationSize(it) }.sum()
-        return sizeForLength + sizeForItems
-    }
-
-    override fun write(value: List<FfiEncryptedEncodedContent>, buf: ByteBuffer) {
-        buf.putInt(value.size)
-        value.iterator().forEach {
-            FfiConverterTypeFfiEncryptedEncodedContent.write(it, buf)
-        }
-    }
-}
-
-
-
-
-/**
- * @suppress
- */
 public object FfiConverterSequenceTypeFfiEnvelope: FfiConverterRustBuffer<List<FfiEnvelope>> {
     override fun read(buf: ByteBuffer): List<FfiEnvelope> {
         val len = buf.getInt()
@@ -12478,6 +12437,36 @@ public object FfiConverterMapByteArraySequenceTypeFfiHmacKey: FfiConverterRustBu
 
 
 
+    @Throws(GenericException::class) fun `buildEncryptAttachmentResult`(`remoteAttachmentInfo`: FfiRemoteAttachmentInfo, `payload`: kotlin.ByteArray): FfiEncryptAttachmentResult {
+            return FfiConverterTypeFfiEncryptAttachmentResult.lift(
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_build_encrypt_attachment_result(
+        FfiConverterTypeFfiRemoteAttachmentInfo.lower(`remoteAttachmentInfo`),FfiConverterByteArray.lower(`payload`),_status)
+}
+    )
+    }
+    
+
+    @Throws(GenericException::class) fun `buildMultiRemoteAttachment`(`remoteAttachmentInfos`: List<FfiRemoteAttachmentInfo>): FfiMultiRemoteAttachment {
+            return FfiConverterTypeFfiMultiRemoteAttachment.lift(
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_build_multi_remote_attachment(
+        FfiConverterSequenceTypeFfiRemoteAttachmentInfo.lower(`remoteAttachmentInfos`),_status)
+}
+    )
+    }
+    
+
+    @Throws(GenericException::class) fun `buildRemoteAttachmentInfo`(`encryptedAttachment`: FfiEncryptAttachmentResult, `remoteUrl`: kotlin.String, `scheme`: kotlin.String): FfiRemoteAttachmentInfo {
+            return FfiConverterTypeFfiRemoteAttachmentInfo.lift(
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_build_remote_attachment_info(
+        FfiConverterTypeFfiEncryptAttachmentResult.lower(`encryptedAttachment`),FfiConverterString.lower(`remoteUrl`),FfiConverterString.lower(`scheme`),_status)
+}
+    )
+    }
+    
+
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
      suspend fun `connectToBackend`(`host`: kotlin.String, `isSecure`: kotlin.Boolean) : XmtpApiClient {
@@ -12564,11 +12553,11 @@ public object FfiConverterMapByteArraySequenceTypeFfiHmacKey: FfiConverterRustBu
     }
     
 
-    @Throws(GenericException::class) fun `decryptMultiEncryptedAttachment`(`multiEncryptedAttachment`: FfiMultiEncryptedAttachment): List<kotlin.ByteArray> {
-            return FfiConverterSequenceByteArray.lift(
+    @Throws(GenericException::class) fun `decryptAttachment`(`encryptedAttachment`: FfiEncryptAttachmentResult): kotlin.ByteArray {
+            return FfiConverterByteArray.lift(
     uniffiRustCallWithError(GenericException) { _status ->
-    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_decrypt_multi_encrypted_attachment(
-        FfiConverterTypeFfiMultiEncryptedAttachment.lower(`multiEncryptedAttachment`),_status)
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_decrypt_attachment(
+        FfiConverterTypeFfiEncryptAttachmentResult.lower(`encryptedAttachment`),_status)
 }
     )
     }
@@ -12604,11 +12593,11 @@ public object FfiConverterMapByteArraySequenceTypeFfiHmacKey: FfiConverterRustBu
     }
     
 
-    @Throws(GenericException::class) fun `encryptEncodedContentArray`(`encodedContentBytes`: List<kotlin.ByteArray>): FfiMultiEncryptedAttachment {
-            return FfiConverterTypeFfiMultiEncryptedAttachment.lift(
+    @Throws(GenericException::class) fun `encryptBytesForLocalAttachment`(`bytesToEncrypt`: kotlin.ByteArray, `filename`: kotlin.String?): FfiEncryptAttachmentResult {
+            return FfiConverterTypeFfiEncryptAttachmentResult.lift(
     uniffiRustCallWithError(GenericException) { _status ->
-    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_encrypt_encoded_content_array(
-        FfiConverterSequenceByteArray.lower(`encodedContentBytes`),_status)
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_encrypt_bytes_for_local_attachment(
+        FfiConverterByteArray.lower(`bytesToEncrypt`),FfiConverterOptionalString.lower(`filename`),_status)
 }
     )
     }
