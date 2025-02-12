@@ -68,7 +68,7 @@ data class Conversations(
             disappearingMessageSettings?.let {
                 FfiMessageDisappearingSettings(
                     it.disappearStartingAtNs,
-                    it.disappearDurationInNs
+                    it.retentionDurationInNs
                 )
             },
         )
@@ -92,7 +92,7 @@ data class Conversations(
             disappearingMessageSettings?.let {
                 FfiMessageDisappearingSettings(
                     it.disappearStartingAtNs,
-                    it.disappearDurationInNs
+                    it.retentionDurationInNs
                 )
             }
         )
@@ -150,7 +150,7 @@ data class Conversations(
             disappearingMessageSettings?.let {
                 FfiMessageDisappearingSettings(
                     it.disappearStartingAtNs,
-                    it.disappearDurationInNs
+                    it.retentionDurationInNs
                 )
             }
         )
@@ -174,7 +174,7 @@ data class Conversations(
             disappearingMessageSettings?.let {
                 FfiMessageDisappearingSettings(
                     it.disappearStartingAtNs,
-                    it.disappearDurationInNs
+                    it.retentionDurationInNs
                 )
             }
         )
@@ -248,7 +248,7 @@ data class Conversations(
                 disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(
                         it.disappearStartingAtNs,
-                        it.disappearDurationInNs
+                        it.retentionDurationInNs
                     )
                 }
             )
@@ -277,7 +277,7 @@ data class Conversations(
                 disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(
                         it.disappearStartingAtNs,
-                        it.disappearDurationInNs
+                        it.retentionDurationInNs
                     )
                 }
             )

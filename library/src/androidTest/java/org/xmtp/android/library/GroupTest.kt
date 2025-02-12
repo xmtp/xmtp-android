@@ -1046,7 +1046,7 @@ class GroupTest {
         assertEquals(boGroup.messages().size, 2) // memberAdd, howdy
         assertEquals(alixGroup?.messages()?.size, 1) // howdy
         assertNotNull(boGroup.disappearingMessageSettings)
-        assertEquals(boGroup.disappearingMessageSettings!!.disappearDurationInNs, 1_000_000_000)
+        assertEquals(boGroup.disappearingMessageSettings!!.retentionDurationInNs, 1_000_000_000)
         assertEquals(boGroup.disappearingMessageSettings!!.disappearStartingAtNs, 1_000_000_000)
         Thread.sleep(5000)
         // Validate messages are deleted
@@ -1128,12 +1128,12 @@ class GroupTest {
 
         // Final validation that settings persist
         assertEquals(
-            boGroup.disappearingMessageSettings!!.disappearDurationInNs,
-            updatedSettings.disappearDurationInNs
+            boGroup.disappearingMessageSettings!!.retentionDurationInNs,
+            updatedSettings.retentionDurationInNs
         )
         assertEquals(
-            alixGroup.disappearingMessageSettings!!.disappearDurationInNs,
-            updatedSettings.disappearDurationInNs
+            alixGroup.disappearingMessageSettings!!.retentionDurationInNs,
+            updatedSettings.retentionDurationInNs
         )
         assert(boGroup.isDisappearingMessagesEnabled)
         assert(alixGroup.isDisappearingMessagesEnabled)

@@ -311,7 +311,7 @@ class Group(
                 libXMTPGroup.updateConversationMessageDisappearingSettings(
                     FfiMessageDisappearingSettings(
                         disappearingMessageSettings.disappearStartingAtNs,
-                        disappearingMessageSettings.disappearDurationInNs
+                        disappearingMessageSettings.retentionDurationInNs
                     )
                 )
             }

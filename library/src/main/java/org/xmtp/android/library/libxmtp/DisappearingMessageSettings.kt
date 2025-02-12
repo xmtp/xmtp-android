@@ -4,7 +4,7 @@ import uniffi.xmtpv3.FfiMessageDisappearingSettings
 
 class DisappearingMessageSettings(
     val disappearStartingAtNs: Long,
-    val disappearDurationInNs: Long,
+    val retentionDurationInNs: Long,
 ) {
     companion object {
         fun createFromFfi(ffiSettings: FfiMessageDisappearingSettings): DisappearingMessageSettings {

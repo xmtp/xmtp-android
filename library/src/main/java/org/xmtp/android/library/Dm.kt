@@ -231,7 +231,7 @@ class Dm(
                 libXMTPGroup.updateConversationMessageDisappearingSettings(
                     FfiMessageDisappearingSettings(
                         disappearingMessageSettings.disappearStartingAtNs,
-                        disappearingMessageSettings.disappearDurationInNs
+                        disappearingMessageSettings.retentionDurationInNs
                     )
                 )
             }

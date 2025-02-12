@@ -425,7 +425,7 @@ class DmTest {
         assertEquals(boDm.messages().size, 1) // howdy
         assertEquals(alixDm?.messages()?.size, 1) // howdy
         Assert.assertNotNull(boDm.disappearingMessageSettings)
-        assertEquals(boDm.disappearingMessageSettings!!.disappearDurationInNs, 1_000_000_000)
+        assertEquals(boDm.disappearingMessageSettings!!.retentionDurationInNs, 1_000_000_000)
         assertEquals(boDm.disappearingMessageSettings!!.disappearStartingAtNs, 1_000_000_000)
         Thread.sleep(5000)
         // Validate messages are deleted
@@ -507,12 +507,12 @@ class DmTest {
 
         // Final validation that settings persist
         assertEquals(
-            boDm.disappearingMessageSettings!!.disappearDurationInNs,
-            updatedSettings.disappearDurationInNs
+            boDm.disappearingMessageSettings!!.retentionDurationInNs,
+            updatedSettings.retentionDurationInNs
         )
         assertEquals(
-            alixDm.disappearingMessageSettings!!.disappearDurationInNs,
-            updatedSettings.disappearDurationInNs
+            alixDm.disappearingMessageSettings!!.retentionDurationInNs,
+            updatedSettings.retentionDurationInNs
         )
         assert(boDm.isDisappearingMessagesEnabled)
         assert(alixDm.isDisappearingMessagesEnabled)
