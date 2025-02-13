@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.protobuf.ByteString
 import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
@@ -66,7 +65,7 @@ class MultiRemoteAttachmentTest {
         }
 
         val multiRemoteAttachment = MultiRemoteAttachment(remoteAttachments = remoteAttachmentInfos.toList())
-        
+
         val fixtures = fixtures()
         val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
