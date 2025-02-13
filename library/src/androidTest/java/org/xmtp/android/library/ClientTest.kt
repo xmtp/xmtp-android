@@ -694,7 +694,12 @@ class ClientTest {
             )
         }
 
+        val start4 = Date()
         val group = runBlocking { goodClient.conversations.newGroup(listOf("0xc9925662D36DE3e1bF0fD64e779B2e5F0Aead964")) }
+        val end4 = Date()
+        val time4 = end4.time - start4.time
+        Log.d("PERF", "Test create a new group with a bad keypackage ${time4 / 1000.0}s")
+
         runBlocking {
             group.updateGroupName("Howdy")
             group.sync()
