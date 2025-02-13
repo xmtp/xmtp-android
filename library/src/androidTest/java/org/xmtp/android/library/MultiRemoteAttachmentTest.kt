@@ -14,8 +14,11 @@ import org.xmtp.android.library.codecs.ContentTypeMultiRemoteAttachment
 import org.xmtp.android.library.codecs.ContentTypeText
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.EncryptedEncodedContent
+import org.xmtp.android.library.codecs.MultiRemoteAttachment
 import org.xmtp.android.library.codecs.MultiRemoteAttachmentCodec
 import org.xmtp.android.library.codecs.RemoteAttachment
+import org.xmtp.android.library.codecs.RemoteAttachmentCodec
+import org.xmtp.android.library.codecs.RemoteAttachmentInfo
 import org.xmtp.android.library.codecs.id
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.FfiMultiRemoteAttachment
@@ -75,7 +78,9 @@ class MultiRemoteAttachmentTest {
     @Test
     fun testCanUseMultiRemoteAttachmentCodec() {
         Client.register(codec = AttachmentCodec())
+        Client.register(codec = RemoteAttachmentCodec())
         Client.register(codec = MultiRemoteAttachmentCodec())
+
         val attachment1 = Attachment(
             filename = "test1.txt",
             mimeType = "text/plain",
@@ -89,7 +94,7 @@ class MultiRemoteAttachmentTest {
         )
 
         val attachmentCodec = AttachmentCodec()
-        val remoteAttachmentInfos: MutableList<RemoteAttachment> = ArrayList()
+        val remoteAttachmentInfos: MutableList<RemoteAttachmentInfo> = ArrayList()
 
         for (attachment: Attachment in listOf(attachment1, attachment2)) {
             val encodedBytes = attachmentCodec.encode(attachment).toByteArray()
@@ -99,7 +104,8 @@ class MultiRemoteAttachmentTest {
             remoteAttachmentInfos.add(remoteAttachmentInfo)
         }
 
-        val multiRemoteAttachment = MultiRemoteAttachmentCodec.buildMultiRemoteAttachment(remoteAttachmentInfos)
+        val multiRemoteAttachment = MultiRemoteAttachment(remoteAttachments = remoteAttachmentInfos.toList())
+        
         val fixtures = fixtures()
         val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
