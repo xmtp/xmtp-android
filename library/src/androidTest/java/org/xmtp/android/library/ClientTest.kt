@@ -558,7 +558,8 @@ class ClientTest {
         val state = runBlocking { fixtures.alixClient.inboxState(true) }
         assertEquals(state.addresses.size, 2)
 
-        val inboxId = runBlocking { fixtures.alixClient.inboxIdFromAddress(fixtures.boClient.address) }
+        val inboxId =
+            runBlocking { fixtures.alixClient.inboxIdFromAddress(fixtures.boClient.address) }
         assertEquals(inboxId, fixtures.alixClient.inboxId)
     }
 
@@ -675,5 +676,30 @@ class ClientTest {
         assert(time4 < time1)
         assertEquals(client.inboxId, buildClient1.inboxId)
         assertEquals(client.inboxId, buildClient2.inboxId)
+    }
+
+    @Test
+    fun testBadKeyPackage() {
+        val key = SecureRandom().generateSeed(32)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val goodClient = runBlocking {
+            Client().create(
+                account = fakeWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.PRODUCTION, true),
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
+
+        val group = runBlocking { goodClient.conversations.newGroup(listOf("0xc9925662D36DE3e1bF0fD64e779B2e5F0Aead964")) }
+        runBlocking {
+            group.updateGroupName("Howdy")
+            group.sync()
+        }
+
+        assertEquals(group.name, "Howdy")
     }
 }
