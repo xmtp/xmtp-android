@@ -10,15 +10,15 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.Attachment
 import org.xmtp.android.library.codecs.AttachmentCodec
+import org.xmtp.android.library.codecs.ContentTypeMultiRemoteAttachment
 import org.xmtp.android.library.codecs.ContentTypeText
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.EncryptedEncodedContent
+import org.xmtp.android.library.codecs.MultiRemoteAttachmentCodec
 import org.xmtp.android.library.codecs.RemoteAttachment
 import org.xmtp.android.library.codecs.id
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.FfiMultiRemoteAttachment
-import org.xmtp.android.library.codecs.ContentTypeMultiRemoteAttachment
-import org.xmtp.android.library.codecs.MultiRemoteAttachmentCodec
 import java.net.URL
 import kotlin.random.Random
 
@@ -28,7 +28,7 @@ class MultiRemoteAttachmentTest {
     private val encryptedPayloadUrls = HashMap<String, ByteArray>()
 
     private fun testUploadEncryptedPayload(encryptedPayload: ByteArray): String {
-        val randomUrl: String = "https://" + Random(encryptedPayload.hashCode()).nextInt(0,1000000)
+        val randomUrl: String = "https://" + Random(encryptedPayload.hashCode()).nextInt(0, 1000000)
         encryptedPayloadUrls.put(randomUrl, encryptedPayload)
         return randomUrl
     }
@@ -70,7 +70,6 @@ class MultiRemoteAttachmentTest {
 
         assert(durationMs2 - durationMs < 1)
         assert(true)
-        
     }
 
     @Test
@@ -122,18 +121,20 @@ class MultiRemoteAttachmentTest {
 
             val textAttachments: MutableList<Attachment> = ArrayList()
 
-            for (remoteAttachment: RemoteAttachment in loadedMultiRemoteAttachment.attachments.map { attachment ->
-                RemoteAttachment(
-                    url = URL(attachment.url),
-                    filename = attachment.filename,
-                    contentDigest = attachment.contentDigest,
-                    nonce = attachment.nonce.toByteString(),
-                    scheme = attachment.scheme,
-                    salt = attachment.salt.toByteString(),
-                    secret = attachment.secret.toByteString(),
-                    contentLength = attachment.contentLengthKb?.toInt(),
-                )
-            }) {
+            for (
+                remoteAttachment: RemoteAttachment in loadedMultiRemoteAttachment.attachments.map { attachment ->
+                    RemoteAttachment(
+                        url = URL(attachment.url),
+                        filename = attachment.filename,
+                        contentDigest = attachment.contentDigest,
+                        nonce = attachment.nonce.toByteString(),
+                        scheme = attachment.scheme,
+                        salt = attachment.salt.toByteString(),
+                        secret = attachment.secret.toByteString(),
+                        contentLength = attachment.contentLengthKb?.toInt(),
+                    )
+                }
+            ) {
                 val url = remoteAttachment.url.toString()
                 // Simulate Download
                 val encryptedPayload: ByteArray = encryptedPayloadUrls[url]!!
