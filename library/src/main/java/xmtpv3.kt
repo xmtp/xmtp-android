@@ -1362,9 +1362,9 @@ internal interface UniffiLib : Library {
     ): Long
     fun uniffi_xmtpv3_fn_method_fficonversations_create_group_with_inbox_ids(`ptr`: Pointer,`inboxIds`: RustBuffer.ByValue,`opts`: RustBuffer.ByValue,
     ): Long
-    fun uniffi_xmtpv3_fn_method_fficonversations_find_or_create_dm(`ptr`: Pointer,`accountAddress`: RustBuffer.ByValue,
+    fun uniffi_xmtpv3_fn_method_fficonversations_find_or_create_dm(`ptr`: Pointer,`accountAddress`: RustBuffer.ByValue,`opts`: RustBuffer.ByValue,
     ): Long
-    fun uniffi_xmtpv3_fn_method_fficonversations_find_or_create_dm_by_inbox_id(`ptr`: Pointer,`inboxId`: RustBuffer.ByValue,
+    fun uniffi_xmtpv3_fn_method_fficonversations_find_or_create_dm_by_inbox_id(`ptr`: Pointer,`inboxId`: RustBuffer.ByValue,`opts`: RustBuffer.ByValue,
     ): Long
     fun uniffi_xmtpv3_fn_method_fficonversations_get_hmac_keys(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -2115,7 +2115,7 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_consent_state() != 25033.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_conversation_message_disappearing_settings() != 41159.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_conversation_message_disappearing_settings() != 53380.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_conversation_type() != 51396.toShort()) {
@@ -2247,10 +2247,10 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_create_group_with_inbox_ids() != 56407.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_find_or_create_dm() != 24174.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_find_or_create_dm() != 42914.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_find_or_create_dm_by_inbox_id() != 63943.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_find_or_create_dm_by_inbox_id() != 42164.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_get_hmac_keys() != 44064.toShort()) {
@@ -3277,7 +3277,7 @@ public interface FfiConversationInterface {
     
     fun `consentState`(): FfiConsentState
     
-    fun `conversationMessageDisappearingSettings`(): FfiMessageDisappearingSettings
+    fun `conversationMessageDisappearingSettings`(): FfiMessageDisappearingSettings?
     
     suspend fun `conversationType`(): FfiConversationType
     
@@ -3567,8 +3567,8 @@ open class FfiConversation: Disposable, AutoCloseable, FfiConversationInterface 
     
 
     
-    @Throws(GenericException::class)override fun `conversationMessageDisappearingSettings`(): FfiMessageDisappearingSettings {
-            return FfiConverterTypeFfiMessageDisappearingSettings.lift(
+    @Throws(GenericException::class)override fun `conversationMessageDisappearingSettings`(): FfiMessageDisappearingSettings? {
+            return FfiConverterOptionalTypeFfiMessageDisappearingSettings.lift(
     callWithPointer {
     uniffiRustCallWithError(GenericException) { _status ->
     UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_conversation_message_disappearing_settings(
@@ -5150,9 +5150,9 @@ public interface FfiConversationsInterface {
     
     suspend fun `createGroupWithInboxIds`(`inboxIds`: List<kotlin.String>, `opts`: FfiCreateGroupOptions): FfiConversation
     
-    suspend fun `findOrCreateDm`(`accountAddress`: kotlin.String): FfiConversation
+    suspend fun `findOrCreateDm`(`accountAddress`: kotlin.String, `opts`: FfiCreateDmOptions): FfiConversation
     
-    suspend fun `findOrCreateDmByInboxId`(`inboxId`: kotlin.String): FfiConversation
+    suspend fun `findOrCreateDmByInboxId`(`inboxId`: kotlin.String, `opts`: FfiCreateDmOptions): FfiConversation
     
     fun `getHmacKeys`(): Map<kotlin.ByteArray, List<FfiHmacKey>>
     
@@ -5325,12 +5325,12 @@ open class FfiConversations: Disposable, AutoCloseable, FfiConversationsInterfac
     
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `findOrCreateDm`(`accountAddress`: kotlin.String) : FfiConversation {
+    override suspend fun `findOrCreateDm`(`accountAddress`: kotlin.String, `opts`: FfiCreateDmOptions) : FfiConversation {
         return uniffiRustCallAsync(
         callWithPointer { thisPtr ->
             UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_find_or_create_dm(
                 thisPtr,
-                FfiConverterString.lower(`accountAddress`),
+                FfiConverterString.lower(`accountAddress`),FfiConverterTypeFfiCreateDMOptions.lower(`opts`),
             )
         },
         { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
@@ -5346,12 +5346,12 @@ open class FfiConversations: Disposable, AutoCloseable, FfiConversationsInterfac
     
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `findOrCreateDmByInboxId`(`inboxId`: kotlin.String) : FfiConversation {
+    override suspend fun `findOrCreateDmByInboxId`(`inboxId`: kotlin.String, `opts`: FfiCreateDmOptions) : FfiConversation {
         return uniffiRustCallAsync(
         callWithPointer { thisPtr ->
             UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_find_or_create_dm_by_inbox_id(
                 thisPtr,
-                FfiConverterString.lower(`inboxId`),
+                FfiConverterString.lower(`inboxId`),FfiConverterTypeFfiCreateDMOptions.lower(`opts`),
             )
         },
         { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
@@ -9420,6 +9420,34 @@ public object FfiConverterTypeFfiConversationMember: FfiConverterRustBuffer<FfiC
 
 
 
+data class FfiCreateDmOptions (
+    var `messageDisappearingSettings`: FfiMessageDisappearingSettings?
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiCreateDMOptions: FfiConverterRustBuffer<FfiCreateDmOptions> {
+    override fun read(buf: ByteBuffer): FfiCreateDmOptions {
+        return FfiCreateDmOptions(
+            FfiConverterOptionalTypeFfiMessageDisappearingSettings.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiCreateDmOptions) = (
+            FfiConverterOptionalTypeFfiMessageDisappearingSettings.allocationSize(value.`messageDisappearingSettings`)
+    )
+
+    override fun write(value: FfiCreateDmOptions, buf: ByteBuffer) {
+            FfiConverterOptionalTypeFfiMessageDisappearingSettings.write(value.`messageDisappearingSettings`, buf)
+    }
+}
+
+
+
 data class FfiCreateGroupOptions (
     var `permissions`: FfiGroupPermissionsOptions?, 
     var `groupName`: kotlin.String?, 
@@ -10055,7 +10083,7 @@ data class FfiRemoteAttachmentInfo (
     var `scheme`: kotlin.String, 
     var `url`: kotlin.String, 
     var `salt`: kotlin.ByteArray, 
-    var `contentLengthKb`: kotlin.UInt?, 
+    var `contentLength`: kotlin.UInt?, 
     var `filename`: kotlin.String?
 ) {
     
@@ -10086,7 +10114,7 @@ public object FfiConverterTypeFfiRemoteAttachmentInfo: FfiConverterRustBuffer<Ff
             FfiConverterString.allocationSize(value.`scheme`) +
             FfiConverterString.allocationSize(value.`url`) +
             FfiConverterByteArray.allocationSize(value.`salt`) +
-            FfiConverterOptionalUInt.allocationSize(value.`contentLengthKb`) +
+            FfiConverterOptionalUInt.allocationSize(value.`contentLength`) +
             FfiConverterOptionalString.allocationSize(value.`filename`)
     )
 
@@ -10097,7 +10125,7 @@ public object FfiConverterTypeFfiRemoteAttachmentInfo: FfiConverterRustBuffer<Ff
             FfiConverterString.write(value.`scheme`, buf)
             FfiConverterString.write(value.`url`, buf)
             FfiConverterByteArray.write(value.`salt`, buf)
-            FfiConverterOptionalUInt.write(value.`contentLengthKb`, buf)
+            FfiConverterOptionalUInt.write(value.`contentLength`, buf)
             FfiConverterOptionalString.write(value.`filename`, buf)
     }
 }
@@ -10905,8 +10933,6 @@ sealed class GenericException(message: String): kotlin.Exception(message) {
         
         class Storage(message: String) : GenericException(message)
         
-        class ApiException(message: String) : GenericException(message)
-        
         class GroupException(message: String) : GenericException(message)
         
         class Signature(message: String) : GenericException(message)
@@ -10937,6 +10963,10 @@ sealed class GenericException(message: String): kotlin.Exception(message) {
         
         class Subscription(message: String) : GenericException(message)
         
+        class ApiClientBuild(message: String) : GenericException(message)
+        
+        class Grpc(message: String) : GenericException(message)
+        
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<GenericException> {
         override fun lift(error_buf: RustBuffer.ByValue): GenericException = FfiConverterTypeGenericError.lift(error_buf)
@@ -10953,22 +10983,23 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
             1 -> GenericException.Client(FfiConverterString.read(buf))
             2 -> GenericException.ClientBuilder(FfiConverterString.read(buf))
             3 -> GenericException.Storage(FfiConverterString.read(buf))
-            4 -> GenericException.ApiException(FfiConverterString.read(buf))
-            5 -> GenericException.GroupException(FfiConverterString.read(buf))
-            6 -> GenericException.Signature(FfiConverterString.read(buf))
-            7 -> GenericException.GroupMetadata(FfiConverterString.read(buf))
-            8 -> GenericException.GroupMutablePermissions(FfiConverterString.read(buf))
-            9 -> GenericException.Generic(FfiConverterString.read(buf))
-            10 -> GenericException.SignatureRequestException(FfiConverterString.read(buf))
-            11 -> GenericException.Erc1271SignatureException(FfiConverterString.read(buf))
-            12 -> GenericException.Verifier(FfiConverterString.read(buf))
-            13 -> GenericException.FailedToConvertToU32(FfiConverterString.read(buf))
-            14 -> GenericException.Association(FfiConverterString.read(buf))
-            15 -> GenericException.DeviceSync(FfiConverterString.read(buf))
-            16 -> GenericException.Identity(FfiConverterString.read(buf))
-            17 -> GenericException.JoinException(FfiConverterString.read(buf))
-            18 -> GenericException.IoException(FfiConverterString.read(buf))
-            19 -> GenericException.Subscription(FfiConverterString.read(buf))
+            4 -> GenericException.GroupException(FfiConverterString.read(buf))
+            5 -> GenericException.Signature(FfiConverterString.read(buf))
+            6 -> GenericException.GroupMetadata(FfiConverterString.read(buf))
+            7 -> GenericException.GroupMutablePermissions(FfiConverterString.read(buf))
+            8 -> GenericException.Generic(FfiConverterString.read(buf))
+            9 -> GenericException.SignatureRequestException(FfiConverterString.read(buf))
+            10 -> GenericException.Erc1271SignatureException(FfiConverterString.read(buf))
+            11 -> GenericException.Verifier(FfiConverterString.read(buf))
+            12 -> GenericException.FailedToConvertToU32(FfiConverterString.read(buf))
+            13 -> GenericException.Association(FfiConverterString.read(buf))
+            14 -> GenericException.DeviceSync(FfiConverterString.read(buf))
+            15 -> GenericException.Identity(FfiConverterString.read(buf))
+            16 -> GenericException.JoinException(FfiConverterString.read(buf))
+            17 -> GenericException.IoException(FfiConverterString.read(buf))
+            18 -> GenericException.Subscription(FfiConverterString.read(buf))
+            19 -> GenericException.ApiClientBuild(FfiConverterString.read(buf))
+            20 -> GenericException.Grpc(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
         
@@ -10992,68 +11023,72 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
                 buf.putInt(3)
                 Unit
             }
-            is GenericException.ApiException -> {
+            is GenericException.GroupException -> {
                 buf.putInt(4)
                 Unit
             }
-            is GenericException.GroupException -> {
+            is GenericException.Signature -> {
                 buf.putInt(5)
                 Unit
             }
-            is GenericException.Signature -> {
+            is GenericException.GroupMetadata -> {
                 buf.putInt(6)
                 Unit
             }
-            is GenericException.GroupMetadata -> {
+            is GenericException.GroupMutablePermissions -> {
                 buf.putInt(7)
                 Unit
             }
-            is GenericException.GroupMutablePermissions -> {
+            is GenericException.Generic -> {
                 buf.putInt(8)
                 Unit
             }
-            is GenericException.Generic -> {
+            is GenericException.SignatureRequestException -> {
                 buf.putInt(9)
                 Unit
             }
-            is GenericException.SignatureRequestException -> {
+            is GenericException.Erc1271SignatureException -> {
                 buf.putInt(10)
                 Unit
             }
-            is GenericException.Erc1271SignatureException -> {
+            is GenericException.Verifier -> {
                 buf.putInt(11)
                 Unit
             }
-            is GenericException.Verifier -> {
+            is GenericException.FailedToConvertToU32 -> {
                 buf.putInt(12)
                 Unit
             }
-            is GenericException.FailedToConvertToU32 -> {
+            is GenericException.Association -> {
                 buf.putInt(13)
                 Unit
             }
-            is GenericException.Association -> {
+            is GenericException.DeviceSync -> {
                 buf.putInt(14)
                 Unit
             }
-            is GenericException.DeviceSync -> {
+            is GenericException.Identity -> {
                 buf.putInt(15)
                 Unit
             }
-            is GenericException.Identity -> {
+            is GenericException.JoinException -> {
                 buf.putInt(16)
                 Unit
             }
-            is GenericException.JoinException -> {
+            is GenericException.IoException -> {
                 buf.putInt(17)
                 Unit
             }
-            is GenericException.IoException -> {
+            is GenericException.Subscription -> {
                 buf.putInt(18)
                 Unit
             }
-            is GenericException.Subscription -> {
+            is GenericException.ApiClientBuild -> {
                 buf.putInt(19)
+                Unit
+            }
+            is GenericException.Grpc -> {
+                buf.putInt(20)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }

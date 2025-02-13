@@ -131,7 +131,7 @@ class MultiRemoteAttachmentTest {
                         scheme = attachment.scheme,
                         salt = attachment.salt.toByteString(),
                         secret = attachment.secret.toByteString(),
-                        contentLength = attachment.contentLengthKb?.toInt(),
+                        contentLength = attachment.contentLength?.toInt(),
                     )
                 }
             ) {

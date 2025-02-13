@@ -46,7 +46,7 @@ data class MultiRemoteAttachmentCodec(override var contentType: ContentTypeId = 
                     scheme = attachment.scheme,
                     salt = attachment.salt.toByteArray(),
                     secret = attachment.secret.toByteArray(),
-                    contentLengthKb = attachment.contentLength?.toUInt(),
+                    contentLength = attachment.contentLength.toUInt(),
                 )
             }
         )
@@ -60,7 +60,7 @@ data class MultiRemoteAttachmentCodec(override var contentType: ContentTypeId = 
                 RemoteAttachmentInfo(
                     url = attachment.url,
                     filename = attachment.filename ?: "",
-                    contentLength = attachment.contentLengthKb?.toLong() ?: 0,
+                    contentLength = attachment.contentLength?.toLong() ?: 0,
                     contentDigest = attachment.contentDigest,
                     nonce = attachment.nonce.toProtoByteString(),
                     scheme = attachment.scheme,
@@ -96,7 +96,7 @@ data class MultiRemoteAttachmentCodec(override var contentType: ContentTypeId = 
                         scheme = attachment.scheme,
                         salt = attachment.salt.toByteArray(),
                         secret = attachment.secret.toByteArray(),
-                        contentLengthKb = attachment.contentLength?.toUInt(),
+                        contentLength = attachment.contentLength?.toUInt(),
                     )
                 }
             )
