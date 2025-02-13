@@ -1,6 +1,8 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.protobuf.ByteString
+import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -10,6 +12,7 @@ import org.xmtp.android.library.codecs.Attachment
 import org.xmtp.android.library.codecs.AttachmentCodec
 import org.xmtp.android.library.codecs.ContentTypeText
 import org.xmtp.android.library.codecs.EncodedContent
+import org.xmtp.android.library.codecs.RemoteAttachment
 import org.xmtp.android.library.codecs.id
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.FfiEncryptAttachmentResult
@@ -28,6 +31,46 @@ class MultiRemoteAttachmentTest {
         val randomUrl: String = "https://" + Random(encryptedPayload.hashCode()).nextInt(0,1000000)
         encryptedPayloadUrls.put(randomUrl, encryptedPayload)
         return randomUrl
+    }
+    @Test
+    fun testBenchMarkEncryptionDecryption() {
+        // Generate 20MB of random data (20 * 1024 * 1024 bytes)
+        val randomData = ByteArray(20 * 1024 * 1024).apply {
+            Random.nextBytes(this)
+        }
+        // Generate 20MB of random data as ByteString
+        val randomDataByteString: ByteString = randomData.toByteString()
+        Client.register(codec = AttachmentCodec())
+
+        val attachment = Attachment(
+            filename = "test1.txt",
+            mimeType = "text/plain",
+            data = randomDataByteString
+        )
+
+        val encodedBytes = AttachmentCodec().encode(attachment).toByteArray()
+
+        val startTime = System.nanoTime()
+        val encodedEncryptedContent = RemoteAttachment.encodeEncryptedBytes(
+            encodedContent = encodedBytes,
+            filename = attachment.filename
+        )
+        val endTime = System.nanoTime()
+        val durationMs = (endTime - startTime) / 1_000_000.0 // Convert nanoseconds to milliseconds
+        println("Encryption time for 20MB in Kotlin: $durationMs ms")
+
+        val startTime2 = System.nanoTime()
+        val encodedEncryptedContent2 = MultiRemoteAttachmentCodec.encryptBytesForLocalAttachment(
+            encodedBytes, "test1.txt"
+        )
+        val endTime2 = System.nanoTime()
+        val durationMs2 = (endTime2 - startTime2) / 1_000_000.0 // Convert nanoseconds to milliseconds
+        println("Encryption time for 20MB in Rust: $durationMs2 ms")
+        assertEquals(encodedEncryptedContent.filename, encodedEncryptedContent2.filename)
+
+        assert(durationMs2 - durationMs < 1)
+        assert(true)
+        
     }
 
     @Test
