@@ -2097,10 +2097,10 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_admin() != 52417.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_members() != 3260.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_members() != 51549.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_members_by_inbox_id() != 28069.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_members_by_inbox_id() != 30553.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_super_admin() != 62984.toShort()) {
@@ -3265,9 +3265,9 @@ public interface FfiConversationInterface {
     
     suspend fun `addAdmin`(`inboxId`: kotlin.String)
     
-    suspend fun `addMembers`(`accountAddresses`: List<kotlin.String>)
+    suspend fun `addMembers`(`accountAddresses`: List<kotlin.String>): FfiUpdateGroupMembershipResult
     
-    suspend fun `addMembersByInboxId`(`inboxIds`: List<kotlin.String>)
+    suspend fun `addMembersByInboxId`(`inboxIds`: List<kotlin.String>): FfiUpdateGroupMembershipResult
     
     suspend fun `addSuperAdmin`(`inboxId`: kotlin.String)
     
@@ -3464,7 +3464,7 @@ open class FfiConversation: Disposable, AutoCloseable, FfiConversationInterface 
     
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `addMembers`(`accountAddresses`: List<kotlin.String>) {
+    override suspend fun `addMembers`(`accountAddresses`: List<kotlin.String>) : FfiUpdateGroupMembershipResult {
         return uniffiRustCallAsync(
         callWithPointer { thisPtr ->
             UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_add_members(
@@ -3472,12 +3472,11 @@ open class FfiConversation: Disposable, AutoCloseable, FfiConversationInterface 
                 FfiConverterSequenceString.lower(`accountAddresses`),
             )
         },
-        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
-        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
         // lift function
-        { Unit },
-        
+        { FfiConverterTypeFfiUpdateGroupMembershipResult.lift(it) },
         // Error FFI converter
         GenericException.ErrorHandler,
     )
@@ -3486,7 +3485,7 @@ open class FfiConversation: Disposable, AutoCloseable, FfiConversationInterface 
     
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `addMembersByInboxId`(`inboxIds`: List<kotlin.String>) {
+    override suspend fun `addMembersByInboxId`(`inboxIds`: List<kotlin.String>) : FfiUpdateGroupMembershipResult {
         return uniffiRustCallAsync(
         callWithPointer { thisPtr ->
             UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_add_members_by_inbox_id(
@@ -3494,12 +3493,11 @@ open class FfiConversation: Disposable, AutoCloseable, FfiConversationInterface 
                 FfiConverterSequenceString.lower(`inboxIds`),
             )
         },
-        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
-        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
-        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
         // lift function
-        { Unit },
-        
+        { FfiConverterTypeFfiUpdateGroupMembershipResult.lift(it) },
         // Error FFI converter
         GenericException.ErrorHandler,
     )
@@ -10132,6 +10130,42 @@ public object FfiConverterTypeFfiRemoteAttachmentInfo: FfiConverterRustBuffer<Ff
 
 
 
+data class FfiUpdateGroupMembershipResult (
+    var `addedMembers`: Map<kotlin.String, kotlin.ULong>, 
+    var `removedMembers`: List<kotlin.String>, 
+    var `failedInstallations`: List<kotlin.ByteArray>
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiUpdateGroupMembershipResult: FfiConverterRustBuffer<FfiUpdateGroupMembershipResult> {
+    override fun read(buf: ByteBuffer): FfiUpdateGroupMembershipResult {
+        return FfiUpdateGroupMembershipResult(
+            FfiConverterMapStringULong.read(buf),
+            FfiConverterSequenceString.read(buf),
+            FfiConverterSequenceByteArray.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiUpdateGroupMembershipResult) = (
+            FfiConverterMapStringULong.allocationSize(value.`addedMembers`) +
+            FfiConverterSequenceString.allocationSize(value.`removedMembers`) +
+            FfiConverterSequenceByteArray.allocationSize(value.`failedInstallations`)
+    )
+
+    override fun write(value: FfiUpdateGroupMembershipResult, buf: ByteBuffer) {
+            FfiConverterMapStringULong.write(value.`addedMembers`, buf)
+            FfiConverterSequenceString.write(value.`removedMembers`, buf)
+            FfiConverterSequenceByteArray.write(value.`failedInstallations`, buf)
+    }
+}
+
+
+
 data class FfiV2BatchQueryRequest (
     var `requests`: List<FfiV2QueryRequest>
 ) {
@@ -12286,6 +12320,45 @@ public object FfiConverterSequenceTypeFfiPreferenceUpdate: FfiConverterRustBuffe
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeFfiPreferenceUpdate.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterMapStringULong: FfiConverterRustBuffer<Map<kotlin.String, kotlin.ULong>> {
+    override fun read(buf: ByteBuffer): Map<kotlin.String, kotlin.ULong> {
+        val len = buf.getInt()
+        return buildMap<kotlin.String, kotlin.ULong>(len) {
+            repeat(len) {
+                val k = FfiConverterString.read(buf)
+                val v = FfiConverterULong.read(buf)
+                this[k] = v
+            }
+        }
+    }
+
+    override fun allocationSize(value: Map<kotlin.String, kotlin.ULong>): ULong {
+        val spaceForMapSize = 4UL
+        val spaceForChildren = value.map { (k, v) ->
+            FfiConverterString.allocationSize(k) +
+            FfiConverterULong.allocationSize(v)
+        }.sum()
+        return spaceForMapSize + spaceForChildren
+    }
+
+    override fun write(value: Map<kotlin.String, kotlin.ULong>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        // The parens on `(k, v)` here ensure we're calling the right method,
+        // which is important for compatibility with older android devices.
+        // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
+        value.iterator().forEach { (k, v) ->
+            FfiConverterString.write(k, buf)
+            FfiConverterULong.write(v, buf)
         }
     }
 }
