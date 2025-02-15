@@ -435,15 +435,17 @@ class Group(
                         Log.w(
                             "XMTP Group stream",
                             "Failed to decode message: id=${message.id.toHex()}, " +
-                                    "convoId=${message.convoId.toHex()}, " +
-                                    "senderInboxId=${message.senderInboxId}"
+                                "convoId=${message.convoId.toHex()}, " +
+                                "senderInboxId=${message.senderInboxId}"
                         )
                     }
                 } catch (e: Exception) {
                     Log.e(
-                        "XMTP Group stream", "Error decoding message: id=${message.id.toHex()}, " +
-                                "convoId=${message.convoId.toHex()}, " +
-                                "senderInboxId=${message.senderInboxId}", e
+                        "XMTP Group stream",
+                        "Error decoding message: id=${message.id.toHex()}, " +
+                            "convoId=${message.convoId.toHex()}, " +
+                            "senderInboxId=${message.senderInboxId}",
+                        e
                     )
                 }
             }
