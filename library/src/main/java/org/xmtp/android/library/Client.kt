@@ -324,65 +324,6 @@ class Client() {
         }
     }
 
-    fun findGroup(groupId: String): Group? {
-        return try {
-            Group(this, ffiClient.conversation(groupId.hexToByteArray()))
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    suspend fun findConversation(conversationId: String): Conversation? {
-        return try {
-            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
-            when (conversation.conversationType()) {
-                FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
-                FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
-                else -> null
-            }
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    suspend fun findConversationByTopic(topic: String): Conversation? {
-        val regex = """/xmtp/mls/1/g-(.*?)/proto""".toRegex()
-        val matchResult = regex.find(topic)
-        val conversationId = matchResult?.groupValues?.get(1) ?: ""
-        return try {
-            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
-            when (conversation.conversationType()) {
-                FfiConversationType.GROUP -> Conversation.Group(Group(this, conversation))
-                FfiConversationType.DM -> Conversation.Dm(Dm(this, conversation))
-                else -> null
-            }
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    fun findDmByInboxId(inboxId: String): Dm? {
-        return try {
-            Dm(this, ffiClient.dmConversation(inboxId))
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    suspend fun findDmByAddress(address: String): Dm? {
-        val inboxId =
-            inboxIdFromAddress(address.lowercase()) ?: throw XMTPException("No inboxId present")
-        return findDmByInboxId(inboxId)
-    }
-
-    fun findMessage(messageId: String): Message? {
-        return try {
-            Message.create(ffiClient.message(messageId.hexToByteArray()))
-        } catch (e: Exception) {
-            null
-        }
-    }
-
     suspend fun canMessage(addresses: List<String>): Map<String, Boolean> {
         return ffiClient.canMessage(addresses)
     }
