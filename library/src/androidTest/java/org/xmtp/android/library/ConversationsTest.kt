@@ -1,10 +1,17 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -14,6 +21,8 @@ import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
+import kotlin.system.measureTimeMillis
+import kotlin.time.Duration.Companion.seconds
 
 @RunWith(AndroidJUnit4::class)
 class ConversationsTest {
@@ -253,4 +262,101 @@ class ConversationsTest {
             assertTrue(topics.contains(convo.topic))
         }
     }
+
+    @Test
+    fun testStreamsAndMessages() = runBlocking {
+        val messages = mutableListOf<String>()
+        val alixGroup = alixClient.conversations.newGroup(listOf(caroClient.address, boClient.address))
+        val caroGroup2 = caroClient.conversations.newGroup(listOf(alixClient.address, boClient.address))
+
+
+        // Ensure all clients sync before sending/receiving
+        alixClient.conversations.syncAllConversations()
+        caroClient.conversations.syncAllConversations()
+        boClient.conversations.syncAllConversations()
+
+        val boGroup = boClient.findGroup(alixGroup.id)!!
+        val caroGroup = caroClient.findGroup(alixGroup.id)!!
+        val boGroup2 = boClient.findGroup(caroGroup2.id)!!
+        val alixGroup2 = alixClient.findGroup(caroGroup2.id)!!
+
+        val caroJob = launch(Dispatchers.IO) {
+            println("Caro is listening...")
+            try {
+                withTimeout(60.seconds) { // Ensure test doesn't hang indefinitely
+                    caroClient.conversations.streamAllMessages()
+                        .take(80) // Stop after receiving 80 messages
+                        .collect { message ->
+                            synchronized(messages) { messages.add(message.body) }
+                            println("Caro received: ${message.body}")
+                        }
+                }
+            } catch (e: TimeoutCancellationException) {
+                println("Timeout reached for caroJob")
+            }
+        }
+
+        delay(1000)
+
+        // Simulate message sending in multiple threads
+        val alixJob = launch(Dispatchers.IO) {
+            println("Alix is sending messages...")
+            repeat(20) {
+                val message = "Alix Message $it"
+                alixGroup.send(message)
+                alixGroup2.send(message)
+                println("Alix sent: $message")
+            }
+        }
+
+        val boMessageJob = launch(Dispatchers.IO) {
+            println("Bo is sending messages..")
+            repeat(10) {
+                val message = "Bo Message $it"
+                boGroup.send(message)
+                boGroup2.send(message)
+                println("Bo sent: $message")
+            }
+        }
+
+//        val boSpamJob = launch(Dispatchers.IO) {
+//            println("Bo is sending spam groups..")
+//            repeat(10) {
+//                val spamMessage = "Bo Message $it"
+//                val group = boClient.conversations.newGroup(listOf(caroClient.address))
+//                group.send(spamMessage)
+//                println("Bo spam: $spamMessage")
+//            }
+//        }
+
+        val caroMessagingJob = launch(Dispatchers.IO) {
+            println("Caro is sending messages...")
+            repeat(10) {
+                val message = "Caro Message $it"
+                caroGroup.send(message)
+                caroGroup2.send(message)
+                println("Caro sent: $message")
+            }
+        }
+
+        joinAll(alixJob, caroMessagingJob, boMessageJob)
+
+        // Wait a bit to ensure all messages are processed
+        delay(2000)
+
+        caroJob.cancelAndJoin()
+
+        Log.d("LOPI", messages.toString())
+        assertEquals(80, messages.size)
+        assertEquals(40, caroGroup.messages().size)
+
+        boGroup.sync()
+        alixGroup.sync()
+        caroGroup.sync()
+
+        assertEquals(40, boGroup.messages().size)
+        assertEquals(41, alixGroup.messages().size)
+        assertEquals(40, caroGroup.messages().size)
+    }
+
 }
