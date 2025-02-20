@@ -21,13 +21,13 @@ import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
-import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.seconds
 
 @RunWith(AndroidJUnit4::class)
 class ConversationsTest {
     private lateinit var alixWallet: PrivateKeyBuilder
     private lateinit var boWallet: PrivateKeyBuilder
+    private lateinit var davonWallet: PrivateKeyBuilder
     private lateinit var alix: PrivateKey
     private lateinit var alixClient: Client
     private lateinit var bo: PrivateKey
@@ -35,6 +35,8 @@ class ConversationsTest {
     private lateinit var caroWallet: PrivateKeyBuilder
     private lateinit var caro: PrivateKey
     private lateinit var caroClient: Client
+    private lateinit var davon: PrivateKey
+    private lateinit var davonClient: Client
     private lateinit var fixtures: Fixtures
 
     @Before
@@ -46,10 +48,13 @@ class ConversationsTest {
         bo = fixtures.bo
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
+        davonWallet = fixtures.davonAccount
+        davon = fixtures.davon
 
         alixClient = fixtures.alixClient
         boClient = fixtures.boClient
         caroClient = fixtures.caroClient
+        davonClient = fixtures.davonClient
     }
 
     @Test
@@ -319,15 +324,15 @@ class ConversationsTest {
             }
         }
 
-//        val boSpamJob = launch(Dispatchers.IO) {
-//            println("Bo is sending spam groups..")
-//            repeat(10) {
-//                val spamMessage = "Bo Message $it"
-//                val group = boClient.conversations.newGroup(listOf(caroClient.address))
-//                group.send(spamMessage)
-//                println("Bo spam: $spamMessage")
-//            }
-//        }
+        val davonSpamJob = launch(Dispatchers.IO) {
+            println("Davon is sending spam groups..")
+            repeat(10) {
+                val spamMessage = "Davon Spam Message $it"
+                val group = davonClient.conversations.newGroup(listOf(caroClient.address))
+                group.send(spamMessage)
+                println("Davon spam: $spamMessage")
+            }
+        }
 
         val caroMessagingJob = launch(Dispatchers.IO) {
             println("Caro is sending messages...")
@@ -339,7 +344,7 @@ class ConversationsTest {
             }
         }
 
-        joinAll(alixJob, caroMessagingJob, boMessageJob)
+        joinAll(alixJob, caroMessagingJob, boMessageJob, davonSpamJob)
 
         // Wait a bit to ensure all messages are processed
         delay(2000)
@@ -347,7 +352,7 @@ class ConversationsTest {
         caroJob.cancelAndJoin()
 
         Log.d("LOPI", messages.toString())
-        assertEquals(80, messages.size)
+        assertEquals(90, messages.size)
         assertEquals(40, caroGroup.messages().size)
 
         boGroup.sync()
