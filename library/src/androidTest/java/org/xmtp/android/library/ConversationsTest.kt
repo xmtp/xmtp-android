@@ -271,8 +271,10 @@ class ConversationsTest {
     @Test
     fun testStreamsAndMessages() = runBlocking {
         val messages = mutableListOf<String>()
-        val alixGroup = alixClient.conversations.newGroup(listOf(caroClient.address, boClient.address))
-        val caroGroup2 = caroClient.conversations.newGroup(listOf(alixClient.address, boClient.address))
+        val alixGroup =
+            alixClient.conversations.newGroup(listOf(caroClient.address, boClient.address))
+        val caroGroup2 =
+            caroClient.conversations.newGroup(listOf(alixClient.address, boClient.address))
 
 
         // Ensure all clients sync before sending/receiving
@@ -290,7 +292,7 @@ class ConversationsTest {
             try {
                 withTimeout(60.seconds) { // Ensure test doesn't hang indefinitely
                     caroClient.conversations.streamAllMessages()
-                        .take(80) // Stop after receiving 80 messages
+                        .take(100) // Stop after receiving 90 messages
                         .collect { message ->
                             synchronized(messages) { messages.add(message.body) }
                             println("Caro received: ${message.body}")
@@ -351,7 +353,6 @@ class ConversationsTest {
 
         caroJob.cancelAndJoin()
 
-        Log.d("LOPI", messages.toString())
         assertEquals(90, messages.size)
         assertEquals(40, caroGroup.messages().size)
 
@@ -363,5 +364,4 @@ class ConversationsTest {
         assertEquals(41, alixGroup.messages().size)
         assertEquals(40, caroGroup.messages().size)
     }
-
 }
