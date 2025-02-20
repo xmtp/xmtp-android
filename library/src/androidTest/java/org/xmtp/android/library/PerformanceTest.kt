@@ -20,43 +20,46 @@ import kotlin.system.measureTimeMillis
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class PerformanceTest {
-    private lateinit var alixWallet: PrivateKeyBuilder
-    private lateinit var boWallet: PrivateKeyBuilder
-    private lateinit var caroWallet: PrivateKeyBuilder
-    private lateinit var davonWallet: PrivateKeyBuilder
-    private lateinit var eriWallet: PrivateKeyBuilder
-    private lateinit var alix: PrivateKey
-    private lateinit var alixClient: Client
-    private lateinit var bo: PrivateKey
-    private lateinit var boClient: Client
-    private lateinit var caro: PrivateKey
-    private lateinit var caroClient: Client
-    private lateinit var davon: PrivateKey
-    private lateinit var davonClient: Client
-    private lateinit var eri: PrivateKey
-    private lateinit var eriClient: Client
-    private var dm: Dm? = null
-    private var group: Group? = null
+    companion object {
+        private lateinit var alixWallet: PrivateKeyBuilder
+        private lateinit var boWallet: PrivateKeyBuilder
+        private lateinit var caroWallet: PrivateKeyBuilder
+        private lateinit var davonWallet: PrivateKeyBuilder
+        private lateinit var eriWallet: PrivateKeyBuilder
+        private lateinit var alix: PrivateKey
+        private lateinit var alixClient: Client
+        private lateinit var bo: PrivateKey
+        private lateinit var boClient: Client
+        private lateinit var caro: PrivateKey
+        private lateinit var caroClient: Client
+        private lateinit var davon: PrivateKey
+        private lateinit var davonClient: Client
+        private lateinit var eri: PrivateKey
+        private lateinit var eriClient: Client
+        private var dm: Dm? = null
+        private var group: Group? = null
 
-    @Before
-    fun setUpClass() {
-        val fixtures = fixtures(ClientOptions.Api(XMTPEnvironment.LOCAL, false))
-        alixWallet = fixtures.alixAccount
-        alix = fixtures.alix
-        boWallet = fixtures.boAccount
-        bo = fixtures.bo
-        caroWallet = fixtures.caroAccount
-        caro = fixtures.caro
-        davonWallet = fixtures.davonAccount
-        davon = fixtures.davon
-        eriWallet = fixtures.eriAccount
-        eri = fixtures.eri
+        @BeforeClass
+        @JvmStatic
+        fun setUpClass() {
+            val fixtures = fixtures(ClientOptions.Api(XMTPEnvironment.DEV, true))
+            alixWallet = fixtures.alixAccount
+            alix = fixtures.alix
+            boWallet = fixtures.boAccount
+            bo = fixtures.bo
+            caroWallet = fixtures.caroAccount
+            caro = fixtures.caro
+            davonWallet = fixtures.davonAccount
+            davon = fixtures.davon
+            eriWallet = fixtures.eriAccount
+            eri = fixtures.eri
 
-        alixClient = fixtures.alixClient
-        boClient = fixtures.boClient
-        caroClient = fixtures.caroClient
-        davonClient = fixtures.davonClient
-        eriClient = fixtures.eriClient
+            alixClient = fixtures.alixClient
+            boClient = fixtures.boClient
+            caroClient = fixtures.caroClient
+            davonClient = fixtures.davonClient
+            eriClient = fixtures.eriClient
+        }
     }
 
     @Test
