@@ -558,7 +558,8 @@ class ClientTest {
         val state = runBlocking { fixtures.alixClient.inboxState(true) }
         assertEquals(state.addresses.size, 2)
 
-        val inboxId = runBlocking { fixtures.alixClient.inboxIdFromAddress(fixtures.boClient.address) }
+        val inboxId =
+            runBlocking { fixtures.alixClient.inboxIdFromAddress(fixtures.boClient.address) }
         assertEquals(inboxId, fixtures.alixClient.inboxId)
     }
 
@@ -675,5 +676,57 @@ class ClientTest {
         assert(time4 < time1)
         assertEquals(client.inboxId, buildClient1.inboxId)
         assertEquals(client.inboxId, buildClient2.inboxId)
+    }
+
+    @Test
+    fun testErrorsIfDbEncryptionKeyIsLost() {
+        val key = SecureRandom().generateSeed(32)
+        val badKey = SecureRandom().generateSeed(32)
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val alixWallet = PrivateKeyBuilder()
+
+        val alixClient = runBlocking {
+            Client().create(
+                account = alixWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
+
+        assertThrows(
+            "Error creating V3 client: Storage error: PRAGMA key or salt has incorrect value",
+            XMTPException::class.java
+        ) {
+            runBlocking {
+                Client().build(
+                    address = alixClient.address,
+                    options = ClientOptions(
+                        ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                        appContext = context,
+                        dbEncryptionKey = badKey,
+                    )
+                )
+            }
+        }
+
+        assertThrows(
+            "Error creating V3 client: Storage error: PRAGMA key or salt has incorrect value",
+            XMTPException::class.java
+        ) {
+            runBlocking {
+                Client().create(
+                    account = alixWallet,
+                    options = ClientOptions(
+                        ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                        appContext = context,
+                        dbEncryptionKey = badKey,
+                    )
+                )
+            }
+        }
     }
 }
