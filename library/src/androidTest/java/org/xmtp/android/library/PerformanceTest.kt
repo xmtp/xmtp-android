@@ -5,7 +5,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
-import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -180,6 +179,4 @@ class PerformanceTest {
         Assert.assertEquals(client.inboxId, buildClient1.inboxId)
         Assert.assertEquals(client.inboxId, buildClient2.inboxId)
     }
-
-
 }

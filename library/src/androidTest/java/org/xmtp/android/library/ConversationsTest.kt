@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,8 +62,8 @@ class ConversationsTest {
             runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
         val dm = runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
 
-        val sameDm = runBlocking { boClient.findConversationByTopic(dm.topic) }
-        val sameGroup = runBlocking { boClient.findConversationByTopic(group.topic) }
+        val sameDm = runBlocking { boClient.conversations.findConversationByTopic(dm.topic) }
+        val sameGroup = runBlocking { boClient.conversations.findConversationByTopic(group.topic) }
         assertEquals(group.id, sameGroup?.id)
         assertEquals(dm.id, sameDm?.id)
     }
@@ -276,16 +275,14 @@ class ConversationsTest {
         val caroGroup2 =
             caroClient.conversations.newGroup(listOf(alixClient.address, boClient.address))
 
-
-        // Ensure all clients sync before sending/receiving
         alixClient.conversations.syncAllConversations()
         caroClient.conversations.syncAllConversations()
         boClient.conversations.syncAllConversations()
 
-        val boGroup = boClient.findGroup(alixGroup.id)!!
-        val caroGroup = caroClient.findGroup(alixGroup.id)!!
-        val boGroup2 = boClient.findGroup(caroGroup2.id)!!
-        val alixGroup2 = alixClient.findGroup(caroGroup2.id)!!
+        val boGroup = boClient.conversations.findGroup(alixGroup.id)!!
+        val caroGroup = caroClient.conversations.findGroup(alixGroup.id)!!
+        val boGroup2 = boClient.conversations.findGroup(caroGroup2.id)!!
+        val alixGroup2 = alixClient.conversations.findGroup(caroGroup2.id)!!
 
         val caroJob = launch(Dispatchers.IO) {
             println("Caro is listening...")

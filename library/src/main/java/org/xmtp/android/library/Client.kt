@@ -7,9 +7,7 @@ import kotlinx.coroutines.sync.withLock
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.InboxState
-import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.rawData
-import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiSignatureRequest
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.XmtpApiClient
@@ -143,7 +141,11 @@ class Client() {
         this.preferences = PrivatePreferences(client = this, ffiClient = libXMTPClient)
         this.ffiClient = libXMTPClient
         this.conversations =
-            Conversations(client = this, ffiConversations = libXMTPClient.conversations())
+            Conversations(
+                client = this,
+                ffiConversations = libXMTPClient.conversations(),
+                ffiClient = ffiClient
+            )
         this.dbPath = dbPath
         this.installationId = installationId
         this.inboxId = inboxId

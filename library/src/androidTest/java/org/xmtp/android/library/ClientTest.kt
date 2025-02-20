@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
@@ -14,7 +13,6 @@ import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.GenericException
 import java.io.File
 import java.security.SecureRandom
-import java.util.Date
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
