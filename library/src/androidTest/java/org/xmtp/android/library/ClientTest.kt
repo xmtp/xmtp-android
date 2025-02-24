@@ -30,7 +30,7 @@ class ClientTest {
             dbEncryptionKey = key
         )
         val client = runBlocking {
-            Client().create(account = fakeWallet, options = options)
+            Client.create(account = fakeWallet, options = options)
         }
 
         runBlocking {
@@ -38,7 +38,7 @@ class ClientTest {
         }
 
         val fromBundle = runBlocking {
-            Client().build(fakeWallet.address, options = options)
+            Client.build(fakeWallet.address, options = options)
         }
         assertEquals(client.address, fromBundle.address)
         assertEquals(client.inboxId, fromBundle.inboxId)
@@ -60,7 +60,7 @@ class ClientTest {
         )
         val inboxId = runBlocking { Client.getOrCreateInboxId(options.api, fakeWallet.address) }
         val client = runBlocking {
-            Client().create(
+            Client.create(
                 account = fakeWallet,
                 options = options
             )
@@ -127,7 +127,7 @@ class ClientTest {
         val fakeWallet = PrivateKeyBuilder()
         val fakeWallet2 = PrivateKeyBuilder()
         var client = runBlocking {
-            Client().create(
+            Client.create(
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -137,7 +137,7 @@ class ClientTest {
             )
         }
         val client2 = runBlocking {
-            Client().create(
+            Client.create(
                 account = fakeWallet2,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -157,7 +157,7 @@ class ClientTest {
         client.deleteLocalDatabase()
 
         client = runBlocking {
-            Client().create(
+            Client.create(
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -178,7 +178,7 @@ class ClientTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fakeWallet = PrivateKeyBuilder()
         val client = runBlocking {
-            Client().create(
+            Client.create(
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.DEV, true),
@@ -198,7 +198,7 @@ class ClientTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fakeWallet = PrivateKeyBuilder()
         val client = runBlocking {
-            Client().create(
+            Client.create(
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.PRODUCTION, true),
@@ -231,7 +231,7 @@ class ClientTest {
         )
 
         try {
-            runBlocking { Client().create(account = fakeWallet, options = opts) }
+            runBlocking { Client.create(account = fakeWallet, options = opts) }
             expectation.get(5, TimeUnit.SECONDS)
         } catch (e: Exception) {
             fail("Error: $e")
@@ -245,7 +245,7 @@ class ClientTest {
         val fakeWallet = PrivateKeyBuilder()
         val fakeWallet2 = PrivateKeyBuilder()
         val boClient = runBlocking {
-            Client().create(
+            Client.create(
                 account = fakeWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -255,7 +255,7 @@ class ClientTest {
             )
         }
         val alixClient = runBlocking {
-            Client().create(
+            Client.create(
                 account = fakeWallet2,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -295,7 +295,7 @@ class ClientTest {
         val alixWallet = PrivateKeyBuilder()
         val boWallet = PrivateKeyBuilder()
         val alixClient = runBlocking {
-            Client().create(
+            Client.create(
                 account = alixWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -305,7 +305,7 @@ class ClientTest {
             )
         }
         val boClient = runBlocking {
-            Client().create(
+            Client.create(
                 account = boWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -327,7 +327,7 @@ class ClientTest {
         val alixWallet = PrivateKeyBuilder()
 
         val alixClient = runBlocking {
-            Client().create(
+            Client.create(
                 account = alixWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -338,7 +338,7 @@ class ClientTest {
         }
 
         val alixClient2 = runBlocking {
-            Client().create(
+            Client.create(
                 account = alixWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -350,7 +350,7 @@ class ClientTest {
         }
 
         val alixClient3 = runBlocking {
-            Client().create(
+            Client.create(
                 account = alixWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -379,7 +379,7 @@ class ClientTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val alixWallet = PrivateKeyBuilder()
         runBlocking {
-            val alixClient = Client().create(
+            val alixClient = Client.create(
                 account = alixWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -388,7 +388,7 @@ class ClientTest {
                 )
             )
 
-            val alixClient2 = Client().create(
+            val alixClient2 = Client.create(
                 account = alixWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -400,7 +400,7 @@ class ClientTest {
         }
 
         val alixClient3 = runBlocking {
-            Client().create(
+            Client.create(
                 account = alixWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -488,7 +488,7 @@ class ClientTest {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val alixClient2 = runBlocking {
-            Client().create(
+            Client.create(
                 account = fixtures.alixAccount,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -611,7 +611,7 @@ class ClientTest {
         val alixWallet = PrivateKeyBuilder()
 
         val alixClient = runBlocking {
-            Client().create(
+            Client.create(
                 account = alixWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -626,7 +626,7 @@ class ClientTest {
             XMTPException::class.java
         ) {
             runBlocking {
-                Client().build(
+                Client.build(
                     address = alixClient.address,
                     options = ClientOptions(
                         ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -642,7 +642,7 @@ class ClientTest {
             XMTPException::class.java
         ) {
             runBlocking {
-                Client().create(
+                Client.create(
                     account = alixWallet,
                     options = ClientOptions(
                         ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -666,7 +666,7 @@ class ClientTest {
         )
         val inboxId = runBlocking { Client.getOrCreateInboxId(options.api, fakeWallet.address) }
         val client = runBlocking {
-            Client().ffiCreateClient(fakeWallet.address, options)
+            Client.ffiCreateClient(fakeWallet.address, options)
         }
         runBlocking {
             val sigRequest = client.ffiSignatureRequest()
