@@ -681,5 +681,4 @@ class ClientTest {
         assert(client.installationId.isNotEmpty())
         assertEquals(inboxId, client.inboxId)
     }
-
 }
