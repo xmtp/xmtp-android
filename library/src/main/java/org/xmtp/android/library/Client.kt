@@ -4,9 +4,11 @@ import android.content.Context
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.web3j.crypto.Sign
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.InboxState
+import org.xmtp.android.library.libxmtp.SignatureRequest
 import org.xmtp.android.library.messages.rawData
 import uniffi.xmtpv3.FfiSignatureRequest
 import uniffi.xmtpv3.FfiXmtpClient
@@ -166,9 +168,18 @@ class Client() {
             accountAddress,
             recoveredInboxId,
             clientOptions,
-            signingKey,
             clientOptions.appContext,
         )
+        clientOptions.preAuthenticateToInboxCallback?.let {
+            runBlocking {
+                it.invoke()
+            }
+        }
+        ffiSignatureRequest()?.let { signatureRequest ->
+            signingKey?.let { handleSignature(signatureRequest, it) }
+                ?: throw XMTPException("No signer passed but signer was required.")
+            ffiRegisterIdentity(signatureRequest)
+        }
 
         return Client(
             accountAddress,
@@ -180,7 +191,7 @@ class Client() {
         )
     }
 
-    // Function to create a V3 client with a signing key
+    // Function to create a client with a signing key
     suspend fun create(
         account: SigningKey,
         options: ClientOptions,
@@ -192,7 +203,7 @@ class Client() {
         }
     }
 
-    // Function to build a V3 client from a address
+    // Function to build a client from a address
     suspend fun build(
         address: String,
         options: ClientOptions,
@@ -205,11 +216,11 @@ class Client() {
         }
     }
 
-    private suspend fun createFfiClient(
+    @DelicateApi("This function is delicate and should be used with caution. Creating an FfiClient without signing or registering will create a broken experience use `create()` instead")
+    suspend fun createFfiClient(
         accountAddress: String,
         inboxId: String,
         options: ClientOptions,
-        signingKey: SigningKey?,
         appContext: Context,
     ): Pair<FfiXmtpClient, String> {
         val alias = "xmtp-${options.api.env}-$inboxId"
@@ -234,30 +245,20 @@ class Client() {
             historySyncUrl = options.historySyncUrl
         )
 
-        options.preAuthenticateToInboxCallback?.let {
-            runBlocking {
-                it.invoke()
-            }
-        }
-        ffiClient.signatureRequest()?.let { signatureRequest ->
-            signingKey?.let { handleSignature(signatureRequest, it) }
-                ?: throw XMTPException("No signer passed but signer was required.")
-            ffiClient.registerIdentity(signatureRequest)
-        }
         return Pair(ffiClient, dbPath)
     }
 
     suspend fun revokeInstallations(signingKey: SigningKey, installationIds: List<String>) {
         val ids = installationIds.map { it.hexToByteArray() }
-        val signatureRequest = ffiClient.revokeInstallations(ids)
+        val signatureRequest = ffiRevokeInstallations(ids)
         handleSignature(signatureRequest, signingKey)
-        ffiClient.applySignatureRequest(signatureRequest)
+        ffiApplySignatureRequest(signatureRequest)
     }
 
     suspend fun revokeAllOtherInstallations(signingKey: SigningKey) {
-        val signatureRequest = ffiClient.revokeAllOtherInstallations()
+        val signatureRequest = ffiRevokeAllOtherInstallations()
         handleSignature(signatureRequest, signingKey)
-        ffiClient.applySignatureRequest(signatureRequest)
+        ffiApplySignatureRequest(signatureRequest)
     }
 
     @DelicateApi("This function is delicate and should be used with caution. Adding a wallet already associated with an inboxId will cause the wallet to lose access to that inbox. See: inboxIdFromAddress(address)")
@@ -266,22 +267,22 @@ class Client() {
             if (!allowReassignInboxId) inboxIdFromAddress(newAccount.address) else null
 
         if (allowReassignInboxId || inboxId.isNullOrBlank()) {
-            val signatureRequest = ffiClient.addWallet(newAccount.address.lowercase())
+            val signatureRequest = ffiAddWallet(newAccount.address.lowercase())
             handleSignature(signatureRequest, newAccount)
-            ffiClient.applySignatureRequest(signatureRequest)
+            ffiApplySignatureRequest(signatureRequest)
         } else {
             throw XMTPException("This wallet is already associated with inbox $inboxId")
         }
     }
 
     suspend fun removeAccount(recoverAccount: SigningKey, addressToRemove: String) {
-        val signatureRequest = ffiClient.revokeWallet(addressToRemove.lowercase())
+        val signatureRequest = ffiRevokeWallet(addressToRemove.lowercase())
         handleSignature(signatureRequest, recoverAccount)
-        ffiClient.applySignatureRequest(signatureRequest)
+        ffiApplySignatureRequest(signatureRequest)
     }
 
     private suspend fun handleSignature(
-        signatureRequest: FfiSignatureRequest,
+        signatureRequest: SignatureRequest,
         signingKey: SigningKey,
     ) {
         if (signingKey.type == WalletType.SCW) {
@@ -357,5 +358,42 @@ class Client() {
 
     suspend fun inboxState(refreshFromNetwork: Boolean): InboxState {
         return InboxState(ffiClient.inboxState(refreshFromNetwork))
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `addAccount(), removeAccount(), or revoke()` instead")
+    suspend fun ffiApplySignatureRequest(signatureRequest: SignatureRequest) {
+        ffiClient.applySignatureRequest(signatureRequest.ffiSignatureRequest)
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `revokeInstallations()` instead")
+    suspend fun ffiRevokeInstallations(ids: List<ByteArray>): SignatureRequest {
+        return SignatureRequest(ffiClient.revokeInstallations(ids))
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `revokeAllOtherInstallations()` instead")
+    suspend fun ffiRevokeAllOtherInstallations(): SignatureRequest {
+        return SignatureRequest(
+            ffiClient.revokeAllOtherInstallations()
+        )
+    }
+    
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `removeWallet()` instead")
+    suspend fun ffiRevokeWallet(addressToRemove: String): SignatureRequest {
+        return SignatureRequest(ffiClient.revokeWallet(addressToRemove.lowercase()))
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the create and register flow independently otherwise use `addWallet()` instead")
+    suspend fun ffiAddWallet(addressToAdd: String): SignatureRequest {
+        return SignatureRequest(ffiClient.addWallet(addressToAdd.lowercase()))
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `create()` instead")
+    fun ffiSignatureRequest(): SignatureRequest? {
+        return ffiClient.signatureRequest()?.let { SignatureRequest(it) }
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the create and register flow independently otherwise use `create()` instead")
+    suspend fun ffiRegisterIdentity(signatureRequest: SignatureRequest) {
+        ffiClient.registerIdentity(signatureRequest.ffiSignatureRequest)
     }
 }
