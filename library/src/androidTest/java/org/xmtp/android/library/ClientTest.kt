@@ -9,6 +9,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.messages.PrivateKeyBuilder
+import org.xmtp.android.library.messages.rawData
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.GenericException
 import java.io.File
@@ -652,4 +653,33 @@ class ClientTest {
             }
         }
     }
+
+    @Test
+    fun testCreatesAClientManually() {
+        val key = SecureRandom().generateSeed(32)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val options = ClientOptions(
+            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+            appContext = context,
+            dbEncryptionKey = key
+        )
+        val inboxId = runBlocking { Client.getOrCreateInboxId(options.api, fakeWallet.address) }
+        val client = runBlocking {
+            Client().ffiCreateClient(fakeWallet.address, options)
+        }
+        runBlocking {
+            val sigRequest = client.ffiSignatureRequest()
+            sigRequest?.let { signatureRequest ->
+                signatureRequest.addEcdsaSignature(fakeWallet.sign(signatureRequest.signatureText()).rawData)
+                client.ffiRegisterIdentity(signatureRequest)
+            }
+        }
+        runBlocking {
+            client.canMessage(listOf(client.address))[client.address]?.let { assert(it) }
+        }
+        assert(client.installationId.isNotEmpty())
+        assertEquals(inboxId, client.inboxId)
+    }
+
 }

@@ -4,13 +4,11 @@ import android.content.Context
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.web3j.crypto.Sign
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.InboxState
 import org.xmtp.android.library.libxmtp.SignatureRequest
 import org.xmtp.android.library.messages.rawData
-import uniffi.xmtpv3.FfiSignatureRequest
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.XmtpApiClient
 import uniffi.xmtpv3.connectToBackend
@@ -216,8 +214,7 @@ class Client() {
         }
     }
 
-    @DelicateApi("This function is delicate and should be used with caution. Creating an FfiClient without signing or registering will create a broken experience use `create()` instead")
-    suspend fun createFfiClient(
+    private suspend fun createFfiClient(
         accountAddress: String,
         inboxId: String,
         options: ClientOptions,
@@ -360,6 +357,27 @@ class Client() {
         return InboxState(ffiClient.inboxState(refreshFromNetwork))
     }
 
+    @DelicateApi("This function is delicate and should be used with caution. Creating an FfiClient without signing or registering will create a broken experience use `create()` instead")
+    suspend fun ffiCreateClient(address: String, clientOptions: ClientOptions): Client {
+        val accountAddress = address.lowercase()
+        val recoveredInboxId = getOrCreateInboxId(clientOptions.api, accountAddress)
+
+        val (ffiClient, dbPath) = createFfiClient(
+            accountAddress,
+            recoveredInboxId,
+            clientOptions,
+            clientOptions.appContext,
+        )
+        return Client(
+            accountAddress,
+            ffiClient,
+            dbPath,
+            ffiClient.installationId().toHex(),
+            ffiClient.inboxId(),
+            clientOptions.api.env,
+        )
+    }
+
     @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `addAccount(), removeAccount(), or revoke()` instead")
     suspend fun ffiApplySignatureRequest(signatureRequest: SignatureRequest) {
         ffiClient.applySignatureRequest(signatureRequest.ffiSignatureRequest)
@@ -376,7 +394,7 @@ class Client() {
             ffiClient.revokeAllOtherInstallations()
         )
     }
-    
+
     @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `removeWallet()` instead")
     suspend fun ffiRevokeWallet(addressToRemove: String): SignatureRequest {
         return SignatureRequest(ffiClient.revokeWallet(addressToRemove.lowercase()))
