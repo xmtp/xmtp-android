@@ -47,7 +47,7 @@ class HistorySyncTest {
         alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(bo.walletAddress)) }
 
         alixClient2 = runBlocking {
-            Client().create(
+            Client.create(
                 account = alixWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -62,7 +62,7 @@ class HistorySyncTest {
             alixGroup.updateConsentState(ConsentState.DENIED)
             alixClient.conversations.syncAllConversations()
             alixClient2.conversations.syncAllConversations()
-            alix2Group = alixClient2.findGroup(alixGroup.id)!!
+            alix2Group = alixClient2.conversations.findGroup(alixGroup.id)!!
         }
     }
 
@@ -109,7 +109,7 @@ class HistorySyncTest {
         assertEquals(state.installations.size, 2)
 
         val alixClient3 = runBlocking {
-            Client().create(
+            Client.create(
                 account = alixWallet,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -121,6 +121,9 @@ class HistorySyncTest {
             )
         }
 
+        val state3 = runBlocking { alixClient3.inboxState(true) }
+        assertEquals(state3.installations.size, 3)
+
         runBlocking {
             alix2Group.send("A message")
             alix2Group.send("A second message")
@@ -131,7 +134,11 @@ class HistorySyncTest {
             Thread.sleep(2000)
             alixClient3.conversations.syncAllConversations()
             Thread.sleep(2000)
-            val alix3Group = alixClient3.findGroup(alixGroup.id)!!
+
+            val alix3Groups = alixClient3.conversations.listGroups()
+            assertEquals(alix3Groups.size, 1)
+            val alix3Group = alixClient3.conversations.findGroup(alixGroup.id)
+                ?: throw AssertionError("Failed to find group with ID: ${alixGroup.id}")
             assertEquals(runBlocking { alixGroup.messages() }.size, 5)
             assertEquals(runBlocking { alix2Group.messages() }.size, 5)
             assertEquals(runBlocking { alix3Group.messages() }.size, 5)
@@ -186,7 +193,7 @@ class HistorySyncTest {
 
         runBlocking {
             val alixClient3 = runBlocking {
-                Client().create(
+                Client.create(
                     account = alixWallet,
                     options = ClientOptions(
                         ClientOptions.Api(XMTPEnvironment.LOCAL, false),

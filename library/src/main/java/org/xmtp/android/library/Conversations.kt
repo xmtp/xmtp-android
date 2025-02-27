@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import org.xmtp.android.library.libxmtp.Message
+import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.keystore.api.v1.Keystore
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
@@ -17,6 +18,7 @@ import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversationListItem
 import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiConversations
+import uniffi.xmtpv3.FfiCreateDmOptions
 import uniffi.xmtpv3.FfiCreateGroupOptions
 import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiListConversationsOptions
@@ -25,6 +27,7 @@ import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiMessageDisappearingSettings
 import uniffi.xmtpv3.FfiPermissionPolicySet
 import uniffi.xmtpv3.FfiSubscribeException
+import uniffi.xmtpv3.FfiXmtpClient
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -32,6 +35,7 @@ import kotlin.time.DurationUnit
 data class Conversations(
     var client: Client,
     private val ffiConversations: FfiConversations,
+    private val ffiClient: FfiXmtpClient,
 ) {
 
     enum class ConversationType {
@@ -40,11 +44,71 @@ data class Conversations(
         DMS;
     }
 
+    fun findGroup(groupId: String): Group? {
+        return try {
+            Group(client, ffiClient.conversation(groupId.hexToByteArray()))
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun findConversation(conversationId: String): Conversation? {
+        return try {
+            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
+            when (conversation.conversationType()) {
+                FfiConversationType.GROUP -> Conversation.Group(Group(client, conversation))
+                FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
+                else -> null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun findConversationByTopic(topic: String): Conversation? {
+        val regex = """/xmtp/mls/1/g-(.*?)/proto""".toRegex()
+        val matchResult = regex.find(topic)
+        val conversationId = matchResult?.groupValues?.get(1) ?: ""
+        return try {
+            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
+            when (conversation.conversationType()) {
+                FfiConversationType.GROUP -> Conversation.Group(Group(client, conversation))
+                FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
+                else -> null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun findDmByInboxId(inboxId: String): Dm? {
+        return try {
+            Dm(client, ffiClient.dmConversation(inboxId))
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun findDmByAddress(address: String): Dm? {
+        val inboxId =
+            client.inboxIdFromAddress(address.lowercase())
+                ?: throw XMTPException("No inboxId present")
+        return findDmByInboxId(inboxId)
+    }
+
+    fun findMessage(messageId: String): Message? {
+        return try {
+            Message.create(ffiClient.message(messageId.hexToByteArray()))
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     suspend fun fromWelcome(envelopeBytes: ByteArray): Conversation {
         val conversation = ffiConversations.processStreamedWelcomeMessage(envelopeBytes)
         return when (conversation.conversationType()) {
-            FfiConversationType.DM -> Conversation.Dm(Dm(client.inboxId, conversation))
-            else -> Conversation.Group(Group(client.inboxId, conversation))
+            FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
+            else -> Conversation.Group(Group(client, conversation))
         }
     }
 
@@ -54,8 +118,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        groupPinnedFrameUrl: String = "",
-        messageDisappearingSettings: FfiMessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Group {
         return newGroupInternal(
             accountAddresses,
@@ -63,9 +126,13 @@ data class Conversations(
             groupName,
             groupImageUrlSquare,
             groupDescription,
-            groupPinnedFrameUrl,
             null,
-            messageDisappearingSettings,
+            disappearingMessageSettings?.let {
+                FfiMessageDisappearingSettings(
+                    it.disappearStartingAtNs,
+                    it.retentionDurationInNs
+                )
+            },
         )
     }
 
@@ -75,8 +142,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        groupPinnedFrameUrl: String = "",
-        messageDisappearingSettings: FfiMessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Group {
         return newGroupInternal(
             accountAddresses,
@@ -84,9 +150,13 @@ data class Conversations(
             groupName,
             groupImageUrlSquare,
             groupDescription,
-            groupPinnedFrameUrl,
             PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet),
-            messageDisappearingSettings
+            disappearingMessageSettings?.let {
+                FfiMessageDisappearingSettings(
+                    it.disappearStartingAtNs,
+                    it.retentionDurationInNs
+                )
+            }
         )
     }
 
@@ -96,7 +166,6 @@ data class Conversations(
         groupName: String,
         groupImageUrlSquare: String,
         groupDescription: String,
-        groupPinnedFrameUrl: String,
         permissionsPolicySet: FfiPermissionPolicySet?,
         messageDisappearingSettings: FfiMessageDisappearingSettings?,
     ): Group {
@@ -118,12 +187,11 @@ data class Conversations(
                     groupName = groupName,
                     groupImageUrlSquare = groupImageUrlSquare,
                     groupDescription = groupDescription,
-                    groupPinnedFrameUrl = groupPinnedFrameUrl,
                     customPermissionPolicySet = permissionsPolicySet,
                     messageDisappearingSettings = messageDisappearingSettings
                 )
             )
-        return Group(client.inboxId, group)
+        return Group(client, group)
     }
 
     suspend fun newGroupWithInboxIds(
@@ -132,8 +200,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        groupPinnedFrameUrl: String = "",
-        messageDisappearingSettings: FfiMessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Group {
         return newGroupInternalWithInboxIds(
             inboxIds,
@@ -141,9 +208,13 @@ data class Conversations(
             groupName,
             groupImageUrlSquare,
             groupDescription,
-            groupPinnedFrameUrl,
             null,
-            messageDisappearingSettings
+            disappearingMessageSettings?.let {
+                FfiMessageDisappearingSettings(
+                    it.disappearStartingAtNs,
+                    it.retentionDurationInNs
+                )
+            }
         )
     }
 
@@ -153,8 +224,7 @@ data class Conversations(
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        groupPinnedFrameUrl: String = "",
-        messageDisappearingSettings: FfiMessageDisappearingSettings? = null,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Group {
         return newGroupInternalWithInboxIds(
             inboxIds,
@@ -162,9 +232,13 @@ data class Conversations(
             groupName,
             groupImageUrlSquare,
             groupDescription,
-            groupPinnedFrameUrl,
             PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet),
-            messageDisappearingSettings
+            disappearingMessageSettings?.let {
+                FfiMessageDisappearingSettings(
+                    it.disappearStartingAtNs,
+                    it.retentionDurationInNs
+                )
+            }
         )
     }
 
@@ -174,7 +248,6 @@ data class Conversations(
         groupName: String,
         groupImageUrlSquare: String,
         groupDescription: String,
-        groupPinnedFrameUrl: String,
         permissionsPolicySet: FfiPermissionPolicySet?,
         messageDisappearingSettings: FfiMessageDisappearingSettings?,
     ): Group {
@@ -190,12 +263,11 @@ data class Conversations(
                     groupName = groupName,
                     groupImageUrlSquare = groupImageUrlSquare,
                     groupDescription = groupDescription,
-                    groupPinnedFrameUrl = groupPinnedFrameUrl,
                     customPermissionPolicySet = permissionsPolicySet,
                     messageDisappearingSettings = messageDisappearingSettings
                 )
             )
-        return Group(client.inboxId, group)
+        return Group(client, group)
     }
 
     // Sync from the network the latest list of conversations
@@ -212,12 +284,18 @@ data class Conversations(
         )
     }
 
-    suspend fun newConversation(peerAddress: String): Conversation {
-        val dm = findOrCreateDm(peerAddress)
+    suspend fun newConversation(
+        peerAddress: String,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
+    ): Conversation {
+        val dm = findOrCreateDm(peerAddress, disappearingMessageSettings)
         return Conversation.Dm(dm)
     }
 
-    suspend fun findOrCreateDm(peerAddress: String): Dm {
+    suspend fun findOrCreateDm(
+        peerAddress: String,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
+    ): Dm {
         if (peerAddress.lowercase() == client.address.lowercase()) {
             throw XMTPException("Recipient is sender")
         }
@@ -226,21 +304,47 @@ data class Conversations(
         if (falseAddresses.isNotEmpty()) {
             throw XMTPException("${falseAddresses.joinToString()} not on network")
         }
-        val dmConversation = ffiConversations.findOrCreateDm(peerAddress.lowercase())
-        return Dm(client.inboxId, dmConversation)
+        val dmConversation = ffiConversations.findOrCreateDm(
+            peerAddress.lowercase(),
+            opts = FfiCreateDmOptions(
+                disappearingMessageSettings?.let {
+                    FfiMessageDisappearingSettings(
+                        it.disappearStartingAtNs,
+                        it.retentionDurationInNs
+                    )
+                }
+            )
+        )
+        return Dm(client, dmConversation)
     }
 
-    suspend fun newConversationWithInboxId(peerInboxId: String): Conversation {
-        val dm = findOrCreateDmWithInboxId(peerInboxId)
+    suspend fun newConversationWithInboxId(
+        peerInboxId: String,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
+    ): Conversation {
+        val dm = findOrCreateDmWithInboxId(peerInboxId, disappearingMessageSettings)
         return Conversation.Dm(dm)
     }
 
-    suspend fun findOrCreateDmWithInboxId(peerInboxId: String): Dm {
+    suspend fun findOrCreateDmWithInboxId(
+        peerInboxId: String,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
+    ): Dm {
         if (peerInboxId.lowercase() == client.inboxId.lowercase()) {
             throw XMTPException("Recipient is sender")
         }
-        val dmConversation = ffiConversations.findOrCreateDmByInboxId(peerInboxId.lowercase())
-        return Dm(client.inboxId, dmConversation)
+        val dmConversation = ffiConversations.findOrCreateDmByInboxId(
+            peerInboxId.lowercase(),
+            opts = FfiCreateDmOptions(
+                disappearingMessageSettings?.let {
+                    FfiMessageDisappearingSettings(
+                        it.disappearStartingAtNs,
+                        it.retentionDurationInNs
+                    )
+                }
+            )
+        )
+        return Dm(client, dmConversation)
     }
 
     fun listGroups(
@@ -262,7 +366,7 @@ data class Conversations(
         )
 
         return ffiGroups.map {
-            Group(client.inboxId, it.conversation(), it.lastMessage())
+            Group(client, it.conversation(), it.lastMessage())
         }
     }
 
@@ -285,7 +389,7 @@ data class Conversations(
         )
 
         return ffiDms.map {
-            Dm(client.inboxId, it.conversation(), it.lastMessage())
+            Dm(client, it.conversation(), it.lastMessage())
         }
     }
 
@@ -314,13 +418,13 @@ data class Conversations(
         return when (conversation().conversationType()) {
             FfiConversationType.DM -> Conversation.Dm(
                 Dm(
-                    client.inboxId,
+                    client,
                     conversation(),
                     lastMessage()
                 )
             )
 
-            else -> Conversation.Group(Group(client.inboxId, conversation(), lastMessage()))
+            else -> Conversation.Group(Group(client, conversation(), lastMessage()))
         }
     }
 
@@ -333,13 +437,13 @@ data class Conversations(
                             FfiConversationType.DM -> trySend(
                                 Conversation.Dm(
                                     Dm(
-                                        client.inboxId,
+                                        client,
                                         conversation
                                     )
                                 )
                             )
 
-                            else -> trySend(Conversation.Group(Group(client.inboxId, conversation)))
+                            else -> trySend(Conversation.Group(Group(client, conversation)))
                         }
                     }
                 }

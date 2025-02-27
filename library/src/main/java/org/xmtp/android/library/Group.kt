@@ -11,6 +11,7 @@ import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.Message.SortDirection
+import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
 import org.xmtp.android.library.messages.Topic
@@ -22,6 +23,7 @@ import uniffi.xmtpv3.FfiGroupPermissions
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiMessageDisappearingSettings
 import uniffi.xmtpv3.FfiMetadataField
 import uniffi.xmtpv3.FfiPermissionUpdateType
 import uniffi.xmtpv3.FfiSubscribeException
@@ -29,7 +31,7 @@ import uniffi.xmtpv3.FfiSubscribeException
 import java.util.Date
 
 class Group(
-    private val clientInboxId: String,
+    val client: Client,
     private val libXMTPGroup: FfiConversation,
     private val ffiLastMessage: FfiMessage? = null,
 ) {
@@ -58,8 +60,17 @@ class Group(
     val description: String
         get() = libXMTPGroup.groupDescription()
 
-    val pinnedFrameUrl: String
-        get() = libXMTPGroup.groupPinnedFrameUrl()
+    val disappearingMessageSettings: DisappearingMessageSettings?
+        get() = runCatching {
+            libXMTPGroup.takeIf { isDisappearingMessagesEnabled }
+                ?.let { group ->
+                    group.conversationMessageDisappearingSettings()
+                        ?.let { DisappearingMessageSettings.createFromFfi(it) }
+                }
+        }.getOrNull()
+
+    val isDisappearingMessagesEnabled: Boolean
+        get() = libXMTPGroup.isConversationMessageDisappearingEnabled()
 
     suspend fun send(text: String): String {
         return send(encodeContent(content = text, options = null))
@@ -179,8 +190,8 @@ class Group(
             )
         )
 
-        return ffiMessageWithReactions.mapNotNull { ffiMessageWithReactions ->
-            Message.create(ffiMessageWithReactions)
+        return ffiMessageWithReactions.mapNotNull { ffiMessageWithReaction ->
+            Message.create(ffiMessageWithReaction)
         }
     }
 
@@ -215,7 +226,7 @@ class Group(
     }
 
     suspend fun isCreator(): Boolean {
-        return metadata().creatorInboxId() == clientInboxId
+        return metadata().creatorInboxId() == client.inboxId
     }
 
     suspend fun addMembers(addresses: List<String>) {
@@ -256,7 +267,7 @@ class Group(
 
     suspend fun peerInboxIds(): List<String> {
         val ids = members().map { it.inboxId }.toMutableList()
-        ids.remove(clientInboxId)
+        ids.remove(client.inboxId)
         return ids
     }
 
@@ -284,11 +295,28 @@ class Group(
         }
     }
 
-    suspend fun updateGroupPinnedFrameUrl(pinnedFrameUrl: String) {
+    suspend fun clearDisappearingMessageSettings() {
         try {
-            return libXMTPGroup.updateGroupPinnedFrameUrl(pinnedFrameUrl)
+            libXMTPGroup.removeConversationMessageDisappearingSettings()
         } catch (e: Exception) {
-            throw XMTPException("Permission denied: Unable to update pinned frame", e)
+            throw XMTPException("Permission denied: Unable to clear group message expiration", e)
+        }
+    }
+
+    suspend fun updateDisappearingMessageSettings(disappearingMessageSettings: DisappearingMessageSettings?) {
+        try {
+            if (disappearingMessageSettings == null) {
+                clearDisappearingMessageSettings()
+            } else {
+                libXMTPGroup.updateConversationMessageDisappearingSettings(
+                    FfiMessageDisappearingSettings(
+                        disappearingMessageSettings.disappearStartingAtNs,
+                        disappearingMessageSettings.retentionDurationInNs
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to update group message expiration", e)
         }
     }
 
@@ -348,14 +376,6 @@ class Group(
         )
     }
 
-    suspend fun updateGroupPinnedFrameUrlPermission(newPermissionOption: PermissionOption) {
-        return libXMTPGroup.updatePermissionPolicy(
-            FfiPermissionUpdateType.UPDATE_METADATA,
-            PermissionOption.toFfiPermissionPolicy(newPermissionOption),
-            FfiMetadataField.PINNED_FRAME_URL
-        )
-    }
-
     fun isAdmin(inboxId: String): Boolean {
         return libXMTPGroup.isAdmin(inboxId)
     }
@@ -407,14 +427,31 @@ class Group(
     fun streamMessages(): Flow<Message> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                val decodedMessage = Message.create(message)
-                decodedMessage?.let {
-                    trySend(it)
+                try {
+                    val decodedMessage = Message.create(message)
+                    if (decodedMessage != null) {
+                        trySend(decodedMessage)
+                    } else {
+                        Log.w(
+                            "XMTP Group stream",
+                            "Failed to decode message: id=${message.id.toHex()}, " +
+                                "convoId=${message.convoId.toHex()}, " +
+                                "senderInboxId=${message.senderInboxId}"
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e(
+                        "XMTP Group stream",
+                        "Error decoding message: id=${message.id.toHex()}, " +
+                            "convoId=${message.convoId.toHex()}, " +
+                            "senderInboxId=${message.senderInboxId}",
+                        e
+                    )
                 }
             }
 
             override fun onError(error: FfiSubscribeException) {
-                Log.e("XMTP Group stream", error.message.toString())
+                Log.e("XMTP Group stream", "Stream error: ${error.message}", error)
             }
         }
 

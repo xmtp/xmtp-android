@@ -6,7 +6,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -18,6 +20,7 @@ import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
+import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
@@ -76,8 +79,8 @@ class DmTest {
         runBlocking {
             val dm = boClient.conversations.findOrCreateDm(caro.walletAddress)
 
-            val caroDm = boClient.findDmByInboxId(caroClient.inboxId)
-            val alixDm = boClient.findDmByInboxId(alixClient.inboxId)
+            val caroDm = boClient.conversations.findDmByInboxId(caroClient.inboxId)
+            val alixDm = boClient.conversations.findDmByInboxId(alixClient.inboxId)
             assertNull(alixDm)
             assertEquals(caroDm?.id, dm.id)
         }
@@ -88,8 +91,8 @@ class DmTest {
         runBlocking {
             val dm = boClient.conversations.findOrCreateDm(caro.walletAddress)
 
-            val caroDm = boClient.findDmByAddress(caro.walletAddress)
-            val alixDm = boClient.findDmByAddress(alix.walletAddress)
+            val caroDm = boClient.conversations.findDmByAddress(caro.walletAddress)
+            val alixDm = boClient.conversations.findDmByAddress(alix.walletAddress)
             assertNull(alixDm)
             assertEquals(caroDm?.id, dm.id)
         }
@@ -219,7 +222,7 @@ class DmTest {
             runBlocking { dm.messages() }.first().deliveryStatus,
             MessageDeliveryStatus.PUBLISHED
         )
-        assertEquals(runBlocking { dm.messages() }.size, 2)
+        assertEquals(runBlocking { dm.messages() }.size, 3)
 
         runBlocking { alixClient.conversations.sync() }
         val sameDm = runBlocking { alixClient.conversations.listDms().last() }
@@ -236,20 +239,20 @@ class DmTest {
             dm.send("gm")
         }
 
-        assertEquals(runBlocking { dm.messages() }.size, 2)
+        assertEquals(runBlocking { dm.messages() }.size, 3)
         assertEquals(
             runBlocking { dm.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED) }.size,
-            2
+            3
         )
         runBlocking { dm.sync() }
-        assertEquals(runBlocking { dm.messages() }.size, 2)
+        assertEquals(runBlocking { dm.messages() }.size, 3)
         assertEquals(
             runBlocking { dm.messages(deliveryStatus = MessageDeliveryStatus.UNPUBLISHED) }.size,
             0
         )
         assertEquals(
             runBlocking { dm.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED) }.size,
-            2
+            3
         )
 
         runBlocking { alixClient.conversations.sync() }
@@ -286,7 +289,7 @@ class DmTest {
         runBlocking { dm.sync() }
 
         val messages = runBlocking { dm.messages() }
-        assertEquals(messages.size, 2)
+        assertEquals(messages.size, 3)
         val content: Reaction? = messages.first().content()
         assertEquals("U+1F603", content?.content)
         assertEquals(messageToReact.id, content?.reference)
@@ -298,7 +301,7 @@ class DmTest {
     fun testCanStreamDmMessages() = kotlinx.coroutines.test.runTest {
         val group = boClient.conversations.findOrCreateDm(alix.walletAddress.lowercase())
         alixClient.conversations.sync()
-        val alixDm = alixClient.findDmByAddress(bo.walletAddress)
+        val alixDm = alixClient.conversations.findDmByAddress(bo.walletAddress)
         group.streamMessages().test {
             alixDm?.send("hi")
             assertEquals("hi", awaitItem().body)
@@ -399,5 +402,119 @@ class DmTest {
             )
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
         }
+    }
+
+    @Test
+    fun testDmDisappearingMessages() = runBlocking {
+        val initialSettings = DisappearingMessageSettings(
+            1_000_000_000,
+            1_000_000_000 // 1s duration
+        )
+
+        // Create group with disappearing messages enabled
+        val boDm = boClient.conversations.findOrCreateDm(
+            alix.walletAddress,
+            disappearingMessageSettings = initialSettings
+        )
+        boDm.send("howdy")
+        alixClient.conversations.syncAllConversations()
+
+        val alixDm = alixClient.conversations.findDmByInboxId(boClient.inboxId)
+
+        // Validate messages exist and settings are applied
+        assertEquals(boDm.messages().size, 2) // memberAdd howdy
+        assertEquals(alixDm?.messages()?.size, 1) // howdy
+        Assert.assertNotNull(boDm.disappearingMessageSettings)
+        assertEquals(boDm.disappearingMessageSettings!!.retentionDurationInNs, 1_000_000_000)
+        assertEquals(boDm.disappearingMessageSettings!!.disappearStartingAtNs, 1_000_000_000)
+        Thread.sleep(5000)
+        // Validate messages are deleted
+        assertEquals(boDm.messages().size, 1)
+        assertEquals(alixDm?.messages()?.size, 0)
+
+        // Set message disappearing settings to null
+        boDm.updateDisappearingMessageSettings(null)
+        boDm.sync()
+        alixDm!!.sync()
+
+        assertNull(boDm.disappearingMessageSettings)
+        assertNull(alixDm.disappearingMessageSettings)
+        assertFalse(boDm.isDisappearingMessagesEnabled)
+        assertFalse(alixDm.isDisappearingMessagesEnabled)
+
+        // Send messages after disabling disappearing settings
+        boDm.send("message after disabling disappearing")
+        alixDm.send("another message after disabling")
+        boDm.sync()
+
+        Thread.sleep(1000)
+
+        // Ensure messages persist
+        assertEquals(
+            boDm.messages().size,
+            5
+        ) // memberAss disappearing settings 1, disappearing settings 2, boMessage, alixMessage
+        assertEquals(
+            alixDm.messages().size,
+            4
+        ) // disappearing settings 1, disappearing settings 2, boMessage, alixMessage
+
+        // Re-enable disappearing messages
+        val updatedSettings = DisappearingMessageSettings(
+            boDm.messages().first().sentAtNs + 1_000_000_000, // 1s from now
+            1_000_000_000 // 1s duration
+        )
+        boDm.updateDisappearingMessageSettings(updatedSettings)
+        boDm.sync()
+        alixDm.sync()
+
+        Thread.sleep(1000)
+
+        assertEquals(
+            boDm.disappearingMessageSettings!!.disappearStartingAtNs,
+            updatedSettings.disappearStartingAtNs
+        )
+        assertEquals(
+            alixDm.disappearingMessageSettings!!.disappearStartingAtNs,
+            updatedSettings.disappearStartingAtNs
+        )
+
+        // Send new messages
+        boDm.send("this will disappear soon")
+        alixDm.send("so will this")
+        boDm.sync()
+
+        assertEquals(
+            boDm.messages().size,
+            9
+        ) // memberAdd disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
+        assertEquals(
+            alixDm.messages().size,
+            8
+        ) // disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
+
+        Thread.sleep(6000) // Wait for messages to disappear
+
+        // Validate messages were deleted
+        assertEquals(
+            boDm.messages().size,
+            7
+        ) // memberAdd disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6
+        assertEquals(
+            alixDm.messages().size,
+            6
+        ) // disappearing settings 3, disappearing settings 4, boMessage, alixMessage, disappearing settings 5, disappearing settings 6
+
+        // Final validation that settings persist
+        assertEquals(
+            boDm.disappearingMessageSettings!!.retentionDurationInNs,
+            updatedSettings.retentionDurationInNs
+        )
+        assertEquals(
+            alixDm.disappearingMessageSettings!!.retentionDurationInNs,
+            updatedSettings.retentionDurationInNs
+        )
+        assert(boDm.isDisappearingMessagesEnabled)
+        assert(alixDm.isDisappearingMessagesEnabled)
     }
 }

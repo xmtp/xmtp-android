@@ -49,7 +49,7 @@ class SmartContractWalletTest {
             boEOAWallet = PrivateKeyBuilder()
             boEOA = boEOAWallet.getPrivateKey()
             boEOAClient = runBlocking {
-                Client().create(
+                Client.create(
                     account = boEOAWallet,
                     options = options
                 )
@@ -58,7 +58,7 @@ class SmartContractWalletTest {
             // SCW
             davonSCW = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_1)
             davonSCWClient = runBlocking {
-                Client().create(
+                Client.create(
                     account = davonSCW,
                     options = options
                 )
@@ -67,7 +67,7 @@ class SmartContractWalletTest {
             // SCW
             eriSCW = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_2)
             eriSCWClient = runBlocking {
-                Client().create(
+                Client.create(
                     account = eriSCW,
                     options = options
                 )
@@ -78,7 +78,7 @@ class SmartContractWalletTest {
     @Test
     fun testCanBuildASCW() {
         val davonSCWClient2 = runBlocking {
-            Client().build(
+            Client.build(
                 address = davonSCW.address,
                 options = options
             )
@@ -193,7 +193,7 @@ class SmartContractWalletTest {
         runBlocking { davonGroup.send("from davon") }
 
         runBlocking { eriSCWClient.conversations.sync() }
-        val eriGroup = runBlocking { davonSCWClient.findGroup(davonGroup.id) }
+        val eriGroup = runBlocking { davonSCWClient.conversations.findGroup(davonGroup.id) }
         runBlocking { eriGroup?.sync() }
         assertEquals(runBlocking { eriGroup?.messages() }?.size, 3)
         assertEquals(runBlocking { eriGroup?.messages() }?.first()?.body, "from davon")

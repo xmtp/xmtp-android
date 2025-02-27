@@ -7,10 +7,8 @@ import kotlinx.coroutines.sync.withLock
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.InboxState
-import org.xmtp.android.library.libxmtp.Message
+import org.xmtp.android.library.libxmtp.SignatureRequest
 import org.xmtp.android.library.messages.rawData
-import uniffi.xmtpv3.FfiConversationType
-import uniffi.xmtpv3.FfiSignatureRequest
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.XmtpApiClient
 import uniffi.xmtpv3.connectToBackend
@@ -27,7 +25,11 @@ data class ClientOptions(
     val preAuthenticateToInboxCallback: PreEventCallback? = null,
     val appContext: Context,
     val dbEncryptionKey: ByteArray,
-    val historySyncUrl: String? = null,
+    val historySyncUrl: String? = when (api.env) {
+        XMTPEnvironment.PRODUCTION -> "https://message-history.production.ephemera.network/"
+        XMTPEnvironment.LOCAL -> "http://0.0.0.0:5558"
+        else -> "https://message-history.dev.ephemera.network/"
+    },
     val dbDirectory: String? = null,
 ) {
     data class Api(
@@ -37,16 +39,24 @@ data class ClientOptions(
     )
 }
 
-class Client() {
-    lateinit var address: String
-    lateinit var inboxId: String
-    lateinit var installationId: String
-    lateinit var preferences: PrivatePreferences
-    lateinit var conversations: Conversations
-    lateinit var environment: XMTPEnvironment
-    lateinit var dbPath: String
+class Client(
+    address: String,
+    libXMTPClient: FfiXmtpClient,
+    val dbPath: String,
+    val installationId: String,
+    val inboxId: String,
+    val environment: XMTPEnvironment,
+) {
+    val address: String = address.lowercase()
+    val preferences: PrivatePreferences =
+        PrivatePreferences(client = this, ffiClient = libXMTPClient)
+    val conversations: Conversations = Conversations(
+        client = this,
+        ffiConversations = libXMTPClient.conversations(),
+        ffiClient = libXMTPClient
+    )
     val libXMTPVersion: String = getVersionInfo()
-    private lateinit var ffiClient: FfiXmtpClient
+    private val ffiClient: FfiXmtpClient = libXMTPClient
 
     companion object {
         private const val TAG = "Client"
@@ -125,166 +135,173 @@ class Client() {
                 ffiClient.canMessage(accountAddresses)
             }
         }
-    }
 
-    constructor(
-        address: String,
-        libXMTPClient: FfiXmtpClient,
-        dbPath: String,
-        installationId: String,
-        inboxId: String,
-        environment: XMTPEnvironment,
-    ) : this() {
-        this.address = address.lowercase()
-        this.preferences = PrivatePreferences(client = this, ffiClient = libXMTPClient)
-        this.ffiClient = libXMTPClient
-        this.conversations =
-            Conversations(client = this, ffiConversations = libXMTPClient.conversations())
-        this.dbPath = dbPath
-        this.installationId = installationId
-        this.inboxId = inboxId
-        this.environment = environment
-    }
+        private suspend fun initializeV3Client(
+            address: String,
+            clientOptions: ClientOptions,
+            signingKey: SigningKey? = null,
+            inboxId: String? = null,
+        ): Client {
+            val accountAddress = address.lowercase()
+            val recoveredInboxId =
+                inboxId ?: getOrCreateInboxId(clientOptions.api, accountAddress)
 
-    private suspend fun initializeV3Client(
-        address: String,
-        clientOptions: ClientOptions,
-        signingKey: SigningKey? = null,
-        inboxId: String? = null,
-    ): Client {
-        val accountAddress = address.lowercase()
-        val recoveredInboxId =
-            inboxId ?: getOrCreateInboxId(clientOptions.api, accountAddress)
+            val (ffiClient, dbPath) = createFfiClient(
+                accountAddress,
+                recoveredInboxId,
+                clientOptions,
+                clientOptions.appContext,
+            )
+            clientOptions.preAuthenticateToInboxCallback?.let {
+                runBlocking {
+                    it.invoke()
+                }
+            }
+            ffiClient.signatureRequest()?.let { signatureRequest ->
+                signingKey?.let { handleSignature(SignatureRequest(signatureRequest), it) }
+                    ?: throw XMTPException("No signer passed but signer was required.")
+                ffiClient.registerIdentity(signatureRequest)
+            }
 
-        val (ffiClient, dbPath) = createFfiClient(
-            accountAddress,
-            recoveredInboxId,
-            clientOptions,
-            signingKey,
-            clientOptions.appContext,
-        )
-
-        return Client(
-            accountAddress,
-            ffiClient,
-            dbPath,
-            ffiClient.installationId().toHex(),
-            ffiClient.inboxId(),
-            clientOptions.api.env,
-        )
-    }
-
-    // Function to create a V3 client with a signing key
-    suspend fun create(
-        account: SigningKey,
-        options: ClientOptions,
-    ): Client {
-        return try {
-            initializeV3Client(account.address, options, account)
-        } catch (e: Exception) {
-            throw XMTPException("Error creating V3 client: ${e.message}", e)
+            return Client(
+                accountAddress,
+                ffiClient,
+                dbPath,
+                ffiClient.installationId().toHex(),
+                ffiClient.inboxId(),
+                clientOptions.api.env,
+            )
         }
-    }
 
-    // Function to build a V3 client from a address
-    suspend fun build(
-        address: String,
-        options: ClientOptions,
-        inboxId: String? = null,
-    ): Client {
-        return try {
-            initializeV3Client(address, options, inboxId = inboxId)
-        } catch (e: Exception) {
-            throw XMTPException("Error creating V3 client: ${e.message}", e)
-        }
-    }
-
-    private suspend fun createFfiClient(
-        accountAddress: String,
-        inboxId: String,
-        options: ClientOptions,
-        signingKey: SigningKey?,
-        appContext: Context,
-    ): Pair<FfiXmtpClient, String> {
-        val alias = "xmtp-${options.api.env}-$inboxId"
-
-        val mlsDbDirectory = options.dbDirectory
-        val directoryFile = if (mlsDbDirectory != null) {
-            File(mlsDbDirectory)
-        } else {
-            File(appContext.filesDir.absolutePath, "xmtp_db")
-        }
-        directoryFile.mkdir()
-        dbPath = directoryFile.absolutePath + "/$alias.db3"
-
-        val ffiClient = createClient(
-            api = connectToApiBackend(options.api),
-            db = dbPath,
-            encryptionKey = options.dbEncryptionKey,
-            accountAddress = accountAddress.lowercase(),
-            inboxId = inboxId,
-            nonce = 0.toULong(),
-            legacySignedPrivateKeyProto = null,
-            historySyncUrl = options.historySyncUrl
-        )
-
-        options.preAuthenticateToInboxCallback?.let {
-            runBlocking {
-                it.invoke()
+        // Function to create a client with a signing key
+        suspend fun create(
+            account: SigningKey,
+            options: ClientOptions,
+        ): Client {
+            return try {
+                initializeV3Client(account.address, options, account)
+            } catch (e: Exception) {
+                throw XMTPException("Error creating V3 client: ${e.message}", e)
             }
         }
-        ffiClient.signatureRequest()?.let { signatureRequest ->
-            signingKey?.let { handleSignature(signatureRequest, it) }
-                ?: throw XMTPException("No signer passed but signer was required.")
-            ffiClient.registerIdentity(signatureRequest)
+
+        // Function to build a client from a address
+        suspend fun build(
+            address: String,
+            options: ClientOptions,
+            inboxId: String? = null,
+        ): Client {
+            return try {
+                initializeV3Client(address, options, inboxId = inboxId)
+            } catch (e: Exception) {
+                throw XMTPException("Error creating V3 client: ${e.message}", e)
+            }
         }
-        return Pair(ffiClient, dbPath)
+
+        private suspend fun createFfiClient(
+            accountAddress: String,
+            inboxId: String,
+            options: ClientOptions,
+            appContext: Context,
+        ): Pair<FfiXmtpClient, String> {
+            val alias = "xmtp-${options.api.env}-$inboxId"
+
+            val mlsDbDirectory = options.dbDirectory
+            val directoryFile = if (mlsDbDirectory != null) {
+                File(mlsDbDirectory)
+            } else {
+                File(appContext.filesDir.absolutePath, "xmtp_db")
+            }
+            directoryFile.mkdir()
+            val dbPath = directoryFile.absolutePath + "/$alias.db3"
+
+            val ffiClient = createClient(
+                api = connectToApiBackend(options.api),
+                db = dbPath,
+                encryptionKey = options.dbEncryptionKey,
+                accountAddress = accountAddress.lowercase(),
+                inboxId = inboxId,
+                nonce = 0.toULong(),
+                legacySignedPrivateKeyProto = null,
+                historySyncUrl = options.historySyncUrl
+            )
+
+            return Pair(ffiClient, dbPath)
+        }
+
+        private suspend fun handleSignature(
+            signatureRequest: SignatureRequest,
+            signingKey: SigningKey,
+        ) {
+            if (signingKey.type == WalletType.SCW) {
+                val chainId = signingKey.chainId
+                    ?: throw XMTPException("ChainId is required for smart contract wallets")
+                signatureRequest.addScwSignature(
+                    signingKey.signSCW(signatureRequest.signatureText()),
+                    signingKey.address.lowercase(),
+                    chainId.toULong(),
+                    signingKey.blockNumber?.toULong()
+                )
+            } else {
+                signingKey.sign(signatureRequest.signatureText())?.let {
+                    signatureRequest.addEcdsaSignature(it.rawData)
+                }
+            }
+        }
+
+        @DelicateApi("This function is delicate and should be used with caution. Creating an FfiClient without signing or registering will create a broken experience use `create()` instead")
+        suspend fun ffiCreateClient(address: String, clientOptions: ClientOptions): Client {
+            val accountAddress = address.lowercase()
+            val recoveredInboxId = getOrCreateInboxId(clientOptions.api, accountAddress)
+
+            val (ffiClient, dbPath) = createFfiClient(
+                accountAddress,
+                recoveredInboxId,
+                clientOptions,
+                clientOptions.appContext,
+            )
+            return Client(
+                accountAddress,
+                ffiClient,
+                dbPath,
+                ffiClient.installationId().toHex(),
+                ffiClient.inboxId(),
+                clientOptions.api.env,
+            )
+        }
     }
 
     suspend fun revokeInstallations(signingKey: SigningKey, installationIds: List<String>) {
         val ids = installationIds.map { it.hexToByteArray() }
-        val signatureRequest = ffiClient.revokeInstallations(ids)
+        val signatureRequest = ffiRevokeInstallations(ids)
         handleSignature(signatureRequest, signingKey)
-        ffiClient.applySignatureRequest(signatureRequest)
+        ffiApplySignatureRequest(signatureRequest)
     }
 
     suspend fun revokeAllOtherInstallations(signingKey: SigningKey) {
-        val signatureRequest = ffiClient.revokeAllOtherInstallations()
+        val signatureRequest = ffiRevokeAllOtherInstallations()
         handleSignature(signatureRequest, signingKey)
-        ffiClient.applySignatureRequest(signatureRequest)
+        ffiApplySignatureRequest(signatureRequest)
     }
 
-    suspend fun addAccount(newAccount: SigningKey) {
-        val signatureRequest =
-            ffiClient.addWallet(newAccount.address.lowercase())
-        handleSignature(signatureRequest, newAccount)
-        ffiClient.applySignatureRequest(signatureRequest)
+    @DelicateApi("This function is delicate and should be used with caution. Adding a wallet already associated with an inboxId will cause the wallet to lose access to that inbox. See: inboxIdFromAddress(address)")
+    suspend fun addAccount(newAccount: SigningKey, allowReassignInboxId: Boolean = false) {
+        val inboxId: String? =
+            if (!allowReassignInboxId) inboxIdFromAddress(newAccount.address) else null
+
+        if (allowReassignInboxId || inboxId.isNullOrBlank()) {
+            val signatureRequest = ffiAddWallet(newAccount.address.lowercase())
+            handleSignature(signatureRequest, newAccount)
+            ffiApplySignatureRequest(signatureRequest)
+        } else {
+            throw XMTPException("This wallet is already associated with inbox $inboxId")
+        }
     }
 
     suspend fun removeAccount(recoverAccount: SigningKey, addressToRemove: String) {
-        val signatureRequest = ffiClient.revokeWallet(addressToRemove.lowercase())
+        val signatureRequest = ffiRevokeWallet(addressToRemove.lowercase())
         handleSignature(signatureRequest, recoverAccount)
-        ffiClient.applySignatureRequest(signatureRequest)
-    }
-
-    private suspend fun handleSignature(
-        signatureRequest: FfiSignatureRequest,
-        signingKey: SigningKey,
-    ) {
-        if (signingKey.type == WalletType.SCW) {
-            val chainId = signingKey.chainId
-                ?: throw XMTPException("ChainId is required for smart contract wallets")
-            signatureRequest.addScwSignature(
-                signingKey.signSCW(signatureRequest.signatureText()),
-                signingKey.address.lowercase(),
-                chainId.toULong(),
-                signingKey.blockNumber?.toULong()
-            )
-        } else {
-            signingKey.sign(signatureRequest.signatureText())?.let {
-                signatureRequest.addEcdsaSignature(it.rawData)
-            }
-        }
+        ffiApplySignatureRequest(signatureRequest)
     }
 
     fun signWithInstallationKey(message: String): ByteArray {
@@ -313,65 +330,6 @@ class Client() {
         }
     }
 
-    fun findGroup(groupId: String): Group? {
-        return try {
-            Group(this.inboxId, ffiClient.conversation(groupId.hexToByteArray()))
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    suspend fun findConversation(conversationId: String): Conversation? {
-        return try {
-            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
-            when (conversation.conversationType()) {
-                FfiConversationType.GROUP -> Conversation.Group(Group(this.inboxId, conversation))
-                FfiConversationType.DM -> Conversation.Dm(Dm(this.inboxId, conversation))
-                else -> null
-            }
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    suspend fun findConversationByTopic(topic: String): Conversation? {
-        val regex = """/xmtp/mls/1/g-(.*?)/proto""".toRegex()
-        val matchResult = regex.find(topic)
-        val conversationId = matchResult?.groupValues?.get(1) ?: ""
-        return try {
-            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
-            when (conversation.conversationType()) {
-                FfiConversationType.GROUP -> Conversation.Group(Group(this.inboxId, conversation))
-                FfiConversationType.DM -> Conversation.Dm(Dm(this.inboxId, conversation))
-                else -> null
-            }
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    fun findDmByInboxId(inboxId: String): Dm? {
-        return try {
-            Dm(this.inboxId, ffiClient.dmConversation(inboxId))
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    suspend fun findDmByAddress(address: String): Dm? {
-        val inboxId =
-            inboxIdFromAddress(address.lowercase()) ?: throw XMTPException("No inboxId present")
-        return findDmByInboxId(inboxId)
-    }
-
-    fun findMessage(messageId: String): Message? {
-        return try {
-            Message.create(ffiClient.message(messageId.hexToByteArray()))
-        } catch (e: Exception) {
-            null
-        }
-    }
-
     suspend fun canMessage(addresses: List<String>): Map<String, Boolean> {
         return ffiClient.canMessage(addresses)
     }
@@ -385,9 +343,7 @@ class Client() {
         File(dbPath).delete()
     }
 
-    @Deprecated(
-        message = "This function is delicate and should be used with caution. App will error if database not properly reconnected. See: reconnectLocalDatabase()",
-    )
+    @DelicateApi("This function is delicate and should be used with caution. App will error if database not properly reconnected. See: reconnectLocalDatabase()")
     fun dropLocalDatabaseConnection() {
         ffiClient.releaseDbConnection()
     }
@@ -405,5 +361,42 @@ class Client() {
 
     suspend fun inboxState(refreshFromNetwork: Boolean): InboxState {
         return InboxState(ffiClient.inboxState(refreshFromNetwork))
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `addAccount(), removeAccount(), or revoke()` instead")
+    suspend fun ffiApplySignatureRequest(signatureRequest: SignatureRequest) {
+        ffiClient.applySignatureRequest(signatureRequest.ffiSignatureRequest)
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `revokeInstallations()` instead")
+    suspend fun ffiRevokeInstallations(ids: List<ByteArray>): SignatureRequest {
+        return SignatureRequest(ffiClient.revokeInstallations(ids))
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `revokeAllOtherInstallations()` instead")
+    suspend fun ffiRevokeAllOtherInstallations(): SignatureRequest {
+        return SignatureRequest(
+            ffiClient.revokeAllOtherInstallations()
+        )
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `removeWallet()` instead")
+    suspend fun ffiRevokeWallet(addressToRemove: String): SignatureRequest {
+        return SignatureRequest(ffiClient.revokeWallet(addressToRemove.lowercase()))
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the create and register flow independently otherwise use `addWallet()` instead")
+    suspend fun ffiAddWallet(addressToAdd: String): SignatureRequest {
+        return SignatureRequest(ffiClient.addWallet(addressToAdd.lowercase()))
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `create()` instead")
+    fun ffiSignatureRequest(): SignatureRequest? {
+        return ffiClient.signatureRequest()?.let { SignatureRequest(it) }
+    }
+
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the create and register flow independently otherwise use `create()` instead")
+    suspend fun ffiRegisterIdentity(signatureRequest: SignatureRequest) {
+        ffiClient.registerIdentity(signatureRequest.ffiSignatureRequest)
     }
 }
