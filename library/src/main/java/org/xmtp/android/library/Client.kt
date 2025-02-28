@@ -35,7 +35,6 @@ data class ClientOptions(
     data class Api(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
         val isSecure: Boolean = true,
-        val appVersion: String? = null,
     )
 }
 
