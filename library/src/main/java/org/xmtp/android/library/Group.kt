@@ -12,8 +12,10 @@ import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.Message.SortDirection
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
+import org.xmtp.android.library.libxmtp.Identity
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
+import org.xmtp.android.library.libxmtp.toFfiPublicIdentifier
 import org.xmtp.android.library.messages.Topic
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
@@ -229,23 +231,23 @@ class Group(
         return metadata().creatorInboxId() == client.inboxId
     }
 
-    suspend fun addMembers(addresses: List<String>) {
+    suspend fun addMembersByIdentity(identities: List<Identity>) {
         try {
-            libXMTPGroup.addMembers(addresses)
+            libXMTPGroup.addMembers(identities.map { it.toFfiPublicIdentifier() })
         } catch (e: Exception) {
             throw XMTPException("Unable to add member", e)
         }
     }
 
-    suspend fun removeMembers(addresses: List<String>) {
+    suspend fun removeMembersByIdentity(identities: List<Identity>) {
         try {
-            libXMTPGroup.removeMembers(addresses)
+            libXMTPGroup.removeMembers(identities.map { it.toFfiPublicIdentifier() })
         } catch (e: Exception) {
             throw XMTPException("Unable to remove member", e)
         }
     }
 
-    suspend fun addMembersByInboxId(inboxIds: List<String>) {
+    suspend fun addMembers(inboxIds: List<String>) {
         try {
             libXMTPGroup.addMembersByInboxId(inboxIds)
         } catch (e: Exception) {
@@ -253,7 +255,7 @@ class Group(
         }
     }
 
-    suspend fun removeMembersByInboxId(inboxIds: List<String>) {
+    suspend fun removeMembers(inboxIds: List<String>) {
         try {
             libXMTPGroup.removeMembersByInboxId(inboxIds)
         } catch (e: Exception) {
@@ -435,16 +437,16 @@ class Group(
                         Log.w(
                             "XMTP Group stream",
                             "Failed to decode message: id=${message.id.toHex()}, " +
-                                "convoId=${message.convoId.toHex()}, " +
-                                "senderInboxId=${message.senderInboxId}"
+                                    "convoId=${message.convoId.toHex()}, " +
+                                    "senderInboxId=${message.senderInboxId}"
                         )
                     }
                 } catch (e: Exception) {
                     Log.e(
                         "XMTP Group stream",
                         "Error decoding message: id=${message.id.toHex()}, " +
-                            "convoId=${message.convoId.toHex()}, " +
-                            "senderInboxId=${message.senderInboxId}",
+                                "convoId=${message.convoId.toHex()}, " +
+                                "senderInboxId=${message.senderInboxId}",
                         e
                     )
                 }

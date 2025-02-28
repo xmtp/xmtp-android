@@ -11,8 +11,8 @@ class Member(private val ffiMember: FfiConversationMember) {
 
     val inboxId: String
         get() = ffiMember.inboxId
-    val addresses: List<String>
-        get() = ffiMember.accountAddresses
+    val identities: List<Identity>
+        get() = ffiMember.accountIdentifiers.map { Identity(it) }
     val permissionLevel: PermissionLevel
         get() = when (ffiMember.permissionLevel) {
             FfiPermissionLevel.MEMBER -> PermissionLevel.MEMBER

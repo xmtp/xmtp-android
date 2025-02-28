@@ -67,8 +67,8 @@ class FakeSCWWallet : SigningKey {
     override val address: String
         get() = walletAddress
 
-    override val type: WalletType
-        get() = WalletType.SCW
+    override val type: SignerType
+        get() = SignerType.SCW
 
     override var chainId: Long? = 31337L
 
