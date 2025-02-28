@@ -54,7 +54,7 @@ class Group(
     val name: String
         get() = libXMTPGroup.groupName()
 
-    val imageUrlSquare: String
+    val imageUrl: String
         get() = libXMTPGroup.groupImageUrlSquare()
 
     val description: String
@@ -271,7 +271,7 @@ class Group(
         return ids
     }
 
-    suspend fun updateGroupName(name: String) {
+    suspend fun updateName(name: String) {
         try {
             return libXMTPGroup.updateGroupName(name)
         } catch (e: Exception) {
@@ -279,7 +279,7 @@ class Group(
         }
     }
 
-    suspend fun updateGroupImageUrlSquare(imageUrl: String) {
+    suspend fun updateImageUrl(imageUrl: String) {
         try {
             return libXMTPGroup.updateGroupImageUrlSquare(imageUrl)
         } catch (e: Exception) {
@@ -287,7 +287,7 @@ class Group(
         }
     }
 
-    suspend fun updateGroupDescription(description: String) {
+    suspend fun updateDescription(description: String) {
         try {
             return libXMTPGroup.updateGroupDescription(description)
         } catch (e: Exception) {
@@ -352,7 +352,7 @@ class Group(
         )
     }
 
-    suspend fun updateGroupNamePermission(newPermissionOption: PermissionOption) {
+    suspend fun updateNamePermission(newPermissionOption: PermissionOption) {
         return libXMTPGroup.updatePermissionPolicy(
             FfiPermissionUpdateType.UPDATE_METADATA,
             PermissionOption.toFfiPermissionPolicy(newPermissionOption),
@@ -360,7 +360,7 @@ class Group(
         )
     }
 
-    suspend fun updateGroupDescriptionPermission(newPermissionOption: PermissionOption) {
+    suspend fun updateDescriptionPermission(newPermissionOption: PermissionOption) {
         return libXMTPGroup.updatePermissionPolicy(
             FfiPermissionUpdateType.UPDATE_METADATA,
             PermissionOption.toFfiPermissionPolicy(newPermissionOption),
@@ -368,7 +368,7 @@ class Group(
         )
     }
 
-    suspend fun updateGroupImageUrlSquarePermission(newPermissionOption: PermissionOption) {
+    suspend fun updateImageUrlPermission(newPermissionOption: PermissionOption) {
         return libXMTPGroup.updatePermissionPolicy(
             FfiPermissionUpdateType.UPDATE_METADATA,
             PermissionOption.toFfiPermissionPolicy(newPermissionOption),

@@ -25,7 +25,6 @@ object ClientManager {
         return ClientOptions(
             api = ClientOptions.Api(
                 XMTPEnvironment.DEV,
-                appVersion = "XMTPAndroidExample/v1.0.0",
                 isSecure = true
             ),
             appContext = appContext,
