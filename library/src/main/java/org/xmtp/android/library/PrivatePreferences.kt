@@ -39,14 +39,12 @@ enum class ConsentState {
 }
 
 enum class EntryType {
-    ADDRESS,
     CONVERSATION_ID,
     INBOX_ID;
 
     companion object {
         fun toFfiConsentEntityType(option: EntryType): FfiConsentEntityType {
             return when (option) {
-                ADDRESS -> FfiConsentEntityType.ADDRESS
                 CONVERSATION_ID -> FfiConsentEntityType.CONVERSATION_ID
                 INBOX_ID -> FfiConsentEntityType.INBOX_ID
             }
@@ -54,7 +52,6 @@ enum class EntryType {
 
         fun fromFfiConsentEntityType(option: FfiConsentEntityType): EntryType {
             return when (option) {
-                FfiConsentEntityType.ADDRESS -> ADDRESS
                 FfiConsentEntityType.CONVERSATION_ID -> CONVERSATION_ID
                 FfiConsentEntityType.INBOX_ID -> INBOX_ID
             }
@@ -72,13 +69,6 @@ data class ConsentRecord(
     val consentType: ConsentState,
 ) {
     companion object {
-        fun address(
-            address: String,
-            type: ConsentState = ConsentState.UNKNOWN,
-        ): ConsentRecord {
-            return ConsentRecord(address, EntryType.ADDRESS, type)
-        }
-
         fun conversationId(
             groupId: String,
             type: ConsentState = ConsentState.UNKNOWN,
@@ -161,15 +151,6 @@ data class PrivatePreferences(
             entity,
             EntryType.fromFfiConsentEntityType(entityType),
             ConsentState.fromFfiConsentState(state),
-        )
-    }
-
-    suspend fun addressState(address: String): ConsentState {
-        return ConsentState.fromFfiConsentState(
-            ffiClient.getConsentState(
-                FfiConsentEntityType.ADDRESS,
-                address
-            )
         )
     }
 

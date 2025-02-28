@@ -15,7 +15,6 @@ import org.xmtp.android.library.libxmtp.Identity
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.keystore.api.v1.Keystore
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
-import org.xmtp.android.library.libxmtp.toFfiPublicIdentifier
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversationListItem
@@ -92,9 +91,9 @@ data class Conversations(
         }
     }
 
-    suspend fun findDmByAddress(address: String): Dm? {
+    suspend fun findDmByIdentity(identity: Identity): Dm? {
         val inboxId =
-            client.inboxIdFromAddress(address.lowercase())
+            client.inboxIdFromIdentity(identity)
                 ?: throw XMTPException("No inboxId present")
         return findDmByInboxId(inboxId)
     }
@@ -174,7 +173,7 @@ data class Conversations(
     ): Group {
         val group =
             ffiConversations.createGroup(
-                identities.map { it.toFfiPublicIdentifier() },
+                identities.map { it.toFfiPublicIdentifier()!! },
                 opts = FfiCreateGroupOptions(
                     permissions = permissions,
                     groupName = groupName,
@@ -286,7 +285,7 @@ data class Conversations(
         disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Dm {
         val dmConversation = ffiConversations.findOrCreateDm(
-            peerIdentity.toFfiPublicIdentifier(),
+            peerIdentity.toFfiPublicIdentifier()!!,
             opts = FfiCreateDmOptions(
                 disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(

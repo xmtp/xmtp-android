@@ -15,7 +15,6 @@ import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.libxmtp.Identity
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
-import org.xmtp.android.library.libxmtp.toFfiPublicIdentifier
 import org.xmtp.android.library.messages.Topic
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
@@ -233,7 +232,7 @@ class Group(
 
     suspend fun addMembersByIdentity(identities: List<Identity>) {
         try {
-            libXMTPGroup.addMembers(identities.map { it.toFfiPublicIdentifier() })
+            libXMTPGroup.addMembers(identities.map { it.toFfiPublicIdentifier()!! })
         } catch (e: Exception) {
             throw XMTPException("Unable to add member", e)
         }
@@ -241,7 +240,7 @@ class Group(
 
     suspend fun removeMembersByIdentity(identities: List<Identity>) {
         try {
-            libXMTPGroup.removeMembers(identities.map { it.toFfiPublicIdentifier() })
+            libXMTPGroup.removeMembers(identities.map { it.toFfiPublicIdentifier()!! })
         } catch (e: Exception) {
             throw XMTPException("Unable to remove member", e)
         }

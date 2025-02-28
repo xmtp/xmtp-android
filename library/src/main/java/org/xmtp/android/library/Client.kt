@@ -7,9 +7,9 @@ import kotlinx.coroutines.sync.withLock
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.InboxState
 import org.xmtp.android.library.libxmtp.SignatureRequest
-import org.xmtp.android.library.libxmtp.toFfiPublicIdentifier
 import org.xmtp.android.library.messages.rawData
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.XmtpApiClient
@@ -81,9 +81,9 @@ class Client(
 
         suspend fun getOrCreateInboxId(
             api: ClientOptions.Api,
-            identity: SignerIdentity,
+            identity: Identity,
         ): String {
-            val rootIdentity = identity.toFfiRootIdentifier()
+            val rootIdentity = identity.toFfiRootIdentifier()!!
             var inboxId = getInboxIdForIdentifier(
                 api = connectToApiBackend(api),
                 accountIdentifier = rootIdentity
@@ -102,8 +102,8 @@ class Client(
             api: ClientOptions.Api,
             useClient: suspend (ffiClient: FfiXmtpClient) -> T,
         ): T {
-            val identity = SignerIdentity(
-                SignerType.EOA,
+            val identity = Identity(
+                IdentityKind.ETHEREUM,
                 "0x0000000000000000000000000000000000000000"
             )
             val inboxId = getOrCreateInboxId(api, identity)
@@ -112,7 +112,7 @@ class Client(
                 api = connectToApiBackend(api),
                 db = null,
                 encryptionKey = null,
-                accountIdentifier = identity.toFfiRootIdentifier(),
+                accountIdentifier = identity.toFfiRootIdentifier()!!,
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
@@ -136,17 +136,17 @@ class Client(
             api: ClientOptions.Api,
         ): Map<Identity, Boolean> {
             return withFfiClient(api) { ffiClient ->
-                val ffiIdentifiers = identities.map { it.toFfiPublicIdentifier() }
+                val ffiIdentifiers = identities.map { it.toFfiPublicIdentifier()!! }
                 val result = ffiClient.canMessage(ffiIdentifiers)
 
                 result.mapKeys { (ffiIdentifier, _) ->
-                    Identity(ffiIdentifier)
+                    Identity(ffiIdentifier, null)
                 }
             }
         }
 
         private suspend fun initializeV3Client(
-            identity: SignerIdentity,
+            identity: Identity,
             clientOptions: ClientOptions,
             signingKey: SigningKey? = null,
             inboxId: String? = null,
@@ -194,7 +194,7 @@ class Client(
 
         // Function to build a client from a address
         suspend fun build(
-            identity: SignerIdentity,
+            identity: Identity,
             options: ClientOptions,
             inboxId: String? = null,
         ): Client {
@@ -206,7 +206,7 @@ class Client(
         }
 
         private suspend fun createFfiClient(
-            identity: SignerIdentity,
+            identity: Identity,
             inboxId: String,
             options: ClientOptions,
             appContext: Context,
@@ -226,7 +226,7 @@ class Client(
                 api = connectToApiBackend(options.api),
                 db = dbPath,
                 encryptionKey = options.dbEncryptionKey,
-                accountIdentifier = identity.toFfiRootIdentifier(),
+                accountIdentifier = identity.toFfiRootIdentifier()!!,
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
@@ -240,7 +240,7 @@ class Client(
             signatureRequest: SignatureRequest,
             signingKey: SigningKey,
         ) {
-            if (signingKey.identity.type == SignerType.SCW) {
+            if (signingKey.type == SignerType.SCW) {
                 val chainId = signingKey.chainId
                     ?: throw XMTPException("ChainId is required for smart contract wallets")
                 signatureRequest.addScwSignature(
@@ -257,7 +257,7 @@ class Client(
         }
 
         @DelicateApi("This function is delicate and should be used with caution. Creating an FfiClient without signing or registering will create a broken experience use `create()` instead")
-        suspend fun ffiCreateClient(identity: SignerIdentity, clientOptions: ClientOptions): Client {
+        suspend fun ffiCreateClient(identity: Identity, clientOptions: ClientOptions): Client {
             val recoveredInboxId = getOrCreateInboxId(clientOptions.api, identity)
 
             val (ffiClient, dbPath) = createFfiClient(
@@ -294,12 +294,12 @@ class Client(
         val inboxId: String? =
             if (!allowReassignInboxId) inboxIdFromIdentity(
                 Identity(
-                    newAccount.identity.type.toIdentityKind(),
+                    newAccount.identity.kind,
                     newAccount.identity.identifier
                 )) else null
 
         if (allowReassignInboxId || inboxId.isNullOrBlank()) {
-            val signatureRequest = ffiAddWallet(newAccount.identity.toFfiRootIdentifier())
+            val signatureRequest = ffiAddWallet(newAccount.identity)
             handleSignature(signatureRequest, newAccount)
             ffiApplySignatureRequest(signatureRequest)
         } else {
@@ -307,8 +307,8 @@ class Client(
         }
     }
 
-    suspend fun removeAccount(recoverAccount: SigningKey, addressToRemove: String) {
-        val signatureRequest = ffiRevokeWallet(addressToRemove.lowercase())
+    suspend fun removeAccount(recoverAccount: SigningKey, identityToRemove: Identity) {
+        val signatureRequest = ffiRevokeWallet(identityToRemove)
         handleSignature(signatureRequest, recoverAccount)
         ffiApplySignatureRequest(signatureRequest)
     }
@@ -340,16 +340,16 @@ class Client(
     }
 
     suspend fun canMessage(identities: List<Identity>): Map<Identity, Boolean> {
-        val ffiIdentifiers = identities.map { it.toFfiPublicIdentifier() }
+        val ffiIdentifiers = identities.map { it.toFfiPublicIdentifier()!! }
         val result = ffiClient.canMessage(ffiIdentifiers)
 
         return result.mapKeys { (ffiIdentifier, _) ->
-            Identity(ffiIdentifier)
+            Identity(ffiIdentifier, null)
         }
     }
 
     suspend fun inboxIdFromIdentity(identity: Identity): String? {
-        return ffiClient.findInboxId(identity.toFfiPublicIdentifier())
+        return ffiClient.findInboxId(identity.toFfiPublicIdentifier()!!)
     }
 
     fun deleteLocalDatabase() {
@@ -395,13 +395,13 @@ class Client(
     }
 
     @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `removeWallet()` instead")
-    suspend fun ffiRevokeWallet(addressToRemove: String): SignatureRequest {
-        return SignatureRequest(ffiClient.revokeWallet(addressToRemove.lowercase()))
+    suspend fun ffiRevokeWallet(identityToRemove: Identity): SignatureRequest {
+        return SignatureRequest(ffiClient.revokeIdentity(identityToRemove.toFfiPublicIdentifier()!!))
     }
 
     @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the create and register flow independently otherwise use `addWallet()` instead")
-    suspend fun ffiAddWallet(addressToAdd: String): SignatureRequest {
-        return SignatureRequest(ffiClient.addWallet(addressToAdd.lowercase()))
+    suspend fun ffiAddWallet(identityToAdd: Identity): SignatureRequest {
+        return SignatureRequest(ffiClient.addIdentity(identityToAdd.toFfiPublicIdentifier()!!))
     }
 
     @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `create()` instead")
