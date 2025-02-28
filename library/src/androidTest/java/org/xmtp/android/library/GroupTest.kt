@@ -246,9 +246,9 @@ class GroupTest {
         }
         runBlocking {
             assertEquals("Starting Name", boGroup.name)
-            assertEquals("startingurl.com", boGroup.imageUrlSquare)
-            boGroup.updateGroupName("This Is A Great Group")
-            boGroup.updateGroupImageUrlSquare("thisisanewurl.com")
+            assertEquals("startingurl.com", boGroup.imageUrl)
+            boGroup.updateName("This Is A Great Group")
+            boGroup.updateImageUrl("thisisanewurl.com")
             boGroup.sync()
             alixClient.conversations.sync()
         }
@@ -256,8 +256,8 @@ class GroupTest {
         runBlocking { alixGroup.sync() }
         assertEquals("This Is A Great Group", boGroup.name)
         assertEquals("This Is A Great Group", alixGroup.name)
-        assertEquals("thisisanewurl.com", boGroup.imageUrlSquare)
-        assertEquals("thisisanewurl.com", alixGroup.imageUrlSquare)
+        assertEquals("thisisanewurl.com", boGroup.imageUrl)
+        assertEquals("thisisanewurl.com", alixGroup.imageUrl)
     }
 
     @Test
@@ -487,7 +487,7 @@ class GroupTest {
 
         runBlocking {
             alixGroup.send("hello1")
-            alixGroup.updateGroupName("hello")
+            alixGroup.updateName("hello")
             boClient.conversations.sync()
         }
 

@@ -136,7 +136,7 @@ class GroupUpdatedTest {
         }
         val messages = runBlocking { group.messages() }
         assertEquals(messages.size, 1)
-        assert(messages.first().fallbackContent.isBlank())
+        assert(messages.first().fallback.isBlank())
     }
 
     @Test
@@ -155,7 +155,7 @@ class GroupUpdatedTest {
         var messages = runBlocking { group.messages() }
         assertEquals(messages.size, 1)
         runBlocking {
-            group.updateGroupName("Group Name")
+            group.updateName("Group Name")
             messages = group.messages()
             assertEquals(messages.size, 2)
 

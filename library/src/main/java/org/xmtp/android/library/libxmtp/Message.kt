@@ -33,7 +33,7 @@ class Message private constructor(
     val id: String
         get() = libXMTPMessage.id.toHex()
 
-    val convoId: String
+    val conversationId: String
         get() = libXMTPMessage.convoId.toHex()
 
     val senderInboxId: String
@@ -53,17 +53,17 @@ class Message private constructor(
         }
 
     val topic: String
-        get() = Topic.groupMessage(convoId).description
+        get() = Topic.groupMessage(conversationId).description
 
     @Suppress("UNCHECKED_CAST")
     fun <T> content(): T? = decodedContent as? T
 
-    val fallbackContent: String
+    val fallback: String
         get() = encodedContent.fallback
 
     val body: String
         get() {
-            return content() as? String ?: fallbackContent
+            return content() as? String ?: fallback
         }
 
     companion object {
