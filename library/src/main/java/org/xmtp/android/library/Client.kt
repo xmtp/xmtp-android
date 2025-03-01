@@ -291,20 +291,9 @@ class Client(
 
     @DelicateApi("This function is delicate and should be used with caution. Adding a wallet already associated with an inboxId will cause the wallet to lose access to that inbox. See: inboxIdFromAddress(address)")
     suspend fun addAccount(newAccount: SigningKey, allowReassignInboxId: Boolean = false) {
-        val inboxId: String? =
-            if (!allowReassignInboxId) inboxIdFromIdentity(
-                Identity(
-                    newAccount.identity.kind,
-                    newAccount.identity.identifier
-                )) else null
-
-        if (allowReassignInboxId || inboxId.isNullOrBlank()) {
-            val signatureRequest = ffiAddWallet(newAccount.identity)
-            handleSignature(signatureRequest, newAccount)
-            ffiApplySignatureRequest(signatureRequest)
-        } else {
-            throw XMTPException("This wallet is already associated with inbox $inboxId")
-        }
+        val signatureRequest = ffiAddWallet(newAccount.identity, allowReassignInboxId)
+        handleSignature(signatureRequest, newAccount)
+        ffiApplySignatureRequest(signatureRequest)
     }
 
     suspend fun removeAccount(recoverAccount: SigningKey, identityToRemove: Identity) {
@@ -400,8 +389,23 @@ class Client(
     }
 
     @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the create and register flow independently otherwise use `addWallet()` instead")
-    suspend fun ffiAddWallet(identityToAdd: Identity): SignatureRequest {
-        return SignatureRequest(ffiClient.addIdentity(identityToAdd.toFfiPublicIdentifier()!!))
+    suspend fun ffiAddWallet(
+        identityToAdd: Identity,
+        allowReassignInboxId: Boolean = false,
+    ): SignatureRequest {
+        val inboxId: String? =
+            if (!allowReassignInboxId) inboxIdFromIdentity(
+                Identity(
+                    identityToAdd.kind,
+                    identityToAdd.identifier
+                )
+            ) else null
+
+        if (allowReassignInboxId || inboxId.isNullOrBlank()) {
+            return SignatureRequest(ffiClient.addIdentity(identityToAdd.toFfiPublicIdentifier()!!))
+        } else {
+            throw XMTPException("This wallet is already associated with inbox $inboxId")
+        }
     }
 
     @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `create()` instead")
