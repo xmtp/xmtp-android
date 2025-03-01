@@ -54,6 +54,7 @@ enum class EntryType {
             return when (option) {
                 FfiConsentEntityType.CONVERSATION_ID -> CONVERSATION_ID
                 FfiConsentEntityType.INBOX_ID -> INBOX_ID
+                FfiConsentEntityType.IDENTITY -> INBOX_ID
             }
         }
     }
@@ -142,7 +143,8 @@ data class PrivatePreferences(
         return FfiConsent(
             EntryType.toFfiConsentEntityType(entryType),
             ConsentState.toFfiConsentState(consentType),
-            value
+            value,
+            null
         )
     }
 
@@ -158,7 +160,8 @@ data class PrivatePreferences(
         return ConsentState.fromFfiConsentState(
             ffiClient.getConsentState(
                 FfiConsentEntityType.CONVERSATION_ID,
-                groupId
+                groupId,
+                null
             )
         )
     }
@@ -167,7 +170,8 @@ data class PrivatePreferences(
         return ConsentState.fromFfiConsentState(
             ffiClient.getConsentState(
                 FfiConsentEntityType.INBOX_ID,
-                inboxId
+                inboxId,
+                null
             )
         )
     }
