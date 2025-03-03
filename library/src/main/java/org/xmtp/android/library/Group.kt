@@ -232,7 +232,7 @@ class Group(
 
     suspend fun addMembersByIdentity(identities: List<Identity>) {
         try {
-            libXMTPGroup.addMembers(identities.map { it.toFfiPublicIdentifier()!! })
+            libXMTPGroup.addMembers(identities.map { it.ffiPublicIdentifier })
         } catch (e: Exception) {
             throw XMTPException("Unable to add member", e)
         }
@@ -240,7 +240,7 @@ class Group(
 
     suspend fun removeMembersByIdentity(identities: List<Identity>) {
         try {
-            libXMTPGroup.removeMembers(identities.map { it.toFfiPublicIdentifier()!! })
+            libXMTPGroup.removeMembers(identities.map { it.ffiPublicIdentifier })
         } catch (e: Exception) {
             throw XMTPException("Unable to remove member", e)
         }
@@ -436,7 +436,7 @@ class Group(
                         Log.w(
                             "XMTP Group stream",
                             "Failed to decode message: id=${message.id.toHex()}, " +
-                                    "convoId=${message.convoId.toHex()}, " +
+                                    "convoId=${message.conversationId.toHex()}, " +
                                     "senderInboxId=${message.senderInboxId}"
                         )
                     }
@@ -444,7 +444,7 @@ class Group(
                     Log.e(
                         "XMTP Group stream",
                         "Error decoding message: id=${message.id.toHex()}, " +
-                                "convoId=${message.convoId.toHex()}, " +
+                                "convoId=${message.conversationId.toHex()}, " +
                                 "senderInboxId=${message.senderInboxId}",
                         e
                     )

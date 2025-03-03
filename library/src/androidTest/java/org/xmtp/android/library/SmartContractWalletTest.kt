@@ -11,6 +11,7 @@ import org.junit.Assert.assertEquals
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.xmtp.android.library.codecs.id
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -79,7 +80,7 @@ class SmartContractWalletTest {
     fun testCanBuildASCW() {
         val davonSCWClient2 = runBlocking {
             Client.build(
-                address = davonSCW.address,
+                identity = davonSCW.identity,
                 options = options
             )
         }
@@ -97,27 +98,27 @@ class SmartContractWalletTest {
 
         var state = runBlocking { davonSCWClient.inboxState(true) }
         assertEquals(state.installations.size, 1)
-        assertEquals(state.addresses.size, 3)
-        assertEquals(state.recoveryAddress, davonSCWClient.address.lowercase())
+        assertEquals(state.identities.size, 3)
+        assertEquals(state.recoveryIdentity, davonSCW.identity)
         assertEquals(
-            state.addresses.sorted(),
+            state.identities,
             listOf(
-                davonEOA.address.lowercase(),
-                davonSCW2.address.lowercase(),
-                davonSCWClient.address.lowercase()
-            ).sorted()
+                davonEOA.identity,
+                davonSCW2.identity,
+                davonSCW.identity
+            )
         )
 
-        runBlocking { davonSCWClient.removeAccount(davonSCW, davonSCW2.address) }
+        runBlocking { davonSCWClient.removeAccount(davonSCW, davonSCW2.identity) }
         state = runBlocking { davonSCWClient.inboxState(true) }
-        assertEquals(state.addresses.size, 2)
-        assertEquals(state.recoveryAddress, davonSCWClient.address.lowercase())
+        assertEquals(state.identities.size, 2)
+        assertEquals(state.recoveryIdentity, davonSCW.identity)
         assertEquals(
-            state.addresses.sorted(),
+            state.identities,
             listOf(
-                davonEOA.address.lowercase(),
-                davonSCWClient.address.lowercase()
-            ).sorted()
+                davonEOA.identity,
+                davonSCW.identity
+            )
         )
         assertEquals(state.installations.size, 1)
 
@@ -129,7 +130,7 @@ class SmartContractWalletTest {
             runBlocking {
                 davonSCWClient.removeAccount(
                     davonEOA,
-                    davonSCWClient.address
+                    davonSCW.identity
                 )
             }
         }
@@ -159,8 +160,8 @@ class SmartContractWalletTest {
             listOf(davonSCWClient.inboxId, boEOAClient.inboxId, eriSCWClient.inboxId).sorted()
         )
         assertEquals(
-            runBlocking { group2.members().map { it.addresses.first() }.sorted() },
-            listOf(davonSCWClient.address, boEOAClient.address, eriSCWClient.address).sorted()
+            runBlocking { group2.members().map { it.identities.first() } },
+            listOf(davonSCW.identity, boEOAWallet.identity, eriSCW.identity)
         )
     }
 
@@ -288,26 +289,6 @@ class SmartContractWalletTest {
             assertEquals(
                 davonSCWClient.preferences.inboxIdState(boEOAClient.inboxId),
                 ConsentState.DENIED
-            )
-
-            davonSCWClient.preferences.setConsentState(
-                listOf(
-                    ConsentRecord(
-                        eriSCWClient.address,
-                        EntryType.ADDRESS,
-                        ConsentState.ALLOWED
-                    )
-                )
-            )
-            alixMember = davonGroup.members().firstOrNull { it.inboxId == eriSCWClient.inboxId }
-            assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
-            assertEquals(
-                davonSCWClient.preferences.inboxIdState(eriSCWClient.inboxId),
-                ConsentState.ALLOWED
-            )
-            assertEquals(
-                davonSCWClient.preferences.addressState(eriSCWClient.address),
-                ConsentState.ALLOWED
             )
         }
     }

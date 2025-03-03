@@ -9,6 +9,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
+import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PermissionLevel
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
@@ -385,7 +387,7 @@ class GroupPermissionsTest {
         )
         val boGroup = runBlocking {
             boClient.conversations.newGroupCustomPermissions(
-                accountAddresses = listOf(alix.walletAddress, caro.walletAddress),
+                inboxIds = listOf(alixClient.inboxId, caroClient.inboxId),
                 permissionPolicySet = permissionPolicySet,
             )
         }
@@ -420,7 +422,7 @@ class GroupPermissionsTest {
         assertThrows(GenericException.GroupMutablePermissions::class.java) {
             val boGroup = runBlocking {
                 boClient.conversations.newGroupCustomPermissions(
-                    accountAddresses = listOf(alix.walletAddress, caro.walletAddress),
+                    inboxIds = listOf(alixClient.inboxId, caroClient.inboxId),
                     permissionPolicySet = permissionPolicySetInvalid,
                 )
             }
@@ -443,7 +445,7 @@ class GroupPermissionsTest {
 
         val boGroup = runBlocking {
             boClient.conversations.newGroupCustomPermissions(
-                accountAddresses = listOf(alix.walletAddress, caro.walletAddress),
+                inboxIds = listOf(alixClient.inboxId, caroClient.inboxId),
                 permissionPolicySet = permissionPolicySetValid,
             )
         }
@@ -464,8 +466,11 @@ class GroupPermissionsTest {
             updateMessageDisappearingPolicy = PermissionOption.Admin,
         )
         val boGroup = runBlocking {
-            boClient.conversations.newGroupCustomPermissionsWithInboxIds(
-                inboxIds = listOf(alixClient.inboxId, caroClient.inboxId),
+            boClient.conversations.newGroupCustomPermissionsWithIdentities(
+                identities = listOf(
+                    Identity(IdentityKind.ETHEREUM, alix.walletAddress),
+                    Identity(IdentityKind.ETHEREUM, caro.walletAddress)
+                ),
                 permissionPolicySet = permissionPolicySet,
             )
         }

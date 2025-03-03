@@ -28,13 +28,6 @@ fun Signature.ethHash(message: String): ByteArray {
     return Util.keccak256(input.toByteArray())
 }
 
-fun Signature.consentProofText(peerAddress: String, timestamp: Long): String {
-    val formatter = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
-    formatter.timeZone = TimeZone.getTimeZone("UTC")
-    val timestampString = formatter.format(timestamp)
-    return ("XMTP : Grant inbox consent to sender\n" + "\n" + "Current Time: ${timestampString}\n" + "From Address: ${peerAddress}\n" + "\n" + "For more info: https://xmtp.org/signatures/")
-}
-
 val Signature.rawData: ByteArray
     get() = if (hasEcdsaCompact()) {
         ecdsaCompact.bytes.toByteArray() + ecdsaCompact.recovery.toByte()
@@ -52,20 +45,6 @@ val Signature.rawDataWithNormalizedRecovery: ByteArray
         }
         return data
     }
-
-@OptIn(ExperimentalUnsignedTypes::class)
-fun Signature.verify(signedBy: PublicKey, digest: ByteArray): Boolean {
-    return try {
-        uniffi.xmtpv3.verifyK256Sha256(
-            signedBy.secp256K1Uncompressed.bytes.toByteArray(),
-            digest,
-            ecdsaCompact.bytes.toByteArray(),
-            ecdsaCompact.recovery.toUByte()
-        )
-    } catch (e: Exception) {
-        false
-    }
-}
 
 fun Signature.ensureWalletSignature(): Signature {
     return when (unionCase) {

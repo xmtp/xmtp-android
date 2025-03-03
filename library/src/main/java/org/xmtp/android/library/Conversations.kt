@@ -7,7 +7,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
-import org.xmtp.android.library.codecs.id
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
@@ -173,7 +172,7 @@ data class Conversations(
     ): Group {
         val group =
             ffiConversations.createGroup(
-                identities.map { it.toFfiPublicIdentifier()!! },
+                identities.map { it.ffiPublicIdentifier },
                 opts = FfiCreateGroupOptions(
                     permissions = permissions,
                     groupName = groupName,
@@ -285,7 +284,7 @@ data class Conversations(
         disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Dm {
         val dmConversation = ffiConversations.findOrCreateDm(
-            peerIdentity.toFfiPublicIdentifier()!!,
+            peerIdentity.ffiPublicIdentifier,
             opts = FfiCreateDmOptions(
                 disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(

@@ -2,6 +2,7 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,6 +24,8 @@ import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
+import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.PermissionOption
@@ -170,7 +173,7 @@ class GroupTest {
     @Test
     fun testCanCreateAGroupWithInboxIdsDefaultPermissions() {
         val boGroup = runBlocking {
-            boClient.conversations.newGroupWithInboxIds(listOf(alixClient.inboxId))
+            boClient.conversations.newGroupWithIdentities(listOf(Identity(IdentityKind.ETHEREUM, alix.walletAddress)))
         }
         runBlocking {
             alixClient.conversations.sync()
@@ -239,7 +242,7 @@ class GroupTest {
     fun testGroupMetadata() {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
-                listOf(alix.walletAddress),
+                listOf(alixClient.inboxId),
                 groupName = "Starting Name",
                 groupImageUrlSquare = "startingurl.com"
             )
@@ -262,8 +265,8 @@ class GroupTest {
 
     @Test
     fun testCanAddGroupMembers() {
-        val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
-        runBlocking { group.addMembers(listOf(caro.walletAddress)) }
+        val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
+        runBlocking { group.addMembers(listOf(caroClient.inboxId)) }
         assertEquals(
             runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
@@ -279,8 +282,8 @@ class GroupTest {
         val group = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alixClient.address,
-                    caroClient.address
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 )
             )
         }
@@ -299,8 +302,8 @@ class GroupTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alixClient.address,
-                    caroClient.address
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 )
             )
         }
@@ -313,7 +316,7 @@ class GroupTest {
             alixClient.conversations.listGroups().first()
         }
         runBlocking {
-            group.removeMembers(listOf(caroClient.address))
+            group.removeMembers(listOf(caroClient.inboxId))
             group.sync()
             boGroup.sync()
         }
@@ -328,7 +331,7 @@ class GroupTest {
 
     fun testCanAddGroupMemberIds() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
-        runBlocking { group.addMembersByInboxId(listOf(caroClient.inboxId)) }
+        runBlocking { group.addMembersByIdentity(listOf(Identity(IdentityKind.ETHEREUM, caro.walletAddress))) }
         assertEquals(
             runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
@@ -344,12 +347,12 @@ class GroupTest {
         val group = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alixClient.address,
-                    caroClient.address
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 )
             )
         }
-        runBlocking { group.removeMembersByInboxId(listOf(caroClient.inboxId)) }
+        runBlocking { group.removeMembersByIdentity(listOf(Identity(IdentityKind.ETHEREUM, caro.walletAddress))) }
         assertEquals(
             runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
@@ -361,7 +364,7 @@ class GroupTest {
 
     @Test
     fun testMessageTimeIsCorrect() {
-        val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(boClient.address)) }
+        val alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(boClient.inboxId)) }
         runBlocking { alixGroup.send("Hello") }
         assertEquals(runBlocking { alixGroup.messages() }.size, 2)
         runBlocking { alixGroup.sync() }
@@ -377,8 +380,8 @@ class GroupTest {
         val group = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 )
             )
         }
@@ -388,7 +391,7 @@ class GroupTest {
         assert(caroGroup.isActive())
         assert(group.isActive())
         runBlocking {
-            group.removeMembers(listOf(caro.walletAddress))
+            group.removeMembers(listOf(caroClient.inboxId))
             caroGroup.sync()
         }
         assert(group.isActive())
@@ -400,7 +403,7 @@ class GroupTest {
         runBlocking {
             alixClient.conversations.newGroup(
                 listOf(
-                    boClient.address,
+                    boClient.inboxId,
                 )
             )
         }
@@ -733,7 +736,7 @@ class GroupTest {
         assertEquals(2, allMessages.size)
 
         val caroGroup =
-            runBlocking { caroClient.conversations.newGroup(listOf(alixClient.address)) }
+            runBlocking { caroClient.conversations.newGroup(listOf(alixClient.inboxId)) }
         Thread.sleep(2500)
 
         for (i in 0 until 2) {
@@ -866,26 +869,6 @@ class GroupTest {
             assertEquals(
                 boClient.preferences.inboxIdState(alixClient.inboxId),
                 ConsentState.DENIED
-            )
-
-            boClient.preferences.setConsentState(
-                listOf(
-                    ConsentRecord(
-                        alixClient.address,
-                        EntryType.ADDRESS,
-                        ConsentState.ALLOWED
-                    )
-                )
-            )
-            alixMember = boGroup.members().firstOrNull { it.inboxId == alixClient.inboxId }
-            assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
-            assertEquals(
-                boClient.preferences.inboxIdState(alixClient.inboxId),
-                ConsentState.ALLOWED
-            )
-            assertEquals(
-                boClient.preferences.addressState(alixClient.address),
-                ConsentState.ALLOWED
             )
         }
     }

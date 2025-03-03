@@ -6,11 +6,11 @@ class InboxState(private val ffiInboxState: FfiInboxState) {
     val inboxId: String
         get() = ffiInboxState.inboxId
     val identities: List<Identity>
-        get() = ffiInboxState.accountIdentities.map { Identity(it, null) }
+        get() = ffiInboxState.accountIdentities.map { Identity(it) }
 
     val installations: List<Installation>
         get() = ffiInboxState.installations.map { Installation(it) }
 
     val recoveryIdentity: Identity
-        get() = Identity(ffiInboxState.recoveryIdentity, null)
+        get() = Identity(ffiInboxState.recoveryIdentity)
 }

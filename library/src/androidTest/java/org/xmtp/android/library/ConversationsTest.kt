@@ -255,7 +255,7 @@ class ConversationsTest {
             val client = runBlocking { Client.create(account, fixtures.clientOptions) }
             runBlocking {
                 conversations.add(
-                    alixClient.conversations.newConversation(client.address)
+                    alixClient.conversations.newConversation(client.inboxId)
                 )
             }
         }
@@ -271,9 +271,9 @@ class ConversationsTest {
     fun testStreamsAndMessages() = runBlocking {
         val messages = mutableListOf<String>()
         val alixGroup =
-            alixClient.conversations.newGroup(listOf(caroClient.address, boClient.address))
+            alixClient.conversations.newGroup(listOf(caroClient.inboxId, boClient.inboxId))
         val caroGroup2 =
-            caroClient.conversations.newGroup(listOf(alixClient.address, boClient.address))
+            caroClient.conversations.newGroup(listOf(alixClient.inboxId, boClient.inboxId))
 
         alixClient.conversations.syncAllConversations()
         caroClient.conversations.syncAllConversations()
@@ -327,7 +327,7 @@ class ConversationsTest {
             println("Davon is sending spam groups..")
             repeat(10) {
                 val spamMessage = "Davon Spam Message $it"
-                val group = davonClient.conversations.newGroup(listOf(caroClient.address))
+                val group = davonClient.conversations.newGroup(listOf(caroClient.inboxId))
                 group.send(spamMessage)
                 println("Davon spam: $spamMessage")
             }
