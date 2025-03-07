@@ -13,13 +13,13 @@ class PublicIdentity(val ffiPrivate: FfiIdentifier) {
         identifier: String,
         relyingPartner: String? = null,
     ) :
-            this(
-                ffiPrivate = FfiIdentifier(
-                    identifier,
-                    kind.toFfiPublicIdentifierKind(),
-                    relyingPartner
-                ),
-            )
+        this(
+            ffiPrivate = FfiIdentifier(
+                identifier,
+                kind.toFfiPublicIdentifierKind(),
+                relyingPartner
+            ),
+        )
 
     val kind: IdentityKind
         get() = ffiPrivate.identifierKind.toIdentityKind()

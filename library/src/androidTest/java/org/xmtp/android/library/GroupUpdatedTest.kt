@@ -13,7 +13,6 @@ import org.xmtp.android.library.codecs.GroupUpdated
 import org.xmtp.android.library.codecs.GroupUpdatedCodec
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.walletAddress
 import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
@@ -90,7 +89,7 @@ class GroupUpdatedTest {
         val content: GroupUpdated? = updatedMessages.first().content()
 
         assertEquals(
-            listOf(caroClient.inboxId),
+            listOf(caroClient.inboxId.value),
             content?.removedInboxesList?.map { it.inboxId }?.sorted()
         )
         assert(content?.addedInboxesList.isNullOrEmpty())

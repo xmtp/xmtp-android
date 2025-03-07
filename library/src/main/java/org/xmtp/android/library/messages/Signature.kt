@@ -3,10 +3,8 @@ package org.xmtp.android.library.messages
 import com.google.protobuf.kotlin.toByteString
 import org.xmtp.android.library.Util
 import org.xmtp.proto.message.contents.SignatureOuterClass
-import java.text.SimpleDateFormat
-import java.util.TimeZone
 
-typealias Signature = org.xmtp.proto.message.contents.SignatureOuterClass.Signature
+typealias Signature = SignatureOuterClass.Signature
 
 private const val MESSAGE_PREFIX = "\u0019Ethereum Signed Message:\n"
 

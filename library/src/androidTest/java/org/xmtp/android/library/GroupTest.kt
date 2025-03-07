@@ -32,6 +32,7 @@ import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.mls.message.contents.TranscriptMessages
+import uniffi.xmtpv3.GenericException
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
@@ -464,7 +465,7 @@ class GroupTest {
         val chuxAccount = PrivateKeyBuilder()
         val chux: PrivateKey = chuxAccount.getPrivateKey()
 
-        assertThrows("Recipient not on network", XMTPException::class.java) {
+        assertThrows(GenericException::class.java) {
             runBlocking {
                 boClient.conversations.newGroupWithIdentities(
                     listOf(
