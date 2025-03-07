@@ -436,16 +436,16 @@ class Group(
                         Log.w(
                             "XMTP Group stream",
                             "Failed to decode message: id=${message.id.toHex()}, " +
-                                    "convoId=${message.conversationId.toHex()}, " +
-                                    "senderInboxId=${message.senderInboxId}"
+                                "conversationId=${message.conversationId.toHex()}, " +
+                                "senderInboxId=${message.senderInboxId}"
                         )
                     }
                 } catch (e: Exception) {
                     Log.e(
                         "XMTP Group stream",
                         "Error decoding message: id=${message.id.toHex()}, " +
-                                "convoId=${message.conversationId.toHex()}, " +
-                                "senderInboxId=${message.senderInboxId}",
+                            "conversationId=${message.conversationId.toHex()}, " +
+                            "senderInboxId=${message.senderInboxId}",
                         e
                     )
                 }
