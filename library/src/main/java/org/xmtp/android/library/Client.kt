@@ -247,7 +247,7 @@ class Client(
                     ?: throw XMTPException("ChainId is required for smart contract wallets")
                 signatureRequest.addScwSignature(
                     signingKey.signSCW(signatureRequest.signatureText()),
-                    signingKey.publicIdentity.identifier.lowercase(),
+                    signingKey.publicIdentity.identifier,
                     chainId.toULong(),
                     signingKey.blockNumber?.toULong()
                 )
