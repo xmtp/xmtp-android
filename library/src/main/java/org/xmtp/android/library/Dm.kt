@@ -38,8 +38,8 @@ class Dm(
     val createdAt: Date
         get() = Date(libXMTPGroup.createdAtNs() / 1_000_000)
 
-    val peerInboxId: String
-        get() = libXMTPGroup.dmPeerInboxId()
+    val peerInboxId: InboxId
+        get() = InboxId(libXMTPGroup.dmPeerInboxId())
 
     val disappearingMessageSettings: DisappearingMessageSettings?
         get() = runCatching {
@@ -185,12 +185,12 @@ class Dm(
         return Message.create(message)
     }
 
-    suspend fun creatorInboxId(): String {
-        return metadata().creatorInboxId()
+    suspend fun creatorInboxId(): InboxId {
+        return InboxId(metadata().creatorInboxId())
     }
 
     suspend fun isCreator(): Boolean {
-        return metadata().creatorInboxId() == client.inboxId
+        return metadata().creatorInboxId() == client.inboxId.value
     }
 
     suspend fun members(): List<Member> {
@@ -208,7 +208,7 @@ class Dm(
                         Log.w(
                             "XMTP Dm stream",
                             "Failed to decode message: id=${message.id.toHex()}, " +
-                                "convoId=${message.convoId.toHex()}, " +
+                                "convoId=${message.conversationId.toHex()}, " +
                                 "senderInboxId=${message.senderInboxId}"
                         )
                     }
@@ -216,7 +216,7 @@ class Dm(
                     Log.e(
                         "XMTP Dm stream",
                         "Error decoding message: id=${message.id.toHex()}, " +
-                            "convoId=${message.convoId.toHex()}, " +
+                            "convoId=${message.conversationId.toHex()}, " +
                             "senderInboxId=${message.senderInboxId}",
                         e
                     )

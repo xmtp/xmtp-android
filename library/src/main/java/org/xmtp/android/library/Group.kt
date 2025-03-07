@@ -12,6 +12,7 @@ import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.Message.SortDirection
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
 import org.xmtp.android.library.messages.Topic
@@ -213,49 +214,49 @@ class Group(
         return libXMTPGroup.isActive()
     }
 
-    fun addedByInboxId(): String {
-        return libXMTPGroup.addedByInboxId()
+    fun addedByInboxId(): InboxId {
+        return InboxId(libXMTPGroup.addedByInboxId())
     }
 
     fun permissionPolicySet(): PermissionPolicySet {
         return PermissionPolicySet.fromFfiPermissionPolicySet(permissions.policySet())
     }
 
-    suspend fun creatorInboxId(): String {
-        return metadata().creatorInboxId()
+    suspend fun creatorInboxId(): InboxId {
+        return InboxId(metadata().creatorInboxId())
     }
 
     suspend fun isCreator(): Boolean {
-        return metadata().creatorInboxId() == client.inboxId
+        return metadata().creatorInboxId() == client.inboxId.value
     }
 
-    suspend fun addMembers(addresses: List<String>) {
+    suspend fun addMembersByIdentity(identities: List<PublicIdentity>) {
         try {
-            libXMTPGroup.addMembers(addresses)
+            libXMTPGroup.addMembers(identities.map { it.ffiPrivate })
         } catch (e: Exception) {
             throw XMTPException("Unable to add member", e)
         }
     }
 
-    suspend fun removeMembers(addresses: List<String>) {
+    suspend fun removeMembersByIdentity(identities: List<PublicIdentity>) {
         try {
-            libXMTPGroup.removeMembers(addresses)
+            libXMTPGroup.removeMembers(identities.map { it.ffiPrivate })
         } catch (e: Exception) {
             throw XMTPException("Unable to remove member", e)
         }
     }
 
-    suspend fun addMembersByInboxId(inboxIds: List<String>) {
+    suspend fun addMembers(inboxIds: List<InboxId>) {
         try {
-            libXMTPGroup.addMembersByInboxId(inboxIds)
+            libXMTPGroup.addMembersByInboxId(inboxIds.map { it.value })
         } catch (e: Exception) {
             throw XMTPException("Unable to add member", e)
         }
     }
 
-    suspend fun removeMembersByInboxId(inboxIds: List<String>) {
+    suspend fun removeMembers(inboxIds: List<InboxId>) {
         try {
-            libXMTPGroup.removeMembersByInboxId(inboxIds)
+            libXMTPGroup.removeMembersByInboxId(inboxIds.map { it.value })
         } catch (e: Exception) {
             throw XMTPException("Unable to remove member", e)
         }
@@ -265,7 +266,7 @@ class Group(
         return libXMTPGroup.listMembers().map { Member(it) }
     }
 
-    suspend fun peerInboxIds(): List<String> {
+    suspend fun peerInboxIds(): List<InboxId> {
         val ids = members().map { it.inboxId }.toMutableList()
         ids.remove(client.inboxId)
         return ids
@@ -376,52 +377,52 @@ class Group(
         )
     }
 
-    fun isAdmin(inboxId: String): Boolean {
-        return libXMTPGroup.isAdmin(inboxId)
+    fun isAdmin(inboxId: InboxId): Boolean {
+        return libXMTPGroup.isAdmin(inboxId.value)
     }
 
-    fun isSuperAdmin(inboxId: String): Boolean {
-        return libXMTPGroup.isSuperAdmin(inboxId)
+    fun isSuperAdmin(inboxId: InboxId): Boolean {
+        return libXMTPGroup.isSuperAdmin(inboxId.value)
     }
 
-    suspend fun addAdmin(inboxId: String) {
+    suspend fun addAdmin(inboxId: InboxId) {
         try {
-            libXMTPGroup.addAdmin(inboxId)
+            libXMTPGroup.addAdmin(inboxId.value)
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to add admin", e)
         }
     }
 
-    suspend fun removeAdmin(inboxId: String) {
+    suspend fun removeAdmin(inboxId: InboxId) {
         try {
-            libXMTPGroup.removeAdmin(inboxId)
+            libXMTPGroup.removeAdmin(inboxId.value)
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to remove admin", e)
         }
     }
 
-    suspend fun addSuperAdmin(inboxId: String) {
+    suspend fun addSuperAdmin(inboxId: InboxId) {
         try {
-            libXMTPGroup.addSuperAdmin(inboxId)
+            libXMTPGroup.addSuperAdmin(inboxId.value)
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to add super admin", e)
         }
     }
 
-    suspend fun removeSuperAdmin(inboxId: String) {
+    suspend fun removeSuperAdmin(inboxId: InboxId) {
         try {
-            libXMTPGroup.removeSuperAdmin(inboxId)
+            libXMTPGroup.removeSuperAdmin(inboxId.value)
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to remove super admin", e)
         }
     }
 
-    suspend fun listAdmins(): List<String> {
-        return libXMTPGroup.adminList()
+    fun listAdmins(): List<InboxId> {
+        return libXMTPGroup.adminList().map { InboxId(it) }
     }
 
-    suspend fun listSuperAdmins(): List<String> {
-        return libXMTPGroup.superAdminList()
+    fun listSuperAdmins(): List<InboxId> {
+        return libXMTPGroup.superAdminList().map { InboxId(it) }
     }
 
     fun streamMessages(): Flow<Message> = callbackFlow {
@@ -435,7 +436,7 @@ class Group(
                         Log.w(
                             "XMTP Group stream",
                             "Failed to decode message: id=${message.id.toHex()}, " +
-                                "convoId=${message.convoId.toHex()}, " +
+                                "conversationId=${message.conversationId.toHex()}, " +
                                 "senderInboxId=${message.senderInboxId}"
                         )
                     }
@@ -443,7 +444,7 @@ class Group(
                     Log.e(
                         "XMTP Group stream",
                         "Error decoding message: id=${message.id.toHex()}, " +
-                            "convoId=${message.convoId.toHex()}, " +
+                            "conversationId=${message.conversationId.toHex()}, " +
                             "senderInboxId=${message.senderInboxId}",
                         e
                     )

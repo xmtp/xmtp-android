@@ -1,6 +1,7 @@
 package org.xmtp.android.library.libxmtp
 
 import org.xmtp.android.library.ConsentState
+import org.xmtp.android.library.InboxId
 import uniffi.xmtpv3.FfiConversationMember
 import uniffi.xmtpv3.FfiPermissionLevel
 
@@ -9,10 +10,10 @@ enum class PermissionLevel {
 }
 class Member(private val ffiMember: FfiConversationMember) {
 
-    val inboxId: String
-        get() = ffiMember.inboxId
-    val addresses: List<String>
-        get() = ffiMember.accountAddresses
+    val inboxId: InboxId
+        get() = InboxId(ffiMember.inboxId)
+    val identities: List<PublicIdentity>
+        get() = ffiMember.accountIdentifiers.map { PublicIdentity(it) }
     val permissionLevel: PermissionLevel
         get() = when (ffiMember.permissionLevel) {
             FfiPermissionLevel.MEMBER -> PermissionLevel.MEMBER

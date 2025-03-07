@@ -83,7 +83,7 @@ class MainViewModel : ViewModel() {
                 listItems.add(
                     MainListItem.Footer(
                         id = "footer",
-                        ClientManager.client.address,
+                        ClientManager.client.inboxId.value,
                         ClientManager.client.environment.name
                     )
                 )
