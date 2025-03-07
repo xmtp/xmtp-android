@@ -69,7 +69,7 @@ class RemoteAttachmentTest {
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.bobClient.inboxId)
         }
 
         runBlocking {
@@ -151,7 +151,7 @@ class RemoteAttachmentTest {
         val fixtures = fixtures()
         val aliceClient = fixtures.aliceClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bob.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.bobClient.inboxId)
         }
 
         runBlocking {
