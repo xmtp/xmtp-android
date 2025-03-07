@@ -8,9 +8,9 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.messages.PrivateKeyBuilder
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.rawData
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.GenericException

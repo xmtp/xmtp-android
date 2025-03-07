@@ -13,8 +13,8 @@ import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.utils.Numeric
 import org.xmtp.android.library.artifact.CoinbaseSmartWallet
 import org.xmtp.android.library.artifact.CoinbaseSmartWalletFactory
-import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.IdentityKind
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.Signature
