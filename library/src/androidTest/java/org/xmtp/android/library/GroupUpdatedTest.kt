@@ -53,8 +53,8 @@ class GroupUpdatedTest {
         val group = runBlocking {
             alixClient.conversations.newGroup(
                 listOf(
-                    bo.walletAddress,
-                    caro.walletAddress
+                    boClient.inboxId,
+                    caroClient.inboxId
                 )
             )
         }
@@ -62,7 +62,7 @@ class GroupUpdatedTest {
         assertEquals(messages.size, 1)
         val content: GroupUpdated? = messages.first().content()
         assertEquals(
-            listOf(boClient.inboxId, caroClient.inboxId).sorted(),
+            listOf(boClient.inboxId.value, caroClient.inboxId.value).sorted(),
             content?.addedInboxesList?.map { it.inboxId }?.sorted()
         )
         assert(content?.removedInboxesList.isNullOrEmpty())
@@ -75,15 +75,15 @@ class GroupUpdatedTest {
         val group = runBlocking {
             alixClient.conversations.newGroup(
                 listOf(
-                    bo.walletAddress,
-                    caro.walletAddress
+                    boClient.inboxId,
+                    caroClient.inboxId
                 )
             )
         }
         val messages = runBlocking { group.messages() }
         assertEquals(messages.size, 1)
         assertEquals(runBlocking { group.members().size }, 3)
-        runBlocking { group.removeMembers(listOf(caro.walletAddress)) }
+        runBlocking { group.removeMembers(listOf(caroClient.inboxId)) }
         val updatedMessages = runBlocking { group.messages() }
         assertEquals(updatedMessages.size, 2)
         assertEquals(runBlocking { group.members().size }, 2)
@@ -105,8 +105,8 @@ class GroupUpdatedTest {
         val group = runBlocking {
             alixClient.conversations.newGroup(
                 listOf(
-                    bo.walletAddress,
-                    caro.walletAddress
+                    boClient.inboxId,
+                    caroClient.inboxId
                 )
             )
         }
@@ -129,8 +129,8 @@ class GroupUpdatedTest {
         val group = runBlocking {
             alixClient.conversations.newGroup(
                 listOf(
-                    bo.walletAddress,
-                    caro.walletAddress
+                    boClient.inboxId,
+                    caroClient.inboxId
                 )
             )
         }
@@ -146,8 +146,8 @@ class GroupUpdatedTest {
         val group = runBlocking {
             alixClient.conversations.newGroup(
                 listOf(
-                    bo.walletAddress,
-                    caro.walletAddress
+                    boClient.inboxId,
+                    caroClient.inboxId
                 ),
                 groupName = "Start Name"
             )

@@ -44,7 +44,7 @@ class HistorySyncTest {
         caroClient = fixtures.caroClient
         alixClient = fixtures.alixClient
 
-        alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(bo.walletAddress)) }
+        alixGroup = runBlocking { alixClient.conversations.newGroup(listOf(boClient.inboxId)) }
 
         alixClient2 = runBlocking {
             Client.create(
@@ -162,7 +162,7 @@ class HistorySyncTest {
 
         runBlocking {
             alix2Group.updateConsentState(ConsentState.DENIED)
-            val dm3 = alixClient2.conversations.newConversation(caro.walletAddress)
+            val dm3 = alixClient2.conversations.newConversation(caroClient.inboxId)
             dm3.updateConsentState(ConsentState.DENIED)
             alixClient.conversations.syncAllConversations()
             Thread.sleep(2000)

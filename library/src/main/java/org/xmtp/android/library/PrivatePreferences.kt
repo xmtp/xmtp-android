@@ -77,10 +77,10 @@ data class ConsentRecord(
         }
 
         fun inboxId(
-            inboxId: String,
+            inboxId: InboxId,
             type: ConsentState = ConsentState.UNKNOWN,
         ): ConsentRecord {
-            return ConsentRecord(inboxId, EntryType.INBOX_ID, type)
+            return ConsentRecord(inboxId.value, EntryType.INBOX_ID, type)
         }
     }
 
@@ -163,11 +163,11 @@ data class PrivatePreferences(
         )
     }
 
-    suspend fun inboxIdState(inboxId: String): ConsentState {
+    suspend fun inboxIdState(inboxId: InboxId): ConsentState {
         return ConsentState.fromFfiConsentState(
             ffiClient.getConsentState(
                 FfiConsentEntityType.INBOX_ID,
-                inboxId,
+                inboxId.value,
             )
         )
     }

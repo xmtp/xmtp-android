@@ -41,11 +41,14 @@ data class ClientOptions(
     )
 }
 
+@JvmInline
+value class InboxId(val value: String)
+
 class Client(
     libXMTPClient: FfiXmtpClient,
     val dbPath: String,
     val installationId: String,
-    val inboxId: String,
+    val inboxId: InboxId,
     val environment: XMTPEnvironment,
 ) {
     val preferences: PrivatePreferences =
@@ -82,7 +85,7 @@ class Client(
         suspend fun getOrCreateInboxId(
             api: ClientOptions.Api,
             identity: Identity,
-        ): String {
+        ): InboxId {
             val rootIdentity = identity.ffiIdentifier
             var inboxId = getInboxIdForIdentifier(
                 api = connectToApiBackend(api),
@@ -91,7 +94,7 @@ class Client(
             if (inboxId.isNullOrBlank()) {
                 inboxId = generateInboxId(rootIdentity, 0.toULong())
             }
-            return inboxId
+            return InboxId(inboxId)
         }
 
         fun register(codec: ContentCodec<*>) {
@@ -113,7 +116,7 @@ class Client(
                 db = null,
                 encryptionKey = null,
                 accountIdentifier = identity.ffiIdentifier,
-                inboxId = inboxId,
+                inboxId = inboxId.value,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
                 historySyncUrl = null
@@ -123,11 +126,12 @@ class Client(
         }
 
         suspend fun inboxStatesForInboxIds(
-            inboxIds: List<String>,
+            inboxIds: List<InboxId>,
             api: ClientOptions.Api,
         ): List<InboxState> {
             return withFfiClient(api) { ffiClient ->
-                ffiClient.addressesFromInboxId(true, inboxIds).map { InboxState(it) }
+                ffiClient.addressesFromInboxId(true, inboxIds.map { it.value })
+                    .map { InboxState(it) }
             }
         }
 
@@ -149,7 +153,7 @@ class Client(
             identity: Identity,
             clientOptions: ClientOptions,
             signingKey: SigningKey? = null,
-            inboxId: String? = null,
+            inboxId: InboxId? = null,
         ): Client {
             val recoveredInboxId =
                 inboxId ?: getOrCreateInboxId(clientOptions.api, identity)
@@ -175,7 +179,7 @@ class Client(
                 ffiClient,
                 dbPath,
                 ffiClient.installationId().toHex(),
-                ffiClient.inboxId(),
+                InboxId(ffiClient.inboxId()),
                 clientOptions.api.env,
             )
         }
@@ -196,7 +200,7 @@ class Client(
         suspend fun build(
             identity: Identity,
             options: ClientOptions,
-            inboxId: String? = null,
+            inboxId: InboxId? = null,
         ): Client {
             return try {
                 initializeV3Client(identity, options, inboxId = inboxId)
@@ -207,11 +211,11 @@ class Client(
 
         private suspend fun createFfiClient(
             identity: Identity,
-            inboxId: String,
+            inboxId: InboxId,
             options: ClientOptions,
             appContext: Context,
         ): Pair<FfiXmtpClient, String> {
-            val alias = "xmtp-${options.api.env}-$inboxId"
+            val alias = "xmtp-${options.api.env}-${inboxId.value}"
 
             val mlsDbDirectory = options.dbDirectory
             val directoryFile = if (mlsDbDirectory != null) {
@@ -227,7 +231,7 @@ class Client(
                 db = dbPath,
                 encryptionKey = options.dbEncryptionKey,
                 accountIdentifier = identity.ffiIdentifier,
-                inboxId = inboxId,
+                inboxId = inboxId.value,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
                 historySyncUrl = options.historySyncUrl
@@ -270,7 +274,7 @@ class Client(
                 ffiClient,
                 dbPath,
                 ffiClient.installationId().toHex(),
-                ffiClient.inboxId(),
+                InboxId(ffiClient.inboxId()),
                 clientOptions.api.env,
             )
         }
@@ -337,8 +341,8 @@ class Client(
         }
     }
 
-    suspend fun inboxIdFromIdentity(identity: Identity): String? {
-        return ffiClient.findInboxId(identity.ffiIdentifier)
+    suspend fun inboxIdFromIdentity(identity: Identity): InboxId? {
+        return ffiClient.findInboxId(identity.ffiIdentifier)?.let { InboxId(it) }
     }
 
     fun deleteLocalDatabase() {
@@ -357,9 +361,10 @@ class Client(
 
     suspend fun inboxStatesForInboxIds(
         refreshFromNetwork: Boolean,
-        inboxIds: List<String>,
+        inboxIds: List<InboxId>,
     ): List<InboxState> {
-        return ffiClient.addressesFromInboxId(refreshFromNetwork, inboxIds).map { InboxState(it) }
+        return ffiClient.addressesFromInboxId(refreshFromNetwork, inboxIds.map { it.value })
+            .map { InboxState(it) }
     }
 
     suspend fun inboxState(refreshFromNetwork: Boolean): InboxState {
@@ -393,7 +398,7 @@ class Client(
         identityToAdd: Identity,
         allowReassignInboxId: Boolean = false,
     ): SignatureRequest {
-        val inboxId: String? =
+        val inboxId: InboxId? =
             if (!allowReassignInboxId) inboxIdFromIdentity(
                 Identity(
                     identityToAdd.kind,
@@ -401,7 +406,7 @@ class Client(
                 )
             ) else null
 
-        if (allowReassignInboxId || inboxId.isNullOrBlank()) {
+        if (allowReassignInboxId || inboxId == null || inboxId.value.isBlank()) {
             return SignatureRequest(ffiClient.addIdentity(identityToAdd.ffiIdentifier))
         } else {
             throw XMTPException("This wallet is already associated with inbox $inboxId")

@@ -190,7 +190,7 @@ class Dm(
     }
 
     suspend fun isCreator(): Boolean {
-        return metadata().creatorInboxId() == client.inboxId
+        return metadata().creatorInboxId() == client.inboxId.value
     }
 
     suspend fun members(): List<Member> {

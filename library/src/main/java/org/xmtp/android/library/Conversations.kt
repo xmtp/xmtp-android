@@ -82,9 +82,9 @@ data class Conversations(
         }
     }
 
-    fun findDmByInboxId(inboxId: String): Dm? {
+    fun findDmByInboxId(inboxId: InboxId): Dm? {
         return try {
-            Dm(client, ffiClient.dmConversation(inboxId))
+            Dm(client, ffiClient.dmConversation(inboxId.value))
         } catch (e: Exception) {
             null
         }
@@ -186,7 +186,7 @@ data class Conversations(
     }
 
     suspend fun newGroup(
-        inboxIds: List<String>,
+        inboxIds: List<InboxId>,
         permissions: GroupPermissionPreconfiguration = GroupPermissionPreconfiguration.ALL_MEMBERS,
         groupName: String = "",
         groupImageUrlSquare: String = "",
@@ -210,7 +210,7 @@ data class Conversations(
     }
 
     suspend fun newGroupCustomPermissions(
-        inboxIds: List<String>,
+        inboxIds: List<InboxId>,
         permissionPolicySet: PermissionPolicySet,
         groupName: String = "",
         groupImageUrlSquare: String = "",
@@ -234,7 +234,7 @@ data class Conversations(
     }
 
     private suspend fun newGroupInternal(
-        inboxIds: List<String>,
+        inboxIds: List<InboxId>,
         permissions: FfiGroupPermissionsOptions,
         groupName: String,
         groupImageUrlSquare: String,
@@ -244,7 +244,7 @@ data class Conversations(
     ): Group {
         val group =
             ffiConversations.createGroupWithInboxIds(
-                inboxIds,
+                inboxIds.map { it.value },
                 opts = FfiCreateGroupOptions(
                     permissions = permissions,
                     groupName = groupName,
@@ -298,7 +298,7 @@ data class Conversations(
     }
 
     suspend fun newConversation(
-        peerInboxId: String,
+        peerInboxId: InboxId,
         disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Conversation {
         val dm = findOrCreateDm(peerInboxId, disappearingMessageSettings)
@@ -306,11 +306,11 @@ data class Conversations(
     }
 
     suspend fun findOrCreateDm(
-        peerInboxId: String,
+        peerInboxId: InboxId,
         disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Dm {
         val dmConversation = ffiConversations.findOrCreateDmByInboxId(
-            peerInboxId.lowercase(),
+            peerInboxId.value,
             opts = FfiCreateDmOptions(
                 disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(

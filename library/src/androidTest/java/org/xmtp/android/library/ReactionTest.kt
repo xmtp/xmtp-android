@@ -74,7 +74,7 @@ class ReactionTest {
         val fixtures = fixtures()
         val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.boClient.inboxId)
         }
 
         runBlocking { aliceConversation.send(text = "hey alice 2 bob") }
@@ -112,7 +112,7 @@ class ReactionTest {
         val fixtures = fixtures()
         val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.boClient.inboxId)
         }
 
         runBlocking { aliceConversation.send(text = "hey alice 2 bob") }
@@ -121,7 +121,7 @@ class ReactionTest {
 
         val reaction = FfiReaction(
             reference = messageToReact.id,
-            referenceInboxId = aliceClient.inboxId,
+            referenceInboxId = aliceClient.inboxId.value,
             action = FfiReactionAction.ADDED,
             content = "U+1F603",
             schema = FfiReactionSchema.UNICODE,
@@ -162,7 +162,7 @@ class ReactionTest {
         val fixtures = fixtures()
         val aliceClient = fixtures.alixClient
         val aliceConversation =
-            aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.boClient.inboxId)
 
         // Send initial message
         aliceConversation.send(text = "hey alice 2 bob")
@@ -171,7 +171,7 @@ class ReactionTest {
         // Send V2 reaction
         val reactionV2 = FfiReaction(
             reference = messageToReact.id,
-            referenceInboxId = aliceClient.inboxId,
+            referenceInboxId = aliceClient.inboxId.value,
             action = FfiReactionAction.ADDED,
             content = "U+1F603",
             schema = FfiReactionSchema.UNICODE,

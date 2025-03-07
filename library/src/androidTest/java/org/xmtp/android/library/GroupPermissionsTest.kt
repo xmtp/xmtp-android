@@ -52,7 +52,7 @@ class GroupPermissionsTest {
 
     @Test
     fun testGroupCreatedWithCorrectAdminList() {
-        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
+        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
         runBlocking { alixClient.conversations.sync() }
         val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
 
@@ -79,8 +79,8 @@ class GroupPermissionsTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 ),
                 GroupPermissionPreconfiguration.ADMIN_ONLY
             )
@@ -181,8 +181,8 @@ class GroupPermissionsTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 ),
                 GroupPermissionPreconfiguration.ADMIN_ONLY
             )
@@ -230,8 +230,8 @@ class GroupPermissionsTest {
         val group = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 ),
                 GroupPermissionPreconfiguration.ADMIN_ONLY
             )
@@ -287,8 +287,8 @@ class GroupPermissionsTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 ),
                 GroupPermissionPreconfiguration.ALL_MEMBERS
             )
@@ -326,8 +326,8 @@ class GroupPermissionsTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 ),
                 GroupPermissionPreconfiguration.ADMIN_ONLY
             )

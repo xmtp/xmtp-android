@@ -20,7 +20,7 @@ class ReadReceiptTest {
         val fixtures = fixtures()
         val alixClient = fixtures.alixClient
         val alixConversation = runBlocking {
-            alixClient.conversations.newConversation(fixtures.bo.walletAddress)
+            alixClient.conversations.newConversation(fixtures.boClient.inboxId)
         }
 
         runBlocking { alixConversation.send(text = "hey alice 2 bob") }

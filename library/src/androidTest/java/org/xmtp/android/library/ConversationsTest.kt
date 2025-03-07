@@ -59,8 +59,8 @@ class ConversationsTest {
     @Test
     fun testsCanFindConversationByTopic() {
         val group =
-            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
-        val dm = runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+            runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
+        val dm = runBlocking { boClient.conversations.findOrCreateDm(caroClient.inboxId) }
 
         val sameDm = runBlocking { boClient.conversations.findConversationByTopic(dm.topic) }
         val sameGroup = runBlocking { boClient.conversations.findConversationByTopic(group.topic) }
@@ -70,8 +70,8 @@ class ConversationsTest {
 
     @Test
     fun testsCanListConversations() {
-        runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
-        runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+        runBlocking { boClient.conversations.findOrCreateDm(caroClient.inboxId) }
+        runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
         assertEquals(runBlocking { boClient.conversations.list().size }, 2)
         assertEquals(runBlocking { boClient.conversations.listDms().size }, 1)
         assertEquals(runBlocking { boClient.conversations.listGroups().size }, 1)
@@ -86,9 +86,9 @@ class ConversationsTest {
 
     @Test
     fun testsCanListConversationsFiltered() {
-        runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+        runBlocking { boClient.conversations.findOrCreateDm(caroClient.inboxId) }
         val group =
-            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+            runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
         assertEquals(runBlocking { boClient.conversations.list().size }, 2)
         assertEquals(
             runBlocking { boClient.conversations.list(consentStates = listOf(ConsentState.ALLOWED)).size },
@@ -119,11 +119,11 @@ class ConversationsTest {
 
     @Test
     fun testCanListConversationsOrder() {
-        val dm = runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+        val dm = runBlocking { boClient.conversations.findOrCreateDm(caroClient.inboxId) }
         val group1 =
-            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+            runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
         val group2 =
-            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+            runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
         val dmMessage = runBlocking { dm.send("Howdy") }
         val groupMessage = runBlocking { group2.send("Howdy") }
         runBlocking { boClient.conversations.syncAllConversations() }
@@ -138,9 +138,9 @@ class ConversationsTest {
 
     @Test
     fun testsCanSyncAllConversationsFiltered() {
-        runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+        runBlocking { boClient.conversations.findOrCreateDm(caroClient.inboxId) }
         val group =
-            runBlocking { boClient.conversations.newGroup(listOf(caro.walletAddress)) }
+            runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
         assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 2)
         assert(
             runBlocking {
@@ -195,9 +195,9 @@ class ConversationsTest {
     @Test
     fun testCanStreamAllMessages() {
         val group =
-            runBlocking { caroClient.conversations.newGroup(listOf(bo.walletAddress)) }
+            runBlocking { caroClient.conversations.newGroup(listOf(boClient.inboxId)) }
         val conversation =
-            runBlocking { boClient.conversations.findOrCreateDm(caro.walletAddress) }
+            runBlocking { boClient.conversations.findOrCreateDm(caroClient.inboxId) }
         runBlocking { boClient.conversations.sync() }
 
         val allMessages = mutableListOf<Message>()
@@ -237,9 +237,9 @@ class ConversationsTest {
         Thread.sleep(1000)
 
         runBlocking {
-            caroClient.conversations.newGroup(listOf(bo.walletAddress))
+            caroClient.conversations.newGroup(listOf(boClient.inboxId))
             Thread.sleep(1000)
-            boClient.conversations.findOrCreateDm(caro.walletAddress)
+            boClient.conversations.findOrCreateDm(caroClient.inboxId)
         }
 
         Thread.sleep(2000)
