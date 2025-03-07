@@ -40,8 +40,7 @@ data class ClientOptions(
     )
 }
 
-@JvmInline
-value class InboxId(val value: String)
+typealias InboxId = String
 
 class Client(
     libXMTPClient: FfiXmtpClient,
@@ -93,7 +92,7 @@ class Client(
             if (inboxId.isNullOrBlank()) {
                 inboxId = generateInboxId(rootIdentity, 0.toULong())
             }
-            return InboxId(inboxId)
+            return inboxId
         }
 
         fun register(codec: ContentCodec<*>) {
@@ -115,7 +114,7 @@ class Client(
                 db = null,
                 encryptionKey = null,
                 accountIdentifier = publicIdentity.ffiPrivate,
-                inboxId = inboxId.value,
+                inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
                 historySyncUrl = null
@@ -129,7 +128,7 @@ class Client(
             api: ClientOptions.Api,
         ): List<InboxState> {
             return withFfiClient(api) { ffiClient ->
-                ffiClient.addressesFromInboxId(true, inboxIds.map { it.value })
+                ffiClient.addressesFromInboxId(true, inboxIds)
                     .map { InboxState(it) }
             }
         }
@@ -178,7 +177,7 @@ class Client(
                 ffiClient,
                 dbPath,
                 ffiClient.installationId().toHex(),
-                InboxId(ffiClient.inboxId()),
+                ffiClient.inboxId(),
                 clientOptions.api.env,
             )
         }
@@ -214,7 +213,7 @@ class Client(
             options: ClientOptions,
             appContext: Context,
         ): Pair<FfiXmtpClient, String> {
-            val alias = "xmtp-${options.api.env}-${inboxId.value}"
+            val alias = "xmtp-${options.api.env}-$inboxId"
 
             val mlsDbDirectory = options.dbDirectory
             val directoryFile = if (mlsDbDirectory != null) {
@@ -230,7 +229,7 @@ class Client(
                 db = dbPath,
                 encryptionKey = options.dbEncryptionKey,
                 accountIdentifier = publicIdentity.ffiPrivate,
-                inboxId = inboxId.value,
+                inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
                 historySyncUrl = options.historySyncUrl
@@ -273,7 +272,7 @@ class Client(
                 ffiClient,
                 dbPath,
                 ffiClient.installationId().toHex(),
-                InboxId(ffiClient.inboxId()),
+                ffiClient.inboxId(),
                 clientOptions.api.env,
             )
         }
@@ -292,7 +291,7 @@ class Client(
         ffiApplySignatureRequest(signatureRequest)
     }
 
-    @DelicateApi("This function is delicate and should be used with caution. Adding a wallet already associated with an inboxId will cause the wallet to lose access to that inbox. See: inboxIdFromAddress(address)")
+    @DelicateApi("This function is delicate and should be used with caution. Adding a wallet already associated with an inboxId will cause the wallet to lose access to that inbox. See: inboxIdFromIdentity(publicIdentity)")
     suspend fun addAccount(newAccount: SigningKey, allowReassignInboxId: Boolean = false) {
         val signatureRequest = ffiAddWallet(newAccount.publicIdentity, allowReassignInboxId)
         handleSignature(signatureRequest, newAccount)
@@ -341,7 +340,7 @@ class Client(
     }
 
     suspend fun inboxIdFromIdentity(publicIdentity: PublicIdentity): InboxId? {
-        return ffiClient.findInboxId(publicIdentity.ffiPrivate)?.let { InboxId(it) }
+        return ffiClient.findInboxId(publicIdentity.ffiPrivate)
     }
 
     fun deleteLocalDatabase() {
@@ -362,7 +361,7 @@ class Client(
         refreshFromNetwork: Boolean,
         inboxIds: List<InboxId>,
     ): List<InboxState> {
-        return ffiClient.addressesFromInboxId(refreshFromNetwork, inboxIds.map { it.value })
+        return ffiClient.addressesFromInboxId(refreshFromNetwork, inboxIds)
             .map { InboxState(it) }
     }
 
@@ -405,7 +404,7 @@ class Client(
                 )
             ) else null
 
-        if (allowReassignInboxId || inboxId == null || inboxId.value.isBlank()) {
+        if (allowReassignInboxId || inboxId.isNullOrBlank()) {
             return SignatureRequest(ffiClient.addIdentity(publicIdentityToAdd.ffiPrivate))
         } else {
             throw XMTPException("This wallet is already associated with inbox $inboxId")

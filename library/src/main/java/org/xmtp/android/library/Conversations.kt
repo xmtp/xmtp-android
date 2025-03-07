@@ -84,7 +84,7 @@ data class Conversations(
 
     fun findDmByInboxId(inboxId: InboxId): Dm? {
         return try {
-            Dm(client, ffiClient.dmConversation(inboxId.value))
+            Dm(client, ffiClient.dmConversation(inboxId))
         } catch (e: Exception) {
             null
         }
@@ -242,9 +242,10 @@ data class Conversations(
         permissionsPolicySet: FfiPermissionPolicySet?,
         messageDisappearingSettings: FfiMessageDisappearingSettings?,
     ): Group {
+        validateInboxIds(inboxIds)
         val group =
             ffiConversations.createGroupWithInboxIds(
-                inboxIds.map { it.value },
+                inboxIds,
                 opts = FfiCreateGroupOptions(
                     permissions = permissions,
                     groupName = groupName,
@@ -313,11 +314,12 @@ data class Conversations(
         peerInboxId: InboxId,
         disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Dm {
+        validateInboxId(peerInboxId)
         if (peerInboxId == client.inboxId) {
             throw XMTPException("Recipient is sender")
         }
         val dmConversation = ffiConversations.findOrCreateDmByInboxId(
-            peerInboxId.value,
+            peerInboxId,
             opts = FfiCreateDmOptions(
                 disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(

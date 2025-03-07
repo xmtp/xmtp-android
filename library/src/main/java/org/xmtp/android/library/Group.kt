@@ -215,7 +215,7 @@ class Group(
     }
 
     fun addedByInboxId(): InboxId {
-        return InboxId(libXMTPGroup.addedByInboxId())
+        return libXMTPGroup.addedByInboxId()
     }
 
     fun permissionPolicySet(): PermissionPolicySet {
@@ -223,11 +223,11 @@ class Group(
     }
 
     suspend fun creatorInboxId(): InboxId {
-        return InboxId(metadata().creatorInboxId())
+        return metadata().creatorInboxId()
     }
 
     suspend fun isCreator(): Boolean {
-        return metadata().creatorInboxId() == client.inboxId.value
+        return metadata().creatorInboxId() == client.inboxId
     }
 
     suspend fun addMembersByIdentity(identities: List<PublicIdentity>) {
@@ -247,16 +247,18 @@ class Group(
     }
 
     suspend fun addMembers(inboxIds: List<InboxId>) {
+        validateInboxIds(inboxIds)
         try {
-            libXMTPGroup.addMembersByInboxId(inboxIds.map { it.value })
+            libXMTPGroup.addMembersByInboxId(inboxIds)
         } catch (e: Exception) {
             throw XMTPException("Unable to add member", e)
         }
     }
 
     suspend fun removeMembers(inboxIds: List<InboxId>) {
+        validateInboxIds(inboxIds)
         try {
-            libXMTPGroup.removeMembersByInboxId(inboxIds.map { it.value })
+            libXMTPGroup.removeMembersByInboxId(inboxIds)
         } catch (e: Exception) {
             throw XMTPException("Unable to remove member", e)
         }
@@ -378,16 +380,16 @@ class Group(
     }
 
     fun isAdmin(inboxId: InboxId): Boolean {
-        return libXMTPGroup.isAdmin(inboxId.value)
+        return libXMTPGroup.isAdmin(inboxId)
     }
 
     fun isSuperAdmin(inboxId: InboxId): Boolean {
-        return libXMTPGroup.isSuperAdmin(inboxId.value)
+        return libXMTPGroup.isSuperAdmin(inboxId)
     }
 
     suspend fun addAdmin(inboxId: InboxId) {
         try {
-            libXMTPGroup.addAdmin(inboxId.value)
+            libXMTPGroup.addAdmin(inboxId)
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to add admin", e)
         }
@@ -395,7 +397,7 @@ class Group(
 
     suspend fun removeAdmin(inboxId: InboxId) {
         try {
-            libXMTPGroup.removeAdmin(inboxId.value)
+            libXMTPGroup.removeAdmin(inboxId)
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to remove admin", e)
         }
@@ -403,7 +405,7 @@ class Group(
 
     suspend fun addSuperAdmin(inboxId: InboxId) {
         try {
-            libXMTPGroup.addSuperAdmin(inboxId.value)
+            libXMTPGroup.addSuperAdmin(inboxId)
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to add super admin", e)
         }
@@ -411,18 +413,18 @@ class Group(
 
     suspend fun removeSuperAdmin(inboxId: InboxId) {
         try {
-            libXMTPGroup.removeSuperAdmin(inboxId.value)
+            libXMTPGroup.removeSuperAdmin(inboxId)
         } catch (e: Exception) {
             throw XMTPException("Permission denied: Unable to remove super admin", e)
         }
     }
 
     fun listAdmins(): List<InboxId> {
-        return libXMTPGroup.adminList().map { InboxId(it) }
+        return libXMTPGroup.adminList()
     }
 
     fun listSuperAdmins(): List<InboxId> {
-        return libXMTPGroup.superAdminList().map { InboxId(it) }
+        return libXMTPGroup.superAdminList()
     }
 
     fun streamMessages(): Flow<DecodedMessage> = callbackFlow {

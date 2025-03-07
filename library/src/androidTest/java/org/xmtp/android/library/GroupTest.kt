@@ -228,19 +228,19 @@ class GroupTest {
             )
         }
         assertEquals(
-            runBlocking { group.members().map { it.inboxId.value }.sorted() },
+            runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
-                caroClient.inboxId.value,
-                alixClient.inboxId.value,
-                boClient.inboxId.value
+                caroClient.inboxId,
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
 
         assertEquals(
-            runBlocking { group.peerInboxIds().map { it.value }.sorted() },
+            runBlocking { group.peerInboxIds().map { it }.sorted() },
             listOf(
-                caroClient.inboxId.value,
-                alixClient.inboxId.value,
+                caroClient.inboxId,
+                alixClient.inboxId,
             ).sorted()
         )
     }
@@ -275,11 +275,11 @@ class GroupTest {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
         runBlocking { group.addMembers(listOf(caroClient.inboxId)) }
         assertEquals(
-            runBlocking { group.members().map { it.inboxId.value }.sorted() },
+            runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
-                caroClient.inboxId.value,
-                alixClient.inboxId.value,
-                boClient.inboxId.value
+                caroClient.inboxId,
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
     }
@@ -296,10 +296,10 @@ class GroupTest {
         }
         runBlocking { group.removeMembers(listOf(caroClient.inboxId)) }
         assertEquals(
-            runBlocking { group.members().map { it.inboxId.value }.sorted() },
+            runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
-                alixClient.inboxId.value,
-                boClient.inboxId.value
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
     }
@@ -328,10 +328,10 @@ class GroupTest {
             boGroup.sync()
         }
         assertEquals(
-            runBlocking { boGroup.members().map { it.inboxId.value }.sorted() },
+            runBlocking { boGroup.members().map { it.inboxId }.sorted() },
             listOf(
-                alixClient.inboxId.value,
-                boClient.inboxId.value
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
     }
@@ -349,11 +349,11 @@ class GroupTest {
             )
         }
         assertEquals(
-            runBlocking { group.members().map { it.inboxId.value }.sorted() },
+            runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
-                caroClient.inboxId.value,
-                alixClient.inboxId.value,
-                boClient.inboxId.value
+                caroClient.inboxId,
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
     }
@@ -379,10 +379,10 @@ class GroupTest {
             )
         }
         assertEquals(
-            runBlocking { group.members().map { it.inboxId.value }.sorted() },
+            runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
-                alixClient.inboxId.value,
-                boClient.inboxId.value
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
     }
@@ -874,7 +874,7 @@ class GroupTest {
             boClient.preferences.setConsentState(
                 listOf(
                     ConsentRecord(
-                        alixClient.inboxId.value,
+                        alixClient.inboxId,
                         EntryType.INBOX_ID,
                         ConsentState.ALLOWED
                     )
@@ -891,7 +891,7 @@ class GroupTest {
             boClient.preferences.setConsentState(
                 listOf(
                     ConsentRecord(
-                        alixClient.inboxId.value,
+                        alixClient.inboxId,
                         EntryType.INBOX_ID,
                         ConsentState.DENIED
                     )
