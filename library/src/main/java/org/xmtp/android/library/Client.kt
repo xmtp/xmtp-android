@@ -291,15 +291,15 @@ class Client(
         ffiApplySignatureRequest(signatureRequest)
     }
 
-    @DelicateApi("This function is delicate and should be used with caution. Adding a wallet already associated with an inboxId will cause the wallet to lose access to that inbox. See: inboxIdFromIdentity(publicIdentity)")
+    @DelicateApi("This function is delicate and should be used with caution. Adding a identity already associated with an inboxId will cause the identity to lose access to that inbox. See: inboxIdFromIdentity(publicIdentity)")
     suspend fun addAccount(newAccount: SigningKey, allowReassignInboxId: Boolean = false) {
-        val signatureRequest = ffiAddWallet(newAccount.publicIdentity, allowReassignInboxId)
+        val signatureRequest = ffiAddIdentity(newAccount.publicIdentity, allowReassignInboxId)
         handleSignature(signatureRequest, newAccount)
         ffiApplySignatureRequest(signatureRequest)
     }
 
     suspend fun removeAccount(recoverAccount: SigningKey, publicIdentityToRemove: PublicIdentity) {
-        val signatureRequest = ffiRevokeWallet(publicIdentityToRemove)
+        val signatureRequest = ffiRevokeIdentity(publicIdentityToRemove)
         handleSignature(signatureRequest, recoverAccount)
         ffiApplySignatureRequest(signatureRequest)
     }
@@ -386,13 +386,13 @@ class Client(
         )
     }
 
-    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `removeWallet()` instead")
-    suspend fun ffiRevokeWallet(publicIdentityToRemove: PublicIdentity): SignatureRequest {
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `removeAccount()` instead")
+    suspend fun ffiRevokeIdentity(publicIdentityToRemove: PublicIdentity): SignatureRequest {
         return SignatureRequest(ffiClient.revokeIdentity(publicIdentityToRemove.ffiPrivate))
     }
 
-    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the create and register flow independently otherwise use `addWallet()` instead")
-    suspend fun ffiAddWallet(
+    @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the create and register flow independently otherwise use `addAccount()` instead")
+    suspend fun ffiAddIdentity(
         publicIdentityToAdd: PublicIdentity,
         allowReassignInboxId: Boolean = false,
     ): SignatureRequest {
@@ -407,7 +407,7 @@ class Client(
         if (allowReassignInboxId || inboxId.isNullOrBlank()) {
             return SignatureRequest(ffiClient.addIdentity(publicIdentityToAdd.ffiPrivate))
         } else {
-            throw XMTPException("This wallet is already associated with inbox $inboxId")
+            throw XMTPException("This identity is already associated with inbox $inboxId")
         }
     }
 
