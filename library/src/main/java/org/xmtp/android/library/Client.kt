@@ -292,7 +292,7 @@ class Client(
         ffiApplySignatureRequest(signatureRequest)
     }
 
-    @DelicateApi("This function is delicate and should be used with caution. Adding a wallet already associated with an inboxId will cause the wallet to lose access to that inbox. See: inboxIdFromAddress(address)")
+    @DelicateApi("This function is delicate and should be used with caution. Adding a wallet already associated with an inboxId will cause the wallet to lose access to that inbox. See: inboxIdFromIdentity(publicIdentity)")
     suspend fun addAccount(newAccount: SigningKey, allowReassignInboxId: Boolean = false) {
         val signatureRequest = ffiAddWallet(newAccount.publicIdentity, allowReassignInboxId)
         handleSignature(signatureRequest, newAccount)
