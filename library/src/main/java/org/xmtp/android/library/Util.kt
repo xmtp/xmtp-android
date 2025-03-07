@@ -23,5 +23,5 @@ fun validateInboxId(inboxId: InboxId) {
 }
 
 fun validateInboxIds(inboxIds: List<InboxId>) {
-    inboxIds.forEach { validateInboxId(it) }
+    inboxIds.iterator().forEach { validateInboxId(it) }
 }
