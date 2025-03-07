@@ -172,7 +172,7 @@ data class Conversations(
     ): Group {
         val group =
             ffiConversations.createGroup(
-                identities.map { it.ffiPublicIdentifier },
+                identities.map { it.ffiIdentifier },
                 opts = FfiCreateGroupOptions(
                     permissions = permissions,
                     groupName = groupName,
@@ -284,7 +284,7 @@ data class Conversations(
         disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Dm {
         val dmConversation = ffiConversations.findOrCreateDm(
-            peerIdentity.ffiPublicIdentifier,
+            peerIdentity.ffiIdentifier,
             opts = FfiCreateDmOptions(
                 disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(

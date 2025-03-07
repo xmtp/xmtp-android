@@ -39,7 +39,7 @@ class ClientTest {
 
         val clientIdentity = fakeWallet.identity
         runBlocking {
-            client.canMessage(listOf(clientIdentity))[clientIdentity]?.let { assert(it) }
+            client.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let { assert(it) }
         }
 
         val fromBundle = runBlocking {
@@ -48,7 +48,7 @@ class ClientTest {
         assertEquals(client.inboxId, fromBundle.inboxId)
 
         runBlocking {
-            fromBundle.canMessage(listOf(clientIdentity))[clientIdentity]?.let { assert(it) }
+            fromBundle.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let { assert(it) }
         }
     }
 
@@ -72,7 +72,7 @@ class ClientTest {
             )
         }
         runBlocking {
-            client.canMessage(listOf(clientIdentity))[clientIdentity]?.let { assert(it) }
+            client.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let { assert(it) }
         }
         assert(client.installationId.isNotEmpty())
         assertEquals(inboxId, client.inboxId)
@@ -106,7 +106,7 @@ class ClientTest {
         )
 
         expectedResults.forEach { (id, expected) ->
-            assertEquals(expected, canMessageList[id])
+            assertEquals(expected, canMessageList[id.identifier])
         }
     }
 
@@ -121,12 +121,12 @@ class ClientTest {
             )
         }
         assertEquals(
-            states.first().recoveryIdentity,
-            fixtures.boAccount.identity
+            states.first().recoveryIdentity.identifier,
+            fixtures.boAccount.identity.identifier
         )
         assertEquals(
-            states.last().recoveryIdentity,
-            fixtures.caroAccount.identity
+            states.last().recoveryIdentity.identifier,
+            fixtures.caroAccount.identity.identifier
         )
     }
 
@@ -199,7 +199,7 @@ class ClientTest {
         }
         val clientIdentity = fakeWallet.identity
         runBlocking {
-            client.canMessage(listOf(clientIdentity))[clientIdentity]?.let { assert(it) }
+            client.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let { assert(it) }
         }
     }
 
@@ -220,7 +220,7 @@ class ClientTest {
         }
         val clientIdentity = fakeWallet.identity
         runBlocking {
-            client.canMessage(listOf(clientIdentity))[clientIdentity]?.let { assert(it) }
+            client.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let { assert(it) }
         }
     }
 
@@ -451,12 +451,12 @@ class ClientTest {
             )
         }
         assertEquals(
-            states.first().recoveryIdentity,
-            Identity(IdentityKind.ETHEREUM, fixtures.bo.walletAddress)
+            states.first().recoveryIdentity.identifier,
+            fixtures.bo.walletAddress
         )
         assertEquals(
-            states.last().recoveryIdentity,
-            Identity(IdentityKind.ETHEREUM, fixtures.caro.walletAddress)
+            states.last().recoveryIdentity.identifier,
+            fixtures.caro.walletAddress
         )
     }
 
@@ -546,16 +546,16 @@ class ClientTest {
         assertEquals(state.installations.size, 1)
         assertEquals(state.identities.size, 3)
         assertEquals(
-            state.recoveryIdentity,
-            fixtures.alixAccount.identity
+            state.recoveryIdentity.identifier,
+            fixtures.alixAccount.identity.identifier
         )
         assertEquals(
-            state.identities,
+            state.identities.map { it.identifier }.sorted(),
             listOf(
-                alix2Wallet.identity,
-                alix3Wallet.identity,
-                Identity(IdentityKind.ETHEREUM, fixtures.alix.walletAddress)
-            )
+                alix2Wallet.identity.identifier,
+                alix3Wallet.identity.identifier,
+                fixtures.alix.walletAddress
+            ).sorted()
         )
     }
 
@@ -601,8 +601,8 @@ class ClientTest {
         var state = runBlocking { fixtures.alixClient.inboxState(true) }
         assertEquals(state.identities.size, 3)
         assertEquals(
-            state.recoveryIdentity,
-            fixtures.alixAccount.identity
+            state.recoveryIdentity.identifier,
+            fixtures.alixAccount.identity.identifier
         )
 
         runBlocking {
@@ -614,15 +614,15 @@ class ClientTest {
         state = runBlocking { fixtures.alixClient.inboxState(true) }
         assertEquals(state.identities.size, 2)
         assertEquals(
-            state.recoveryIdentity,
-            Identity(IdentityKind.ETHEREUM, fixtures.alix.walletAddress)
+            state.recoveryIdentity.identifier,
+            fixtures.alix.walletAddress
         )
         assertEquals(
-            state.identities,
+            state.identities.map { it.identifier }.sorted(),
             listOf(
-                Identity(IdentityKind.ETHEREUM, alix3Wallet.getPrivateKey().walletAddress),
-                fixtures.alixAccount.identity
-            )
+                alix3Wallet.getPrivateKey().walletAddress,
+                fixtures.alixAccount.identity.identifier
+            ).sorted()
         )
         assertEquals(state.installations.size, 1)
 
@@ -722,7 +722,7 @@ class ClientTest {
             }
         }
         runBlocking {
-            client.canMessage(listOf(fakeWallet.identity))[fakeWallet.identity]?.let { assert(it) }
+            client.canMessage(listOf(fakeWallet.identity))[fakeWallet.identity.identifier]?.let { assert(it) }
         }
         assert(client.installationId.isNotEmpty())
         assertEquals(inboxId, client.inboxId)

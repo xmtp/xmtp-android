@@ -97,4 +97,4 @@ fun PrivateKey.generate(): PrivateKey {
 }
 
 val PrivateKey.walletAddress: String
-    get() = publicKey.walletAddress
+    get() = publicKey.walletAddress.lowercase()

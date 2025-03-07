@@ -26,7 +26,7 @@ class AttachmentTest {
         val fixtures = fixtures()
         val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.boClient.inboxId)
         }
 
         runBlocking {

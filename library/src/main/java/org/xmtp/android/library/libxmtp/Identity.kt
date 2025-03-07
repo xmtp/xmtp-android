@@ -1,20 +1,20 @@
 package org.xmtp.android.library.libxmtp
 
-import uniffi.xmtpv3.FfiPublicIdentifier
-import uniffi.xmtpv3.FfiPublicIdentifierKind
+import uniffi.xmtpv3.FfiIdentifier
+import uniffi.xmtpv3.FfiIdentifierKind
 
 enum class IdentityKind {
     ETHEREUM, PASSKEY
 }
 
-class Identity(val ffiPublicIdentifier: FfiPublicIdentifier) {
+class Identity(val ffiIdentifier: FfiIdentifier) {
     constructor(
         kind: IdentityKind,
         identifier: String,
         relyingPartner: String? = null,
     ) :
             this(
-                ffiPublicIdentifier = FfiPublicIdentifier(
+                ffiIdentifier = FfiIdentifier(
                     identifier,
                     kind.toFfiPublicIdentifierKind(),
                     relyingPartner
@@ -22,25 +22,25 @@ class Identity(val ffiPublicIdentifier: FfiPublicIdentifier) {
             )
 
     val kind: IdentityKind
-        get() = ffiPublicIdentifier.identifierKind.toIdentityKind()
+        get() = ffiIdentifier.identifierKind.toIdentityKind()
 
     val identifier: String
-        get() = ffiPublicIdentifier.identifier
+        get() = ffiIdentifier.identifier
 
     val relyingPartner: String?
-        get() = ffiPublicIdentifier.relyingPartner
+        get() = ffiIdentifier.relyingPartner
 }
 
-fun IdentityKind.toFfiPublicIdentifierKind(): FfiPublicIdentifierKind {
+fun IdentityKind.toFfiPublicIdentifierKind(): FfiIdentifierKind {
     return when (this) {
-        IdentityKind.ETHEREUM -> FfiPublicIdentifierKind.ETHEREUM
-        IdentityKind.PASSKEY -> FfiPublicIdentifierKind.PASSKEY
+        IdentityKind.ETHEREUM -> FfiIdentifierKind.ETHEREUM
+        IdentityKind.PASSKEY -> FfiIdentifierKind.PASSKEY
     }
 }
 
-fun FfiPublicIdentifierKind.toIdentityKind(): IdentityKind {
+fun FfiIdentifierKind.toIdentityKind(): IdentityKind {
     return when (this) {
-        FfiPublicIdentifierKind.ETHEREUM -> IdentityKind.ETHEREUM
-        FfiPublicIdentifierKind.PASSKEY -> IdentityKind.PASSKEY
+        FfiIdentifierKind.ETHEREUM -> IdentityKind.ETHEREUM
+        FfiIdentifierKind.PASSKEY -> IdentityKind.PASSKEY
     }
 }

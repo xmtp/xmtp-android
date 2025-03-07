@@ -232,7 +232,7 @@ class Group(
 
     suspend fun addMembersByIdentity(identities: List<Identity>) {
         try {
-            libXMTPGroup.addMembers(identities.map { it.ffiPublicIdentifier })
+            libXMTPGroup.addMembers(identities.map { it.ffiIdentifier })
         } catch (e: Exception) {
             throw XMTPException("Unable to add member", e)
         }
@@ -240,7 +240,7 @@ class Group(
 
     suspend fun removeMembersByIdentity(identities: List<Identity>) {
         try {
-            libXMTPGroup.removeMembers(identities.map { it.ffiPublicIdentifier })
+            libXMTPGroup.removeMembers(identities.map { it.ffiIdentifier })
         } catch (e: Exception) {
             throw XMTPException("Unable to remove member", e)
         }

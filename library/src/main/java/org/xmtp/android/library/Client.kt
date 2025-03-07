@@ -83,7 +83,7 @@ class Client(
             api: ClientOptions.Api,
             identity: Identity,
         ): String {
-            val rootIdentity = identity.ffiPublicIdentifier
+            val rootIdentity = identity.ffiIdentifier
             var inboxId = getInboxIdForIdentifier(
                 api = connectToApiBackend(api),
                 accountIdentifier = rootIdentity
@@ -112,7 +112,7 @@ class Client(
                 api = connectToApiBackend(api),
                 db = null,
                 encryptionKey = null,
-                accountIdentifier = identity.ffiPublicIdentifier,
+                accountIdentifier = identity.ffiIdentifier,
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
@@ -134,13 +134,13 @@ class Client(
         suspend fun canMessage(
             identities: List<Identity>,
             api: ClientOptions.Api,
-        ): Map<Identity, Boolean> {
+        ): Map<String, Boolean> {
             return withFfiClient(api) { ffiClient ->
-                val ffiIdentifiers = identities.map { it.ffiPublicIdentifier }
+                val ffiIdentifiers = identities.map { it.ffiIdentifier }
                 val result = ffiClient.canMessage(ffiIdentifiers)
 
                 result.mapKeys { (ffiIdentifier, _) ->
-                    Identity(ffiIdentifier)
+                    ffiIdentifier.identifier
                 }
             }
         }
@@ -226,7 +226,7 @@ class Client(
                 api = connectToApiBackend(options.api),
                 db = dbPath,
                 encryptionKey = options.dbEncryptionKey,
-                accountIdentifier = identity.ffiPublicIdentifier,
+                accountIdentifier = identity.ffiIdentifier,
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
@@ -328,17 +328,17 @@ class Client(
         }
     }
 
-    suspend fun canMessage(identities: List<Identity>): Map<Identity, Boolean> {
-        val ffiIdentifiers = identities.map { it.ffiPublicIdentifier }
+    suspend fun canMessage(identities: List<Identity>): Map<String, Boolean> {
+        val ffiIdentifiers = identities.map { it.ffiIdentifier }
         val result = ffiClient.canMessage(ffiIdentifiers)
 
         return result.mapKeys { (ffiIdentifier, _) ->
-            Identity(ffiIdentifier)
+            ffiIdentifier.identifier
         }
     }
 
     suspend fun inboxIdFromIdentity(identity: Identity): String? {
-        return ffiClient.findInboxId(identity.ffiPublicIdentifier)
+        return ffiClient.findInboxId(identity.ffiIdentifier)
     }
 
     fun deleteLocalDatabase() {
@@ -385,7 +385,7 @@ class Client(
 
     @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the signature flow independently otherwise use `removeWallet()` instead")
     suspend fun ffiRevokeWallet(identityToRemove: Identity): SignatureRequest {
-        return SignatureRequest(ffiClient.revokeIdentity(identityToRemove.ffiPublicIdentifier))
+        return SignatureRequest(ffiClient.revokeIdentity(identityToRemove.ffiIdentifier))
     }
 
     @DelicateApi("This function is delicate and should be used with caution. Should only be used if trying to manage the create and register flow independently otherwise use `addWallet()` instead")
@@ -402,7 +402,7 @@ class Client(
             ) else null
 
         if (allowReassignInboxId || inboxId.isNullOrBlank()) {
-            return SignatureRequest(ffiClient.addIdentity(identityToAdd.ffiPublicIdentifier))
+            return SignatureRequest(ffiClient.addIdentity(identityToAdd.ffiIdentifier))
         } else {
             throw XMTPException("This wallet is already associated with inbox $inboxId")
         }
