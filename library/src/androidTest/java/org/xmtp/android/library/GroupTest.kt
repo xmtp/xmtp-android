@@ -13,7 +13,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.Conversations.ConversationType
+import org.xmtp.android.library.Conversations.ConversationFilterType
 import org.xmtp.android.library.codecs.ContentTypeGroupUpdated
 import org.xmtp.android.library.codecs.ContentTypeReaction
 import org.xmtp.android.library.codecs.GroupUpdatedCodec
@@ -24,8 +24,8 @@ import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import org.xmtp.android.library.libxmtp.IdentityKind
-import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.DecodedMessage
+import org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKey
@@ -748,11 +748,11 @@ class GroupTest {
 
         runBlocking { alixClient.conversations.sync() }
 
-        val allMessages = mutableListOf<Message>()
+        val allMessages = mutableListOf<DecodedMessage>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                alixClient.conversations.streamAllMessages(type = ConversationType.GROUPS)
+                alixClient.conversations.streamAllMessages(type = ConversationFilterType.GROUPS)
                     .collect { message ->
                         allMessages.add(message)
                     }
@@ -785,7 +785,7 @@ class GroupTest {
 
     @Test
     fun testCanStreamGroups() = kotlinx.coroutines.test.runTest {
-        boClient.conversations.stream(type = ConversationType.GROUPS).test {
+        boClient.conversations.stream(type = ConversationFilterType.GROUPS).test {
             val group =
                 alixClient.conversations.newGroup(listOf(boClient.inboxId))
             assertEquals(group.id, awaitItem().id)

@@ -16,11 +16,11 @@ import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageWithReactions
 import java.util.Date
 
-class Message private constructor(
+class DecodedMessage private constructor(
     private val libXMTPMessage: FfiMessage,
     val encodedContent: Content.EncodedContent,
     private val decodedContent: Any?,
-    val childMessages: List<Message>? = null
+    val childMessages: List<DecodedMessage>? = null
 ) {
     enum class MessageDeliveryStatus {
         ALL, PUBLISHED, UNPUBLISHED, FAILED
@@ -68,7 +68,7 @@ class Message private constructor(
         }
 
     companion object {
-        fun create(libXMTPMessage: FfiMessage): Message? {
+        fun create(libXMTPMessage: FfiMessage): DecodedMessage? {
             return try {
                 val encodedContent = EncodedContent.parseFrom(libXMTPMessage.content)
                 Log.d("XMTP Message Create", "encodedContent type:" + encodedContent.type.id)
@@ -77,13 +77,13 @@ class Message private constructor(
                 }
                 // Decode the content once during creation
                 val decodedContent = encodedContent.decoded<Any>()
-                Message(libXMTPMessage, encodedContent, decodedContent)
+                DecodedMessage(libXMTPMessage, encodedContent, decodedContent)
             } catch (e: Exception) {
                 null // Return null if decoding fails
             }
         }
 
-        fun create(libXMTPMessageWithReactions: FfiMessageWithReactions): Message? {
+        fun create(libXMTPMessageWithReactions: FfiMessageWithReactions): DecodedMessage? {
             return try {
                 val encodedContent = EncodedContent.parseFrom(libXMTPMessageWithReactions.message.content)
                 if (encodedContent.type == ContentTypeGroupUpdated && libXMTPMessageWithReactions.message.kind != FfiConversationMessageKind.MEMBERSHIP_CHANGE) {
@@ -95,7 +95,7 @@ class Message private constructor(
                 // Convert reactions to Message objects
                 val reactionMessages = libXMTPMessageWithReactions.reactions.mapNotNull { create(it) }
 
-                Message(
+                DecodedMessage(
                     libXMTPMessageWithReactions.message,
                     encodedContent,
                     decodedContent,
