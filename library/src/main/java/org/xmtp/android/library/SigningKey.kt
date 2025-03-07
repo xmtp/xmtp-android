@@ -1,10 +1,10 @@
 package org.xmtp.android.library
 
-import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.proto.message.contents.SignatureOuterClass
 
 interface SigningKey {
-    val identity: Identity
+    val publicIdentity: PublicIdentity
 
     // The wallet type if Smart Contract Wallet this should be type SCW.
     val type: SignerType

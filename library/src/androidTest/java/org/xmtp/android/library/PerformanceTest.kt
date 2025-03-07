@@ -10,11 +10,8 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import org.xmtp.android.library.libxmtp.Identity
-import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.walletAddress
 import java.security.SecureRandom
 import java.util.Date
 import kotlin.system.measureTimeMillis
@@ -131,7 +128,7 @@ class PerformanceTest {
         val start2 = Date()
         val buildClient1 = runBlocking {
             Client.build(
-                fakeWallet.identity,
+                fakeWallet.publicIdentity,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.DEV, true),
                     appContext = context,
@@ -146,7 +143,7 @@ class PerformanceTest {
         val start3 = Date()
         val buildClient2 = runBlocking {
             Client.build(
-                fakeWallet.identity,
+                fakeWallet.publicIdentity,
                 options = ClientOptions(
                     ClientOptions.Api(XMTPEnvironment.DEV, true),
                     appContext = context,

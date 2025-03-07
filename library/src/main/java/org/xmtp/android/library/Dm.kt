@@ -38,8 +38,8 @@ class Dm(
     val createdAt: Date
         get() = Date(libXMTPGroup.createdAtNs() / 1_000_000)
 
-    val peerInboxId: String
-        get() = libXMTPGroup.dmPeerInboxId()
+    val peerInboxId: InboxId
+        get() = InboxId(libXMTPGroup.dmPeerInboxId())
 
     val disappearingMessageSettings: DisappearingMessageSettings?
         get() = runCatching {
@@ -185,8 +185,8 @@ class Dm(
         return Message.create(message)
     }
 
-    suspend fun creatorInboxId(): String {
-        return metadata().creatorInboxId()
+    suspend fun creatorInboxId(): InboxId {
+        return InboxId(metadata().creatorInboxId())
     }
 
     suspend fun isCreator(): Boolean {

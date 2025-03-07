@@ -6,12 +6,12 @@ import uniffi.xmtpv3.FfiInboxState
 class InboxState(private val ffiInboxState: FfiInboxState) {
     val inboxId: InboxId
         get() = InboxId(ffiInboxState.inboxId)
-    val identities: List<Identity>
-        get() = ffiInboxState.accountIdentities.map { Identity(it) }
+    val identities: List<PublicIdentity>
+        get() = ffiInboxState.accountIdentities.map { PublicIdentity(it) }
 
     val installations: List<Installation>
         get() = ffiInboxState.installations.map { Installation(it) }
 
-    val recoveryIdentity: Identity
-        get() = Identity(ffiInboxState.recoveryIdentity)
+    val recoveryPublicIdentity: PublicIdentity
+        get() = PublicIdentity(ffiInboxState.recoveryIdentity)
 }

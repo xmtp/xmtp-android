@@ -11,11 +11,9 @@ import org.junit.Assert.assertEquals
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.codecs.id
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.GenericException
 
 @RunWith(AndroidJUnit4::class)
@@ -80,7 +78,7 @@ class SmartContractWalletTest {
     fun testCanBuildASCW() {
         val davonSCWClient2 = runBlocking {
             Client.build(
-                identity = davonSCW.identity,
+                publicIdentity = davonSCW.publicIdentity,
                 options = options
             )
         }
@@ -99,25 +97,25 @@ class SmartContractWalletTest {
         var state = runBlocking { davonSCWClient.inboxState(true) }
         assertEquals(state.installations.size, 1)
         assertEquals(state.identities.size, 3)
-        assertEquals(state.recoveryIdentity, davonSCW.identity)
+        assertEquals(state.recoveryPublicIdentity, davonSCW.publicIdentity)
         assertEquals(
             state.identities,
             listOf(
-                davonEOA.identity,
-                davonSCW2.identity,
-                davonSCW.identity
+                davonEOA.publicIdentity,
+                davonSCW2.publicIdentity,
+                davonSCW.publicIdentity
             )
         )
 
-        runBlocking { davonSCWClient.removeAccount(davonSCW, davonSCW2.identity) }
+        runBlocking { davonSCWClient.removeAccount(davonSCW, davonSCW2.publicIdentity) }
         state = runBlocking { davonSCWClient.inboxState(true) }
         assertEquals(state.identities.size, 2)
-        assertEquals(state.recoveryIdentity, davonSCW.identity)
+        assertEquals(state.recoveryPublicIdentity, davonSCW.publicIdentity)
         assertEquals(
             state.identities,
             listOf(
-                davonEOA.identity,
-                davonSCW.identity
+                davonEOA.publicIdentity,
+                davonSCW.publicIdentity
             )
         )
         assertEquals(state.installations.size, 1)
@@ -130,7 +128,7 @@ class SmartContractWalletTest {
             runBlocking {
                 davonSCWClient.removeAccount(
                     davonEOA,
-                    davonSCW.identity
+                    davonSCW.publicIdentity
                 )
             }
         }
@@ -161,7 +159,7 @@ class SmartContractWalletTest {
         )
         assertEquals(
             runBlocking { group2.members().map { it.identities.first() } },
-            listOf(davonSCW.identity, boEOAWallet.identity, eriSCW.identity)
+            listOf(davonSCW.publicIdentity, boEOAWallet.publicIdentity, eriSCW.publicIdentity)
         )
     }
 

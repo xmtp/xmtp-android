@@ -21,13 +21,14 @@ import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
-import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
+import uniffi.xmtpv3.GenericException
 
 @RunWith(AndroidJUnit4::class)
 class DmTest {
@@ -70,14 +71,14 @@ class DmTest {
     fun testCanCreateADmWithInboxId() {
         runBlocking {
             val convo1 = boClient.conversations.findOrCreateDmWithIdentity(
-                Identity(
+                PublicIdentity(
                     IdentityKind.ETHEREUM,
                     alix.walletAddress
                 )
             )
             alixClient.conversations.sync()
             val sameConvo1 = alixClient.conversations.findOrCreateDmWithIdentity(
-                Identity(
+                PublicIdentity(
                     IdentityKind.ETHEREUM,
                     bo.walletAddress
                 )
@@ -104,13 +105,13 @@ class DmTest {
             val dm = boClient.conversations.findOrCreateDm(caroClient.inboxId)
 
             val caroDm = boClient.conversations.findDmByIdentity(
-                Identity(
+                PublicIdentity(
                     IdentityKind.ETHEREUM,
                     caro.walletAddress
                 )
             )
             val alixDm = boClient.conversations.findDmByIdentity(
-                Identity(
+                PublicIdentity(
                     IdentityKind.ETHEREUM,
                     alix.walletAddress
                 )
@@ -157,8 +158,8 @@ class DmTest {
         val chuxAccount = PrivateKeyBuilder()
         val chux: PrivateKey = chuxAccount.getPrivateKey()
 
-        assertThrows("Recipient not on network", XMTPException::class.java) {
-            runBlocking { boClient.conversations.findOrCreateDmWithIdentity(Identity(IdentityKind.ETHEREUM, chux.walletAddress)) }
+        assertThrows(GenericException::class.java) {
+            runBlocking { boClient.conversations.findOrCreateDmWithIdentity(PublicIdentity(IdentityKind.ETHEREUM, chux.walletAddress)) }
         }
     }
 
@@ -324,7 +325,7 @@ class DmTest {
         val group = boClient.conversations.findOrCreateDm(alixClient.inboxId)
         alixClient.conversations.sync()
         val alixDm = alixClient.conversations.findDmByIdentity(
-            Identity(
+            PublicIdentity(
                 IdentityKind.ETHEREUM,
                 bo.walletAddress
             )

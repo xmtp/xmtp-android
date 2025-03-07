@@ -13,7 +13,7 @@ import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.utils.Numeric
 import org.xmtp.android.library.artifact.CoinbaseSmartWallet
 import org.xmtp.android.library.artifact.CoinbaseSmartWalletFactory
-import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -49,8 +49,8 @@ class FakeWallet : SigningKey {
         return signature
     }
 
-    override val identity: Identity
-        get() = Identity(IdentityKind.ETHEREUM, privateKey.walletAddress)
+    override val publicIdentity: PublicIdentity
+        get() = PublicIdentity(IdentityKind.ETHEREUM, privateKey.walletAddress)
 }
 
 const val ANVIL_TEST_PRIVATE_KEY_1 =
@@ -66,8 +66,8 @@ class FakeSCWWallet : SigningKey {
     private var contractDeployerCredentials: Credentials? = null
     var walletAddress: String = ""
 
-    override val identity: Identity
-        get() = Identity(IdentityKind.ETHEREUM, walletAddress)
+    override val publicIdentity: PublicIdentity
+        get() = PublicIdentity(IdentityKind.ETHEREUM, walletAddress)
 
     override val type: SignerType
         get() = SignerType.SCW

@@ -9,7 +9,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
-import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PermissionLevel
 import org.xmtp.android.library.libxmtp.PermissionOption
@@ -468,8 +468,8 @@ class GroupPermissionsTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroupCustomPermissionsWithIdentities(
                 identities = listOf(
-                    Identity(IdentityKind.ETHEREUM, alix.walletAddress),
-                    Identity(IdentityKind.ETHEREUM, caro.walletAddress)
+                    PublicIdentity(IdentityKind.ETHEREUM, alix.walletAddress),
+                    PublicIdentity(IdentityKind.ETHEREUM, caro.walletAddress)
                 ),
                 permissionPolicySet = permissionPolicySet,
             )

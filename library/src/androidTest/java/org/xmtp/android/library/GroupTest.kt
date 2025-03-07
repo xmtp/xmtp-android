@@ -2,7 +2,6 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,7 +23,7 @@ import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
-import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
@@ -175,7 +174,7 @@ class GroupTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroupWithIdentities(
                 listOf(
-                    Identity(
+                    PublicIdentity(
                         IdentityKind.ETHEREUM,
                         alix.walletAddress
                     )
@@ -341,7 +340,7 @@ class GroupTest {
         runBlocking {
             group.addMembersByIdentity(
                 listOf(
-                    Identity(
+                    PublicIdentity(
                         IdentityKind.ETHEREUM,
                         caro.walletAddress
                     )
@@ -371,7 +370,7 @@ class GroupTest {
         runBlocking {
             group.removeMembersByIdentity(
                 listOf(
-                    Identity(
+                    PublicIdentity(
                         IdentityKind.ETHEREUM,
                         caro.walletAddress
                     )
@@ -469,7 +468,7 @@ class GroupTest {
             runBlocking {
                 boClient.conversations.newGroupWithIdentities(
                     listOf(
-                        Identity(
+                        PublicIdentity(
                             IdentityKind.ETHEREUM,
                             chux.walletAddress
                         )

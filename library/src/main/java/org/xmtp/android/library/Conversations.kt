@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
-import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.Topic
 import org.xmtp.proto.keystore.api.v1.Keystore
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
@@ -90,9 +90,9 @@ data class Conversations(
         }
     }
 
-    suspend fun findDmByIdentity(identity: Identity): Dm? {
+    suspend fun findDmByIdentity(publicIdentity: PublicIdentity): Dm? {
         val inboxId =
-            client.inboxIdFromIdentity(identity)
+            client.inboxIdFromIdentity(publicIdentity)
                 ?: throw XMTPException("No inboxId present")
         return findDmByInboxId(inboxId)
     }
@@ -114,7 +114,7 @@ data class Conversations(
     }
 
     suspend fun newGroupWithIdentities(
-        identities: List<Identity>,
+        identities: List<PublicIdentity>,
         permissions: GroupPermissionPreconfiguration = GroupPermissionPreconfiguration.ALL_MEMBERS,
         groupName: String = "",
         groupImageUrlSquare: String = "",
@@ -138,7 +138,7 @@ data class Conversations(
     }
 
     suspend fun newGroupCustomPermissionsWithIdentities(
-        identities: List<Identity>,
+        identities: List<PublicIdentity>,
         permissionPolicySet: PermissionPolicySet,
         groupName: String = "",
         groupImageUrlSquare: String = "",
@@ -162,7 +162,7 @@ data class Conversations(
     }
 
     private suspend fun newGroupInternalWithIdentities(
-        identities: List<Identity>,
+        identities: List<PublicIdentity>,
         permissions: FfiGroupPermissionsOptions,
         groupName: String,
         groupImageUrlSquare: String,
@@ -172,7 +172,7 @@ data class Conversations(
     ): Group {
         val group =
             ffiConversations.createGroup(
-                identities.map { it.ffiIdentifier },
+                identities.map { it.ffiPrivate },
                 opts = FfiCreateGroupOptions(
                     permissions = permissions,
                     groupName = groupName,
@@ -272,19 +272,23 @@ data class Conversations(
     }
 
     suspend fun newConversationWithIdentity(
-        peerIdentity: Identity,
+        peerPublicIdentity: PublicIdentity,
         disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Conversation {
-        val dm = findOrCreateDmWithIdentity(peerIdentity, disappearingMessageSettings)
+        val dm = findOrCreateDmWithIdentity(peerPublicIdentity, disappearingMessageSettings)
         return Conversation.Dm(dm)
     }
 
     suspend fun findOrCreateDmWithIdentity(
-        peerIdentity: Identity,
+        peerPublicIdentity: PublicIdentity,
         disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Dm {
+        if (peerPublicIdentity.identifier in client.inboxState(false).identities.map { it.identifier }) {
+            throw XMTPException("Recipient is sender")
+        }
+
         val dmConversation = ffiConversations.findOrCreateDm(
-            peerIdentity.ffiIdentifier,
+            peerPublicIdentity.ffiPrivate,
             opts = FfiCreateDmOptions(
                 disappearingMessageSettings?.let {
                     FfiMessageDisappearingSettings(
@@ -309,6 +313,9 @@ data class Conversations(
         peerInboxId: InboxId,
         disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Dm {
+        if (peerInboxId == client.inboxId) {
+            throw XMTPException("Recipient is sender")
+        }
         val dmConversation = ffiConversations.findOrCreateDmByInboxId(
             peerInboxId.value,
             opts = FfiCreateDmOptions(

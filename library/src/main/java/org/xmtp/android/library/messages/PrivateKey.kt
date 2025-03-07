@@ -5,7 +5,7 @@ import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
 import org.xmtp.android.library.SigningKey
-import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.security.SecureRandom
@@ -88,8 +88,8 @@ class PrivateKeyBuilder : SigningKey {
         return sign(digest)
     }
 
-    override val identity: Identity
-        get() = Identity(IdentityKind.ETHEREUM, privateKey.walletAddress)
+    override val publicIdentity: PublicIdentity
+        get() = PublicIdentity(IdentityKind.ETHEREUM, privateKey.walletAddress)
 }
 
 fun PrivateKey.generate(): PrivateKey {

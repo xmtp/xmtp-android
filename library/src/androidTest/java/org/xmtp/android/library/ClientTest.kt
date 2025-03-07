@@ -8,9 +8,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.web3j.protocol.core.Ethereum
-import org.xmtp.android.library.codecs.id
-import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.rawData
@@ -37,7 +35,7 @@ class ClientTest {
             Client.create(account = fakeWallet, options = options)
         }
 
-        val clientIdentity = fakeWallet.identity
+        val clientIdentity = fakeWallet.publicIdentity
         runBlocking {
             client.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let { assert(it) }
         }
@@ -62,7 +60,7 @@ class ClientTest {
             appContext = context,
             dbEncryptionKey = key
         )
-        val clientIdentity = fakeWallet.identity
+        val clientIdentity = fakeWallet.publicIdentity
 
         val inboxId = runBlocking { Client.getOrCreateInboxId(options.api, clientIdentity) }
         val client = runBlocking {
@@ -83,26 +81,26 @@ class ClientTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fixtures = fixtures()
         val notOnNetwork = PrivateKeyBuilder()
-        val alixIdentity = Identity(IdentityKind.ETHEREUM, fixtures.alix.walletAddress)
-        val boIdentity = Identity(IdentityKind.ETHEREUM, fixtures.bo.walletAddress)
-        val notOnNetworkIdentity =
-            Identity(IdentityKind.ETHEREUM, notOnNetwork.getPrivateKey().walletAddress)
+        val alixPublicIdentity = PublicIdentity(IdentityKind.ETHEREUM, fixtures.alix.walletAddress)
+        val boPublicIdentity = PublicIdentity(IdentityKind.ETHEREUM, fixtures.bo.walletAddress)
+        val notOnNetworkPublicIdentity =
+            PublicIdentity(IdentityKind.ETHEREUM, notOnNetwork.getPrivateKey().walletAddress)
 
         val canMessageList = runBlocking {
             Client.canMessage(
                 listOf(
-                    alixIdentity,
-                    notOnNetworkIdentity,
-                    boIdentity
+                    alixPublicIdentity,
+                    notOnNetworkPublicIdentity,
+                    boPublicIdentity
                 ),
                 ClientOptions.Api(XMTPEnvironment.LOCAL, false)
             )
         }
 
         val expectedResults = mapOf(
-            alixIdentity to true,
-            notOnNetworkIdentity to false,
-            boIdentity to true
+            alixPublicIdentity to true,
+            notOnNetworkPublicIdentity to false,
+            boPublicIdentity to true
         )
 
         expectedResults.forEach { (id, expected) ->
@@ -121,12 +119,12 @@ class ClientTest {
             )
         }
         assertEquals(
-            states.first().recoveryIdentity.identifier,
-            fixtures.boAccount.identity.identifier
+            states.first().recoveryPublicIdentity.identifier,
+            fixtures.boAccount.publicIdentity.identifier
         )
         assertEquals(
-            states.last().recoveryIdentity.identifier,
-            fixtures.caroAccount.identity.identifier
+            states.last().recoveryPublicIdentity.identifier,
+            fixtures.caroAccount.publicIdentity.identifier
         )
     }
 
@@ -197,7 +195,7 @@ class ClientTest {
                 )
             )
         }
-        val clientIdentity = fakeWallet.identity
+        val clientIdentity = fakeWallet.publicIdentity
         runBlocking {
             client.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let { assert(it) }
         }
@@ -218,7 +216,7 @@ class ClientTest {
                 )
             )
         }
-        val clientIdentity = fakeWallet.identity
+        val clientIdentity = fakeWallet.publicIdentity
         runBlocking {
             client.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let { assert(it) }
         }
@@ -328,7 +326,7 @@ class ClientTest {
         }
         val boInboxId = runBlocking {
             alixClient.inboxIdFromIdentity(
-                Identity(
+                PublicIdentity(
                     IdentityKind.ETHEREUM,
                     boWallet.getPrivateKey().walletAddress
                 )
@@ -451,11 +449,11 @@ class ClientTest {
             )
         }
         assertEquals(
-            states.first().recoveryIdentity.identifier,
+            states.first().recoveryPublicIdentity.identifier,
             fixtures.bo.walletAddress
         )
         assertEquals(
-            states.last().recoveryIdentity.identifier,
+            states.last().recoveryPublicIdentity.identifier,
             fixtures.caro.walletAddress
         )
     }
@@ -546,14 +544,14 @@ class ClientTest {
         assertEquals(state.installations.size, 1)
         assertEquals(state.identities.size, 3)
         assertEquals(
-            state.recoveryIdentity.identifier,
-            fixtures.alixAccount.identity.identifier
+            state.recoveryPublicIdentity.identifier,
+            fixtures.alixAccount.publicIdentity.identifier
         )
         assertEquals(
             state.identities.map { it.identifier }.sorted(),
             listOf(
-                alix2Wallet.identity.identifier,
-                alix3Wallet.identity.identifier,
+                alix2Wallet.publicIdentity.identifier,
+                alix3Wallet.publicIdentity.identifier,
                 fixtures.alix.walletAddress
             ).sorted()
         )
@@ -580,7 +578,7 @@ class ClientTest {
         val inboxId =
             runBlocking {
                 fixtures.alixClient.inboxIdFromIdentity(
-                    Identity(
+                    PublicIdentity(
                         IdentityKind.ETHEREUM,
                         fixtures.bo.walletAddress
                     )
@@ -601,27 +599,27 @@ class ClientTest {
         var state = runBlocking { fixtures.alixClient.inboxState(true) }
         assertEquals(state.identities.size, 3)
         assertEquals(
-            state.recoveryIdentity.identifier,
-            fixtures.alixAccount.identity.identifier
+            state.recoveryPublicIdentity.identifier,
+            fixtures.alixAccount.publicIdentity.identifier
         )
 
         runBlocking {
             fixtures.alixClient.removeAccount(
                 fixtures.alixAccount,
-                Identity(IdentityKind.ETHEREUM, alix2Wallet.getPrivateKey().walletAddress)
+                PublicIdentity(IdentityKind.ETHEREUM, alix2Wallet.getPrivateKey().walletAddress)
             )
         }
         state = runBlocking { fixtures.alixClient.inboxState(true) }
         assertEquals(state.identities.size, 2)
         assertEquals(
-            state.recoveryIdentity.identifier,
+            state.recoveryPublicIdentity.identifier,
             fixtures.alix.walletAddress
         )
         assertEquals(
             state.identities.map { it.identifier }.sorted(),
             listOf(
                 alix3Wallet.getPrivateKey().walletAddress,
-                fixtures.alixAccount.identity.identifier
+                fixtures.alixAccount.publicIdentity.identifier
             ).sorted()
         )
         assertEquals(state.installations.size, 1)
@@ -634,7 +632,7 @@ class ClientTest {
             runBlocking {
                 fixtures.alixClient.removeAccount(
                     alix3Wallet,
-                    fixtures.alixAccount.identity
+                    fixtures.alixAccount.publicIdentity
                 )
             }
         }
@@ -665,7 +663,7 @@ class ClientTest {
         ) {
             runBlocking {
                 Client.build(
-                    identity = Identity(
+                    publicIdentity = PublicIdentity(
                         IdentityKind.ETHEREUM,
                         alixWallet.getPrivateKey().walletAddress
                     ),
@@ -708,11 +706,11 @@ class ClientTest {
         val inboxId = runBlocking {
             Client.getOrCreateInboxId(
                 options.api,
-                fakeWallet.identity
+                fakeWallet.publicIdentity
             )
         }
         val client = runBlocking {
-            Client.ffiCreateClient(fakeWallet.identity, options)
+            Client.ffiCreateClient(fakeWallet.publicIdentity, options)
         }
         runBlocking {
             val sigRequest = client.ffiSignatureRequest()
@@ -722,7 +720,7 @@ class ClientTest {
             }
         }
         runBlocking {
-            client.canMessage(listOf(fakeWallet.identity))[fakeWallet.identity.identifier]?.let { assert(it) }
+            client.canMessage(listOf(fakeWallet.publicIdentity))[fakeWallet.publicIdentity.identifier]?.let { assert(it) }
         }
         assert(client.installationId.isNotEmpty())
         assertEquals(inboxId, client.inboxId)

@@ -12,7 +12,7 @@ import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.Message.SortDirection
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
-import org.xmtp.android.library.libxmtp.Identity
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
 import org.xmtp.android.library.messages.Topic
@@ -230,17 +230,17 @@ class Group(
         return metadata().creatorInboxId() == client.inboxId.value
     }
 
-    suspend fun addMembersByIdentity(identities: List<Identity>) {
+    suspend fun addMembersByIdentity(identities: List<PublicIdentity>) {
         try {
-            libXMTPGroup.addMembers(identities.map { it.ffiIdentifier })
+            libXMTPGroup.addMembers(identities.map { it.ffiPrivate })
         } catch (e: Exception) {
             throw XMTPException("Unable to add member", e)
         }
     }
 
-    suspend fun removeMembersByIdentity(identities: List<Identity>) {
+    suspend fun removeMembersByIdentity(identities: List<PublicIdentity>) {
         try {
-            libXMTPGroup.removeMembers(identities.map { it.ffiIdentifier })
+            libXMTPGroup.removeMembers(identities.map { it.ffiPrivate })
         } catch (e: Exception) {
             throw XMTPException("Unable to remove member", e)
         }

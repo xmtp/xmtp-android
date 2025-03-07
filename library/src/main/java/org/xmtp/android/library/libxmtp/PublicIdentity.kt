@@ -7,14 +7,14 @@ enum class IdentityKind {
     ETHEREUM, PASSKEY
 }
 
-class Identity(val ffiIdentifier: FfiIdentifier) {
+class PublicIdentity(val ffiPrivate: FfiIdentifier) {
     constructor(
         kind: IdentityKind,
         identifier: String,
         relyingPartner: String? = null,
     ) :
             this(
-                ffiIdentifier = FfiIdentifier(
+                ffiPrivate = FfiIdentifier(
                     identifier,
                     kind.toFfiPublicIdentifierKind(),
                     relyingPartner
@@ -22,13 +22,13 @@ class Identity(val ffiIdentifier: FfiIdentifier) {
             )
 
     val kind: IdentityKind
-        get() = ffiIdentifier.identifierKind.toIdentityKind()
+        get() = ffiPrivate.identifierKind.toIdentityKind()
 
     val identifier: String
-        get() = ffiIdentifier.identifier
+        get() = ffiPrivate.identifier
 
     val relyingPartner: String?
-        get() = ffiIdentifier.relyingPartner
+        get() = ffiPrivate.relyingPartner
 }
 
 fun IdentityKind.toFfiPublicIdentifierKind(): FfiIdentifierKind {
