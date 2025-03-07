@@ -80,7 +80,7 @@ data class ConsentRecord(
             inboxId: InboxId,
             type: ConsentState = ConsentState.UNKNOWN,
         ): ConsentRecord {
-            return ConsentRecord(inboxId.value, EntryType.INBOX_ID, type)
+            return ConsentRecord(inboxId, EntryType.INBOX_ID, type)
         }
     }
 
@@ -167,7 +167,7 @@ data class PrivatePreferences(
         return ConsentState.fromFfiConsentState(
             ffiClient.getConsentState(
                 FfiConsentEntityType.INBOX_ID,
-                inboxId.value,
+                inboxId,
             )
         )
     }

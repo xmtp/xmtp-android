@@ -38,7 +38,7 @@ class Message private constructor(
         get() = libXMTPMessage.conversationId.toHex()
 
     val senderInboxId: InboxId
-        get() = InboxId(libXMTPMessage.senderInboxId)
+        get() = libXMTPMessage.senderInboxId
 
     val sentAt: Date
         get() = Date(libXMTPMessage.sentAtNs / 1_000_000)

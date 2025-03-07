@@ -154,8 +154,8 @@ class SmartContractWalletTest {
         }
 
         assertEquals(
-            runBlocking { group1.members().map { it.inboxId.value }.sorted() },
-            listOf(davonSCWClient.inboxId.value, boEOAClient.inboxId.value, eriSCWClient.inboxId.value).sorted()
+            runBlocking { group1.members().map { it.inboxId }.sorted() },
+            listOf(davonSCWClient.inboxId, boEOAClient.inboxId, eriSCWClient.inboxId).sorted()
         )
         assertEquals(
             runBlocking { group2.members().map { it.identities.first() } },
@@ -258,7 +258,7 @@ class SmartContractWalletTest {
             davonSCWClient.preferences.setConsentState(
                 listOf(
                     ConsentRecord(
-                        boEOAClient.inboxId.value,
+                        boEOAClient.inboxId,
                         EntryType.INBOX_ID,
                         ConsentState.ALLOWED
                     )
@@ -275,7 +275,7 @@ class SmartContractWalletTest {
             davonSCWClient.preferences.setConsentState(
                 listOf(
                     ConsentRecord(
-                        boEOAClient.inboxId.value,
+                        boEOAClient.inboxId,
                         EntryType.INBOX_ID,
                         ConsentState.DENIED
                     )

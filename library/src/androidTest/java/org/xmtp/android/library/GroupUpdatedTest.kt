@@ -61,7 +61,7 @@ class GroupUpdatedTest {
         assertEquals(messages.size, 1)
         val content: GroupUpdated? = messages.first().content()
         assertEquals(
-            listOf(boClient.inboxId.value, caroClient.inboxId.value).sorted(),
+            listOf(boClient.inboxId, caroClient.inboxId).sorted(),
             content?.addedInboxesList?.map { it.inboxId }?.sorted()
         )
         assert(content?.removedInboxesList.isNullOrEmpty())
@@ -89,7 +89,7 @@ class GroupUpdatedTest {
         val content: GroupUpdated? = updatedMessages.first().content()
 
         assertEquals(
-            listOf(caroClient.inboxId.value),
+            listOf(caroClient.inboxId),
             content?.removedInboxesList?.map { it.inboxId }?.sorted()
         )
         assert(content?.addedInboxesList.isNullOrEmpty())

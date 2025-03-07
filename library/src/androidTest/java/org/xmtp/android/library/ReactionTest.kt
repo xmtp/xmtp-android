@@ -120,7 +120,7 @@ class ReactionTest {
 
         val reaction = FfiReaction(
             reference = messageToReact.id,
-            referenceInboxId = aliceClient.inboxId.value,
+            referenceInboxId = aliceClient.inboxId,
             action = FfiReactionAction.ADDED,
             content = "U+1F603",
             schema = FfiReactionSchema.UNICODE,
@@ -170,7 +170,7 @@ class ReactionTest {
         // Send V2 reaction
         val reactionV2 = FfiReaction(
             reference = messageToReact.id,
-            referenceInboxId = aliceClient.inboxId.value,
+            referenceInboxId = aliceClient.inboxId,
             action = FfiReactionAction.ADDED,
             content = "U+1F603",
             schema = FfiReactionSchema.UNICODE,

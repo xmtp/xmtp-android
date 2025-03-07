@@ -11,7 +11,7 @@ enum class PermissionLevel {
 class Member(private val ffiMember: FfiConversationMember) {
 
     val inboxId: InboxId
-        get() = InboxId(ffiMember.inboxId)
+        get() = ffiMember.inboxId
     val identities: List<PublicIdentity>
         get() = ffiMember.accountIdentifiers.map { PublicIdentity(it) }
     val permissionLevel: PermissionLevel

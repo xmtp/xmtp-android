@@ -129,20 +129,20 @@ class DmTest {
             )
         }
         assertEquals(
-            runBlocking { dm.members().map { it.inboxId.value }.sorted() },
+            runBlocking { dm.members().map { it.inboxId }.sorted() },
             listOf(
-                alixClient.inboxId.value,
-                boClient.inboxId.value
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
 
         assertEquals(
             runBlocking {
-                Conversation.Dm(dm).members().map { it.inboxId.value }.sorted()
+                Conversation.Dm(dm).members().map { it.inboxId }.sorted()
             },
             listOf(
-                alixClient.inboxId.value,
-                boClient.inboxId.value
+                alixClient.inboxId,
+                boClient.inboxId
             ).sorted()
         )
 

@@ -5,7 +5,7 @@ import uniffi.xmtpv3.FfiInboxState
 
 class InboxState(private val ffiInboxState: FfiInboxState) {
     val inboxId: InboxId
-        get() = InboxId(ffiInboxState.inboxId)
+        get() = ffiInboxState.inboxId
     val identities: List<PublicIdentity>
         get() = ffiInboxState.accountIdentities.map { PublicIdentity(it) }
 
