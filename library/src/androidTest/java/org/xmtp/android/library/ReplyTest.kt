@@ -9,7 +9,6 @@ import org.xmtp.android.library.codecs.ContentTypeReply
 import org.xmtp.android.library.codecs.ContentTypeText
 import org.xmtp.android.library.codecs.Reply
 import org.xmtp.android.library.codecs.ReplyCodec
-import org.xmtp.android.library.messages.walletAddress
 
 @RunWith(AndroidJUnit4::class)
 class ReplyTest {

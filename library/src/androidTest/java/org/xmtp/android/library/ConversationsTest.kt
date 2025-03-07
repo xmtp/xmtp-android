@@ -19,7 +19,6 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.libxmtp.Message
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.walletAddress
 import kotlin.time.Duration.Companion.seconds
 
 @RunWith(AndroidJUnit4::class)

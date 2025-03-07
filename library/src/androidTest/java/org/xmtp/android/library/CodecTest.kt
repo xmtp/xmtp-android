@@ -10,7 +10,6 @@ import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.ContentTypeId
 import org.xmtp.android.library.codecs.ContentTypeIdBuilder
 import org.xmtp.android.library.codecs.EncodedContent
-import org.xmtp.android.library.messages.walletAddress
 
 data class NumberCodec(
     override var contentType: ContentTypeId = ContentTypeIdBuilder.builderFromAuthorityId(

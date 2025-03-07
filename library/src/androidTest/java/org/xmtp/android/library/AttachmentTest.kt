@@ -9,7 +9,6 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.Attachment
 import org.xmtp.android.library.codecs.AttachmentCodec
 import org.xmtp.android.library.codecs.ContentTypeAttachment
-import org.xmtp.android.library.messages.walletAddress
 
 @RunWith(AndroidJUnit4::class)
 class AttachmentTest {

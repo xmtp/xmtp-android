@@ -8,7 +8,6 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.ContentTypeReadReceipt
 import org.xmtp.android.library.codecs.ReadReceipt
 import org.xmtp.android.library.codecs.ReadReceiptCodec
-import org.xmtp.android.library.messages.walletAddress
 
 @RunWith(AndroidJUnit4::class)
 class ReadReceiptTest {

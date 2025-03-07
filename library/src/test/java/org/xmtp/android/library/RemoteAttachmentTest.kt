@@ -13,7 +13,6 @@ import org.xmtp.android.library.codecs.RemoteAttachment
 import org.xmtp.android.library.codecs.RemoteAttachmentCodec
 import org.xmtp.android.library.codecs.decoded
 import org.xmtp.android.library.codecs.id
-import org.xmtp.android.library.messages.walletAddress
 import java.io.File
 import java.net.URL
 
