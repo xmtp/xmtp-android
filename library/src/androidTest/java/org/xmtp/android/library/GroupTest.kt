@@ -285,6 +285,20 @@ class GroupTest {
     }
 
     @Test
+    fun testCannotStartGroupOrAddMembersWithAddressWhenExpectingInboxId() {
+        assertThrows("Invalid inboxId", XMTPException::class.java) {
+            runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
+        }
+        val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
+        assertThrows("Invalid inboxId", XMTPException::class.java) {
+            runBlocking { group.addMembers(listOf(caro.walletAddress)) }
+        }
+        assertThrows("Invalid inboxId", XMTPException::class.java) {
+            runBlocking { group.removeMembers(listOf(alix.walletAddress)) }
+        }
+    }
+
+    @Test
     fun testCanRemoveGroupMembers() {
         val group = runBlocking {
             boClient.conversations.newGroup(

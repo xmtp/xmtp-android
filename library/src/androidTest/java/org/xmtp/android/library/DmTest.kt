@@ -171,6 +171,13 @@ class DmTest {
     }
 
     @Test
+    fun testCannotStartDmWithAddressWhenExpectingInboxId() {
+        assertThrows("Invalid inboxId", XMTPException::class.java) {
+            runBlocking { boClient.conversations.findOrCreateDm(alix.walletAddress) }
+        }
+    }
+
+    @Test
     fun testDmStartsWithAllowedState() {
         runBlocking {
             val dm = boClient.conversations.findOrCreateDm(alixClient.inboxId)
