@@ -1,4 +1,4 @@
-package uniffi.xmtpv3.org.xmtp.android.library
+package org.xmtp.android.library
 
 data class SignedData(
     val rawData: ByteArray,

@@ -18,15 +18,12 @@ import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.walletAddress
-import uniffi.xmtpv3.org.xmtp.android.library.SignedData
 import java.math.BigInteger
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.security.Signature
-import java.security.interfaces.ECPublicKey
 import java.util.Base64
 
 const val ANVIL_TEST_PRIVATE_KEY_1 =

@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
