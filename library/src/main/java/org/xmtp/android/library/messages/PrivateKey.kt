@@ -70,7 +70,6 @@ class PrivateKeyBuilder : SigningKey {
             clientDataJson = null
         )
     }
-
 }
 
 val PrivateKey.walletAddress: String
@@ -87,4 +86,3 @@ val PublicKey.walletAddress: String
         )
         return Keys.toChecksumAddress(address.toHex()).lowercase()
     }
-
