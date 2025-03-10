@@ -16,19 +16,6 @@ object KeyUtil {
         return Sign.publicKeyFromPrivate(BigInteger(1, privateKey)).toByteArray()
     }
 
-    private fun recoverPublicKeyKeccak256(signature: ByteArray, digest: ByteArray): BigInteger? {
-        val signatureData = getSignatureData(signature)
-        return Sign.recoverFromSignature(
-            BigInteger(1, signatureData.v).toInt(),
-            ECDSASignature(BigInteger(1, signatureData.r), BigInteger(1, signatureData.s)),
-            digest,
-        )
-    }
-
-    private fun publicKeyToAddress(publicKey: BigInteger): String {
-        return Keys.toChecksumAddress(Keys.getAddress(publicKey))
-    }
-
     fun addUncompressedByte(publicKey: ByteArray): ByteArray {
         return if (publicKey.size >= 65) {
             val newPublicKey = ByteArray(64)

@@ -23,5 +23,4 @@ interface SigningKey {
 enum class SignerType {
     SCW, // Smart Contract Wallet
     EOA, // Externally Owned Account *Default
-    PASSKEY
 }

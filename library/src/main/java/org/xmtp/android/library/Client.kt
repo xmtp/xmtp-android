@@ -255,20 +255,6 @@ class Client(
                         signingKey.blockNumber?.toULong()
                     )
                 }
-
-                SignerType.PASSKEY -> {
-                    if (signedData.publicKey != null && signedData.authenticatorData != null && signedData.clientDataJson != null) {
-                        signatureRequest.addPasskeySignature(
-                            signedData.publicKey,
-                            signedData.rawData,
-                            signedData.authenticatorData,
-                            signedData.clientDataJson
-                        )
-                    } else {
-                        throw XMTPException("Missing Passkey data")
-                    }
-                }
-
                 else -> {
                     signatureRequest.addEcdsaSignature(signedData.rawData)
                 }
