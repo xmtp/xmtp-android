@@ -273,7 +273,8 @@ class GroupTest {
     @Test
     fun testCanAddGroupMembers() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
-        runBlocking { group.addMembers(listOf(caroClient.inboxId)) }
+        val result = runBlocking { group.addMembers(listOf(caroClient.inboxId)) }
+        assertEquals(mapOf(caroClient.inboxId to 1UL), result.addedMembers)
         assertEquals(
             runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
@@ -352,7 +353,7 @@ class GroupTest {
 
     fun testCanAddGroupMemberIds() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
-        runBlocking {
+        val result = runBlocking {
             group.addMembersByIdentity(
                 listOf(
                     PublicIdentity(
@@ -362,6 +363,7 @@ class GroupTest {
                 )
             )
         }
+        assertEquals(mapOf(caroClient.inboxId to 1UL), result.addedMembers)
         assertEquals(
             runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
