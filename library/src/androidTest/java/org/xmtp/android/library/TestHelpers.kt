@@ -17,7 +17,6 @@ import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import uniffi.xmtpv3.org.xmtp.android.library.SignedData
 import java.math.BigInteger
 import java.security.SecureRandom
 

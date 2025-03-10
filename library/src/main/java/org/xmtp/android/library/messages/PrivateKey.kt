@@ -6,11 +6,11 @@ import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.xmtp.android.library.KeyUtil
+import org.xmtp.android.library.SignedData
 import org.xmtp.android.library.SigningKey
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.toHex
-import uniffi.xmtpv3.org.xmtp.android.library.SignedData
 import java.security.SecureRandom
 import java.util.Date
 
@@ -74,9 +74,7 @@ class PrivateKeyBuilder : SigningKey {
 }
 
 val PrivateKey.walletAddress: String
-    get() {
-        return publicKey.walletAddress.lowercase()
-    }
+    get() = publicKey.walletAddress.lowercase()
 
 val PublicKey.walletAddress: String
     get() {
