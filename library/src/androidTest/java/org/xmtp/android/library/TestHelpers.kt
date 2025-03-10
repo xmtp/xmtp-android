@@ -26,6 +26,7 @@ import java.security.KeyPairGenerator
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.security.Signature
+import java.security.interfaces.ECPublicKey
 import java.util.Base64
 
 const val ANVIL_TEST_PRIVATE_KEY_1 =
@@ -133,7 +134,7 @@ class FakePasskeyWallet : SigningKey {
     override val publicIdentity: PublicIdentity
         get() = PublicIdentity(
             IdentityKind.PASSKEY,
-            keyPair.public.encoded.toHex()
+            extractRawPublicKeyFromCose(keyPair.public.encoded).toHex()
         )
 
     override val type: SignerType
@@ -141,12 +142,12 @@ class FakePasskeyWallet : SigningKey {
 
     override suspend fun sign(message: String): SignedData {
         val authenticatorData = generateAuthenticatorData()
-        val clientDataJson = generateClientDataJson(message) // Includes message correctly
+        val clientDataJson = generateClientDataJson(message)
         val signature = signPasskeyData(keyPair, authenticatorData, clientDataJson)
 
         return SignedData(
             rawData = signature,
-            publicKey = keyPair.public.encoded,
+            publicKey = extractRawPublicKeyFromCose(keyPair.public.encoded),
             authenticatorData = authenticatorData,
             clientDataJson = clientDataJson
         )
@@ -154,12 +155,12 @@ class FakePasskeyWallet : SigningKey {
 
     private fun generateClientDataJson(message: String): ByteArray {
         val clientData = JSONObject()
-        clientData.put("type", "webauthn.get") // ✅ Correct WebAuthn type
-        clientData.put("origin", "https://xmtp.chat") // ✅ Matching expected RP
-        clientData.put("crossOrigin", false) // ✅ Ensure cross-origin is handled
+        clientData.put("type", "webauthn.get")
+        clientData.put("origin", "https://xmtp.chat")
+        clientData.put("crossOrigin", false)
 
-        // ✅ Challenge should be the raw bytes of the message (not a hash)
-        val challengeBase64 = Base64.getUrlEncoder().withoutPadding().encodeToString(message.toByteArray())
+        val challengeBase64 =
+            Base64.getUrlEncoder().withoutPadding().encodeToString(message.toByteArray())
 
         clientData.put("challenge", challengeBase64)
 
@@ -168,8 +169,8 @@ class FakePasskeyWallet : SigningKey {
 
     private fun generateAuthenticatorData(): ByteArray {
         val rpIdHash = MessageDigest.getInstance("SHA-256").digest("xmtp.chat".toByteArray())
-        val flags = byteArrayOf(0x01) // User Present (UP) flag set
-        val signCount = byteArrayOf(0x00, 0x00, 0x00, 0x01) // Example sign count
+        val flags = byteArrayOf(0x01)
+        val signCount = byteArrayOf(0x00, 0x00, 0x00, 0x01)
 
         return rpIdHash + flags + signCount
     }
@@ -179,21 +180,22 @@ class FakePasskeyWallet : SigningKey {
         authenticatorData: ByteArray,
         clientDataJson: ByteArray,
     ): ByteArray {
-        // ✅ Compute hash of clientDataJson (this is expected in WebAuthn)
         val clientDataHash = MessageDigest.getInstance("SHA-256").digest(clientDataJson)
-
-        // ✅ Sign authenticatorData + clientDataHash (NOT double hashing)
         val signedData = authenticatorData + clientDataHash
 
         val signature = Signature.getInstance("SHA256withECDSA")
         signature.initSign(keyPair.private)
         signature.update(signedData)
 
-        return signature.sign() // ✅ Returns DER-encoded signature
+        return signature.sign()
+    }
+
+    private fun extractRawPublicKeyFromCose(cosePublicKey: ByteArray): ByteArray {
+        if (cosePublicKey.size < 27) throw IllegalArgumentException("Invalid COSE key format")
+
+        return cosePublicKey.copyOfRange(26, cosePublicKey.size)
     }
 }
-
-
 
 class Fixtures(
     api: ClientOptions.Api = ClientOptions.Api(

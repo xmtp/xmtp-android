@@ -85,7 +85,6 @@ class Client(
             publicIdentity: PublicIdentity,
         ): InboxId {
             val rootIdentity = publicIdentity.ffiPrivate
-            Log.d("LOPI", rootIdentity.identifier)
             var inboxId = getInboxIdForIdentifier(
                 api = connectToApiBackend(api),
                 accountIdentifier = rootIdentity
