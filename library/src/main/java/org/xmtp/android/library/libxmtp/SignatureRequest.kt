@@ -28,7 +28,7 @@ class SignatureRequest(val ffiSignatureRequest: FfiSignatureRequest) {
         )
     }
 
-        suspend fun signatureText(): String {
-            return ffiSignatureRequest.signatureText()
-        }
+    suspend fun signatureText(): String {
+        return ffiSignatureRequest.signatureText()
+    }
 }

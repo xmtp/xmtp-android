@@ -2,11 +2,7 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.BeforeClass
 import org.junit.Test
@@ -14,7 +10,6 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.libxmtp.DecodedMessage
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import uniffi.xmtpv3.GenericException
 
 @RunWith(AndroidJUnit4::class)
 class PasskeyTest {
@@ -150,5 +145,4 @@ class PasskeyTest {
         assertEquals(runBlocking { eriGroup?.messages() }?.first()?.body, "from davon")
         runBlocking { eriGroup?.send("from eri") }
     }
-
 }
