@@ -24,16 +24,11 @@ class SignatureRequest(val ffiSignatureRequest: FfiSignatureRequest) {
         clientDataJson: ByteArray,
     ) {
         ffiSignatureRequest.addPasskeySignature(
-            FfiPasskeySignature(
-                publicKey,
-                signatureBytes,
-                authenticatorData,
-                clientDataJson
-            )
+            FfiPasskeySignature(publicKey, signatureBytes, authenticatorData, clientDataJson)
         )
     }
 
-    suspend fun signatureText(): String {
-        return ffiSignatureRequest.signatureText()
-    }
+        suspend fun signatureText(): String {
+            return ffiSignatureRequest.signatureText()
+        }
 }

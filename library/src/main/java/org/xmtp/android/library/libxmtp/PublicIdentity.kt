@@ -11,24 +11,19 @@ class PublicIdentity(val ffiPrivate: FfiIdentifier) {
     constructor(
         kind: IdentityKind,
         identifier: String,
-        relyingPartner: String? = null,
     ) :
-        this(
-            ffiPrivate = FfiIdentifier(
-                identifier,
-                kind.toFfiPublicIdentifierKind(),
-                relyingPartner
-            ),
-        )
+            this(
+                ffiPrivate = FfiIdentifier(
+                    identifier,
+                    kind.toFfiPublicIdentifierKind(),
+                ),
+            )
 
     val kind: IdentityKind
         get() = ffiPrivate.identifierKind.toIdentityKind()
 
     val identifier: String
         get() = ffiPrivate.identifier.lowercase()
-
-    val relyingPartner: String?
-        get() = ffiPrivate.relyingPartner
 }
 
 fun IdentityKind.toFfiPublicIdentifierKind(): FfiIdentifierKind {

@@ -7,6 +7,11 @@ import org.web3j.crypto.Sign.SignatureData
 import java.math.BigInteger
 
 object KeyUtil {
+    private const val MESSAGE_PREFIX = "\u0019Ethereum Signed Message:\n"
+    fun ethHash(message: String): ByteArray {
+        val input = MESSAGE_PREFIX + message.length + message
+        return org.xmtp.android.library.Util.keccak256(input.toByteArray())
+    }
     fun getPublicKey(privateKey: ByteArray): ByteArray {
         return Sign.publicKeyFromPrivate(BigInteger(1, privateKey)).toByteArray()
     }

@@ -1,11 +1,8 @@
 package org.xmtp.android.library
 
-import android.util.Base64
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.protobuf.ByteString
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.DynamicBytes
 import org.web3j.abi.datatypes.Uint
@@ -21,15 +18,14 @@ import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.ethHash
 import org.xmtp.android.library.messages.walletAddress
-import org.xmtp.proto.message.contents.SignatureOuterClass
+import uniffi.xmtpv3.org.xmtp.android.library.SignedData
 import java.math.BigInteger
 import java.security.KeyPair
 import java.security.KeyPairGenerator
+import java.security.MessageDigest
 import java.security.SecureRandom
 import java.security.Signature
-import java.security.interfaces.ECPublicKey
 
 
 class FakeWallet : SigningKey {
@@ -48,12 +44,7 @@ class FakeWallet : SigningKey {
         }
     }
 
-    override suspend fun sign(data: ByteArray): SignatureOuterClass.Signature? {
-        val signature = privateKeyBuilder.sign(data)
-        return signature
-    }
-
-    override suspend fun sign(message: String): SignatureOuterClass.Signature {
+    override suspend fun  sign(message: String): SignedData {
         val signature = privateKeyBuilder.sign(message)
         return signature
     }
@@ -92,14 +83,14 @@ class FakeSCWWallet : SigningKey {
         }
     }
 
-    override suspend fun signSCW(message: String): ByteArray {
+    override suspend fun sign(message: String): SignedData {
         val smartWallet = CoinbaseSmartWallet.load(
             walletAddress,
             web3j,
             contractDeployerCredentials,
             DefaultGasProvider()
         )
-        val digest = SignatureOuterClass.Signature.newBuilder().build().ethHash(message)
+        val digest = KeyUtil.ethHash(message)
         val replaySafeHash = smartWallet.replaySafeHash(digest).send()
 
         val signature =
@@ -112,7 +103,7 @@ class FakeSCWWallet : SigningKey {
         val encoded = FunctionEncoder.encodeConstructor(tokens)
         val encodedBytes = Numeric.hexStringToByteArray(encoded)
 
-        return encodedBytes
+        return SignedData(encodedBytes)
     }
 
     private fun createSmartContractWallet() {
@@ -154,17 +145,9 @@ class FakeSCWWallet : SigningKey {
 }
 
 class FakePasskeyWallet : SigningKey {
-    private val keyPair: KeyPair
-
-    init {
-        keyPair = generatePasskey()
-    }
+    private val keyPair: KeyPair = generatePasskey()
 
     companion object {
-        fun generate(): FakePasskeyWallet {
-            return FakePasskeyWallet()
-        }
-
         private fun generatePasskey(): KeyPair {
             val keyGen = KeyPairGenerator.getInstance("EC")
             keyGen.initialize(256) // NIST P-256 curve
@@ -172,36 +155,71 @@ class FakePasskeyWallet : SigningKey {
         }
     }
 
-    override suspend fun sign(data: ByteArray): SignatureOuterClass.Signature {
-        return withContext(Dispatchers.IO) {
-            val signature = Signature.getInstance("SHA256withECDSA")
-            signature.initSign(keyPair.private)
-            signature.update(data)
-            val signedData = signature.sign()
-            val signatureKey = signedData + byteArrayOf(0) // Assuming signedData is 64 bytes and recovery byte is appended
-
-            SignatureOuterClass.Signature.newBuilder().also {
-                it.ecdsaCompact = it.ecdsaCompact.toBuilder().also { builder ->
-                    builder.bytes = ByteString.copyFrom(signatureKey.take(64).toByteArray()) // First 64 bytes
-                    builder.recovery = signatureKey[64].toInt() // Recovery byte
-                }.build()
-            }.build()
-        }
-    }
-
-    override suspend fun sign(message: String): SignatureOuterClass.Signature {
-        return sign(message.toByteArray(Charsets.UTF_8))
-    }
-
     override val publicIdentity: PublicIdentity
-        get() {
-            val publicKey = keyPair.public as ECPublicKey
-            val encodedKey = Base64.encodeToString(publicKey.encoded, Base64.NO_WRAP)
-            return PublicIdentity(IdentityKind.PASSKEY, encodedKey)
-        }
+        get() = PublicIdentity(
+            IdentityKind.PASSKEY,
+            keyPair.public.encoded.toString(Charsets.UTF_8)
+        )
+
+    override val type: SignerType
+        get() = SignerType.PASSKEY
+
+    override suspend fun sign(message: String): SignedData {
+        val authenticatorData = generateAuthenticatorData()
+        val clientDataJson = generateClientDataJson(message) // Message embedded here
+        val signature = signPasskeyData(keyPair, authenticatorData, clientDataJson)
+
+        return SignedData(
+            rawData = signature,
+            publicKey = keyPair.public.encoded,
+            authenticatorData = authenticatorData,
+            clientDataJson = clientDataJson
+        )
+    }
+
+    private fun generateClientDataJson(message: String): ByteArray {
+        val clientData = JSONObject()
+        clientData.put("type", "webauthn.get")
+        clientData.put("challenge", KeyUtil.ethHash(message).toHex()) // Now includes message hash
+        clientData.put("origin", "https://example.com") // Mock RP origin
+        return clientData.toString().toByteArray(Charsets.UTF_8)
+    }
+
+    private fun generateAuthenticatorData(): ByteArray {
+        val rpIdHash = MessageDigest.getInstance("SHA-256").digest("example.com".toByteArray())
+        val flags = byteArrayOf(0x01) // User Present (UP) flag set
+        val signCount = byteArrayOf(0x00, 0x00, 0x00, 0x01) // Example sign count
+
+        return rpIdHash + flags + signCount
+    }
+
+    private fun signPasskeyData(
+        keyPair: KeyPair,
+        authenticatorData: ByteArray,
+        clientDataJson: ByteArray,
+    ): ByteArray {
+        val clientDataHash = MessageDigest.getInstance("SHA-256").digest(clientDataJson)
+        val messageHash = hashMessage(String(clientDataJson)) // Hash the entire JSON including message
+        val signedData = authenticatorData + clientDataHash + messageHash // Includes hashed message
+
+        val signature = Signature.getInstance("SHA256withECDSA")
+        signature.initSign(keyPair.private)
+        signature.update(signedData)
+        return signature.sign() // Returns properly signed data
+    }
+
+    private fun hashMessage(message: String): ByteArray {
+        return MessageDigest.getInstance("SHA-256").digest(message.toByteArray(Charsets.UTF_8))
+    }
 }
 
-class Fixtures(api: ClientOptions.Api = ClientOptions.Api(XMTPEnvironment.LOCAL, isSecure = false)) {
+
+class Fixtures(
+    api: ClientOptions.Api = ClientOptions.Api(
+        XMTPEnvironment.LOCAL,
+        isSecure = false
+    ),
+) {
     val key = SecureRandom().generateSeed(32)
     val context = InstrumentationRegistry.getInstrumentation().targetContext
     val clientOptions = ClientOptions(
@@ -236,5 +254,10 @@ class Fixtures(api: ClientOptions.Api = ClientOptions.Api(XMTPEnvironment.LOCAL,
         runBlocking { Client.create(account = eriAccount, options = clientOptions) }
 }
 
-fun fixtures(api: ClientOptions.Api = ClientOptions.Api(XMTPEnvironment.LOCAL, isSecure = false)): Fixtures =
+fun fixtures(
+    api: ClientOptions.Api = ClientOptions.Api(
+        XMTPEnvironment.LOCAL,
+        isSecure = false
+    ),
+): Fixtures =
     Fixtures(api)

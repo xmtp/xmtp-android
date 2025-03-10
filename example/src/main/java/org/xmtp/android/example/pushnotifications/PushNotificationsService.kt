@@ -21,7 +21,7 @@ import org.xmtp.android.example.conversation.ConversationDetailActivity
 import org.xmtp.android.example.extension.truncatedAddress
 import org.xmtp.android.example.utils.KeyUtil
 import org.xmtp.android.library.codecs.GroupUpdated
-import org.xmtp.android.library.messages.Topic
+import uniffi.xmtpv3.org.xmtp.android.library.Topic
 
 class PushNotificationsService : FirebaseMessagingService() {
 
