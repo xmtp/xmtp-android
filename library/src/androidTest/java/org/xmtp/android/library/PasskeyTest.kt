@@ -76,290 +76,79 @@ class PasskeyTest {
 
     @Test
     fun testCanBuildAPasskey() {
-        val davonSCWClient2 = runBlocking {
+        val davonPasskeyClient2 = runBlocking {
             Client.build(
                 publicIdentity = davonPasskey.publicIdentity,
                 options = options
             )
         }
 
-        assertEquals(davonPasskeyClient.inboxId, davonSCWClient2.inboxId)
+        assertEquals(davonPasskeyClient.inboxId, davonPasskeyClient2.inboxId)
     }
-//
-//    @Test
-//    fun testAddAndRemovingAccounts() {
-//        val davonEOA = PrivateKeyBuilder()
-//        val davonSCW2 = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_3)
-//
-//        runBlocking { davonSCWClient.addAccount(davonEOA) }
-//        runBlocking { davonSCWClient.addAccount(davonSCW2) }
-//
-//        var state = runBlocking { davonSCWClient.inboxState(true) }
-//        assertEquals(state.installations.size, 1)
-//        assertEquals(state.identities.size, 3)
-//        assertEquals(state.recoveryPublicIdentity, davonSCW.publicIdentity)
-//        assertEquals(
-//            state.identities,
-//            listOf(
-//                davonEOA.publicIdentity,
-//                davonSCW2.publicIdentity,
-//                davonSCW.publicIdentity
-//            )
-//        )
-//
-//        runBlocking { davonSCWClient.removeAccount(davonSCW, davonSCW2.publicIdentity) }
-//        state = runBlocking { davonSCWClient.inboxState(true) }
-//        assertEquals(state.identities.size, 2)
-//        assertEquals(state.recoveryPublicIdentity, davonSCW.publicIdentity)
-//        assertEquals(
-//            state.identities,
-//            listOf(
-//                davonEOA.publicIdentity,
-//                davonSCW.publicIdentity
-//            )
-//        )
-//        assertEquals(state.installations.size, 1)
-//
-//        // Cannot remove the recovery address
-//        Assert.assertThrows(
-//            "Client error: Unknown Signer",
-//            GenericException::class.java
-//        ) {
-//            runBlocking {
-//                davonSCWClient.removeAccount(
-//                    davonEOA,
-//                    davonSCW.publicIdentity
-//                )
-//            }
-//        }
-//    }
-//
-//    @Test
-//    fun testsCanCreateGroup() {
-//        val group1 = runBlocking {
-//            boEOAClient.conversations.newGroup(
-//                listOf(
-//                    davonSCWClient.inboxId,
-//                    eriSCWClient.inboxId
-//                )
-//            )
-//        }
-//        val group2 = runBlocking {
-//            davonSCWClient.conversations.newGroup(
-//                listOf(
-//                    boEOAClient.inboxId,
-//                    eriSCWClient.inboxId
-//                )
-//            )
-//        }
-//
-//        assertEquals(
-//            runBlocking { group1.members().map { it.inboxId }.sorted() },
-//            listOf(davonSCWClient.inboxId, boEOAClient.inboxId, eriSCWClient.inboxId).sorted()
-//        )
-//        assertEquals(
-//            runBlocking { group2.members().map { it.identities.first() } },
-//            listOf(davonSCW.publicIdentity, boEOAWallet.publicIdentity, eriSCW.publicIdentity)
-//        )
-//    }
-//
-//    @Test
-//    fun testsCanSendMessages() {
-//        val boGroup = runBlocking {
-//            boEOAClient.conversations.newGroup(
-//                listOf(
-//                    davonSCWClient.inboxId,
-//                    eriSCWClient.inboxId
-//                )
-//            )
-//        }
-//        runBlocking { boGroup.send("howdy") }
-//        val messageId = runBlocking { boGroup.send("gm") }
-//        runBlocking { boGroup.sync() }
-//        assertEquals(runBlocking { boGroup.messages() }.first().body, "gm")
-//        assertEquals(runBlocking { boGroup.messages() }.first().id, messageId)
-//        assertEquals(
-//            runBlocking { boGroup.messages() }.first().deliveryStatus,
-//            DecodedMessage.MessageDeliveryStatus.PUBLISHED
-//        )
-//        assertEquals(runBlocking { boGroup.messages() }.size, 3)
-//
-//        runBlocking { davonSCWClient.conversations.sync() }
-//        val davonGroup = runBlocking { davonSCWClient.conversations.listGroups().last() }
-//        runBlocking { davonGroup.sync() }
-//        assertEquals(runBlocking { davonGroup.messages() }.size, 2)
-//        assertEquals(runBlocking { davonGroup.messages() }.first().body, "gm")
-//        runBlocking { davonGroup.send("from davon") }
-//
-//        runBlocking { eriSCWClient.conversations.sync() }
-//        val eriGroup = runBlocking { davonSCWClient.conversations.findGroup(davonGroup.id) }
-//        runBlocking { eriGroup?.sync() }
-//        assertEquals(runBlocking { eriGroup?.messages() }?.size, 3)
-//        assertEquals(runBlocking { eriGroup?.messages() }?.first()?.body, "from davon")
-//        runBlocking { eriGroup?.send("from eri") }
-//    }
-//
-//    @Test
-//    fun testGroupConsent() {
-//        runBlocking {
-//            val davonGroup = runBlocking {
-//                davonSCWClient.conversations.newGroup(
-//                    listOf(
-//                        boEOAClient.inboxId,
-//                        eriSCWClient.inboxId
-//                    )
-//                )
-//            }
-//            assertEquals(
-//                davonSCWClient.preferences.conversationState(davonGroup.id),
-//                ConsentState.ALLOWED
-//            )
-//            assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
-//
-//            davonSCWClient.preferences.setConsentState(
-//                listOf(
-//                    ConsentRecord(
-//                        davonGroup.id,
-//                        EntryType.CONVERSATION_ID,
-//                        ConsentState.DENIED
-//                    )
-//                )
-//            )
-//            assertEquals(
-//                davonSCWClient.preferences.conversationState(davonGroup.id),
-//                ConsentState.DENIED
-//            )
-//            assertEquals(davonGroup.consentState(), ConsentState.DENIED)
-//
-//            davonGroup.updateConsentState(ConsentState.ALLOWED)
-//            assertEquals(
-//                davonSCWClient.preferences.conversationState(davonGroup.id),
-//                ConsentState.ALLOWED
-//            )
-//            assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
-//        }
-//    }
-//
-//    @Test
-//    fun testCanAllowAndDenyInboxId() {
-//        runBlocking {
-//            val davonGroup = runBlocking {
-//                davonSCWClient.conversations.newGroup(
-//                    listOf(
-//                        boEOAClient.inboxId,
-//                        eriSCWClient.inboxId
-//                    )
-//                )
-//            }
-//            assertEquals(
-//                davonSCWClient.preferences.inboxIdState(boEOAClient.inboxId),
-//                ConsentState.UNKNOWN
-//            )
-//            davonSCWClient.preferences.setConsentState(
-//                listOf(
-//                    ConsentRecord(
-//                        boEOAClient.inboxId,
-//                        EntryType.INBOX_ID,
-//                        ConsentState.ALLOWED
-//                    )
-//                )
-//            )
-//            var alixMember = davonGroup.members().firstOrNull { it.inboxId == boEOAClient.inboxId }
-//            assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
-//
-//            assertEquals(
-//                davonSCWClient.preferences.inboxIdState(boEOAClient.inboxId),
-//                ConsentState.ALLOWED
-//            )
-//
-//            davonSCWClient.preferences.setConsentState(
-//                listOf(
-//                    ConsentRecord(
-//                        boEOAClient.inboxId,
-//                        EntryType.INBOX_ID,
-//                        ConsentState.DENIED
-//                    )
-//                )
-//            )
-//            alixMember = davonGroup.members().firstOrNull { it.inboxId == boEOAClient.inboxId }
-//            assertEquals(alixMember!!.consentState, ConsentState.DENIED)
-//
-//            assertEquals(
-//                davonSCWClient.preferences.inboxIdState(boEOAClient.inboxId),
-//                ConsentState.DENIED
-//            )
-//        }
-//    }
-//
-//    @Test
-//    fun testCanStreamAllMessages() {
-//        val group1 = runBlocking {
-//            davonSCWClient.conversations.newGroup(
-//                listOf(
-//                    boEOAClient.inboxId,
-//                    eriSCWClient.inboxId
-//                )
-//            )
-//        }
-//        val group2 = runBlocking {
-//            boEOAClient.conversations.newGroup(
-//                listOf(
-//                    davonSCWClient.inboxId,
-//                    eriSCWClient.inboxId
-//                )
-//            )
-//        }
-//        val dm1 = runBlocking { davonSCWClient.conversations.findOrCreateDm(eriSCWClient.inboxId) }
-//        val dm2 = runBlocking { boEOAClient.conversations.findOrCreateDm(davonSCWClient.inboxId) }
-//        runBlocking { davonSCWClient.conversations.sync() }
-//
-//        val allMessages = mutableListOf<DecodedMessage>()
-//
-//        val job = CoroutineScope(Dispatchers.IO).launch {
-//            try {
-//                davonSCWClient.conversations.streamAllMessages()
-//                    .collect { message ->
-//                        allMessages.add(message)
-//                    }
-//            } catch (e: Exception) {
-//            }
-//        }
-//        Thread.sleep(1000)
-//        runBlocking {
-//            group1.send("hi")
-//            group2.send("hi")
-//            dm1.send("hi")
-//            dm2.send("hi")
-//        }
-//        Thread.sleep(1000)
-//        assertEquals(4, allMessages.size)
-//        job.cancel()
-//    }
-//
-//    @Test
-//    fun testCanStreamConversations() {
-//        val allMessages = mutableListOf<String>()
-//
-//        val job = CoroutineScope(Dispatchers.IO).launch {
-//            try {
-//                davonSCWClient.conversations.stream()
-//                    .collect { message ->
-//                        allMessages.add(message.topic)
-//                    }
-//            } catch (e: Exception) {
-//            }
-//        }
-//        Thread.sleep(1000)
-//
-//        runBlocking {
-//            eriSCWClient.conversations.newGroup(listOf(boEOAClient.inboxId, davonSCWClient.inboxId))
-//            boEOAClient.conversations.newGroup(listOf(eriSCWClient.inboxId, davonSCWClient.inboxId))
-//            eriSCWClient.conversations.findOrCreateDm(davonSCWClient.inboxId)
-//            boEOAClient.conversations.findOrCreateDm(davonSCWClient.inboxId)
-//        }
-//
-//        Thread.sleep(1000)
-//        assertEquals(4, allMessages.size)
-//        job.cancel()
-//    }
+
+    @Test
+    fun testsCanCreateGroup() {
+        val group1 = runBlocking {
+            boEOAClient.conversations.newGroup(
+                listOf(
+                    davonPasskeyClient.inboxId,
+                    eriPasskeyClient.inboxId
+                )
+            )
+        }
+        val group2 = runBlocking {
+            davonPasskeyClient.conversations.newGroup(
+                listOf(
+                    boEOAClient.inboxId,
+                    eriPasskeyClient.inboxId
+                )
+            )
+        }
+
+        assertEquals(
+            runBlocking { group1.members().map { it.inboxId }.sorted() },
+            listOf(davonPasskeyClient.inboxId, boEOAClient.inboxId, eriPasskeyClient.inboxId).sorted()
+        )
+        assertEquals(
+            runBlocking { group2.members().map { it.identities.first() } },
+            listOf(davonPasskey.publicIdentity, boEOAWallet.publicIdentity, eriPasskey.publicIdentity)
+        )
+    }
+
+    @Test
+    fun testsCanSendMessages() {
+        val boGroup = runBlocking {
+            boEOAClient.conversations.newGroup(
+                listOf(
+                    davonPasskeyClient.inboxId,
+                    eriPasskeyClient.inboxId
+                )
+            )
+        }
+        runBlocking { boGroup.send("howdy") }
+        val messageId = runBlocking { boGroup.send("gm") }
+        runBlocking { boGroup.sync() }
+        assertEquals(runBlocking { boGroup.messages() }.first().body, "gm")
+        assertEquals(runBlocking { boGroup.messages() }.first().id, messageId)
+        assertEquals(
+            runBlocking { boGroup.messages() }.first().deliveryStatus,
+            DecodedMessage.MessageDeliveryStatus.PUBLISHED
+        )
+        assertEquals(runBlocking { boGroup.messages() }.size, 3)
+
+        runBlocking { davonPasskeyClient.conversations.sync() }
+        val davonGroup = runBlocking { davonPasskeyClient.conversations.listGroups().last() }
+        runBlocking { davonGroup.sync() }
+        assertEquals(runBlocking { davonGroup.messages() }.size, 2)
+        assertEquals(runBlocking { davonGroup.messages() }.first().body, "gm")
+        runBlocking { davonGroup.send("from davon") }
+
+        runBlocking { eriPasskeyClient.conversations.sync() }
+        val eriGroup = runBlocking { davonPasskeyClient.conversations.findGroup(davonGroup.id) }
+        runBlocking { eriGroup?.sync() }
+        assertEquals(runBlocking { eriGroup?.messages() }?.size, 3)
+        assertEquals(runBlocking { eriGroup?.messages() }?.first()?.body, "from davon")
+        runBlocking { eriGroup?.send("from eri") }
+    }
+
 }
