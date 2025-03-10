@@ -1,6 +1,5 @@
 package org.xmtp.android.library.libxmtp
 
-import uniffi.xmtpv3.FfiPasskeySignature
 import uniffi.xmtpv3.FfiSignatureRequest
 
 class SignatureRequest(val ffiSignatureRequest: FfiSignatureRequest) {
