@@ -5,8 +5,8 @@ import org.xmtp.android.library.toHex
 import uniffi.xmtpv3.FfiUpdateGroupMembershipResult
 
 class GroupMembershipResult(private val ffiUpdateGroupMembershipResult: FfiUpdateGroupMembershipResult) {
-    val addedMembers: Map<InboxId, ULong>
-        get() = ffiUpdateGroupMembershipResult.addedMembers
+    val addedMembers: List<InboxId>
+        get() = ffiUpdateGroupMembershipResult.addedMembers.map { it.key }
     val removedMembers: List<InboxId>
         get() = ffiUpdateGroupMembershipResult.removedMembers
     val failedInstallationIds: List<String>

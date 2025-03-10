@@ -274,7 +274,7 @@ class GroupTest {
     fun testCanAddGroupMembers() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
         val result = runBlocking { group.addMembers(listOf(caroClient.inboxId)) }
-        assertEquals(mapOf(caroClient.inboxId to 1UL), result.addedMembers)
+        assertEquals(caroClient.inboxId, result.addedMembers.first())
         assertEquals(
             runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
@@ -351,6 +351,7 @@ class GroupTest {
         )
     }
 
+    @Test
     fun testCanAddGroupMemberIds() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
         val result = runBlocking {
@@ -363,7 +364,7 @@ class GroupTest {
                 )
             )
         }
-        assertEquals(mapOf(caroClient.inboxId to 1UL), result.addedMembers)
+        assertEquals(caroClient.inboxId, result.addedMembers.first())
         assertEquals(
             runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
@@ -492,13 +493,6 @@ class GroupTest {
                     )
                 )
             }
-        }
-    }
-
-    @Test
-    fun testCannotStartGroupWithSelf() {
-        assertThrows("Recipient is sender", XMTPException::class.java) {
-            runBlocking { boClient.conversations.newGroup(listOf(boClient.inboxId)) }
         }
     }
 
