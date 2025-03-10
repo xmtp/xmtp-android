@@ -264,12 +264,11 @@ $dokka.location:org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroup
 $dokka.location:org.xmtp.android.library.libxmtp/PermissionPolicySet/updateGroupNamePolicy/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-permission-policy-set/update-group-name-policy.html
 $dokka.location:org.xmtp.android.library.libxmtp/PermissionPolicySet/updateMessageDisappearingPolicy/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-permission-policy-set/update-message-disappearing-policy.html
 $dokka.location:org.xmtp.android.library.libxmtp/PublicIdentity///PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-public-identity/index.html
-$dokka.location:org.xmtp.android.library.libxmtp/PublicIdentity/PublicIdentity/#org.xmtp.android.library.libxmtp.IdentityKind#kotlin.String#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-public-identity/-public-identity.html
+$dokka.location:org.xmtp.android.library.libxmtp/PublicIdentity/PublicIdentity/#org.xmtp.android.library.libxmtp.IdentityKind#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-public-identity/-public-identity.html
 $dokka.location:org.xmtp.android.library.libxmtp/PublicIdentity/PublicIdentity/#uniffi.xmtpv3.FfiIdentifier/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-public-identity/-public-identity.html
 $dokka.location:org.xmtp.android.library.libxmtp/PublicIdentity/ffiPrivate/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-public-identity/ffi-private.html
 $dokka.location:org.xmtp.android.library.libxmtp/PublicIdentity/identifier/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-public-identity/identifier.html
 $dokka.location:org.xmtp.android.library.libxmtp/PublicIdentity/kind/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-public-identity/kind.html
-$dokka.location:org.xmtp.android.library.libxmtp/PublicIdentity/relyingPartner/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-public-identity/relying-partner.html
 $dokka.location:org.xmtp.android.library.libxmtp/SignatureRequest///PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-signature-request/index.html
 $dokka.location:org.xmtp.android.library.libxmtp/SignatureRequest/SignatureRequest/#uniffi.xmtpv3.FfiSignatureRequest/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-signature-request/-signature-request.html
 $dokka.location:org.xmtp.android.library.libxmtp/SignatureRequest/addEcdsaSignature/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-signature-request/add-ecdsa-signature.html
@@ -277,11 +276,6 @@ $dokka.location:org.xmtp.android.library.libxmtp/SignatureRequest/addScwSignatur
 $dokka.location:org.xmtp.android.library.libxmtp/SignatureRequest/ffiSignatureRequest/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-signature-request/ffi-signature-request.html
 $dokka.location:org.xmtp.android.library.libxmtp/SignatureRequest/signatureText/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-signature-request/signature-text.html
 $dokka.location:org.xmtp.android.library.messages////PointingToDeclaration/library/org.xmtp.android.library.messages/index.html
-$dokka.location:org.xmtp.android.library.messages//ensureWalletSignature/org.xmtp.proto.message.contents.SignatureOuterClass.Signature#/PointingToDeclaration/library/org.xmtp.android.library.messages/ensure-wallet-signature.html
-$dokka.location:org.xmtp.android.library.messages//ethHash/org.xmtp.proto.message.contents.SignatureOuterClass.Signature#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.messages/eth-hash.html
-$dokka.location:org.xmtp.android.library.messages//generate/org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey#/PointingToDeclaration/library/org.xmtp.android.library.messages/generate.html
-$dokka.location:org.xmtp.android.library.messages//rawData/org.xmtp.proto.message.contents.SignatureOuterClass.Signature#/PointingToDeclaration/library/org.xmtp.android.library.messages/raw-data.html
-$dokka.location:org.xmtp.android.library.messages//rawDataWithNormalizedRecovery/org.xmtp.proto.message.contents.SignatureOuterClass.Signature#/PointingToDeclaration/library/org.xmtp.android.library.messages/raw-data-with-normalized-recovery.html
 $dokka.location:org.xmtp.android.library.messages//walletAddress/org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey#/PointingToDeclaration/library/org.xmtp.android.library.messages/wallet-address.html
 $dokka.location:org.xmtp.android.library.messages//walletAddress/org.xmtp.proto.message.contents.PublicKeyOuterClass.PublicKey#/PointingToDeclaration/library/org.xmtp.android.library.messages/wallet-address.html
 $dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder.Companion///PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-builder/-companion/index.html
@@ -291,20 +285,7 @@ $dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder/PrivateKeyBu
 $dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder/PrivateKeyBuilder/#org.xmtp.proto.message.contents.PrivateKeyOuterClass.PrivateKey/PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-builder/-private-key-builder.html
 $dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder/getPrivateKey/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-builder/get-private-key.html
 $dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder/publicIdentity/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-builder/public-identity.html
-$dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder/sign/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-builder/sign.html
 $dokka.location:org.xmtp.android.library.messages/PrivateKeyBuilder/sign/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.messages/-private-key-builder/sign.html
-$dokka.location:org.xmtp.android.library.messages/SignatureBuilder.Companion///PointingToDeclaration/library/org.xmtp.android.library.messages/-signature-builder/-companion/index.html
-$dokka.location:org.xmtp.android.library.messages/SignatureBuilder.Companion/buildFromSignatureData/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library.messages/-signature-builder/-companion/build-from-signature-data.html
-$dokka.location:org.xmtp.android.library.messages/SignatureBuilder///PointingToDeclaration/library/org.xmtp.android.library.messages/-signature-builder/index.html
-$dokka.location:org.xmtp.android.library.messages/SignatureBuilder/SignatureBuilder/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-signature-builder/-signature-builder.html
-$dokka.location:org.xmtp.android.library.messages/Topic.groupMessage///PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/group-message/index.html
-$dokka.location:org.xmtp.android.library.messages/Topic.groupMessage/groupId/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/group-message/group-id.html
-$dokka.location:org.xmtp.android.library.messages/Topic.groupMessage/groupMessage/#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/group-message/group-message.html
-$dokka.location:org.xmtp.android.library.messages/Topic.userWelcome///PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/user-welcome/index.html
-$dokka.location:org.xmtp.android.library.messages/Topic.userWelcome/installationId/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/user-welcome/installation-id.html
-$dokka.location:org.xmtp.android.library.messages/Topic.userWelcome/userWelcome/#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/user-welcome/user-welcome.html
-$dokka.location:org.xmtp.android.library.messages/Topic///PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/index.html
-$dokka.location:org.xmtp.android.library.messages/Topic/description/#/PointingToDeclaration/library/org.xmtp.android.library.messages/-topic/description.html
 $dokka.location:org.xmtp.android.library.push////PointingToDeclaration/library/org.xmtp.android.library.push/index.html
 $dokka.location:org.xmtp.android.library.push/NotificationsGrpc.NotificationsBlockingStub///PointingToDeclaration/library/org.xmtp.android.library.push/-notifications-grpc/-notifications-blocking-stub/index.html
 $dokka.location:org.xmtp.android.library.push/NotificationsGrpc.NotificationsBlockingStub/deleteInstallation/#org.xmtp.android.library.push.Service.DeleteInstallationRequest/PointingToDeclaration/library/org.xmtp.android.library.push/-notifications-grpc/-notifications-blocking-stub/delete-installation.html
@@ -1027,6 +1008,7 @@ $dokka.location:org.xmtp.android.library/Group/updateRemoveAdminPermission/#org.
 $dokka.location:org.xmtp.android.library/Group/updateRemoveMemberPermission/#org.xmtp.android.library.libxmtp.PermissionOption/PointingToDeclaration/library/org.xmtp.android.library/-group/update-remove-member-permission.html
 $dokka.location:org.xmtp.android.library/KeyUtil///PointingToDeclaration/library/org.xmtp.android.library/-key-util/index.html
 $dokka.location:org.xmtp.android.library/KeyUtil/addUncompressedByte/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-key-util/add-uncompressed-byte.html
+$dokka.location:org.xmtp.android.library/KeyUtil/ethHash/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-key-util/eth-hash.html
 $dokka.location:org.xmtp.android.library/KeyUtil/getPublicKey/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-key-util/get-public-key.html
 $dokka.location:org.xmtp.android.library/KeyUtil/getSignatureBytes/#org.web3j.crypto.Sign.SignatureData/PointingToDeclaration/library/org.xmtp.android.library/-key-util/get-signature-bytes.html
 $dokka.location:org.xmtp.android.library/KeyUtil/getSignatureData/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-key-util/get-signature-data.html
@@ -1048,6 +1030,12 @@ $dokka.location:org.xmtp.android.library/SendOptions/SendOptions/#org.xmtp.andro
 $dokka.location:org.xmtp.android.library/SendOptions/compression/#/PointingToDeclaration/library/org.xmtp.android.library/-send-options/compression.html
 $dokka.location:org.xmtp.android.library/SendOptions/contentType/#/PointingToDeclaration/library/org.xmtp.android.library/-send-options/content-type.html
 $dokka.location:org.xmtp.android.library/SendOptions/ephemeral/#/PointingToDeclaration/library/org.xmtp.android.library/-send-options/ephemeral.html
+$dokka.location:org.xmtp.android.library/SignedData///PointingToDeclaration/library/org.xmtp.android.library/-signed-data/index.html
+$dokka.location:org.xmtp.android.library/SignedData/SignedData/#kotlin.ByteArray#kotlin.ByteArray?#kotlin.ByteArray?#kotlin.ByteArray?/PointingToDeclaration/library/org.xmtp.android.library/-signed-data/-signed-data.html
+$dokka.location:org.xmtp.android.library/SignedData/authenticatorData/#/PointingToDeclaration/library/org.xmtp.android.library/-signed-data/authenticator-data.html
+$dokka.location:org.xmtp.android.library/SignedData/clientDataJson/#/PointingToDeclaration/library/org.xmtp.android.library/-signed-data/client-data-json.html
+$dokka.location:org.xmtp.android.library/SignedData/publicKey/#/PointingToDeclaration/library/org.xmtp.android.library/-signed-data/public-key.html
+$dokka.location:org.xmtp.android.library/SignedData/rawData/#/PointingToDeclaration/library/org.xmtp.android.library/-signed-data/raw-data.html
 $dokka.location:org.xmtp.android.library/SignerType.EOA///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-signer-type/-e-o-a/index.html
 $dokka.location:org.xmtp.android.library/SignerType.SCW///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library/-signer-type/-s-c-w/index.html
 $dokka.location:org.xmtp.android.library/SignerType///PointingToDeclaration/library/org.xmtp.android.library/-signer-type/index.html
@@ -1057,10 +1045,16 @@ $dokka.location:org.xmtp.android.library/SigningKey///PointingToDeclaration/lib
 $dokka.location:org.xmtp.android.library/SigningKey/blockNumber/#/PointingToDeclaration/library/org.xmtp.android.library/-signing-key/block-number.html
 $dokka.location:org.xmtp.android.library/SigningKey/chainId/#/PointingToDeclaration/library/org.xmtp.android.library/-signing-key/chain-id.html
 $dokka.location:org.xmtp.android.library/SigningKey/publicIdentity/#/PointingToDeclaration/library/org.xmtp.android.library/-signing-key/public-identity.html
-$dokka.location:org.xmtp.android.library/SigningKey/sign/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-signing-key/sign.html
 $dokka.location:org.xmtp.android.library/SigningKey/sign/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-signing-key/sign.html
-$dokka.location:org.xmtp.android.library/SigningKey/signSCW/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-signing-key/sign-s-c-w.html
 $dokka.location:org.xmtp.android.library/SigningKey/type/#/PointingToDeclaration/library/org.xmtp.android.library/-signing-key/type.html
+$dokka.location:org.xmtp.android.library/Topic.groupMessage///PointingToDeclaration/library/org.xmtp.android.library/-topic/group-message/index.html
+$dokka.location:org.xmtp.android.library/Topic.groupMessage/groupId/#/PointingToDeclaration/library/org.xmtp.android.library/-topic/group-message/group-id.html
+$dokka.location:org.xmtp.android.library/Topic.groupMessage/groupMessage/#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library/-topic/group-message/group-message.html
+$dokka.location:org.xmtp.android.library/Topic.userWelcome///PointingToDeclaration/library/org.xmtp.android.library/-topic/user-welcome/index.html
+$dokka.location:org.xmtp.android.library/Topic.userWelcome/installationId/#/PointingToDeclaration/library/org.xmtp.android.library/-topic/user-welcome/installation-id.html
+$dokka.location:org.xmtp.android.library/Topic.userWelcome/userWelcome/#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library/-topic/user-welcome/user-welcome.html
+$dokka.location:org.xmtp.android.library/Topic///PointingToDeclaration/library/org.xmtp.android.library/-topic/index.html
+$dokka.location:org.xmtp.android.library/Topic/description/#/PointingToDeclaration/library/org.xmtp.android.library/-topic/description.html
 $dokka.location:org.xmtp.android.library/Util.Companion///PointingToDeclaration/library/org.xmtp.android.library/-util/-companion/index.html
 $dokka.location:org.xmtp.android.library/Util.Companion/keccak256/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-util/-companion/keccak256.html
 $dokka.location:org.xmtp.android.library/Util///PointingToDeclaration/library/org.xmtp.android.library/-util/index.html
@@ -1080,6 +1074,12 @@ $dokka.location:org.xmtp.android.library/XMTPEnvironment/values/#/PointingToDecl
 $dokka.location:org.xmtp.android.library/XMTPEnvironment/withValue/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/with-value.html
 $dokka.location:org.xmtp.android.library/XMTPException///PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/index.html
 $dokka.location:org.xmtp.android.library/XMTPException/XMTPException/#kotlin.String#java.lang.Exception?/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/-x-m-t-p-exception.html
+$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp////PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/index.html
+$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/GroupMembershipResult///PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-group-membership-result/index.html
+$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/GroupMembershipResult/GroupMembershipResult/#uniffi.xmtpv3.FfiUpdateGroupMembershipResult/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-group-membership-result/-group-membership-result.html
+$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/GroupMembershipResult/addedMembers/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-group-membership-result/added-members.html
+$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/GroupMembershipResult/failedInstallationIds/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-group-membership-result/failed-installation-ids.html
+$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/GroupMembershipResult/removedMembers/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-group-membership-result/removed-members.html
 $dokka.location:uniffi.xmtpv3////PointingToDeclaration/library/uniffi.xmtpv3/index.html
 $dokka.location:uniffi.xmtpv3//connectToBackend/#kotlin.String#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtpv3/connect-to-backend.html
 $dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.XmtpApiClient#kotlin.String?#kotlin.ByteArray?#kotlin.String#uniffi.xmtpv3.FfiIdentifier#kotlin.ULong#kotlin.ByteArray?#kotlin.String?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
@@ -1191,6 +1191,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversation/isAdmin/#kotlin.String/PointingToD
 $dokka.location:uniffi.xmtpv3/FfiConversation/isConversationMessageDisappearingEnabled/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/is-conversation-message-disappearing-enabled.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/isSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/is-super-admin.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/listMembers/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/list-members.html
+$dokka.location:uniffi.xmtpv3/FfiConversation/pausedForVersion/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/paused-for-version.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/processStreamedConversationMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/process-streamed-conversation-message.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/publishMessages/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/publish-messages.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/removeAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/remove-admin.html
@@ -1250,6 +1251,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversationInterface/isAdmin/#kotlin.String/Po
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/isConversationMessageDisappearingEnabled/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/is-conversation-message-disappearing-enabled.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/isSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/is-super-admin.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/listMembers/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/list-members.html
+$dokka.location:uniffi.xmtpv3/FfiConversationInterface/pausedForVersion/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/paused-for-version.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/processStreamedConversationMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/process-streamed-conversation-message.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/publishMessages/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/publish-messages.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/removeAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/remove-admin.html
@@ -1423,10 +1425,9 @@ $dokka.location:uniffi.xmtpv3/FfiHmacKey/epoch/#/PointingToDeclaration/library/
 $dokka.location:uniffi.xmtpv3/FfiHmacKey/key/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-hmac-key/key.html
 $dokka.location:uniffi.xmtpv3/FfiIdentifier.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-identifier/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiIdentifier///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-identifier/index.html
-$dokka.location:uniffi.xmtpv3/FfiIdentifier/FfiIdentifier/#kotlin.String#uniffi.xmtpv3.FfiIdentifierKind#kotlin.String?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-identifier/-ffi-identifier.html
+$dokka.location:uniffi.xmtpv3/FfiIdentifier/FfiIdentifier/#kotlin.String#uniffi.xmtpv3.FfiIdentifierKind/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-identifier/-ffi-identifier.html
 $dokka.location:uniffi.xmtpv3/FfiIdentifier/identifier/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-identifier/identifier.html
 $dokka.location:uniffi.xmtpv3/FfiIdentifier/identifierKind/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-identifier/identifier-kind.html
-$dokka.location:uniffi.xmtpv3/FfiIdentifier/relyingPartner/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-identifier/relying-partner.html
 $dokka.location:uniffi.xmtpv3/FfiIdentifierKind.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-identifier-kind/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiIdentifierKind.ETHEREUM///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-identifier-kind/-e-t-h-e-r-e-u-m/index.html
 $dokka.location:uniffi.xmtpv3/FfiIdentifierKind.PASSKEY///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-identifier-kind/-p-a-s-s-k-e-y/index.html
@@ -1519,6 +1520,13 @@ $dokka.location:uniffi.xmtpv3/FfiMultiRemoteAttachment.Companion///PointingToDec
 $dokka.location:uniffi.xmtpv3/FfiMultiRemoteAttachment///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-multi-remote-attachment/index.html
 $dokka.location:uniffi.xmtpv3/FfiMultiRemoteAttachment/FfiMultiRemoteAttachment/#kotlin.collections.List[uniffi.xmtpv3.FfiRemoteAttachmentInfo]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-multi-remote-attachment/-ffi-multi-remote-attachment.html
 $dokka.location:uniffi.xmtpv3/FfiMultiRemoteAttachment/attachments/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-multi-remote-attachment/attachments.html
+$dokka.location:uniffi.xmtpv3/FfiPasskeySignature.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-passkey-signature/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiPasskeySignature///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-passkey-signature/index.html
+$dokka.location:uniffi.xmtpv3/FfiPasskeySignature/FfiPasskeySignature/#kotlin.ByteArray#kotlin.ByteArray#kotlin.ByteArray#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-passkey-signature/-ffi-passkey-signature.html
+$dokka.location:uniffi.xmtpv3/FfiPasskeySignature/authenticatorData/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-passkey-signature/authenticator-data.html
+$dokka.location:uniffi.xmtpv3/FfiPasskeySignature/clientDataJson/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-passkey-signature/client-data-json.html
+$dokka.location:uniffi.xmtpv3/FfiPasskeySignature/publicKey/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-passkey-signature/public-key.html
+$dokka.location:uniffi.xmtpv3/FfiPasskeySignature/signature/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-passkey-signature/signature.html
 $dokka.location:uniffi.xmtpv3/FfiPermissionLevel.ADMIN///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-permission-level/-a-d-m-i-n/index.html
 $dokka.location:uniffi.xmtpv3/FfiPermissionLevel.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-permission-level/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiPermissionLevel.MEMBER///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-permission-level/-m-e-m-b-e-r/index.html
@@ -1614,6 +1622,7 @@ $dokka.location:uniffi.xmtpv3/FfiSignatureRequest///PointingToDeclaration/libra
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/FfiSignatureRequest/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/-ffi-signature-request.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/FfiSignatureRequest/#uniffi.xmtpv3.NoPointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/-ffi-signature-request.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/addEcdsaSignature/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/add-ecdsa-signature.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureRequest/addPasskeySignature/#uniffi.xmtpv3.FfiPasskeySignature/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/add-passkey-signature.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/addScwSignature/#kotlin.ByteArray#kotlin.String#kotlin.ULong#kotlin.ULong?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/add-scw-signature.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/close.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/destroy/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/destroy.html
@@ -1624,6 +1633,7 @@ $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/uniffiClonePointer/#/PointingT
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/index.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/addEcdsaSignature/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/add-ecdsa-signature.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/addPasskeySignature/#uniffi.xmtpv3.FfiPasskeySignature/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/add-passkey-signature.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/addScwSignature/#kotlin.ByteArray#kotlin.String#kotlin.ULong#kotlin.ULong?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/add-scw-signature.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/isReady/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/is-ready.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequestInterface/missingAddressSignatures/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request-interface/missing-address-signatures.html
@@ -1800,4 +1810,5 @@ org.xmtp.android.library.libxmtp
 org.xmtp.android.library.messages
 org.xmtp.android.library.push
 uniffi.xmtpv3
+uniffi.xmtpv3.org.xmtp.android.library.libxmtp
 
