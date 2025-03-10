@@ -1,4 +1,4 @@
-package uniffi.xmtpv3.org.xmtp.android.library
+package org.xmtp.android.library
 
 sealed class Topic {
     data class userWelcome(val installationId: String?) : Topic()
