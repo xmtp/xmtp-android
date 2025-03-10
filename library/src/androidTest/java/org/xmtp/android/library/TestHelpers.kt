@@ -27,32 +27,6 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 import java.security.Signature
 
-
-class FakeWallet : SigningKey {
-    private var privateKey: PrivateKey
-    private var privateKeyBuilder: PrivateKeyBuilder
-
-    constructor(key: PrivateKey, builder: PrivateKeyBuilder) {
-        privateKey = key
-        privateKeyBuilder = builder
-    }
-
-    companion object {
-        fun generate(): FakeWallet {
-            val key = PrivateKeyBuilder()
-            return FakeWallet(key.getPrivateKey(), key)
-        }
-    }
-
-    override suspend fun  sign(message: String): SignedData {
-        val signature = privateKeyBuilder.sign(message)
-        return signature
-    }
-
-    override val publicIdentity: PublicIdentity
-        get() = PublicIdentity(IdentityKind.ETHEREUM, privateKey.walletAddress)
-}
-
 const val ANVIL_TEST_PRIVATE_KEY_1 =
     "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 const val ANVIL_TEST_PRIVATE_KEY_2 =
@@ -158,7 +132,7 @@ class FakePasskeyWallet : SigningKey {
     override val publicIdentity: PublicIdentity
         get() = PublicIdentity(
             IdentityKind.PASSKEY,
-            keyPair.public.encoded.toString(Charsets.UTF_8)
+            keyPair.public.encoded.toHex()
         )
 
     override val type: SignerType
