@@ -1,7 +1,11 @@
 package org.xmtp.android.library
 
+import android.util.Base64
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.protobuf.ByteString
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.DynamicBytes
 import org.web3j.abi.datatypes.Uint
@@ -17,11 +21,16 @@ import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.Signature
 import org.xmtp.android.library.messages.ethHash
 import org.xmtp.android.library.messages.walletAddress
+import org.xmtp.proto.message.contents.SignatureOuterClass
 import java.math.BigInteger
+import java.security.KeyPair
+import java.security.KeyPairGenerator
 import java.security.SecureRandom
+import java.security.Signature
+import java.security.interfaces.ECPublicKey
+
 
 class FakeWallet : SigningKey {
     private var privateKey: PrivateKey
@@ -39,12 +48,12 @@ class FakeWallet : SigningKey {
         }
     }
 
-    override suspend fun sign(data: ByteArray): Signature {
+    override suspend fun sign(data: ByteArray): SignatureOuterClass.Signature? {
         val signature = privateKeyBuilder.sign(data)
         return signature
     }
 
-    override suspend fun sign(message: String): Signature {
+    override suspend fun sign(message: String): SignatureOuterClass.Signature {
         val signature = privateKeyBuilder.sign(message)
         return signature
     }
@@ -90,7 +99,7 @@ class FakeSCWWallet : SigningKey {
             contractDeployerCredentials,
             DefaultGasProvider()
         )
-        val digest = Signature.newBuilder().build().ethHash(message)
+        val digest = SignatureOuterClass.Signature.newBuilder().build().ethHash(message)
         val replaySafeHash = smartWallet.replaySafeHash(digest).send()
 
         val signature =
@@ -142,6 +151,54 @@ class FakeSCWWallet : SigningKey {
             throw Exception("Transaction failed: ${transactionReceipt.status}")
         }
     }
+}
+
+class FakePasskeyWallet : SigningKey {
+    private val keyPair: KeyPair
+
+    init {
+        keyPair = generatePasskey()
+    }
+
+    companion object {
+        fun generate(): FakePasskeyWallet {
+            return FakePasskeyWallet()
+        }
+
+        private fun generatePasskey(): KeyPair {
+            val keyGen = KeyPairGenerator.getInstance("EC")
+            keyGen.initialize(256) // NIST P-256 curve
+            return keyGen.generateKeyPair()
+        }
+    }
+
+    override suspend fun sign(data: ByteArray): SignatureOuterClass.Signature {
+        return withContext(Dispatchers.IO) {
+            val signature = Signature.getInstance("SHA256withECDSA")
+            signature.initSign(keyPair.private)
+            signature.update(data)
+            val signedData = signature.sign()
+            val signatureKey = signedData + byteArrayOf(0) // Assuming signedData is 64 bytes and recovery byte is appended
+
+            SignatureOuterClass.Signature.newBuilder().also {
+                it.ecdsaCompact = it.ecdsaCompact.toBuilder().also { builder ->
+                    builder.bytes = ByteString.copyFrom(signatureKey.take(64).toByteArray()) // First 64 bytes
+                    builder.recovery = signatureKey[64].toInt() // Recovery byte
+                }.build()
+            }.build()
+        }
+    }
+
+    override suspend fun sign(message: String): SignatureOuterClass.Signature {
+        return sign(message.toByteArray(Charsets.UTF_8))
+    }
+
+    override val publicIdentity: PublicIdentity
+        get() {
+            val publicKey = keyPair.public as ECPublicKey
+            val encodedKey = Base64.encodeToString(publicKey.encoded, Base64.NO_WRAP)
+            return PublicIdentity(IdentityKind.PASSKEY, encodedKey)
+        }
 }
 
 class Fixtures(api: ClientOptions.Api = ClientOptions.Api(XMTPEnvironment.LOCAL, isSecure = false)) {

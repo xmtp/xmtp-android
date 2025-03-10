@@ -242,18 +242,26 @@ class Client(
             signatureRequest: SignatureRequest,
             signingKey: SigningKey,
         ) {
-            if (signingKey.type == SignerType.SCW) {
-                val chainId = signingKey.chainId
-                    ?: throw XMTPException("ChainId is required for smart contract wallets")
-                signatureRequest.addScwSignature(
-                    signingKey.signSCW(signatureRequest.signatureText()),
-                    signingKey.publicIdentity.identifier,
-                    chainId.toULong(),
-                    signingKey.blockNumber?.toULong()
-                )
-            } else {
-                signingKey.sign(signatureRequest.signatureText())?.let {
-                    signatureRequest.addEcdsaSignature(it.rawData)
+            when(signingKey.type) {
+                SignerType.SCW -> {
+                    val chainId = signingKey.chainId
+                        ?: throw XMTPException("ChainId is required for smart contract wallets")
+                    signatureRequest.addScwSignature(
+                        signingKey.signSCW(signatureRequest.signatureText()),
+                        signingKey.publicIdentity.identifier,
+                        chainId.toULong(),
+                        signingKey.blockNumber?.toULong()
+                    )
+                }
+                SignerType.PASSKEY -> {
+                    signingKey.sign(signatureRequest.signatureText())?.let {
+                        signatureRequest.addPasskeySignature(signingKey.publicIdentity.identifier.hexToByteArray(), it.rawData)
+                    }
+                }
+                else -> {
+                    signingKey.sign(signatureRequest.signatureText())?.let {
+                        signatureRequest.addEcdsaSignature(it.rawData)
+                    }
                 }
             }
         }

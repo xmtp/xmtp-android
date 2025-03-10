@@ -1,5 +1,6 @@
 package org.xmtp.android.library.libxmtp
 
+import uniffi.xmtpv3.FfiPasskeySignature
 import uniffi.xmtpv3.FfiSignatureRequest
 
 class SignatureRequest(val ffiSignatureRequest: FfiSignatureRequest) {
@@ -14,6 +15,22 @@ class SignatureRequest(val ffiSignatureRequest: FfiSignatureRequest) {
 
     suspend fun addEcdsaSignature(signatureBytes: ByteArray) {
         ffiSignatureRequest.addEcdsaSignature(signatureBytes)
+    }
+
+    suspend fun addPasskeySignature(
+        publicKey: ByteArray,
+        signatureBytes: ByteArray,
+        authenticatorData: ByteArray,
+        clientDataJson: ByteArray,
+    ) {
+        ffiSignatureRequest.addPasskeySignature(
+            FfiPasskeySignature(
+                publicKey,
+                signatureBytes,
+                authenticatorData,
+                clientDataJson
+            )
+        )
     }
 
     suspend fun signatureText(): String {
