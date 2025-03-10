@@ -12,12 +12,12 @@ class PublicIdentity(val ffiPrivate: FfiIdentifier) {
         kind: IdentityKind,
         identifier: String,
     ) :
-            this(
-                ffiPrivate = FfiIdentifier(
-                    identifier,
-                    kind.toFfiPublicIdentifierKind(),
-                ),
-            )
+        this(
+            ffiPrivate = FfiIdentifier(
+                identifier,
+                kind.toFfiPublicIdentifierKind(),
+            ),
+        )
 
     val kind: IdentityKind
         get() = ffiPrivate.identifierKind.toIdentityKind()

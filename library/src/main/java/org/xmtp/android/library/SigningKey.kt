@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import org.xmtp.android.library.libxmtp.PublicIdentity
-import org.xmtp.proto.message.contents.SignatureOuterClass
 import uniffi.xmtpv3.org.xmtp.android.library.SignedData
 
 interface SigningKey {

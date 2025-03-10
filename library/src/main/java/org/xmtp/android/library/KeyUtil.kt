@@ -1,7 +1,5 @@
 package org.xmtp.android.library
 
-import org.web3j.crypto.ECDSASignature
-import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.web3j.crypto.Sign.SignatureData
 import java.math.BigInteger
