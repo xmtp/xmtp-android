@@ -11,5 +11,4 @@ class GroupMembershipResult(private val ffiUpdateGroupMembershipResult: FfiUpdat
         get() = ffiUpdateGroupMembershipResult.removedMembers
     val failedInstallationIds: List<String>
         get() = ffiUpdateGroupMembershipResult.failedInstallations.map { it.toHex() }
-
 }
