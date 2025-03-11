@@ -47,7 +47,7 @@ class Client(
     val installationId: String,
     val inboxId: InboxId,
     val environment: XMTPEnvironment,
-    val identity: PublicIdentity
+    val publicIdentity: PublicIdentity
 ) {
     val preferences: PrivatePreferences =
         PrivatePreferences(client = this, ffiClient = libXMTPClient)
