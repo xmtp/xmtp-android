@@ -32,6 +32,7 @@ data class ClientOptions(
         else -> "https://message-history.dev.ephemera.network/"
     },
     val dbDirectory: String? = null,
+    val versionInfo: String? = null,
 ) {
     data class Api(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
@@ -116,7 +117,8 @@ class Client(
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
-                historySyncUrl = null
+                historySyncUrl = null,
+                versionInfo = null
             )
 
             return useClient(ffiClient)
@@ -160,6 +162,7 @@ class Client(
                 recoveredInboxId,
                 clientOptions,
                 clientOptions.appContext,
+                clientOptions.versionInfo
             )
             clientOptions.preAuthenticateToInboxCallback?.let {
                 runBlocking {
@@ -211,6 +214,7 @@ class Client(
             inboxId: InboxId,
             options: ClientOptions,
             appContext: Context,
+            versionInfo: String?
         ): Pair<FfiXmtpClient, String> {
             val alias = "xmtp-${options.api.env}-$inboxId"
 
@@ -231,7 +235,8 @@ class Client(
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
-                historySyncUrl = options.historySyncUrl
+                historySyncUrl = options.historySyncUrl,
+                versionInfo = versionInfo
             )
 
             return Pair(ffiClient, dbPath)
@@ -272,6 +277,7 @@ class Client(
                 recoveredInboxId,
                 clientOptions,
                 clientOptions.appContext,
+                clientOptions.versionInfo
             )
             return Client(
                 ffiClient,

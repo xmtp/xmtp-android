@@ -192,6 +192,13 @@ sealed class Conversation {
         }
     }
 
+    fun pausedForVersion(): String? {
+        return when (this) {
+            is Group -> group.pausedForVersion()
+            is Dm -> dm.pausedForVersion()
+        }
+    }
+
     val client: Client
         get() {
             return when (this) {

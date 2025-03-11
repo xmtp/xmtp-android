@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import app.cash.turbine.test
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,8 @@ import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import org.xmtp.proto.mls.message.contents.TranscriptMessages
 import uniffi.xmtpv3.GenericException
+import java.io.File
+import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
@@ -1164,5 +1167,80 @@ class GroupTest {
         )
         assert(boGroup.isDisappearingMessagesEnabled)
         assert(alixGroup.isDisappearingMessagesEnabled)
+    }
+
+    @Test
+    fun testGroupPausedForMinVersion() {
+        val key = SecureRandom().generateSeed(32)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val options = ClientOptions(
+            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+            appContext = context,
+            dbEncryptionKey = key,
+            versionInfo = "0.0.9"
+        )
+        val alixClient = runBlocking {
+            Client.create(account = fakeWallet, options = options)
+        }
+        val clientIdentity = fakeWallet.publicIdentity
+
+        val fromBundle = runBlocking {
+            Client.build(clientIdentity, options = options)
+        }
+
+        val boClient = fixtures.boClient;
+
+        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
+        runBlocking { alixClient.conversations.syncAllConversations() }
+        val alixGroup = alixClient.conversations.listGroups().first()
+
+        runBlocking {
+            boGroup.send("whats up")
+            alixGroup.sync()
+        }
+
+        val message = runBlocking { alixGroup.lastMessage() }
+        assert(message?.body.equals("whats up"))
+        var pausedForVersion = alixGroup.pausedForVersion()
+        assert(pausedForVersion == null)
+
+        runBlocking {
+            boGroup.updateGroupMinVersionToMatchSelf()
+            alixGroup.sync()
+        }
+
+
+        pausedForVersion = alixGroup.pausedForVersion()
+        assert(pausedForVersion.equals("1.0.0-rc1"))
+
+        val exception = assertThrows(GenericException::class.java) {
+            runBlocking { alixGroup.send("hey why is my group paused?") }
+        }
+        assertEquals("Group error: Group is paused until version 1.0.0-rc1 is available", exception.message)
+
+        // Create a new client using the same database and key bundle, but this time do not override the version
+        // Simulating a client update from 0.0.9 to 1.0.0-rc1
+        val options2 = ClientOptions(
+            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+            appContext = context,
+            dbEncryptionKey = key,
+        )
+        val alixClient2 = runBlocking {
+            Client.build(clientIdentity, options = options2)
+        }
+        val alixGroup2 = alixClient2.conversations.listGroups().first()
+        pausedForVersion = alixGroup2.pausedForVersion()
+        // Before syncing the group is still paused
+        assert(pausedForVersion.equals("1.0.0-rc1"))
+
+        // Syncing the group should unpause it
+        runBlocking {
+            alixGroup2.sync()
+        }
+        var pausedForVersion2 = alixGroup.pausedForVersion()
+        assert(pausedForVersion2 == null)
+
+        runBlocking { alixGroup.send("I am no longer paused!") }
     }
 }

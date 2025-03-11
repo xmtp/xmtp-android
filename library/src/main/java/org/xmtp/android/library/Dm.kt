@@ -264,4 +264,8 @@ class Dm(
     fun consentState(): ConsentState {
         return ConsentState.fromFfiConsentState(libXMTPGroup.consentState())
     }
+
+    fun pausedForVersion(): String? {
+        return libXMTPGroup.pausedForVersion()
+    }
 }

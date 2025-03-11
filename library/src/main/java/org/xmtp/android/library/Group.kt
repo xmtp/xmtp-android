@@ -429,6 +429,14 @@ class Group(
         return libXMTPGroup.superAdminList()
     }
 
+    fun pausedForVersion(): String? {
+        return libXMTPGroup.pausedForVersion()
+    }
+
+    suspend fun updateGroupMinVersionToMatchSelf() {
+        return libXMTPGroup.updateGroupMinVersionToMatchSelf()
+    }
+
     fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
