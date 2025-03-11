@@ -765,7 +765,7 @@ $dokka.location:org.xmtp.android.library/Client.Companion/getOrCreateInboxId/#or
 $dokka.location:org.xmtp.android.library/Client.Companion/inboxStatesForInboxIds/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.ClientOptions.Api/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/inbox-states-for-inbox-ids.html
 $dokka.location:org.xmtp.android.library/Client.Companion/register/#org.xmtp.android.library.codecs.ContentCodec[*]/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/register.html
 $dokka.location:org.xmtp.android.library/Client///PointingToDeclaration/library/org.xmtp.android.library/-client/index.html
-$dokka.location:org.xmtp.android.library/Client/Client/#uniffi.xmtpv3.FfiXmtpClient#kotlin.String#kotlin.String#kotlin.String#org.xmtp.android.library.XMTPEnvironment/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
+$dokka.location:org.xmtp.android.library/Client/Client/#uniffi.xmtpv3.FfiXmtpClient#kotlin.String#kotlin.String#kotlin.String#org.xmtp.android.library.XMTPEnvironment#org.xmtp.android.library.libxmtp.PublicIdentity/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
 $dokka.location:org.xmtp.android.library/Client/addAccount/#org.xmtp.android.library.SigningKey#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client/add-account.html
 $dokka.location:org.xmtp.android.library/Client/canMessage/#kotlin.collections.List[org.xmtp.android.library.libxmtp.PublicIdentity]/PointingToDeclaration/library/org.xmtp.android.library/-client/can-message.html
 $dokka.location:org.xmtp.android.library/Client/conversations/#/PointingToDeclaration/library/org.xmtp.android.library/-client/conversations.html
@@ -787,6 +787,7 @@ $dokka.location:org.xmtp.android.library/Client/inboxStatesForInboxIds/#kotlin.B
 $dokka.location:org.xmtp.android.library/Client/installationId/#/PointingToDeclaration/library/org.xmtp.android.library/-client/installation-id.html
 $dokka.location:org.xmtp.android.library/Client/libXMTPVersion/#/PointingToDeclaration/library/org.xmtp.android.library/-client/lib-x-m-t-p-version.html
 $dokka.location:org.xmtp.android.library/Client/preferences/#/PointingToDeclaration/library/org.xmtp.android.library/-client/preferences.html
+$dokka.location:org.xmtp.android.library/Client/publicIdentity/#/PointingToDeclaration/library/org.xmtp.android.library/-client/public-identity.html
 $dokka.location:org.xmtp.android.library/Client/reconnectLocalDatabase/#/PointingToDeclaration/library/org.xmtp.android.library/-client/reconnect-local-database.html
 $dokka.location:org.xmtp.android.library/Client/removeAccount/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.libxmtp.PublicIdentity/PointingToDeclaration/library/org.xmtp.android.library/-client/remove-account.html
 $dokka.location:org.xmtp.android.library/Client/revokeAllOtherInstallations/#org.xmtp.android.library.SigningKey/PointingToDeclaration/library/org.xmtp.android.library/-client/revoke-all-other-installations.html
