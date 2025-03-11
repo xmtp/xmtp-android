@@ -12,7 +12,6 @@ import org.xmtp.android.library.libxmtp.DecodedMessage
 import org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
-import org.xmtp.android.library.messages.Topic
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
 import uniffi.xmtpv3.FfiDeliveryStatus
@@ -264,5 +263,10 @@ class Dm(
 
     fun consentState(): ConsentState {
         return ConsentState.fromFfiConsentState(libXMTPGroup.consentState())
+    }
+
+    // Returns null if dm is not paused, otherwise the min version required to unpause this dm
+    fun pausedForVersion(): String? {
+        return libXMTPGroup.pausedForVersion()
     }
 }

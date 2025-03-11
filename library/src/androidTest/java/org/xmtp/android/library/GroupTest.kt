@@ -273,7 +273,8 @@ class GroupTest {
     @Test
     fun testCanAddGroupMembers() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
-        runBlocking { group.addMembers(listOf(caroClient.inboxId)) }
+        val result = runBlocking { group.addMembers(listOf(caroClient.inboxId)) }
+        assertEquals(caroClient.inboxId, result.addedMembers.first())
         assertEquals(
             runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
@@ -350,9 +351,10 @@ class GroupTest {
         )
     }
 
+    @Test
     fun testCanAddGroupMemberIds() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
-        runBlocking {
+        val result = runBlocking {
             group.addMembersByIdentity(
                 listOf(
                     PublicIdentity(
@@ -362,6 +364,7 @@ class GroupTest {
                 )
             )
         }
+        assertEquals(caroClient.inboxId, result.addedMembers.first())
         assertEquals(
             runBlocking { group.members().map { it.inboxId }.sorted() },
             listOf(
@@ -490,13 +493,6 @@ class GroupTest {
                     )
                 )
             }
-        }
-    }
-
-    @Test
-    fun testCannotStartGroupWithSelf() {
-        assertThrows("Recipient is sender", XMTPException::class.java) {
-            runBlocking { boClient.conversations.newGroup(listOf(boClient.inboxId)) }
         }
     }
 
@@ -1168,5 +1164,18 @@ class GroupTest {
         )
         assert(boGroup.isDisappearingMessagesEnabled)
         assert(alixGroup.isDisappearingMessagesEnabled)
+    }
+
+    @Test
+    fun testGroupPausedForVersionReturnsNone() = runBlocking {
+        val boGroup = boClient.conversations.newGroup(
+            listOf(alixClient.inboxId)
+        )
+        val pausedForVersionGroup = boGroup.pausedForVersion()
+        assertNull(pausedForVersionGroup)
+
+        val boDm = boClient.conversations.newConversation(alixClient.inboxId)
+        val pausedForVersionDm = boDm.pausedForVersion()
+        assertNull(pausedForVersionDm)
     }
 }

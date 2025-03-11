@@ -6,11 +6,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
-import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.InboxState
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.SignatureRequest
-import org.xmtp.android.library.messages.rawData
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.XmtpApiClient
 import uniffi.xmtpv3.connectToBackend
@@ -48,6 +47,7 @@ class Client(
     val installationId: String,
     val inboxId: InboxId,
     val environment: XMTPEnvironment,
+    val publicIdentity: PublicIdentity
 ) {
     val preferences: PrivatePreferences =
         PrivatePreferences(client = this, ffiClient = libXMTPClient)
@@ -179,6 +179,7 @@ class Client(
                 ffiClient.installationId().toHex(),
                 ffiClient.inboxId(),
                 clientOptions.api.env,
+                publicIdentity
             )
         }
 
@@ -242,24 +243,30 @@ class Client(
             signatureRequest: SignatureRequest,
             signingKey: SigningKey,
         ) {
-            if (signingKey.type == SignerType.SCW) {
-                val chainId = signingKey.chainId
-                    ?: throw XMTPException("ChainId is required for smart contract wallets")
-                signatureRequest.addScwSignature(
-                    signingKey.signSCW(signatureRequest.signatureText()),
-                    signingKey.publicIdentity.identifier,
-                    chainId.toULong(),
-                    signingKey.blockNumber?.toULong()
-                )
-            } else {
-                signingKey.sign(signatureRequest.signatureText())?.let {
-                    signatureRequest.addEcdsaSignature(it.rawData)
+            val signedData = signingKey.sign(signatureRequest.signatureText())
+
+            when (signingKey.type) {
+                SignerType.SCW -> {
+                    val chainId =
+                        signingKey.chainId ?: throw XMTPException("ChainId is required for SCW")
+                    signatureRequest.addScwSignature(
+                        signedData.rawData,
+                        signingKey.publicIdentity.identifier,
+                        chainId.toULong(),
+                        signingKey.blockNumber?.toULong()
+                    )
+                }
+                else -> {
+                    signatureRequest.addEcdsaSignature(signedData.rawData)
                 }
             }
         }
 
         @DelicateApi("This function is delicate and should be used with caution. Creating an FfiClient without signing or registering will create a broken experience use `create()` instead")
-        suspend fun ffiCreateClient(publicIdentity: PublicIdentity, clientOptions: ClientOptions): Client {
+        suspend fun ffiCreateClient(
+            publicIdentity: PublicIdentity,
+            clientOptions: ClientOptions,
+        ): Client {
             val recoveredInboxId = getOrCreateInboxId(clientOptions.api, publicIdentity)
 
             val (ffiClient, dbPath) = createFfiClient(
@@ -274,6 +281,7 @@ class Client(
                 ffiClient.installationId().toHex(),
                 ffiClient.inboxId(),
                 clientOptions.api.env,
+                publicIdentity
             )
         }
     }
