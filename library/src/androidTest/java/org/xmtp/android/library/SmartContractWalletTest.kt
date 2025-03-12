@@ -9,14 +9,17 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.BeforeClass
+import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
 import org.xmtp.android.library.libxmtp.DecodedMessage
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import uniffi.xmtpv3.GenericException
 
 @RunWith(AndroidJUnit4::class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class SmartContractWalletTest {
     companion object {
         private lateinit var davonSCW: FakeSCWWallet
@@ -75,7 +78,7 @@ class SmartContractWalletTest {
     }
 
     @Test
-    fun testCanBuildASCW() {
+    fun test1_CanBuildASCW() {
         val davonSCWClient2 = runBlocking {
             Client.build(
                 publicIdentity = davonSCW.publicIdentity,
@@ -87,55 +90,7 @@ class SmartContractWalletTest {
     }
 
     @Test
-    fun testAddAndRemovingAccounts() {
-        val davonEOA = PrivateKeyBuilder()
-        val davonSCW2 = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_3)
-
-        runBlocking { davonSCWClient.addAccount(davonEOA) }
-        runBlocking { davonSCWClient.addAccount(davonSCW2) }
-
-        var state = runBlocking { davonSCWClient.inboxState(true) }
-        assertEquals(state.installations.size, 1)
-        assertEquals(state.identities.size, 3)
-        assertEquals(state.recoveryPublicIdentity, davonSCW.publicIdentity)
-        assertEquals(
-            state.identities,
-            listOf(
-                davonEOA.publicIdentity,
-                davonSCW2.publicIdentity,
-                davonSCW.publicIdentity
-            )
-        )
-
-        runBlocking { davonSCWClient.removeAccount(davonSCW, davonSCW2.publicIdentity) }
-        state = runBlocking { davonSCWClient.inboxState(true) }
-        assertEquals(state.identities.size, 2)
-        assertEquals(state.recoveryPublicIdentity, davonSCW.publicIdentity)
-        assertEquals(
-            state.identities,
-            listOf(
-                davonEOA.publicIdentity,
-                davonSCW.publicIdentity
-            )
-        )
-        assertEquals(state.installations.size, 1)
-
-        // Cannot remove the recovery address
-        Assert.assertThrows(
-            "Client error: Unknown Signer",
-            GenericException::class.java
-        ) {
-            runBlocking {
-                davonSCWClient.removeAccount(
-                    davonEOA,
-                    davonSCW.publicIdentity
-                )
-            }
-        }
-    }
-
-    @Test
-    fun testsCanCreateGroup() {
+    fun test2_CanCreateGroup() {
         val group1 = runBlocking {
             boEOAClient.conversations.newGroup(
                 listOf(
@@ -164,7 +119,7 @@ class SmartContractWalletTest {
     }
 
     @Test
-    fun testsCanSendMessages() {
+    fun test3_CanSendMessages() {
         val boGroup = runBlocking {
             boEOAClient.conversations.newGroup(
                 listOf(
@@ -200,7 +155,7 @@ class SmartContractWalletTest {
     }
 
     @Test
-    fun testGroupConsent() {
+    fun test4_GroupConsent() {
         runBlocking {
             val davonGroup = runBlocking {
                 davonSCWClient.conversations.newGroup(
@@ -241,7 +196,7 @@ class SmartContractWalletTest {
     }
 
     @Test
-    fun testCanAllowAndDenyInboxId() {
+    fun test5_CanAllowAndDenyInboxId() {
         runBlocking {
             val davonGroup = runBlocking {
                 davonSCWClient.conversations.newGroup(
@@ -292,7 +247,7 @@ class SmartContractWalletTest {
     }
 
     @Test
-    fun testCanStreamAllMessages() {
+    fun test6_CanStreamAllMessages() {
         val group1 = runBlocking {
             davonSCWClient.conversations.newGroup(
                 listOf(
@@ -337,7 +292,7 @@ class SmartContractWalletTest {
     }
 
     @Test
-    fun testCanStreamConversations() {
+    fun test7_CanStreamConversations() {
         val allMessages = mutableListOf<String>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
@@ -361,5 +316,53 @@ class SmartContractWalletTest {
         Thread.sleep(1000)
         assertEquals(4, allMessages.size)
         job.cancel()
+    }
+
+    @Test
+    fun test8_AddAndRemovingAccounts() {
+        val davonEOA = PrivateKeyBuilder()
+        val davonSCW2 = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_3)
+
+        runBlocking { davonSCWClient.addAccount(davonEOA) }
+        runBlocking { davonSCWClient.addAccount(davonSCW2) }
+
+        var state = runBlocking { davonSCWClient.inboxState(true) }
+        assertEquals(state.installations.size, 1)
+        assertEquals(state.identities.size, 3)
+        assertEquals(state.recoveryPublicIdentity, davonSCW.publicIdentity)
+        assertEquals(
+            state.identities,
+            listOf(
+                davonEOA.publicIdentity,
+                davonSCW2.publicIdentity,
+                davonSCW.publicIdentity
+            )
+        )
+
+        runBlocking { davonSCWClient.removeAccount(davonSCW, davonSCW2.publicIdentity) }
+        state = runBlocking { davonSCWClient.inboxState(true) }
+        assertEquals(state.identities.size, 2)
+        assertEquals(state.recoveryPublicIdentity, davonSCW.publicIdentity)
+        assertEquals(
+            state.identities,
+            listOf(
+                davonEOA.publicIdentity,
+                davonSCW.publicIdentity
+            )
+        )
+        assertEquals(state.installations.size, 1)
+
+        // Cannot remove the recovery address
+        Assert.assertThrows(
+            "Client error: Unknown Signer",
+            GenericException::class.java
+        ) {
+            runBlocking {
+                davonSCWClient.removeAccount(
+                    davonEOA,
+                    davonSCW.publicIdentity
+                )
+            }
+        }
     }
 }

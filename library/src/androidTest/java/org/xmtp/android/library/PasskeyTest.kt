@@ -2,16 +2,24 @@ package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.BeforeClass
+import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
 import org.xmtp.android.library.libxmtp.DecodedMessage
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
+import uniffi.xmtpv3.GenericException
 
 @RunWith(AndroidJUnit4::class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class PasskeyTest {
     companion object {
         private lateinit var davonPasskey: FakePasskeyWallet
@@ -70,7 +78,7 @@ class PasskeyTest {
     }
 
     @Test
-    fun testCanBuildAPasskey() {
+    fun test1_CanBuildAPasskey() {
         val davonPasskeyClient2 = runBlocking {
             Client.build(
                 publicIdentity = davonPasskey.publicIdentity,
@@ -82,7 +90,7 @@ class PasskeyTest {
     }
 
     @Test
-    fun testsCanCreateGroup() {
+    fun test2_CanCreateGroup() {
         val group1 = runBlocking {
             boEOAClient.conversations.newGroup(
                 listOf(
@@ -109,17 +117,17 @@ class PasskeyTest {
             ).sorted()
         )
         assertEquals(
-            runBlocking { group2.members().map { it.identities.first() } },
+            runBlocking { group2.members().map { it.identities.first().identifier }.sorted() },
             listOf(
                 davonPasskey.publicIdentity.identifier,
                 boEOAWallet.publicIdentity.identifier,
                 eriPasskey.publicIdentity.identifier
-            )
+            ).sorted()
         )
     }
 
     @Test
-    fun testsCanSendMessages() {
+    fun test3_CanSendMessages() {
         val boGroup = runBlocking {
             boEOAClient.conversations.newGroup(
                 listOf(
@@ -152,5 +160,251 @@ class PasskeyTest {
         assertEquals(runBlocking { eriGroup?.messages() }?.size, 3)
         assertEquals(runBlocking { eriGroup?.messages() }?.first()?.body, "from davon")
         runBlocking { eriGroup?.send("from eri") }
+    }
+
+    @Test
+    fun test4_GroupConsent() {
+        runBlocking {
+            val davonGroup = runBlocking {
+                davonPasskeyClient.conversations.newGroup(
+                    listOf(
+                        boEOAClient.inboxId,
+                        eriPasskeyClient.inboxId
+                    )
+                )
+            }
+            assertEquals(
+                davonPasskeyClient.preferences.conversationState(davonGroup.id),
+                ConsentState.ALLOWED
+            )
+            assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
+
+            davonPasskeyClient.preferences.setConsentState(
+                listOf(
+                    ConsentRecord(
+                        davonGroup.id,
+                        EntryType.CONVERSATION_ID,
+                        ConsentState.DENIED
+                    )
+                )
+            )
+            assertEquals(
+                davonPasskeyClient.preferences.conversationState(davonGroup.id),
+                ConsentState.DENIED
+            )
+            assertEquals(davonGroup.consentState(), ConsentState.DENIED)
+
+            davonGroup.updateConsentState(ConsentState.ALLOWED)
+            assertEquals(
+                davonPasskeyClient.preferences.conversationState(davonGroup.id),
+                ConsentState.ALLOWED
+            )
+            assertEquals(davonGroup.consentState(), ConsentState.ALLOWED)
+        }
+    }
+
+    @Test
+    fun test5_CanAllowAndDenyInboxId() {
+        runBlocking {
+            val davonGroup = runBlocking {
+                davonPasskeyClient.conversations.newGroup(
+                    listOf(
+                        boEOAClient.inboxId,
+                        eriPasskeyClient.inboxId
+                    )
+                )
+            }
+            assertEquals(
+                davonPasskeyClient.preferences.inboxIdState(
+                    boEOAClient.inboxId
+                ),
+                ConsentState.UNKNOWN
+            )
+            davonPasskeyClient.preferences.setConsentState(
+                listOf(
+                    ConsentRecord(
+                        boEOAClient.inboxId,
+                        EntryType.INBOX_ID,
+                        ConsentState.ALLOWED
+                    )
+                )
+            )
+            var alixMember = davonGroup.members().firstOrNull { it.inboxId == boEOAClient.inboxId }
+            assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
+
+            assertEquals(
+                davonPasskeyClient.preferences.inboxIdState(
+                    boEOAClient.inboxId
+                ),
+                ConsentState.ALLOWED
+            )
+
+            davonPasskeyClient.preferences.setConsentState(
+                listOf(
+                    ConsentRecord(
+                        boEOAClient.inboxId,
+                        EntryType.INBOX_ID,
+                        ConsentState.DENIED
+                    )
+                )
+            )
+            alixMember = davonGroup.members().firstOrNull { it.inboxId == boEOAClient.inboxId }
+            assertEquals(alixMember!!.consentState, ConsentState.DENIED)
+
+            assertEquals(
+                davonPasskeyClient.preferences.inboxIdState(
+                    boEOAClient.inboxId
+                ),
+                ConsentState.DENIED
+            )
+        }
+    }
+
+    @Test
+    fun test6_CanStreamAllMessages() {
+        val group1 = runBlocking {
+            davonPasskeyClient.conversations.newGroup(
+                listOf(
+                    boEOAClient.inboxId,
+                    eriPasskeyClient.inboxId
+                )
+            )
+        }
+        val group2 = runBlocking {
+            boEOAClient.conversations.newGroup(
+                listOf(
+                    davonPasskeyClient.inboxId,
+                    eriPasskeyClient.inboxId
+                )
+            )
+        }
+        val dm1 = runBlocking {
+            davonPasskeyClient.conversations.findOrCreateDm(
+                eriPasskeyClient.inboxId
+            )
+        }
+        val dm2 = runBlocking {
+            boEOAClient.conversations.findOrCreateDm(
+                davonPasskeyClient.inboxId
+            )
+        }
+        runBlocking { davonPasskeyClient.conversations.sync() }
+
+        val allMessages = mutableListOf<DecodedMessage>()
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                davonPasskeyClient.conversations.streamAllMessages()
+                    .collect { message ->
+                        allMessages.add(message)
+                    }
+            } catch (e: Exception) {
+            }
+        }
+        Thread.sleep(1000)
+        runBlocking {
+            group1.send("hi")
+            group2.send("hi")
+            dm1.send("hi")
+            dm2.send("hi")
+        }
+        Thread.sleep(1000)
+        assertEquals(4, allMessages.size)
+        job.cancel()
+    }
+
+    @Test
+    fun test7_CanStreamConversations() {
+        val allMessages = mutableListOf<String>()
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                davonPasskeyClient.conversations.stream()
+                    .collect { message ->
+                        allMessages.add(message.topic)
+                    }
+            } catch (e: Exception) {
+            }
+        }
+        Thread.sleep(1000)
+
+        runBlocking {
+            eriPasskeyClient.conversations.newGroup(
+                listOf(
+                    boEOAClient.inboxId, davonPasskeyClient.inboxId
+                )
+            )
+            boEOAClient.conversations.newGroup(
+                listOf(
+                    eriPasskeyClient.inboxId, davonPasskeyClient.inboxId
+                )
+            )
+            eriPasskeyClient.conversations.findOrCreateDm(
+                davonPasskeyClient.inboxId
+            )
+            boEOAClient.conversations.findOrCreateDm(davonPasskeyClient.inboxId)
+        }
+
+        Thread.sleep(1000)
+        assertEquals(4, allMessages.size)
+        job.cancel()
+    }
+
+    @Test
+    fun test8_AddAndRemovingAccounts() {
+        val davonEOA = PrivateKeyBuilder()
+        val davonSCW2 = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_3)
+        val davonPasskey2 = FakePasskeyWallet()
+
+        runBlocking { davonPasskeyClient.addAccount(davonEOA) }
+        runBlocking { davonPasskeyClient.addAccount(davonSCW2) }
+        runBlocking { davonPasskeyClient.addAccount(davonPasskey2) }
+
+        var state = runBlocking { davonPasskeyClient.inboxState(true) }
+        assertEquals(state.installations.size, 1)
+        assertEquals(state.identities.size, 4)
+        assertEquals(
+            state.recoveryPublicIdentity.identifier,
+            davonPasskey.publicIdentity.identifier
+        )
+        assertEquals(
+            state.identities.map { it.identifier }.sorted(),
+            listOf(
+                davonEOA.publicIdentity.identifier,
+                davonSCW2.publicIdentity.identifier,
+                davonPasskey.publicIdentity.identifier,
+                davonPasskey2.publicIdentity.identifier
+            ).sorted()
+        )
+
+        runBlocking { davonPasskeyClient.removeAccount(davonPasskey, davonPasskey2.publicIdentity) }
+        state = runBlocking { davonPasskeyClient.inboxState(true) }
+        assertEquals(state.identities.size, 3)
+        assertEquals(
+            state.recoveryPublicIdentity.identifier,
+            davonPasskey.publicIdentity.identifier
+        )
+        assertEquals(
+            state.identities.map { it.identifier }.sorted(),
+            listOf(
+                davonEOA.publicIdentity.identifier,
+                davonSCW2.publicIdentity.identifier,
+                davonPasskey.publicIdentity.identifier
+            ).sorted()
+        )
+        assertEquals(state.installations.size, 1)
+
+        // Cannot remove the recovery address
+        Assert.assertThrows(
+            "Client error: Unknown Signer",
+            GenericException::class.java
+        ) {
+            runBlocking {
+                davonPasskeyClient.removeAccount(
+                    davonEOA,
+                    davonPasskey.publicIdentity
+                )
+            }
+        }
     }
 }
