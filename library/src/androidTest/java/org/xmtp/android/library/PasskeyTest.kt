@@ -102,11 +102,19 @@ class PasskeyTest {
 
         assertEquals(
             runBlocking { group1.members().map { it.inboxId }.sorted() },
-            listOf(davonPasskeyClient.inboxId, boEOAClient.inboxId, eriPasskeyClient.inboxId).sorted()
+            listOf(
+                davonPasskeyClient.inboxId,
+                boEOAClient.inboxId,
+                eriPasskeyClient.inboxId
+            ).sorted()
         )
         assertEquals(
             runBlocking { group2.members().map { it.identities.first() } },
-            listOf(davonPasskey.publicIdentity, boEOAWallet.publicIdentity, eriPasskey.publicIdentity)
+            listOf(
+                davonPasskey.publicIdentity.identifier,
+                boEOAWallet.publicIdentity.identifier,
+                eriPasskey.publicIdentity.identifier
+            )
         )
     }
 
