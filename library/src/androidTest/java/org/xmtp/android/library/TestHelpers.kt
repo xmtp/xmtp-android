@@ -207,17 +207,15 @@ class Fixtures(
         dbEncryptionKey = key,
         appContext = context,
     )
-    val alixAccount = PrivateKeyBuilder()
-    val boAccount = PrivateKeyBuilder()
+    val alixAccount = FakePasskeyWallet()
+    val boAccount = FakePasskeyWallet()
     val caroAccount = PrivateKeyBuilder()
     val davonAccount = PrivateKeyBuilder()
     val eriAccount = PrivateKeyBuilder()
 
-    var alix: PrivateKey = alixAccount.getPrivateKey()
     var alixClient: Client =
         runBlocking { Client.create(account = alixAccount, options = clientOptions) }
 
-    var bo: PrivateKey = boAccount.getPrivateKey()
     var boClient: Client =
         runBlocking { Client.create(account = boAccount, options = clientOptions) }
 

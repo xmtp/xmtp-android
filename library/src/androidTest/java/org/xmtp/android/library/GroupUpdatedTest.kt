@@ -17,26 +17,21 @@ import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
 class GroupUpdatedTest {
-    lateinit var alixWallet: PrivateKeyBuilder
-    lateinit var boWallet: PrivateKeyBuilder
-    lateinit var alix: PrivateKey
+    lateinit var alixWallet: FakePasskeyWallet
+    lateinit var boWallet: FakePasskeyWallet
     lateinit var alixClient: Client
-    lateinit var bo: PrivateKey
     lateinit var boClient: Client
     lateinit var caroWallet: PrivateKeyBuilder
     lateinit var caro: PrivateKey
     lateinit var caroClient: Client
     lateinit var fixtures: Fixtures
-    val context = ApplicationProvider.getApplicationContext<Context>()
 
     @Before
     fun setUp() {
         val key = SecureRandom().generateSeed(32)
         fixtures = fixtures()
         alixWallet = fixtures.alixAccount
-        alix = fixtures.alix
         boWallet = fixtures.boAccount
-        bo = fixtures.bo
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
 

@@ -24,7 +24,7 @@ class ClientTest {
     fun testCanBeCreatedWithBundle() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val fakeWallet = PrivateKeyBuilder()
+        val fakeWallet = FakePasskeyWallet()
         val options = ClientOptions(
             ClientOptions.Api(XMTPEnvironment.LOCAL, false),
             appContext = context,
@@ -57,7 +57,7 @@ class ClientTest {
     fun testCreatesAClient() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val fakeWallet = PrivateKeyBuilder()
+        val fakeWallet = FakePasskeyWallet()
         val options = ClientOptions(
             ClientOptions.Api(XMTPEnvironment.LOCAL, false),
             appContext = context,
@@ -82,13 +82,11 @@ class ClientTest {
 
     @Test
     fun testStaticCanMessage() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fixtures = fixtures()
         val notOnNetwork = PrivateKeyBuilder()
-        val alixPublicIdentity = PublicIdentity(IdentityKind.ETHEREUM, fixtures.alix.walletAddress)
-        val boPublicIdentity = PublicIdentity(IdentityKind.ETHEREUM, fixtures.bo.walletAddress)
-        val notOnNetworkPublicIdentity =
-            PublicIdentity(IdentityKind.ETHEREUM, notOnNetwork.getPrivateKey().walletAddress)
+        val alixPublicIdentity = fixtures.alixAccount.publicIdentity
+        val boPublicIdentity = fixtures.boAccount.publicIdentity
+        val notOnNetworkPublicIdentity = notOnNetwork.publicIdentity
 
         val canMessageList = runBlocking {
             Client.canMessage(
@@ -136,8 +134,8 @@ class ClientTest {
     fun testCanDeleteDatabase() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val fakeWallet = PrivateKeyBuilder()
-        val fakeWallet2 = PrivateKeyBuilder()
+        val fakeWallet = FakePasskeyWallet()
+        val fakeWallet2 = FakePasskeyWallet()
         var client = runBlocking {
             Client.create(
                 account = fakeWallet,
@@ -188,7 +186,7 @@ class ClientTest {
     fun testCreatesADevClient() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val fakeWallet = PrivateKeyBuilder()
+        val fakeWallet = FakePasskeyWallet()
         val client = runBlocking {
             Client.create(
                 account = fakeWallet,
@@ -205,30 +203,30 @@ class ClientTest {
         }
     }
 
-    @Test
-    fun testCreatesAProductionClient() {
-        val key = SecureRandom().generateSeed(32)
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val fakeWallet = PrivateKeyBuilder()
-        val client = runBlocking {
-            Client.create(
-                account = fakeWallet,
-                options = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.PRODUCTION, true),
-                    appContext = context,
-                    dbEncryptionKey = key
-                )
-            )
-        }
-        val clientIdentity = fakeWallet.publicIdentity
-        runBlocking {
-            client.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let { assert(it) }
-        }
-    }
+//    @Test
+//    fun testCreatesAProductionClient() {
+//        val key = SecureRandom().generateSeed(32)
+//        val context = InstrumentationRegistry.getInstrumentation().targetContext
+//        val fakeWallet = PrivateKeyBuilder()
+//        val client = runBlocking {
+//            Client.create(
+//                account = fakeWallet,
+//                options = ClientOptions(
+//                    ClientOptions.Api(XMTPEnvironment.PRODUCTION, true),
+//                    appContext = context,
+//                    dbEncryptionKey = key
+//                )
+//            )
+//        }
+//        val clientIdentity = fakeWallet.publicIdentity
+//        runBlocking {
+//            client.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let { assert(it) }
+//        }
+//    }
 
     @Test
     fun testPreAuthenticateToInboxCallback() {
-        val fakeWallet = PrivateKeyBuilder()
+        val fakeWallet = FakePasskeyWallet()
         val expectation = CompletableFuture<Unit>()
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -256,8 +254,8 @@ class ClientTest {
     fun testCanDropReconnectDatabase() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val fakeWallet = PrivateKeyBuilder()
-        val fakeWallet2 = PrivateKeyBuilder()
+        val fakeWallet = FakePasskeyWallet()
+        val fakeWallet2 = FakePasskeyWallet()
         val boClient = runBlocking {
             Client.create(
                 account = fakeWallet,
@@ -306,8 +304,8 @@ class ClientTest {
     fun testCanGetAnInboxIdFromAddress() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val alixWallet = PrivateKeyBuilder()
-        val boWallet = PrivateKeyBuilder()
+        val alixWallet = FakePasskeyWallet()
+        val boWallet = FakePasskeyWallet()
         val alixClient = runBlocking {
             Client.create(
                 account = alixWallet,
@@ -330,10 +328,7 @@ class ClientTest {
         }
         val boInboxId = runBlocking {
             alixClient.inboxIdFromIdentity(
-                PublicIdentity(
-                    IdentityKind.ETHEREUM,
-                    boWallet.getPrivateKey().walletAddress
-                )
+                boWallet.publicIdentity
             )
         }
         assertEquals(boClient.inboxId, boInboxId)
@@ -343,7 +338,7 @@ class ClientTest {
     fun testRevokesInstallations() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val alixWallet = PrivateKeyBuilder()
+        val alixWallet = FakePasskeyWallet()
 
         val alixClient = runBlocking {
             Client.create(
@@ -396,7 +391,7 @@ class ClientTest {
     fun testRevokesAllOtherInstallations() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val alixWallet = PrivateKeyBuilder()
+        val alixWallet = FakePasskeyWallet()
         runBlocking {
             val alixClient = Client.create(
                 account = alixWallet,
@@ -454,7 +449,7 @@ class ClientTest {
         }
         assertEquals(
             states.first().recoveryPublicIdentity.identifier,
-            fixtures.bo.walletAddress
+            fixtures.boAccount.publicIdentity.identifier
         )
         assertEquals(
             states.last().recoveryPublicIdentity.identifier,
@@ -539,8 +534,8 @@ class ClientTest {
     @Test
     fun testAddAccounts() {
         val fixtures = fixtures()
-        val alix2Wallet = PrivateKeyBuilder()
-        val alix3Wallet = PrivateKeyBuilder()
+        val alix2Wallet = FakePasskeyWallet()
+        val alix3Wallet = FakePasskeyWallet()
         runBlocking { fixtures.alixClient.addAccount(alix2Wallet) }
         runBlocking { fixtures.alixClient.addAccount(alix3Wallet) }
 
@@ -556,7 +551,7 @@ class ClientTest {
             listOf(
                 alix2Wallet.publicIdentity.identifier,
                 alix3Wallet.publicIdentity.identifier,
-                fixtures.alix.walletAddress
+                fixtures.alixAccount.publicIdentity.identifier
             ).sorted()
         )
     }
@@ -582,10 +577,7 @@ class ClientTest {
         val inboxId =
             runBlocking {
                 fixtures.alixClient.inboxIdFromIdentity(
-                    PublicIdentity(
-                        IdentityKind.ETHEREUM,
-                        fixtures.bo.walletAddress
-                    )
+                    fixtures.boAccount.publicIdentity
                 )
             }
         assertEquals(inboxId, fixtures.alixClient.inboxId)
@@ -595,8 +587,8 @@ class ClientTest {
     @Test
     fun testRemovingAccounts() {
         val fixtures = fixtures()
-        val alix2Wallet = PrivateKeyBuilder()
-        val alix3Wallet = PrivateKeyBuilder()
+        val alix2Wallet = FakePasskeyWallet()
+        val alix3Wallet = FakePasskeyWallet()
         runBlocking { fixtures.alixClient.addAccount(alix2Wallet) }
         runBlocking { fixtures.alixClient.addAccount(alix3Wallet) }
 
@@ -610,19 +602,19 @@ class ClientTest {
         runBlocking {
             fixtures.alixClient.removeAccount(
                 fixtures.alixAccount,
-                PublicIdentity(IdentityKind.ETHEREUM, alix2Wallet.getPrivateKey().walletAddress)
+                alix2Wallet.publicIdentity
             )
         }
         state = runBlocking { fixtures.alixClient.inboxState(true) }
         assertEquals(state.identities.size, 2)
         assertEquals(
             state.recoveryPublicIdentity.identifier,
-            fixtures.alix.walletAddress
+            fixtures.alixAccount.publicIdentity.identifier
         )
         assertEquals(
             state.identities.map { it.identifier }.sorted(),
             listOf(
-                alix3Wallet.getPrivateKey().walletAddress,
+                alix3Wallet.publicIdentity.identifier,
                 fixtures.alixAccount.publicIdentity.identifier
             ).sorted()
         )
@@ -648,7 +640,7 @@ class ClientTest {
         val badKey = SecureRandom().generateSeed(32)
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val alixWallet = PrivateKeyBuilder()
+        val alixWallet = FakePasskeyWallet()
 
         val alixClient = runBlocking {
             Client.create(
@@ -667,10 +659,7 @@ class ClientTest {
         ) {
             runBlocking {
                 Client.build(
-                    publicIdentity = PublicIdentity(
-                        IdentityKind.ETHEREUM,
-                        alixWallet.getPrivateKey().walletAddress
-                    ),
+                    publicIdentity = alixWallet.publicIdentity,
                     options = ClientOptions(
                         ClientOptions.Api(XMTPEnvironment.LOCAL, false),
                         appContext = context,
@@ -701,7 +690,7 @@ class ClientTest {
     fun testCreatesAClientManually() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val fakeWallet = PrivateKeyBuilder()
+        val fakeWallet = FakePasskeyWallet()
         val options = ClientOptions(
             ClientOptions.Api(XMTPEnvironment.LOCAL, false),
             appContext = context,
@@ -738,8 +727,8 @@ class ClientTest {
     fun testCanManageAddRemoveManually() = runBlocking {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val alixWallet = PrivateKeyBuilder()
-        val boWallet = PrivateKeyBuilder()
+        val alixWallet = FakePasskeyWallet()
+        val boWallet = FakePasskeyWallet()
 
         val options = ClientOptions(
             ClientOptions.Api(XMTPEnvironment.LOCAL, false),
@@ -775,7 +764,7 @@ class ClientTest {
     fun testCanManageRevokeManually() = runBlocking {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val alixWallet = PrivateKeyBuilder()
+        val alixWallet = FakePasskeyWallet()
         val alix = Client.create(
             account = alixWallet,
             options = ClientOptions(

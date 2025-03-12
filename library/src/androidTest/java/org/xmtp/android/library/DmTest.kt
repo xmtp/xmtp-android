@@ -32,12 +32,10 @@ import uniffi.xmtpv3.GenericException
 
 @RunWith(AndroidJUnit4::class)
 class DmTest {
-    private lateinit var alixWallet: PrivateKeyBuilder
-    private lateinit var boWallet: PrivateKeyBuilder
+    private lateinit var alixWallet: FakePasskeyWallet
+    private lateinit var boWallet: FakePasskeyWallet
     private lateinit var caroWallet: PrivateKeyBuilder
-    private lateinit var alix: PrivateKey
     private lateinit var alixClient: Client
-    private lateinit var bo: PrivateKey
     private lateinit var boClient: Client
     private lateinit var caro: PrivateKey
     private lateinit var caroClient: Client
@@ -46,9 +44,7 @@ class DmTest {
     fun setUp() {
         val fixtures = fixtures()
         alixWallet = fixtures.alixAccount
-        alix = fixtures.alix
         boWallet = fixtures.boAccount
-        bo = fixtures.bo
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
 
@@ -71,17 +67,11 @@ class DmTest {
     fun testCanCreateADmWithInboxId() {
         runBlocking {
             val convo1 = boClient.conversations.findOrCreateDmWithIdentity(
-                PublicIdentity(
-                    IdentityKind.ETHEREUM,
-                    alix.walletAddress
-                )
+                alixWallet.publicIdentity
             )
             alixClient.conversations.sync()
             val sameConvo1 = alixClient.conversations.findOrCreateDmWithIdentity(
-                PublicIdentity(
-                    IdentityKind.ETHEREUM,
-                    bo.walletAddress
-                )
+                boWallet.publicIdentity
             )
             assertEquals(convo1.id, sameConvo1.id)
         }
@@ -111,10 +101,7 @@ class DmTest {
                 )
             )
             val alixDm = boClient.conversations.findDmByIdentity(
-                PublicIdentity(
-                    IdentityKind.ETHEREUM,
-                    alix.walletAddress
-                )
+                alixWallet.publicIdentity
             )
             assertNull(alixDm)
             assertEquals(caroDm?.id, dm.id)
@@ -173,7 +160,7 @@ class DmTest {
     @Test
     fun testCannotStartDmWithAddressWhenExpectingInboxId() {
         assertThrows("Invalid inboxId", XMTPException::class.java) {
-            runBlocking { boClient.conversations.findOrCreateDm(alix.walletAddress) }
+            runBlocking { boClient.conversations.findOrCreateDm(alixWallet.publicIdentity.identifier) }
         }
     }
 
@@ -332,10 +319,7 @@ class DmTest {
         val group = boClient.conversations.findOrCreateDm(alixClient.inboxId)
         alixClient.conversations.sync()
         val alixDm = alixClient.conversations.findDmByIdentity(
-            PublicIdentity(
-                IdentityKind.ETHEREUM,
-                bo.walletAddress
-            )
+            boWallet.publicIdentity
         )
         group.streamMessages().test {
             alixDm?.send("hi")

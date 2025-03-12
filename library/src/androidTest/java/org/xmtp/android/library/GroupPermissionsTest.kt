@@ -22,11 +22,9 @@ import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
 class GroupPermissionsTest {
-    private lateinit var alixWallet: PrivateKeyBuilder
-    private lateinit var boWallet: PrivateKeyBuilder
-    private lateinit var alix: PrivateKey
+    private lateinit var alixWallet: FakePasskeyWallet
+    private lateinit var boWallet: FakePasskeyWallet
     private lateinit var alixClient: Client
-    private lateinit var bo: PrivateKey
     private lateinit var boClient: Client
     private lateinit var caroWallet: PrivateKeyBuilder
     private lateinit var caro: PrivateKey
@@ -39,9 +37,7 @@ class GroupPermissionsTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         fixtures = fixtures()
         alixWallet = fixtures.alixAccount
-        alix = fixtures.alix
         boWallet = fixtures.boAccount
-        bo = fixtures.bo
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
 
@@ -468,7 +464,7 @@ class GroupPermissionsTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroupCustomPermissionsWithIdentities(
                 identities = listOf(
-                    PublicIdentity(IdentityKind.ETHEREUM, alix.walletAddress),
+                    alixWallet.publicIdentity,
                     PublicIdentity(IdentityKind.ETHEREUM, caro.walletAddress)
                 ),
                 permissionPolicySet = permissionPolicySet,
