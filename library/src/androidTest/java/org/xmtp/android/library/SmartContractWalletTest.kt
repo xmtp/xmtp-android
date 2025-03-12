@@ -113,8 +113,12 @@ class SmartContractWalletTest {
             listOf(davonSCWClient.inboxId, boEOAClient.inboxId, eriSCWClient.inboxId).sorted()
         )
         assertEquals(
-            runBlocking { group2.members().map { it.identities.first() } },
-            listOf(davonSCW.publicIdentity, boEOAWallet.publicIdentity, eriSCW.publicIdentity)
+            runBlocking { group2.members().map { it.identities.first().identifier }.sorted() },
+            listOf(
+                davonSCW.publicIdentity.identifier,
+                boEOAWallet.publicIdentity.identifier,
+                eriSCW.publicIdentity.identifier
+            ).sorted()
         )
     }
 
@@ -329,26 +333,26 @@ class SmartContractWalletTest {
         var state = runBlocking { davonSCWClient.inboxState(true) }
         assertEquals(state.installations.size, 1)
         assertEquals(state.identities.size, 3)
-        assertEquals(state.recoveryPublicIdentity, davonSCW.publicIdentity)
+        assertEquals(state.recoveryPublicIdentity.identifier, davonSCW.publicIdentity.identifier)
         assertEquals(
-            state.identities,
+            state.identities.map { it.identifier }.sorted(),
             listOf(
-                davonEOA.publicIdentity,
-                davonSCW2.publicIdentity,
-                davonSCW.publicIdentity
-            )
+                davonEOA.publicIdentity.identifier,
+                davonSCW2.publicIdentity.identifier,
+                davonSCW.publicIdentity.identifier
+            ).sorted()
         )
 
         runBlocking { davonSCWClient.removeAccount(davonSCW, davonSCW2.publicIdentity) }
         state = runBlocking { davonSCWClient.inboxState(true) }
         assertEquals(state.identities.size, 2)
-        assertEquals(state.recoveryPublicIdentity, davonSCW.publicIdentity)
+        assertEquals(state.recoveryPublicIdentity.identifier, davonSCW.publicIdentity.identifier)
         assertEquals(
-            state.identities,
+            state.identities.map { it.identifier }.sorted(),
             listOf(
-                davonEOA.publicIdentity,
-                davonSCW.publicIdentity
-            )
+                davonEOA.publicIdentity.identifier,
+                davonSCW.publicIdentity.identifier
+            ).sorted()
         )
         assertEquals(state.installations.size, 1)
 
