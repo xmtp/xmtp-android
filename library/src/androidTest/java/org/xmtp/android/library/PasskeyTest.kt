@@ -148,7 +148,7 @@ class PasskeyTest {
         assertEquals(runBlocking { boGroup.messages() }.size, 3)
 
         runBlocking { davonPasskeyClient.conversations.sync() }
-        val davonGroup = runBlocking { davonPasskeyClient.conversations.listGroups().last() }
+        val davonGroup = runBlocking { davonPasskeyClient.conversations.findGroup(boGroup.id) }!!
         runBlocking { davonGroup.sync() }
         assertEquals(runBlocking { davonGroup.messages() }.size, 2)
         assertEquals(runBlocking { davonGroup.messages() }.first().body, "gm")
@@ -315,6 +315,7 @@ class PasskeyTest {
 
     @Test
     fun test7_CanStreamConversations() {
+        val fixtures = fixtures()
         val allMessages = mutableListOf<String>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
@@ -339,10 +340,10 @@ class PasskeyTest {
                     eriPasskeyClient.inboxId, davonPasskeyClient.inboxId
                 )
             )
-            eriPasskeyClient.conversations.findOrCreateDm(
-                davonPasskeyClient.inboxId
+            davonPasskeyClient.conversations.findOrCreateDm(
+                fixtures.alixClient.inboxId
             )
-            boEOAClient.conversations.findOrCreateDm(davonPasskeyClient.inboxId)
+            fixtures.caroClient.conversations.findOrCreateDm(davonPasskeyClient.inboxId)
         }
 
         Thread.sleep(1000)

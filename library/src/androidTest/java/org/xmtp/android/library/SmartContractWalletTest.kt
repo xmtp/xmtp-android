@@ -144,7 +144,7 @@ class SmartContractWalletTest {
         assertEquals(runBlocking { boGroup.messages() }.size, 3)
 
         runBlocking { davonSCWClient.conversations.sync() }
-        val davonGroup = runBlocking { davonSCWClient.conversations.listGroups().last() }
+        val davonGroup = runBlocking { davonSCWClient.conversations.findGroup(boGroup.id)!! }
         runBlocking { davonGroup.sync() }
         assertEquals(runBlocking { davonGroup.messages() }.size, 2)
         assertEquals(runBlocking { davonGroup.messages() }.first().body, "gm")
@@ -297,6 +297,7 @@ class SmartContractWalletTest {
 
     @Test
     fun test7_CanStreamConversations() {
+        val fixtures = fixtures()
         val allMessages = mutableListOf<String>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
@@ -313,8 +314,8 @@ class SmartContractWalletTest {
         runBlocking {
             eriSCWClient.conversations.newGroup(listOf(boEOAClient.inboxId, davonSCWClient.inboxId))
             boEOAClient.conversations.newGroup(listOf(eriSCWClient.inboxId, davonSCWClient.inboxId))
-            eriSCWClient.conversations.findOrCreateDm(davonSCWClient.inboxId)
-            boEOAClient.conversations.findOrCreateDm(davonSCWClient.inboxId)
+            davonSCWClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
+            fixtures.caroClient.conversations.findOrCreateDm(davonSCWClient.inboxId)
         }
 
         Thread.sleep(1000)
