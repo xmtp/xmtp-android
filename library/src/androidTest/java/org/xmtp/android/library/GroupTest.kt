@@ -36,9 +36,11 @@ import uniffi.xmtpv3.GenericException
 
 @RunWith(AndroidJUnit4::class)
 class GroupTest {
-    private lateinit var alixWallet: FakePasskeyWallet
-    private lateinit var boWallet: FakePasskeyWallet
+    private lateinit var alixWallet: PrivateKeyBuilder
+    private lateinit var boWallet: PrivateKeyBuilder
+    private lateinit var alix: PrivateKey
     private lateinit var alixClient: Client
+    private lateinit var bo: PrivateKey
     private lateinit var boClient: Client
     private lateinit var caroWallet: PrivateKeyBuilder
     private lateinit var caro: PrivateKey
@@ -49,7 +51,9 @@ class GroupTest {
     fun setUp() {
         fixtures = fixtures()
         alixWallet = fixtures.alixAccount
+        alix = fixtures.alix
         boWallet = fixtures.boAccount
+        bo = fixtures.bo
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
 
@@ -171,7 +175,10 @@ class GroupTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroupWithIdentities(
                 listOf(
-                    alixWallet.publicIdentity
+                    PublicIdentity(
+                        IdentityKind.ETHEREUM,
+                        alix.walletAddress
+                    )
                 )
             )
         }
@@ -281,14 +288,14 @@ class GroupTest {
     @Test
     fun testCannotStartGroupOrAddMembersWithAddressWhenExpectingInboxId() {
         assertThrows("Invalid inboxId", XMTPException::class.java) {
-            runBlocking { boClient.conversations.newGroup(listOf(alixClient.publicIdentity.identifier)) }
+            runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
         }
         val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
         assertThrows("Invalid inboxId", XMTPException::class.java) {
             runBlocking { group.addMembers(listOf(caro.walletAddress)) }
         }
         assertThrows("Invalid inboxId", XMTPException::class.java) {
-            runBlocking { group.removeMembers(listOf(alixClient.publicIdentity.identifier)) }
+            runBlocking { group.removeMembers(listOf(alix.walletAddress)) }
         }
     }
 

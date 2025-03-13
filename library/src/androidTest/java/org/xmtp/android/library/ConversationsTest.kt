@@ -23,10 +23,12 @@ import kotlin.time.Duration.Companion.seconds
 
 @RunWith(AndroidJUnit4::class)
 class ConversationsTest {
-    private lateinit var alixWallet: FakePasskeyWallet
-    private lateinit var boWallet: FakePasskeyWallet
+    private lateinit var alixWallet: PrivateKeyBuilder
+    private lateinit var boWallet: PrivateKeyBuilder
     private lateinit var davonWallet: PrivateKeyBuilder
+    private lateinit var alix: PrivateKey
     private lateinit var alixClient: Client
+    private lateinit var bo: PrivateKey
     private lateinit var boClient: Client
     private lateinit var caroWallet: PrivateKeyBuilder
     private lateinit var caro: PrivateKey
@@ -39,7 +41,9 @@ class ConversationsTest {
     fun setUp() {
         fixtures = fixtures()
         alixWallet = fixtures.alixAccount
+        alix = fixtures.alix
         boWallet = fixtures.boAccount
+        bo = fixtures.bo
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
         davonWallet = fixtures.davonAccount

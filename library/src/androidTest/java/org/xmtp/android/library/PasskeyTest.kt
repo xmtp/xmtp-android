@@ -85,6 +85,7 @@ class PasskeyTest {
                 options = options
             )
         }
+
         assertEquals(davonPasskeyClient.inboxId, davonPasskeyClient2.inboxId)
         assertEquals(
             davonPasskeyClient2.inboxId,

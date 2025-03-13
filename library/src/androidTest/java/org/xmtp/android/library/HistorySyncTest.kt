@@ -15,10 +15,12 @@ import java.io.File
 
 @RunWith(AndroidJUnit4::class)
 class HistorySyncTest {
-    private lateinit var alixWallet: FakePasskeyWallet
-    private lateinit var boWallet: FakePasskeyWallet
+    private lateinit var alixWallet: PrivateKeyBuilder
+    private lateinit var boWallet: PrivateKeyBuilder
+    private lateinit var alix: PrivateKey
     private lateinit var alixClient: Client
     private lateinit var alixClient2: Client
+    private lateinit var bo: PrivateKey
     private lateinit var boClient: Client
     private lateinit var caroWallet: PrivateKeyBuilder
     private lateinit var caro: PrivateKey
@@ -31,7 +33,9 @@ class HistorySyncTest {
     fun setUp() {
         fixtures = fixtures()
         alixWallet = fixtures.alixAccount
+        alix = fixtures.alix
         boWallet = fixtures.boAccount
+        bo = fixtures.bo
         caroWallet = fixtures.caroAccount
         caro = fixtures.caro
 
