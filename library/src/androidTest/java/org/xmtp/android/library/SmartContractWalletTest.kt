@@ -87,6 +87,26 @@ class SmartContractWalletTest {
         }
 
         assertEquals(davonSCWClient.inboxId, davonSCWClient2.inboxId)
+        assertEquals(
+            davonSCWClient2.inboxId,
+            runBlocking { davonSCWClient.inboxIdFromIdentity(davonSCW.publicIdentity) }
+        )
+
+        runBlocking {
+            davonSCWClient.canMessage(listOf(boEOAWallet.publicIdentity))[boEOAWallet.publicIdentity.identifier]?.let {
+                assert(
+                    it
+                )
+            }
+        }
+
+        runBlocking {
+            boEOAClient.canMessage(listOf(davonSCW.publicIdentity))[davonSCW.publicIdentity.identifier]?.let {
+                assert(
+                    it
+                )
+            }
+        }
     }
 
     @Test
