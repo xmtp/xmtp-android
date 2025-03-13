@@ -86,6 +86,10 @@ class PasskeyTest {
             )
         }
         assertEquals(davonPasskeyClient.inboxId, davonPasskeyClient2.inboxId)
+        assertEquals(
+            davonPasskeyClient2.inboxId,
+            runBlocking { davonPasskeyClient.inboxIdFromIdentity(davonPasskey.publicIdentity) })
+
 
         runBlocking {
             davonPasskeyClient.canMessage(listOf(boEOAWallet.publicIdentity))[boEOAWallet.publicIdentity.identifier]?.let {
