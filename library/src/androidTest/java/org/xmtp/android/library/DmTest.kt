@@ -68,6 +68,32 @@ class DmTest {
     }
 
     @Test
+    fun testCanSuccessfullyThreadDms() {
+        runBlocking {
+            val convoBo = boClient.conversations.findOrCreateDm(alixClient.inboxId)
+            val convoAlix = alixClient.conversations.findOrCreateDm(boClient.inboxId)
+            convoBo.send("Bo hey")
+            convoAlix.send("Alix hey")
+            assertEquals(2, convoBo.messages().size) // memberAdd and Bo hey
+            assertEquals(2, convoAlix.messages().size) // memberAdd and Alix hey
+            alixClient.conversations.syncAllConversations()
+            boClient.conversations.syncAllConversations()
+            assertEquals(4, convoBo.messages().size) // memberAdd memberAdd and Bo hey Alix hey
+            assertEquals(4, convoAlix.messages().size) // memberAdd memberAdd and Bo hey Alix hey
+            val sameConvoBo = alixClient.conversations.findOrCreateDm(boClient.inboxId)
+            val sameConvoAlix = boClient.conversations.findOrCreateDm(alixClient.inboxId)
+            assertEquals(convoAlix.id, sameConvoBo.id)
+            assertEquals(convoAlix.id, sameConvoAlix.id)
+            sameConvoBo.send("Bo hey2")
+            sameConvoAlix.send("Alix hey2")
+            sameConvoAlix.sync()
+            sameConvoBo.sync()
+            assertEquals(6, sameConvoBo.messages().size) // memberAdd memberAdd and Bo hey Alix hey Bo hey2 Alix hey2
+            assertEquals(6, sameConvoAlix.messages().size) // memberAdd memberAdd and Bo hey Alix hey Bo hey2 Alix hey2
+        }
+    }
+
+    @Test
     fun testCanCreateADmWithInboxId() {
         runBlocking {
             val convo1 = boClient.conversations.findOrCreateDmWithIdentity(
