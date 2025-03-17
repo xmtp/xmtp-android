@@ -74,7 +74,9 @@ class DmTest {
             val convoBo = boClient.conversations.findOrCreateDm(alixClient.inboxId)
             val convoAlix = alixClient.conversations.findOrCreateDm(boClient.inboxId)
             convoBo.send("Bo hey")
+            Thread.sleep(2000)
             convoAlix.send("Alix hey")
+            Thread.sleep(2000)
             Log.d("LOPI Bo original", convoBo.messages().map { it.body }.joinToString(","))
             Log.d("LOPI Alix original", convoAlix.messages().map { it.body }.joinToString(","))
             assertEquals(2, convoBo.messages().size) // memberAdd and Bo hey
