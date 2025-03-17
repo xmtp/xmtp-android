@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import kotlinx.coroutines.CoroutineScope
@@ -74,20 +75,30 @@ class DmTest {
             val convoAlix = alixClient.conversations.findOrCreateDm(boClient.inboxId)
             convoBo.send("Bo hey")
             convoAlix.send("Alix hey")
+            Log.d("LOPI Bo original", convoBo.messages().map { it.body }.joinToString(","))
+            Log.d("LOPI Alix original", convoAlix.messages().map { it.body }.joinToString(","))
             assertEquals(2, convoBo.messages().size) // memberAdd and Bo hey
             assertEquals(2, convoAlix.messages().size) // memberAdd and Alix hey
             alixClient.conversations.syncAllConversations()
             boClient.conversations.syncAllConversations()
+            Log.d("LOPI Bo", convoBo.messages().map { it.body }.joinToString(","))
+            Log.d("LOPI Alix", convoAlix.messages().map { it.body }.joinToString(","))
             assertEquals(3, convoBo.messages().size) // memberAdd and Bo hey Alix hey
             assertEquals(3, convoAlix.messages().size) // memberAdd and Bo hey Alix hey
             val sameConvoBo = alixClient.conversations.findOrCreateDm(boClient.inboxId)
             val sameConvoAlix = boClient.conversations.findOrCreateDm(alixClient.inboxId)
+            Log.d("LOPI Bo groupId", convoBo.id)
+            Log.d("LOPI Alix groupId", convoAlix.id)
+            Log.d("LOPI Bo2 groupId", sameConvoBo.id)
+            Log.d("LOPI Alix2 groupId", sameConvoAlix.id)
             assertEquals(convoAlix.id, sameConvoBo.id)
             assertEquals(convoAlix.id, sameConvoAlix.id)
             sameConvoBo.send("Bo hey2")
             sameConvoAlix.send("Alix hey2")
             sameConvoAlix.sync()
             sameConvoBo.sync()
+            Log.d("LOPI Bo 2", sameConvoBo.messages().map { it.body }.joinToString(","))
+            Log.d("LOPI Alix 2", sameConvoAlix.messages().map { it.body }.joinToString(","))
             assertEquals(5, sameConvoBo.messages().size) // memberAdd Bo hey Alix hey Bo hey2 Alix hey2
             assertEquals(5, sameConvoAlix.messages().size) // memberAdd Bo hey Alix hey Bo hey2 Alix hey2
         }
