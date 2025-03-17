@@ -87,12 +87,18 @@ class DmTest {
             assertEquals(3, convoAlix.messages().size) // memberAdd and Bo hey Alix hey
             val sameConvoBo = alixClient.conversations.findOrCreateDm(boClient.inboxId)
             val sameConvoAlix = boClient.conversations.findOrCreateDm(alixClient.inboxId)
+            val topicBoSame = boClient.conversations.findConversationByTopic(convoBo.topic)!!
+            val topicAlixSame = alixClient.conversations.findConversationByTopic(convoAlix.topic)!!
             Log.d("LOPI Bo groupId", convoBo.id)
             Log.d("LOPI Alix groupId", convoAlix.id)
             Log.d("LOPI Bo2 groupId", sameConvoBo.id)
             Log.d("LOPI Alix2 groupId", sameConvoAlix.id)
+            Log.d("LOPI Bo topic groupId", topicBoSame.id)
+            Log.d("LOPI Alix topic groupId", topicAlixSame.id)
             assertEquals(convoAlix.id, sameConvoBo.id)
             assertEquals(convoAlix.id, sameConvoAlix.id)
+            assertEquals(convoAlix.id, topicBoSame.id)
+            assertEquals(convoAlix.id, topicAlixSame.id)
             sameConvoBo.send("Bo hey2")
             sameConvoAlix.send("Alix hey2")
             sameConvoAlix.sync()
