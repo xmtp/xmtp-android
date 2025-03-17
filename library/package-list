@@ -205,6 +205,11 @@ $dokka.location:org.xmtp.android.library.libxmtp/DisappearingMessageSettings///P
 $dokka.location:org.xmtp.android.library.libxmtp/DisappearingMessageSettings/DisappearingMessageSettings/#kotlin.Long#kotlin.Long/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-disappearing-message-settings/-disappearing-message-settings.html
 $dokka.location:org.xmtp.android.library.libxmtp/DisappearingMessageSettings/disappearStartingAtNs/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-disappearing-message-settings/disappear-starting-at-ns.html
 $dokka.location:org.xmtp.android.library.libxmtp/DisappearingMessageSettings/retentionDurationInNs/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-disappearing-message-settings/retention-duration-in-ns.html
+$dokka.location:org.xmtp.android.library.libxmtp/GroupMembershipResult///PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-group-membership-result/index.html
+$dokka.location:org.xmtp.android.library.libxmtp/GroupMembershipResult/GroupMembershipResult/#uniffi.xmtpv3.FfiUpdateGroupMembershipResult/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-group-membership-result/-group-membership-result.html
+$dokka.location:org.xmtp.android.library.libxmtp/GroupMembershipResult/addedMembers/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-group-membership-result/added-members.html
+$dokka.location:org.xmtp.android.library.libxmtp/GroupMembershipResult/failedInstallationIds/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-group-membership-result/failed-installation-ids.html
+$dokka.location:org.xmtp.android.library.libxmtp/GroupMembershipResult/removedMembers/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-group-membership-result/removed-members.html
 $dokka.location:org.xmtp.android.library.libxmtp/GroupPermissionPreconfiguration.ADMIN_ONLY///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library.libxmtp/-group-permission-preconfiguration/-a-d-m-i-n_-o-n-l-y/index.html
 $dokka.location:org.xmtp.android.library.libxmtp/GroupPermissionPreconfiguration.ALL_MEMBERS///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/org.xmtp.android.library.libxmtp/-group-permission-preconfiguration/-a-l-l_-m-e-m-b-e-r-s/index.html
 $dokka.location:org.xmtp.android.library.libxmtp/GroupPermissionPreconfiguration.Companion///PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-group-permission-preconfiguration/-companion/index.html
@@ -1078,12 +1083,6 @@ $dokka.location:org.xmtp.android.library/XMTPEnvironment/values/#/PointingToDecl
 $dokka.location:org.xmtp.android.library/XMTPEnvironment/withValue/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/with-value.html
 $dokka.location:org.xmtp.android.library/XMTPException///PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/index.html
 $dokka.location:org.xmtp.android.library/XMTPException/XMTPException/#kotlin.String#java.lang.Exception?/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/-x-m-t-p-exception.html
-$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp////PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/index.html
-$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/GroupMembershipResult///PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-group-membership-result/index.html
-$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/GroupMembershipResult/GroupMembershipResult/#uniffi.xmtpv3.FfiUpdateGroupMembershipResult/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-group-membership-result/-group-membership-result.html
-$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/GroupMembershipResult/addedMembers/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-group-membership-result/added-members.html
-$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/GroupMembershipResult/failedInstallationIds/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-group-membership-result/failed-installation-ids.html
-$dokka.location:uniffi.xmtpv3.org.xmtp.android.library.libxmtp/GroupMembershipResult/removedMembers/#/PointingToDeclaration/library/uniffi.xmtpv3.org.xmtp.android.library.libxmtp/-group-membership-result/removed-members.html
 $dokka.location:uniffi.xmtpv3////PointingToDeclaration/library/uniffi.xmtpv3/index.html
 $dokka.location:uniffi.xmtpv3//connectToBackend/#kotlin.String#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtpv3/connect-to-backend.html
 $dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.XmtpApiClient#kotlin.String?#kotlin.ByteArray?#kotlin.String#uniffi.xmtpv3.FfiIdentifier#kotlin.ULong#kotlin.ByteArray?#kotlin.String?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
@@ -1814,5 +1813,4 @@ org.xmtp.android.library.libxmtp
 org.xmtp.android.library.messages
 org.xmtp.android.library.push
 uniffi.xmtpv3
-uniffi.xmtpv3.org.xmtp.android.library.libxmtp
 
