@@ -81,6 +81,8 @@ class DmTest {
             assertEquals(2, convoAlix.messages().size) // memberAdd and Alix hey
             alixClient.conversations.syncAllConversations()
             boClient.conversations.syncAllConversations()
+//            convoAlix.send("Alix hey2")
+//            boClient.conversations.syncAllConversations()
             Log.d("LOPI Bo", convoBo.messages().map { it.body }.joinToString(","))
             Log.d("LOPI Alix", convoAlix.messages().map { it.body }.joinToString(","))
             assertEquals(3, convoBo.messages().size) // memberAdd and Bo hey Alix hey
