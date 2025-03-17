@@ -78,8 +78,8 @@ class DmTest {
             assertEquals(2, convoAlix.messages().size) // memberAdd and Alix hey
             alixClient.conversations.syncAllConversations()
             boClient.conversations.syncAllConversations()
-            assertEquals(4, convoBo.messages().size) // memberAdd memberAdd and Bo hey Alix hey
-            assertEquals(4, convoAlix.messages().size) // memberAdd memberAdd and Bo hey Alix hey
+            assertEquals(3, convoBo.messages().size) // memberAdd and Bo hey Alix hey
+            assertEquals(3, convoAlix.messages().size) // memberAdd and Bo hey Alix hey
             val sameConvoBo = alixClient.conversations.findOrCreateDm(boClient.inboxId)
             val sameConvoAlix = boClient.conversations.findOrCreateDm(alixClient.inboxId)
             assertEquals(convoAlix.id, sameConvoBo.id)
@@ -88,8 +88,8 @@ class DmTest {
             sameConvoAlix.send("Alix hey2")
             sameConvoAlix.sync()
             sameConvoBo.sync()
-            assertEquals(6, sameConvoBo.messages().size) // memberAdd memberAdd and Bo hey Alix hey Bo hey2 Alix hey2
-            assertEquals(6, sameConvoAlix.messages().size) // memberAdd memberAdd and Bo hey Alix hey Bo hey2 Alix hey2
+            assertEquals(5, sameConvoBo.messages().size) // memberAdd Bo hey Alix hey Bo hey2 Alix hey2
+            assertEquals(5, sameConvoAlix.messages().size) // memberAdd Bo hey Alix hey Bo hey2 Alix hey2
         }
     }
 
