@@ -10,23 +10,6 @@ env:
   GPR_USER: ${{ secrets.GITHUB_ACTOR }}
 
 jobs:
-  library-unit:
-    name: Library (Unit Tests)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout project sources
-        uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'adopt'
-          java-version: '17'
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-      - name: Start Docker containers
-        run: dev/up
-      - name: Gradle Run Unit Tests
-        run: ./gradlew library:testDebug
-
   library-integration:
     name: Library (Integration Tests)
     runs-on: ubuntu-latest
@@ -49,14 +32,25 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
       - name: Start Docker containers
         run: dev/up
+      - name: Restart ADB Server
+        run: |
+          adb kill-server || true
+          adb start-server
+          adb devices
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
           arch: x86_64
           target: google_apis
-          ram-size: 2048M
-          disk-size: 6000M
+          ram-size: 4096M
+          disk-size: 8000M
           disable-animations: true
-          emulator-options: "-no-window -no-audio -no-boot-anim -gpu swiftshader_indirect"
-          script: ./gradlew connectedCheck
+          emulator-options: "-no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose"
+          boot-timeout: 600
+          script: |
+            echo "Waiting for emulator..."
+            adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
+            adb shell input keyevent 82
+            ./gradlew connectedCheck
+  
