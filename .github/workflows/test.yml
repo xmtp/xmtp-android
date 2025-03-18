@@ -25,13 +25,10 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
-      - name: Install Android SDK and ADB
+      - name: Set up Android SDK environment
         run: |
-          sudo apt-get update
-          sudo apt-get install -y android-sdk adb
-          echo "PATH=$PATH:/usr/lib/android-sdk/platform-tools" >> $GITHUB_ENV
-          echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=/usr/lib/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_ENV
 
       - name: Verify ADB Installation
         run: adb version  # Check if adb is installed
@@ -58,7 +55,7 @@ jobs:
           disk-size: 8000M
           disable-animations: true
           emulator-options: "-no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose"
-          boot-timeout: 600
+          emulator-boot-timeout: 600
           script: |
             echo "Waiting for emulator..."
             adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
