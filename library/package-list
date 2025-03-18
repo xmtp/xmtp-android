@@ -1204,6 +1204,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversation/removeMembersByInboxId/#kotlin.col
 $dokka.location:uniffi.xmtpv3/FfiConversation/removeSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/remove-super-admin.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/send/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/send.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/sendOptimistic/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/send-optimistic.html
+$dokka.location:uniffi.xmtpv3/FfiConversation/sendText/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/send-text.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/stream/#uniffi.xmtpv3.FfiMessageCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/stream.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/superAdminList/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/super-admin-list.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/sync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/sync.html
@@ -1264,6 +1265,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversationInterface/removeMembersByInboxId/#k
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/removeSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/remove-super-admin.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/send/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/send.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/sendOptimistic/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/send-optimistic.html
+$dokka.location:uniffi.xmtpv3/FfiConversationInterface/sendText/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/send-text.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/stream/#uniffi.xmtpv3.FfiMessageCallback/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/stream.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/superAdminList/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/super-admin-list.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/sync/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/sync.html
