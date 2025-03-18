@@ -43,8 +43,56 @@ jobs:
       - name: Verify Running Containers
         run: docker ps  # Debugging: Ensure required services are running
 
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-29
+      - name: Create AVD and generate snapshot for caching
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          force-avd-creation: true  # Force a fresh AVD creation
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: echo "Generated AVD snapshot for caching."
+      - name: Restart ADB Server
+        run: |
+          adb kill-server || true
+          adb start-server
+          adb devices
+      - name: Wait for Emulator to Boot
+        run: |
+          adb wait-for-device
+          echo "Waiting up to 5 minutes for emulator to fully boot..."
+          boot_completed=""
+          timeout=300  # Max 5 minutes
+          while [[ -z "$boot_completed" && "$timeout" -gt 0 ]]; do
+            sleep 5
+            timeout=$((timeout - 5))
+            boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            echo "Boot status: $boot_completed"
+          done
+          if [[ -z "$boot_completed" ]]; then
+            echo "Emulator failed to boot in time!"
+            exit 1
+          fi
+          echo "Emulator is fully booted!"
+          adb shell input keyevent 82
+      - name: Fix Emulator Offline Issue
+        run: |
+          adb reconnect
+          adb devices
       - name: Run Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 24
+          api-level: 29
+          force-avd-creation: false  # Keep using the fresh AVD
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
           script: ./gradlew connectedCheck
