@@ -1,6 +1,5 @@
 package org.xmtp.android.library
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import kotlinx.coroutines.CoroutineScope
@@ -85,8 +84,6 @@ class DmTest {
         }
 
         runBlocking {
-            Log.d("LOPI Bo original", convoBo.messages().map { it.body }.joinToString(","))
-            Log.d("LOPI Alix original", convoAlix.messages().map { it.body }.joinToString(","))
             assertEquals(2, convoBo.messages().size) // memberAdd and Bo hey
             assertEquals(2, convoAlix.messages().size) // memberAdd and Alix hey
         }
@@ -142,7 +139,6 @@ class DmTest {
             ) // memberAdd Bo hey Alix hey Bo hey2 Alix hey2
         }
     }
-
 
     @Test
     fun testCanCreateADmWithInboxId() {
