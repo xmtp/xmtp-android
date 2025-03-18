@@ -55,45 +55,15 @@ jobs:
             ~/.android/adb*
           key: avd-29
 
-      - name: Create AVD
-        uses: reactivecircus/android-emulator-runner@v2
+      - name: Run Android Instrumentation Tests
+        uses: ReactiveCircus/run-android-instrumentation-tests@v1
         with:
           api-level: 29
-          force-avd-creation: true
-          emulator-options: "-no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none -no-snapshot-load -no-snapshot-save"
+          arch: x86_64
+          target: google_apis
           disable-animations: true
-          script: echo "AVD ready for use."
-
-      - name: Restart ADB Server
-        run: |
-          adb kill-server || true
-          adb start-server
-          adb devices
-          adb reconnect
-
-      - name: Wait for Emulator to Boot
-        run: |
-          adb wait-for-device
-          echo "Waiting for emulator to come online..."
-          timeout=300
-          while [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" && "$timeout" -gt 0 ]]; do
-            sleep 5
-            timeout=$((timeout - 5))
-            echo "Waiting... ($timeout seconds left)"
-            adb shell getprop sys.boot_completed
-          done
-          if [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]]; then
-            echo "Emulator failed to boot!"
-            exit 1
-          fi
-          echo "Emulator is fully booted!"
-          adb shell input keyevent 82
-
-      - name: Run Tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 29
-          force-avd-creation: false
-          emulator-options: "-no-snapshot-save -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none"
-          disable-animations: true
+          emulator-options: "-no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none"
+          test-runner: androidx.test.runner.AndroidJUnitRunner
+          test-package: "org.xmtp.android.library"
+          test-timeout: 600 # 10 min timeout
           script: ./gradlew connectedCheck
