@@ -5,6 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
@@ -70,49 +71,78 @@ class DmTest {
 
     @Test
     fun testCanSuccessfullyThreadDms() {
+        val convoBo = runBlocking {
+            boClient.conversations.findOrCreateDm(alixClient.inboxId)
+        }
+        val convoAlix = runBlocking {
+            alixClient.conversations.findOrCreateDm(boClient.inboxId)
+        }
+
         runBlocking {
-            val convoBo = boClient.conversations.findOrCreateDm(alixClient.inboxId)
-            val convoAlix = alixClient.conversations.findOrCreateDm(boClient.inboxId)
             convoBo.send("Bo hey")
-            Thread.sleep(2000)
+            delay(5000)
             convoAlix.send("Alix hey")
-            Thread.sleep(2000)
+        }
+
+        runBlocking {
             Log.d("LOPI Bo original", convoBo.messages().map { it.body }.joinToString(","))
             Log.d("LOPI Alix original", convoAlix.messages().map { it.body }.joinToString(","))
             assertEquals(2, convoBo.messages().size) // memberAdd and Bo hey
             assertEquals(2, convoAlix.messages().size) // memberAdd and Alix hey
-            alixClient.conversations.syncAllConversations()
+        }
+
+        runBlocking {
             boClient.conversations.syncAllConversations()
-//            convoAlix.send("Alix hey2")
-//            boClient.conversations.syncAllConversations()
-            Log.d("LOPI Bo", convoBo.messages().map { it.body }.joinToString(","))
-            Log.d("LOPI Alix", convoAlix.messages().map { it.body }.joinToString(","))
+        }
+        runBlocking {
+            alixClient.conversations.syncAllConversations()
+        }
+
+        runBlocking {
             assertEquals(3, convoBo.messages().size) // memberAdd and Bo hey Alix hey
             assertEquals(3, convoAlix.messages().size) // memberAdd and Bo hey Alix hey
-            val sameConvoBo = alixClient.conversations.findOrCreateDm(boClient.inboxId)
-            val sameConvoAlix = boClient.conversations.findOrCreateDm(alixClient.inboxId)
-            val topicBoSame = boClient.conversations.findConversationByTopic(convoBo.topic)!!
-            val topicAlixSame = alixClient.conversations.findConversationByTopic(convoAlix.topic)!!
-            Log.d("LOPI Bo groupId", convoBo.id)
-            Log.d("LOPI Alix groupId", convoAlix.id)
-            Log.d("LOPI Bo2 groupId", sameConvoBo.id)
-            Log.d("LOPI Alix2 groupId", sameConvoAlix.id)
-            Log.d("LOPI Bo topic groupId", topicBoSame.id)
-            Log.d("LOPI Alix topic groupId", topicAlixSame.id)
+        }
+
+        val sameConvoBo = runBlocking {
+            alixClient.conversations.findOrCreateDm(boClient.inboxId)
+        }
+        val sameConvoAlix = runBlocking {
+            boClient.conversations.findOrCreateDm(alixClient.inboxId)
+        }
+        val topicBoSame = runBlocking {
+            boClient.conversations.findConversationByTopic(convoBo.topic)!!
+        }
+        val topicAlixSame = runBlocking {
+            alixClient.conversations.findConversationByTopic(convoAlix.topic)!!
+        }
+        runBlocking {
             assertEquals(convoAlix.id, sameConvoBo.id)
             assertEquals(convoAlix.id, sameConvoAlix.id)
             assertEquals(convoAlix.id, topicBoSame.id)
             assertEquals(convoAlix.id, topicAlixSame.id)
+            assertEquals(alixClient.conversations.listDms().first().id, convoAlix.id)
+            assertEquals(boClient.conversations.listDms().first().id, convoAlix.id)
+        }
+
+        runBlocking {
             sameConvoBo.send("Bo hey2")
             sameConvoAlix.send("Alix hey2")
             sameConvoAlix.sync()
             sameConvoBo.sync()
-            Log.d("LOPI Bo 2", sameConvoBo.messages().map { it.body }.joinToString(","))
-            Log.d("LOPI Alix 2", sameConvoAlix.messages().map { it.body }.joinToString(","))
-            assertEquals(5, sameConvoBo.messages().size) // memberAdd Bo hey Alix hey Bo hey2 Alix hey2
-            assertEquals(5, sameConvoAlix.messages().size) // memberAdd Bo hey Alix hey Bo hey2 Alix hey2
+        }
+
+        runBlocking {
+            assertEquals(
+                5,
+                sameConvoBo.messages().size
+            ) // memberAdd Bo hey Alix hey Bo hey2 Alix hey2
+            assertEquals(
+                5,
+                sameConvoAlix.messages().size
+            ) // memberAdd Bo hey Alix hey Bo hey2 Alix hey2
         }
     }
+
 
     @Test
     fun testCanCreateADmWithInboxId() {
@@ -206,7 +236,14 @@ class DmTest {
         val chux: PrivateKey = chuxAccount.getPrivateKey()
 
         assertThrows(GenericException::class.java) {
-            runBlocking { boClient.conversations.findOrCreateDmWithIdentity(PublicIdentity(IdentityKind.ETHEREUM, chux.walletAddress)) }
+            runBlocking {
+                boClient.conversations.findOrCreateDmWithIdentity(
+                    PublicIdentity(
+                        IdentityKind.ETHEREUM,
+                        chux.walletAddress
+                    )
+                )
+            }
         }
     }
 
