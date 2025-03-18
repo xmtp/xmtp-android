@@ -43,26 +43,8 @@ jobs:
       - name: Verify Running Containers
         run: docker ps  # Debugging: Ensure required services are running
 
-      - name: Gradle Run Integration Tests
+      - name: Run Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 24  # Use stable API level from the example workflow
-          arch: x86_64
-          target: google_apis
-          ram-size: 4096M
-          disk-size: 8000M
-          disable-animations: true
-          emulator-options: "-no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose"
-          emulator-boot-timeout: 600
-          script: |
-            echo "Waiting for emulator to boot..."
-            adb wait-for-device
-            boot_completed=""
-            while [[ -z "$boot_completed" ]]; do
-              sleep 5
-              boot_completed=$(adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-              echo "Boot status: $boot_completed"
-            done
-            echo "Emulator is fully booted!"
-            adb shell input keyevent 82
-            ./gradlew connectedCheck
+          api-level: 24
+          script: ./gradlew connectedCheck
