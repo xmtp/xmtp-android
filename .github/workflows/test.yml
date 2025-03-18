@@ -45,6 +45,7 @@ jobs:
 
       - name: Gradle cache
         uses: gradle/actions/setup-gradle@v3
+
       - name: AVD cache
         uses: actions/cache@v4
         id: avd-cache
@@ -53,46 +54,51 @@ jobs:
             ~/.android/avd/*
             ~/.android/adb*
           key: avd-29
-      - name: Create AVD and generate snapshot for caching
+
+      - name: Create AVD
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          force-avd-creation: true  # Force a fresh AVD creation
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          force-avd-creation: true
+          emulator-options: "-no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none -no-snapshot-load -no-snapshot-save -metrics-to-file"
           disable-animations: true
-          script: echo "Generated AVD snapshot for caching."
+          script: echo "AVD ready for use."
+
       - name: Restart ADB Server
         run: |
           adb kill-server || true
           adb start-server
           adb devices
+          adb reconnect
+
       - name: Wait for Emulator to Boot
         run: |
           adb wait-for-device
-          echo "Waiting up to 5 minutes for emulator to fully boot..."
-          boot_completed=""
-          timeout=300  # Max 5 minutes
-          while [[ -z "$boot_completed" && "$timeout" -gt 0 ]]; do
+          echo "Waiting for emulator to come online..."
+          timeout=300
+          while [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" && "$timeout" -gt 0 ]]; do
             sleep 5
             timeout=$((timeout - 5))
-            boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-            echo "Boot status: $boot_completed"
+            echo "Waiting... ($timeout seconds left)"
+            adb shell getprop sys.boot_completed
           done
-          if [[ -z "$boot_completed" ]]; then
-            echo "Emulator failed to boot in time!"
+          if [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]]; then
+            echo "Emulator failed to boot!"
             exit 1
           fi
           echo "Emulator is fully booted!"
           adb shell input keyevent 82
-      - name: Fix Emulator Offline Issue
+
+      - name: Debug Emulator Startup
         run: |
-          adb reconnect
-          adb devices
+          adb logcat -d > emulator_log.txt
+          cat emulator_log.txt
+
       - name: Run Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          force-avd-creation: false  # Keep using the fresh AVD
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          force-avd-creation: false
+          emulator-options: "-no-snapshot-save -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none"
           disable-animations: true
           script: ./gradlew connectedCheck
