@@ -25,30 +25,28 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
-      - name: Set up Android SDK environment
+      - name: Enable KVM group permissions
         run: |
-          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_ENV
-
-      - name: Verify ADB Installation
-        run: adb version  # Check if adb is installed
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
       - name: Start Docker containers
-        run: dev/up
+        run: ./dev/up
 
-      - name: Restart ADB Server
-        run: |
-          adb kill-server || true
-          adb start-server
-          adb devices  # Verify if ADB devices are detected
+      - name: Wait for Services
+        run: sleep 5s  # Give DB and Node services time to start
+
+      - name: Verify Running Containers
+        run: docker ps  # Debugging: Ensure required services are running
 
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          api-level: 24  # Use stable API level from the example workflow
           arch: x86_64
           target: google_apis
           ram-size: 4096M
@@ -57,7 +55,14 @@ jobs:
           emulator-options: "-no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -verbose"
           emulator-boot-timeout: 600
           script: |
-            echo "Waiting for emulator..."
-            adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
+            echo "Waiting for emulator to boot..."
+            adb wait-for-device
+            boot_completed=""
+            while [[ -z "$boot_completed" ]]; do
+              sleep 5
+              boot_completed=$(adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+              echo "Boot status: $boot_completed"
+            done
+            echo "Emulator is fully booted!"
             adb shell input keyevent 82
             ./gradlew connectedCheck
