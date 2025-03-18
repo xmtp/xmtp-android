@@ -60,7 +60,7 @@ jobs:
         with:
           api-level: 29
           force-avd-creation: true
-          emulator-options: "-no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none -no-snapshot-load -no-snapshot-save -metrics-to-file"
+          emulator-options: "-no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none -no-snapshot-load -no-snapshot-save"
           disable-animations: true
           script: echo "AVD ready for use."
 
@@ -88,11 +88,6 @@ jobs:
           fi
           echo "Emulator is fully booted!"
           adb shell input keyevent 82
-
-      - name: Debug Emulator Startup
-        run: |
-          adb logcat -d > emulator_log.txt
-          cat emulator_log.txt
 
       - name: Run Tests
         uses: reactivecircus/android-emulator-runner@v2
