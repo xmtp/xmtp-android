@@ -26,6 +26,7 @@ jobs:
         run: dev/up
       - name: Gradle Run Unit Tests
         run: ./gradlew library:testDebug
+
   library-integration:
     name: Library (Integration Tests)
     runs-on: ubuntu-latest
@@ -51,6 +52,11 @@ jobs:
       - name: Gradle Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 29
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          ram-size: 2048M
+          disk-size: 6000M
+          disable-animations: true
+          emulator-options: "-no-window -no-audio -no-boot-anim -gpu swiftshader_indirect"
           script: ./gradlew connectedCheck
-
