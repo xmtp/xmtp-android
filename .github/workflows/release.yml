@@ -2,7 +2,7 @@ name: Release XMTP Android Package
 on:
   push:
     branches:
-      - release
+      - hot-fix-key-package
 
 jobs:
   library:
