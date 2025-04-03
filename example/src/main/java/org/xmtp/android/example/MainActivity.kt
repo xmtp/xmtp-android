@@ -31,7 +31,9 @@ import org.xmtp.android.example.conversation.NewGroupBottomSheet
 import org.xmtp.android.example.databinding.ActivityMainBinding
 import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
 import org.xmtp.android.example.utils.KeyUtil
+import org.xmtp.android.library.Client
 import org.xmtp.android.library.Conversation
+import org.xmtp.android.example.logs.LogViewerBottomSheet
 
 
 class MainActivity : AppCompatActivity(),
@@ -43,10 +45,12 @@ class MainActivity : AppCompatActivity(),
     private lateinit var adapter: ConversationsAdapter
     private var bottomSheet: NewConversationBottomSheet? = null
     private var groupBottomSheet: NewGroupBottomSheet? = null
+    private var logsBottomSheet: LogViewerBottomSheet? = null
     private val REQUEST_CODE_POST_NOTIFICATIONS = 101
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Client.activatePersistentLibXMTPLogWriter(applicationContext)
         accountManager = AccountManager.get(this)
         checkAndRequestPermissions()
         PushNotificationTokenManager.init(this, "10.0.2.2:8080")
@@ -81,6 +85,10 @@ class MainActivity : AppCompatActivity(),
             openGroupDetail()
         }
 
+        binding.logsFab.setOnClickListener {
+            openLogsViewer()
+        }
+
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 ClientManager.clientState.collect(::ensureClientState)
@@ -101,6 +109,7 @@ class MainActivity : AppCompatActivity(),
     override fun onDestroy() {
         bottomSheet?.dismiss()
         groupBottomSheet?.dismiss()
+        logsBottomSheet?.dismiss()
         super.onDestroy()
     }
 
@@ -117,6 +126,16 @@ class MainActivity : AppCompatActivity(),
             }
             R.id.copy_address -> {
                 copyWalletAddress()
+                true
+            }
+            R.id.activate_logs -> {
+                Client.activatePersistentLibXMTPLogWriter(applicationContext)
+                Toast.makeText(this, "Persistent logs activated", Toast.LENGTH_SHORT).show()
+                true
+            }
+            R.id.deactivate_logs -> {
+                Client.deactivatePersistentLibXMTPLogWriter()
+                Toast.makeText(this, "Persistent logs deactivated", Toast.LENGTH_SHORT).show()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -143,6 +162,7 @@ class MainActivity : AppCompatActivity(),
                 viewModel.fetchConversations()
                 binding.fab.visibility = View.VISIBLE
                 binding.groupFab.visibility = View.VISIBLE
+                binding.logsFab.visibility = View.VISIBLE
             }
             is ClientManager.ClientState.Error -> showError(clientState.message)
             is ClientManager.ClientState.Unknown -> Unit
@@ -215,6 +235,14 @@ class MainActivity : AppCompatActivity(),
         groupBottomSheet?.show(
             supportFragmentManager,
             NewGroupBottomSheet.TAG
+        )
+    }
+
+    private fun openLogsViewer() {
+        logsBottomSheet = LogViewerBottomSheet.newInstance()
+        logsBottomSheet?.show(
+            supportFragmentManager,
+            LogViewerBottomSheet.TAG
         )
     }
 

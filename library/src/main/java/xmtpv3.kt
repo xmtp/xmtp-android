@@ -1135,6 +1135,12 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
 
 
 
+
+
+
+
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is 
 // rather `InterfaceTooLargeException`, caused by too many methods 
@@ -1161,6 +1167,10 @@ fun uniffi_xmtpv3_checksum_func_decode_reaction(
 fun uniffi_xmtpv3_checksum_func_encode_multi_remote_attachment(
 ): Short
 fun uniffi_xmtpv3_checksum_func_encode_reaction(
+): Short
+fun uniffi_xmtpv3_checksum_func_enter_debug_writer(
+): Short
+fun uniffi_xmtpv3_checksum_func_exit_debug_writer(
 ): Short
 fun uniffi_xmtpv3_checksum_func_generate_inbox_id(
 ): Short
@@ -1361,6 +1371,8 @@ fun uniffi_xmtpv3_checksum_method_ffixmtpclient_backup_metadata(
 fun uniffi_xmtpv3_checksum_method_ffixmtpclient_backup_to_file(
 ): Short
 fun uniffi_xmtpv3_checksum_method_ffixmtpclient_can_message(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_change_recovery_identifier(
 ): Short
 fun uniffi_xmtpv3_checksum_method_ffixmtpclient_conversation(
 ): Short
@@ -1718,6 +1730,8 @@ fun uniffi_xmtpv3_fn_method_ffixmtpclient_backup_to_file(`ptr`: Pointer,`path`: 
 ): Long
 fun uniffi_xmtpv3_fn_method_ffixmtpclient_can_message(`ptr`: Pointer,`accountIdentifiers`: RustBuffer.ByValue,
 ): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_change_recovery_identifier(`ptr`: Pointer,`newRecoveryIdentifier`: RustBuffer.ByValue,
+): Long
 fun uniffi_xmtpv3_fn_method_ffixmtpclient_conversation(`ptr`: Pointer,`conversationId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
 ): Pointer
 fun uniffi_xmtpv3_fn_method_ffixmtpclient_conversations(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
@@ -1780,6 +1794,10 @@ fun uniffi_xmtpv3_fn_func_encode_multi_remote_attachment(`ffiMultiRemoteAttachme
 ): RustBuffer.ByValue
 fun uniffi_xmtpv3_fn_func_encode_reaction(`reaction`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
 ): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_func_enter_debug_writer(`directory`: RustBuffer.ByValue,`maxFiles`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_func_exit_debug_writer(uniffi_out_err: UniffiRustCallStatus, 
+): Unit
 fun uniffi_xmtpv3_fn_func_generate_inbox_id(`accountIdentifier`: RustBuffer.ByValue,`nonce`: Long,uniffi_out_err: UniffiRustCallStatus, 
 ): RustBuffer.ByValue
 fun uniffi_xmtpv3_fn_func_get_inbox_id_for_identifier(`api`: Pointer,`accountIdentifier`: RustBuffer.ByValue,
@@ -1928,6 +1946,12 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_func_encode_reaction() != 6548.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_enter_debug_writer() != 18335.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_exit_debug_writer() != 31716.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_func_generate_inbox_id() != 35602.toShort()) {
@@ -2228,6 +2252,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_can_message() != 32993.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_change_recovery_identifier() != 39513.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_conversation() != 60290.toShort()) {
@@ -7508,6 +7535,11 @@ public interface FfiXmtpClientInterface {
     
     suspend fun `canMessage`(`accountIdentifiers`: List<FfiIdentifier>): Map<FfiIdentifier, kotlin.Boolean>
     
+    /**
+     * * Change the recovery identifier for your inboxId
+     */
+    suspend fun `changeRecoveryIdentifier`(`newRecoveryIdentifier`: FfiIdentifier): FfiSignatureRequest
+    
     fun `conversation`(`conversationId`: kotlin.ByteArray): FfiConversation
     
     fun `conversations`(): FfiConversations
@@ -7809,6 +7841,30 @@ open class FfiXmtpClient: Disposable, AutoCloseable, FfiXmtpClientInterface
         { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterMapTypeFfiIdentifierBoolean.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * * Change the recovery identifier for your inboxId
+     */
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `changeRecoveryIdentifier`(`newRecoveryIdentifier`: FfiIdentifier) : FfiSignatureRequest {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_change_recovery_identifier(
+                thisPtr,
+                FfiConverterTypeFfiIdentifier.lower(`newRecoveryIdentifier`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiSignatureRequest.lift(it) },
         // Error FFI converter
         GenericException.ErrorHandler,
     )
@@ -10025,6 +10081,12 @@ sealed class GenericException(message: String): kotlin.Exception(message) {
         
         class AddressValidation(message: String) : GenericException(message)
         
+        class LogInit(message: String) : GenericException(message)
+        
+        class ReloadLog(message: String) : GenericException(message)
+        
+        class Log(message: String) : GenericException(message)
+        
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<GenericException> {
         override fun lift(error_buf: RustBuffer.ByValue): GenericException = FfiConverterTypeGenericError.lift(error_buf)
@@ -10059,6 +10121,9 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
             19 -> GenericException.ApiClientBuild(FfiConverterString.read(buf))
             20 -> GenericException.Grpc(FfiConverterString.read(buf))
             21 -> GenericException.AddressValidation(FfiConverterString.read(buf))
+            22 -> GenericException.LogInit(FfiConverterString.read(buf))
+            23 -> GenericException.ReloadLog(FfiConverterString.read(buf))
+            24 -> GenericException.Log(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
         
@@ -10152,6 +10217,18 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
             }
             is GenericException.AddressValidation -> {
                 buf.putInt(21)
+                Unit
+            }
+            is GenericException.LogInit -> {
+                buf.putInt(22)
+                Unit
+            }
+            is GenericException.ReloadLog -> {
+                buf.putInt(23)
+                Unit
+            }
+            is GenericException.Log -> {
+                buf.putInt(24)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -11444,6 +11521,35 @@ public object FfiConverterMapTypeFfiIdentifierBoolean: FfiConverterRustBuffer<Ma
 }
     )
     }
+    
+
+        /**
+         * turns on logging to a file on-disk in the directory specified.
+         * files will be prefixed with 'libxmtp.log' and suffixed with the timestamp,
+         * i.e "libxmtp.log.2025-04-02"
+         * A maximum of 'max_files' log files are kept.
+         */
+    @Throws(GenericException::class) fun `enterDebugWriter`(`directory`: kotlin.String, `maxFiles`: kotlin.UInt)
+        = 
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_enter_debug_writer(
+        FfiConverterString.lower(`directory`),FfiConverterUInt.lower(`maxFiles`),_status)
+}
+    
+    
+
+        /**
+         * Flush loglines from libxmtp log writer to the file, ensuring logs are written.
+         * This should be called before the program exits, to ensure all the logs in memory have been
+         * written. this ends the writer thread.
+         */
+    @Throws(GenericException::class) fun `exitDebugWriter`()
+        = 
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_exit_debug_writer(
+        _status)
+}
+    
     
 
     @Throws(GenericException::class) fun `generateInboxId`(`accountIdentifier`: FfiIdentifier, `nonce`: kotlin.ULong): kotlin.String {

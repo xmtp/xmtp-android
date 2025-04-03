@@ -14,10 +14,13 @@ import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.XmtpApiClient
 import uniffi.xmtpv3.connectToBackend
 import uniffi.xmtpv3.createClient
+import uniffi.xmtpv3.enterDebugWriter
+import uniffi.xmtpv3.exitDebugWriter
 import uniffi.xmtpv3.generateInboxId
 import uniffi.xmtpv3.getInboxIdForIdentifier
 import uniffi.xmtpv3.getVersionInfo
 import java.io.File
+import java.nio.file.Path
 
 typealias PreEventCallback = suspend () -> Unit
 
@@ -70,6 +73,18 @@ class Client(
 
         private val apiClientCache = mutableMapOf<String, XmtpApiClient>()
         private val cacheLock = Mutex()
+
+        fun activatePersistentLibXMTPLogWriter(appContext: Context, maxFiles: UInt = 10U) {
+            val logDirectory = File(appContext.filesDir, "xmtp_logs")
+            if (!logDirectory.exists()) {
+                logDirectory.mkdirs()
+            }
+            enterDebugWriter(logDirectory.toString(), maxFiles)
+        }
+
+        fun deactivatePersistentLibXMTPLogWriter() {
+            exitDebugWriter()
+        }
 
         suspend fun connectToApiBackend(api: ClientOptions.Api): XmtpApiClient {
             val cacheKey = api.env.getUrl()
