@@ -1141,6 +1141,8 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is 
 // rather `InterfaceTooLargeException`, caused by too many methods 
@@ -1169,6 +1171,8 @@ fun uniffi_xmtpv3_checksum_func_encode_multi_remote_attachment(
 fun uniffi_xmtpv3_checksum_func_encode_reaction(
 ): Short
 fun uniffi_xmtpv3_checksum_func_enter_debug_writer(
+): Short
+fun uniffi_xmtpv3_checksum_func_enter_debug_writer_with_level(
 ): Short
 fun uniffi_xmtpv3_checksum_func_exit_debug_writer(
 ): Short
@@ -1794,7 +1798,9 @@ fun uniffi_xmtpv3_fn_func_encode_multi_remote_attachment(`ffiMultiRemoteAttachme
 ): RustBuffer.ByValue
 fun uniffi_xmtpv3_fn_func_encode_reaction(`reaction`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
 ): RustBuffer.ByValue
-fun uniffi_xmtpv3_fn_func_enter_debug_writer(`directory`: RustBuffer.ByValue,`maxFiles`: Int,uniffi_out_err: UniffiRustCallStatus, 
+fun uniffi_xmtpv3_fn_func_enter_debug_writer(`directory`: RustBuffer.ByValue,`logLevel`: RustBuffer.ByValue,`rotation`: RustBuffer.ByValue,`maxFiles`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_func_enter_debug_writer_with_level(`directory`: RustBuffer.ByValue,`rotation`: RustBuffer.ByValue,`maxFiles`: Int,`logLevel`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
 ): Unit
 fun uniffi_xmtpv3_fn_func_exit_debug_writer(uniffi_out_err: UniffiRustCallStatus, 
 ): Unit
@@ -1948,7 +1954,10 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_func_encode_reaction() != 6548.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_func_enter_debug_writer() != 18335.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_func_enter_debug_writer() != 7266.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_enter_debug_writer_with_level() != 7232.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_func_exit_debug_writer() != 31716.toShort()) {
@@ -9744,6 +9753,104 @@ public object FfiConverterTypeFfiIdentifierKind: FfiConverterRustBuffer<FfiIdent
 
 
 
+/**
+ * Enum representing log levels
+ */
+
+enum class FfiLogLevel {
+    
+    /**
+     * Error level logs only
+     */
+    ERROR,
+    /**
+     * Warning level and above
+     */
+    WARN,
+    /**
+     * Info level and above
+     */
+    INFO,
+    /**
+     * Debug level and above
+     */
+    DEBUG,
+    /**
+     * Trace level and all logs
+     */
+    TRACE;
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiLogLevel: FfiConverterRustBuffer<FfiLogLevel> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiLogLevel.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: FfiLogLevel) = 4UL
+
+    override fun write(value: FfiLogLevel, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * Enum representing log file rotation options
+ */
+
+enum class FfiLogRotation {
+    
+    /**
+     * Rotate log files every minute
+     */
+    MINUTELY,
+    /**
+     * Rotate log files every hour
+     */
+    HOURLY,
+    /**
+     * Rotate log files every day
+     */
+    DAILY,
+    /**
+     * Never rotate log files
+     */
+    NEVER;
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiLogRotation: FfiConverterRustBuffer<FfiLogRotation> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiLogRotation.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: FfiLogRotation) = 4UL
+
+    override fun write(value: FfiLogRotation, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
 
 enum class FfiMetadataField {
     
@@ -11529,11 +11636,26 @@ public object FfiConverterMapTypeFfiIdentifierBoolean: FfiConverterRustBuffer<Ma
          * i.e "libxmtp.log.2025-04-02"
          * A maximum of 'max_files' log files are kept.
          */
-    @Throws(GenericException::class) fun `enterDebugWriter`(`directory`: kotlin.String, `maxFiles`: kotlin.UInt)
+    @Throws(GenericException::class) fun `enterDebugWriter`(`directory`: kotlin.String, `logLevel`: FfiLogLevel, `rotation`: FfiLogRotation, `maxFiles`: kotlin.UInt)
         = 
     uniffiRustCallWithError(GenericException) { _status ->
     UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_enter_debug_writer(
-        FfiConverterString.lower(`directory`),FfiConverterUInt.lower(`maxFiles`),_status)
+        FfiConverterString.lower(`directory`),FfiConverterTypeFfiLogLevel.lower(`logLevel`),FfiConverterTypeFfiLogRotation.lower(`rotation`),FfiConverterUInt.lower(`maxFiles`),_status)
+}
+    
+    
+
+        /**
+         * turns on logging to a file on-disk with a specified log level.
+         * files will be prefixed with 'libxmtp.log' and suffixed with the timestamp,
+         * i.e "libxmtp.log.2025-04-02"
+         * A maximum of 'max_files' log files are kept.
+         */
+    @Throws(GenericException::class) fun `enterDebugWriterWithLevel`(`directory`: kotlin.String, `rotation`: FfiLogRotation, `maxFiles`: kotlin.UInt, `logLevel`: FfiLogLevel)
+        = 
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_enter_debug_writer_with_level(
+        FfiConverterString.lower(`directory`),FfiConverterTypeFfiLogRotation.lower(`rotation`),FfiConverterUInt.lower(`maxFiles`),FfiConverterTypeFfiLogLevel.lower(`logLevel`),_status)
 }
     
     

@@ -4,12 +4,15 @@ import android.content.Context
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.web3j.abi.datatypes.Uint
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.InboxState
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.SignatureRequest
+import uniffi.xmtpv3.FfiLogLevel
+import uniffi.xmtpv3.FfiLogRotation
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.XmtpApiClient
 import uniffi.xmtpv3.connectToBackend
@@ -74,12 +77,14 @@ class Client(
         private val apiClientCache = mutableMapOf<String, XmtpApiClient>()
         private val cacheLock = Mutex()
 
-        fun activatePersistentLibXMTPLogWriter(appContext: Context, maxFiles: UInt = 10U) {
+        fun activatePersistentLibXMTPLogWriter(appContext: Context, logLevel: FfiLogLevel, rotationSchedule: FfiLogRotation, maxFiles: Int) {
             val logDirectory = File(appContext.filesDir, "xmtp_logs")
             if (!logDirectory.exists()) {
                 logDirectory.mkdirs()
             }
-            enterDebugWriter(logDirectory.toString(), maxFiles)
+            enterDebugWriter(logDirectory.toString(), logLevel, rotationSchedule,
+                maxFiles.toUInt()
+            )
         }
 
         fun deactivatePersistentLibXMTPLogWriter() {

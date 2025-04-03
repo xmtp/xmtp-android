@@ -12,6 +12,8 @@ import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
+import uniffi.xmtpv3.FfiLogLevel
+import uniffi.xmtpv3.FfiLogRotation
 import uniffi.xmtpv3.GenericException
 import java.io.File
 import java.security.SecureRandom
@@ -844,7 +846,7 @@ class ClientTest {
 
         try {
             // Activate persistent logging with a small number of log files
-            Client.activatePersistentLibXMTPLogWriter(context, 3U)
+            Client.activatePersistentLibXMTPLogWriter(context, FfiLogLevel.TRACE, FfiLogRotation.HOURLY, 3)
             
             // Log the actual log directory path
             val actualLogDir = File(context.filesDir, "xmtp_logs")

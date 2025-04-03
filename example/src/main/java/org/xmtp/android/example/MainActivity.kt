@@ -34,6 +34,8 @@ import org.xmtp.android.example.utils.KeyUtil
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.Conversation
 import org.xmtp.android.example.logs.LogViewerBottomSheet
+import uniffi.xmtpv3.FfiLogLevel
+import uniffi.xmtpv3.FfiLogRotation
 
 
 class MainActivity : AppCompatActivity(),
@@ -47,10 +49,15 @@ class MainActivity : AppCompatActivity(),
     private var groupBottomSheet: NewGroupBottomSheet? = null
     private var logsBottomSheet: LogViewerBottomSheet? = null
     private val REQUEST_CODE_POST_NOTIFICATIONS = 101
+    
+    // Add constant for SharedPreferences
+    companion object {
+        private const val PREFS_NAME = "XMTPPreferences"
+        private const val KEY_LOGS_ACTIVATED = "logs_activated"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Client.activatePersistentLibXMTPLogWriter(applicationContext)
         accountManager = AccountManager.get(this)
         checkAndRequestPermissions()
         PushNotificationTokenManager.init(this, "10.0.2.2:8080")
@@ -106,6 +113,14 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Check if logs were previously activated and reactivate if needed
+        if (isLogsActivated()) {
+            Client.activatePersistentLibXMTPLogWriter(applicationContext, FfiLogLevel.DEBUG, FfiLogRotation.HOURLY, 3)
+        }
+    }
+
     override fun onDestroy() {
         bottomSheet?.dismiss()
         groupBottomSheet?.dismiss()
@@ -129,12 +144,14 @@ class MainActivity : AppCompatActivity(),
                 true
             }
             R.id.activate_logs -> {
-                Client.activatePersistentLibXMTPLogWriter(applicationContext)
+                Client.activatePersistentLibXMTPLogWriter(applicationContext, FfiLogLevel.TRACE, FfiLogRotation.HOURLY, 3)
+                setLogsActivated(true)
                 Toast.makeText(this, "Persistent logs activated", Toast.LENGTH_SHORT).show()
                 true
             }
             R.id.deactivate_logs -> {
                 Client.deactivatePersistentLibXMTPLogWriter()
+                setLogsActivated(false)
                 Toast.makeText(this, "Persistent logs deactivated", Toast.LENGTH_SHORT).show()
                 true
             }
@@ -258,5 +275,16 @@ class MainActivity : AppCompatActivity(),
                 REQUEST_CODE_POST_NOTIFICATIONS
             )
         }
+    }
+
+    // Add helper methods to manage log activation state
+    private fun isLogsActivated(): Boolean {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_LOGS_ACTIVATED, false)
+    }
+    
+    private fun setLogsActivated(activated: Boolean) {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(KEY_LOGS_ACTIVATED, activated).apply()
     }
 }
