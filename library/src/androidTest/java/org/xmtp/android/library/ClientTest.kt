@@ -462,8 +462,8 @@ class ClientTest {
         )
     }
 
-   @Test
-   fun testsCanSeeKeyPackageStatus() {
+    @Test
+    fun testsCanSeeKeyPackageStatus() {
         val fixtures = fixtures()
         runBlocking { Client.connectToApiBackend(ClientOptions.Api(XMTPEnvironment.LOCAL, true)) }
         val inboxState = runBlocking {
@@ -472,7 +472,7 @@ class ClientTest {
                 ClientOptions.Api(XMTPEnvironment.LOCAL, true)
             ).first()
         }
-        val installationIds = inboxState.installations.map{ it.installationId }
+        val installationIds = inboxState.installations.map { it.installationId }
         val keyPackageStatus = runBlocking {
             Client.keyPackageStatusesForInstallationIds(
                 installationIds,
@@ -495,7 +495,7 @@ class ClientTest {
                 assertEquals((3600 * 24 * 28 * 3 + 3600).toULong(), notAfter - notBefore)
             }
         }
-   }
+    }
 
 //    @Test
 //    fun testsCanSeeInvalidKeyPackageStatusOnDev() {
