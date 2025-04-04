@@ -13,6 +13,7 @@ import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.SignatureRequest
 import uniffi.xmtpv3.FfiLogLevel
 import uniffi.xmtpv3.FfiLogRotation
+import uniffi.xmtpv3.FfiKeyPackageStatus
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.XmtpApiClient
 import uniffi.xmtpv3.connectToBackend
@@ -150,6 +151,19 @@ class Client(
             return withFfiClient(api) { ffiClient ->
                 ffiClient.addressesFromInboxId(true, inboxIds)
                     .map { InboxState(it) }
+            }
+        }
+
+        suspend fun keyPackageStatusesForInstallationIds(
+            installationIds: List<String>,
+            api: ClientOptions.Api,
+        ): Map<String, FfiKeyPackageStatus> {
+            return withFfiClient(api) { ffiClient ->
+                val byteArrays = installationIds.map { it.hexToByteArray() }
+                val result = ffiClient.getKeyPackageStatusesForInstallationIds(byteArrays)
+                result.entries.associate { (byteArrayKey, status) ->
+                    byteArrayKey.toHex() to status
+                }
             }
         }
 
