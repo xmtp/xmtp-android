@@ -768,6 +768,7 @@ $dokka.location:org.xmtp.android.library/Client.Companion/create/#org.xmtp.andro
 $dokka.location:org.xmtp.android.library/Client.Companion/ffiCreateClient/#org.xmtp.android.library.libxmtp.PublicIdentity#org.xmtp.android.library.ClientOptions/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/ffi-create-client.html
 $dokka.location:org.xmtp.android.library/Client.Companion/getOrCreateInboxId/#org.xmtp.android.library.ClientOptions.Api#org.xmtp.android.library.libxmtp.PublicIdentity/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/get-or-create-inbox-id.html
 $dokka.location:org.xmtp.android.library/Client.Companion/inboxStatesForInboxIds/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.ClientOptions.Api/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/inbox-states-for-inbox-ids.html
+$dokka.location:org.xmtp.android.library/Client.Companion/keyPackageStatusesForInstallationIds/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.ClientOptions.Api/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/key-package-statuses-for-installation-ids.html
 $dokka.location:org.xmtp.android.library/Client.Companion/register/#org.xmtp.android.library.codecs.ContentCodec[*]/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/register.html
 $dokka.location:org.xmtp.android.library/Client///PointingToDeclaration/library/org.xmtp.android.library/-client/index.html
 $dokka.location:org.xmtp.android.library/Client/Client/#uniffi.xmtpv3.FfiXmtpClient#kotlin.String#kotlin.String#kotlin.String#org.xmtp.android.library.XMTPEnvironment#org.xmtp.android.library.libxmtp.PublicIdentity/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
@@ -1464,6 +1465,16 @@ $dokka.location:uniffi.xmtpv3/FfiInstallation///PointingToDeclaration/library/u
 $dokka.location:uniffi.xmtpv3/FfiInstallation/FfiInstallation/#kotlin.ByteArray#kotlin.ULong?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-installation/-ffi-installation.html
 $dokka.location:uniffi.xmtpv3/FfiInstallation/clientTimestampNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-installation/client-timestamp-ns.html
 $dokka.location:uniffi.xmtpv3/FfiInstallation/id/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-installation/id.html
+$dokka.location:uniffi.xmtpv3/FfiKeyPackageStatus.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-key-package-status/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiKeyPackageStatus///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-key-package-status/index.html
+$dokka.location:uniffi.xmtpv3/FfiKeyPackageStatus/FfiKeyPackageStatus/#uniffi.xmtpv3.FfiLifetime?#kotlin.String?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-key-package-status/-ffi-key-package-status.html
+$dokka.location:uniffi.xmtpv3/FfiKeyPackageStatus/lifetime/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-key-package-status/lifetime.html
+$dokka.location:uniffi.xmtpv3/FfiKeyPackageStatus/validationError/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-key-package-status/validation-error.html
+$dokka.location:uniffi.xmtpv3/FfiLifetime.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-lifetime/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiLifetime///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-lifetime/index.html
+$dokka.location:uniffi.xmtpv3/FfiLifetime/FfiLifetime/#kotlin.ULong#kotlin.ULong/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-lifetime/-ffi-lifetime.html
+$dokka.location:uniffi.xmtpv3/FfiLifetime/notAfter/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-lifetime/not-after.html
+$dokka.location:uniffi.xmtpv3/FfiLifetime/notBefore/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-lifetime/not-before.html
 $dokka.location:uniffi.xmtpv3/FfiListConversationsOptions.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-list-conversations-options/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiListConversationsOptions///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-list-conversations-options/index.html
 $dokka.location:uniffi.xmtpv3/FfiListConversationsOptions/FfiListConversationsOptions/#kotlin.Long?#kotlin.Long?#kotlin.Long?#kotlin.collections.List[uniffi.xmtpv3.FfiConsentState]?#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-list-conversations-options/-ffi-list-conversations-options.html
@@ -1683,6 +1694,7 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClient/applySignatureRequest/#uniffi.xmtpv3
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/backupMetadata/#kotlin.String#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/backup-metadata.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/backupToFile/#kotlin.String#uniffi.xmtpv3.FfiBackupOptions#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/backup-to-file.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/canMessage/#kotlin.collections.List[uniffi.xmtpv3.FfiIdentifier]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/can-message.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClient/changeRecoveryIdentifier/#uniffi.xmtpv3.FfiIdentifier/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/change-recovery-identifier.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/close.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/conversation/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/conversation.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/conversations/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/conversations.html
@@ -1691,6 +1703,7 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClient/destroy/#/PointingToDeclaration/lib
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/dmConversation/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/dm-conversation.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/findInboxId/#uniffi.xmtpv3.FfiIdentifier/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/find-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/getConsentState/#uniffi.xmtpv3.FfiConsentEntityType#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/get-consent-state.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClient/getKeyPackageStatusesForInstallationIds/#kotlin.collections.List[kotlin.ByteArray]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/get-key-package-statuses-for-installation-ids.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/getLatestInboxState/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/get-latest-inbox-state.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/importFromFile/#kotlin.String#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/import-from-file.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/inboxId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/inbox-id.html
@@ -1717,12 +1730,14 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/applySignatureRequest/#unif
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/backupMetadata/#kotlin.String#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/backup-metadata.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/backupToFile/#kotlin.String#uniffi.xmtpv3.FfiBackupOptions#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/backup-to-file.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/canMessage/#kotlin.collections.List[uniffi.xmtpv3.FfiIdentifier]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/can-message.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/changeRecoveryIdentifier/#uniffi.xmtpv3.FfiIdentifier/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/change-recovery-identifier.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/conversation/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/conversation.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/conversations/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/conversations.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/dbReconnect/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/db-reconnect.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/dmConversation/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/dm-conversation.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/findInboxId/#uniffi.xmtpv3.FfiIdentifier/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/find-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/getConsentState/#uniffi.xmtpv3.FfiConsentEntityType#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/get-consent-state.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/getKeyPackageStatusesForInstallationIds/#kotlin.collections.List[kotlin.ByteArray]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/get-key-package-statuses-for-installation-ids.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/getLatestInboxState/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/get-latest-inbox-state.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/importFromFile/#kotlin.String#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/import-from-file.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/inboxId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/inbox-id.html
