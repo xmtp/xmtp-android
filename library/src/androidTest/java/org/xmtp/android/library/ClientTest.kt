@@ -899,6 +899,7 @@ class ClientTest {
     fun testPersistentLogging() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
+        Client.clearXMTPLogs(context)
         val fakeWallet = PrivateKeyBuilder()
 
         // Create a specific log directory for this test
@@ -911,7 +912,7 @@ class ClientTest {
         try {
             // Activate persistent logging with a small number of log files
             Client.activatePersistentLibXMTPLogWriter(context, FfiLogLevel.TRACE, FfiLogRotation.HOURLY, 3)
-            
+
             // Log the actual log directory path
             val actualLogDir = File(context.filesDir, "xmtp_logs")
             println("Log directory path: ${actualLogDir.absolutePath}")
@@ -959,5 +960,11 @@ class ClientTest {
             // Make sure logging is deactivated
             Client.deactivatePersistentLibXMTPLogWriter()
         }
+        val logFiles = Client.getXMTPLogFilePaths(context)
+        assertEquals(logFiles.size, 1)
+        println(logFiles.get(0))
+        Client.clearXMTPLogs(context)
+        val logFiles2 = Client.getXMTPLogFilePaths(context)
+        assertEquals(logFiles2.size, 0)
     }
 }

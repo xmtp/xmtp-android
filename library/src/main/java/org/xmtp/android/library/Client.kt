@@ -4,7 +4,6 @@ import android.content.Context
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.web3j.abi.datatypes.Uint
 import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.IdentityKind
@@ -24,7 +23,6 @@ import uniffi.xmtpv3.generateInboxId
 import uniffi.xmtpv3.getInboxIdForIdentifier
 import uniffi.xmtpv3.getVersionInfo
 import java.io.File
-import java.nio.file.Path
 
 typealias PreEventCallback = suspend () -> Unit
 
@@ -83,13 +81,48 @@ class Client(
             if (!logDirectory.exists()) {
                 logDirectory.mkdirs()
             }
-            enterDebugWriter(logDirectory.toString(), logLevel, rotationSchedule,
+            enterDebugWriter(
+                logDirectory.toString(), logLevel, rotationSchedule,
                 maxFiles.toUInt()
             )
         }
 
         fun deactivatePersistentLibXMTPLogWriter() {
             exitDebugWriter()
+        }
+
+        fun getXMTPLogFilePaths(appContext: Context): List<String> {
+            val logDirectory = File(appContext.filesDir, "xmtp_logs")
+            if (!logDirectory.exists()) {
+                return emptyList()
+            }
+
+            return logDirectory.listFiles()
+                ?.filter { it.isFile }
+                ?.map { it.absolutePath }
+                ?: emptyList()
+        }
+
+        fun clearXMTPLogs(appContext: Context): Int {
+            val logDirectory = File(appContext.filesDir, "xmtp_logs")
+            if (!logDirectory.exists()) {
+                return 0
+            }
+
+            try {
+                deactivatePersistentLibXMTPLogWriter()
+            } catch (e: Exception) {
+                // Log writer might not be active, continue with deletion
+            }
+
+            var deletedCount = 0
+            logDirectory.listFiles()?.forEach { file ->
+                if (file.isFile && file.delete()) {
+                    deletedCount++
+                }
+            }
+
+            return deletedCount
         }
 
         suspend fun connectToApiBackend(api: ClientOptions.Api): XmtpApiClient {
