@@ -11,6 +11,7 @@ import org.xmtp.android.library.libxmtp.InboxState
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.SignatureRequest
 import uniffi.xmtpv3.FfiKeyPackageStatus
+import uniffi.xmtpv3.FfiSyncWorkerMode
 import uniffi.xmtpv3.FfiXmtpClient
 import uniffi.xmtpv3.XmtpApiClient
 import uniffi.xmtpv3.connectToBackend
@@ -118,7 +119,8 @@ class Client(
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
-                historySyncUrl = null
+                deviceSyncServerUrl = null,
+                deviceSyncWorkerMode = null
             )
 
             return useClient(ffiClient)
@@ -247,7 +249,8 @@ class Client(
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
-                historySyncUrl = options.historySyncUrl
+                deviceSyncServerUrl = options.historySyncUrl,
+                deviceSyncWorkerMode = FfiSyncWorkerMode.ENABLED
             )
 
             return Pair(ffiClient, dbPath)

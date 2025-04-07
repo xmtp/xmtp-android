@@ -93,7 +93,7 @@ data class PrivatePreferences(
     private val ffiClient: FfiXmtpClient,
 ) {
     suspend fun syncConsent() {
-        ffiClient.sendSyncRequest(FfiDeviceSyncKind.CONSENT)
+        ffiClient.sendSyncRequest()
     }
 
     suspend fun streamPreferenceUpdates(): Flow<PreferenceType> = callbackFlow {
