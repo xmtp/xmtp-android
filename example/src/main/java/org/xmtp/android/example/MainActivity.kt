@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity(),
         super.onResume()
         // Check if logs were previously activated and reactivate if needed
         if (isLogsActivated()) {
-            Client.activatePersistentLibXMTPLogWriter(applicationContext, FfiLogLevel.DEBUG, FfiLogRotation.HOURLY, 3)
+            Client.activatePersistentLibXMTPLogWriter(applicationContext, FfiLogLevel.DEBUG, FfiLogRotation.MINUTELY, 3)
         }
     }
 
@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity(),
                 true
             }
             R.id.activate_logs -> {
-                Client.activatePersistentLibXMTPLogWriter(applicationContext, FfiLogLevel.TRACE, FfiLogRotation.HOURLY, 3)
+                Client.activatePersistentLibXMTPLogWriter(applicationContext, FfiLogLevel.DEBUG, FfiLogRotation.MINUTELY, 3)
                 setLogsActivated(true)
                 Toast.makeText(this, "Persistent logs activated", Toast.LENGTH_SHORT).show()
                 true
