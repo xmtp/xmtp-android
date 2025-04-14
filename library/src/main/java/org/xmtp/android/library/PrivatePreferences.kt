@@ -92,8 +92,13 @@ data class PrivatePreferences(
     var client: Client,
     private val ffiClient: FfiXmtpClient,
 ) {
+    suspend fun sync() {
+        ffiClient.syncPreferences()
+    }
+
+    @Deprecated(message = "Use method `sync()` instead", replaceWith = ReplaceWith("sync()"))
     suspend fun syncConsent() {
-        ffiClient.sendSyncRequest()
+        ffiClient.sendSyncRequest(FfiDeviceSyncKind.CONSENT)
     }
 
     suspend fun streamPreferenceUpdates(): Flow<PreferenceType> = callbackFlow {

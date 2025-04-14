@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import android.content.Context
+import android.util.Log
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -119,8 +120,8 @@ class Client(
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
-                deviceSyncServerUrl = null,
-                deviceSyncWorkerMode = null
+                historySyncUrl = null,
+                syncWorkerMode = null
             )
 
             return useClient(ffiClient)
@@ -249,8 +250,8 @@ class Client(
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
-                deviceSyncServerUrl = options.historySyncUrl,
-                deviceSyncWorkerMode = FfiSyncWorkerMode.ENABLED
+                historySyncUrl = options.historySyncUrl,
+                syncWorkerMode = FfiSyncWorkerMode.ENABLED
             )
 
             return Pair(ffiClient, dbPath)
