@@ -111,7 +111,6 @@ class HistorySyncTest {
         alixClient2.preferences.sync()
         delay(2000)
 
-
         val alixGroup2 = alixClient2.conversations.findGroup(alixGroup.id)
             ?: throw AssertionError("Failed to find group with ID: ${alixGroup.id}")
 
@@ -305,7 +304,6 @@ class HistorySyncTest {
         delay(2000)
         alixClient2.preferences.sync()
         delay(2000)
-
 
         val alixGroup2 = alixClient2.conversations.findGroup(alixGroup.id)
             ?: throw AssertionError("Failed to find group with ID: ${alixGroup.id}")
