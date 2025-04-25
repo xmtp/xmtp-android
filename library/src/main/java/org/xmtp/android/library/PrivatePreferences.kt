@@ -98,7 +98,7 @@ data class PrivatePreferences(
 
     @Deprecated(message = "Use method `sync()` instead", replaceWith = ReplaceWith("sync()"))
     suspend fun syncConsent() {
-        ffiClient.sendSyncRequest(FfiDeviceSyncKind.CONSENT)
+        ffiClient.sendSyncRequest()
     }
 
     suspend fun streamPreferenceUpdates(): Flow<PreferenceType> = callbackFlow {

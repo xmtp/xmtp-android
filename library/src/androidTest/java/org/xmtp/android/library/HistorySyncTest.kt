@@ -84,8 +84,9 @@ class HistorySyncTest {
     @Test
     fun testSyncMessages() = runBlocking {
         val alixGroup = alixClient.conversations.newGroup(listOf(fixtures.boClient.inboxId))
+        alixGroup.send("hi")
         val initialMessageCount = alixGroup.messages().size
-        assertEquals(initialMessageCount, 1)
+        assertEquals(initialMessageCount, 2)
         val alixClient2 = Client.create(
             account = alixWallet,
             options = ClientOptions(
@@ -99,21 +100,17 @@ class HistorySyncTest {
         val state = alixClient2.inboxState(true)
         assertEquals(state.installations.size, 2)
 
-        alixGroup.send("hi")
+        alixClient.conversations.syncAllConversations()
+        alixClient2.conversations.syncAllConversations()
 
         // Sync all conversations
-        alixClient.conversations.syncAllConversations()
-        delay(2000)
-        alixClient2.conversations.syncAllConversations()
-        delay(2000)
         alixClient.preferences.sync()
-        delay(2000)
-        alixClient2.preferences.sync()
-        delay(2000)
+        alixGroup.sync()
 
+        alixClient2.preferences.sync()
+        delay(3000)
         val alixGroup2 = alixClient2.conversations.findGroup(alixGroup.id)
             ?: throw AssertionError("Failed to find group with ID: ${alixGroup.id}")
-
         alixGroup2.sync()
 
         val messageCount2 = alixGroup2.messages().size
