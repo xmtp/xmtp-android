@@ -487,7 +487,7 @@ data class Conversations(
         return hmacKeysResponse.build()
     }
 
-    fun allTopics(): List<String> {
+    fun allPushTopics(): List<String> {
         val conversations = ffiConversations.list(
             FfiListConversationsOptions(
                 null,

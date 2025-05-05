@@ -303,7 +303,7 @@ class ConversationsTest {
             boClient.conversations.syncAllConversations()
         }
 
-        val topics = boClient.conversations.allTopics()
+        val topics = boClient.conversations.allPushTopics()
         val conversations = runBlocking { boClient.conversations.list() }
         val hmacKeys = boClient.conversations.getHmacKeys()
 
