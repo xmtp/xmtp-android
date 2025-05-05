@@ -50,17 +50,14 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 open class RustBuffer : Structure() {
     // Note: `capacity` and `len` are actually `ULong` values, but JVM only supports signed values.
     // When dealing with these fields, make sure to call `toULong()`.
-    @JvmField
-    var capacity: Long = 0
-    @JvmField
-    var len: Long = 0
-    @JvmField
-    var data: Pointer? = null
+    @JvmField var capacity: Long = 0
+    @JvmField var len: Long = 0
+    @JvmField var data: Pointer? = null
 
-    class ByValue : RustBuffer(), Structure.ByValue
-    class ByReference : RustBuffer(), Structure.ByReference
+    class ByValue: RustBuffer(), Structure.ByValue
+    class ByReference: RustBuffer(), Structure.ByReference
 
-    internal fun setValue(other: RustBuffer) {
+   internal fun setValue(other: RustBuffer) {
         capacity = other.capacity
         len = other.len
         data = other.data
@@ -71,9 +68,9 @@ open class RustBuffer : Structure() {
             // Note: need to convert the size to a `Long` value to make this work with JVM.
             UniffiLib.INSTANCE.ffi_xmtpv3_rustbuffer_alloc(size.toLong(), status)
         }.also {
-            if (it.data == null) {
-                throw RuntimeException("RustBuffer.alloc() returned null data pointer (size=${size})")
-            }
+            if(it.data == null) {
+               throw RuntimeException("RustBuffer.alloc() returned null data pointer (size=${size})")
+           }
         }
 
         internal fun create(capacity: ULong, len: ULong, data: Pointer?): RustBuffer.ByValue {
@@ -138,14 +135,11 @@ class RustBufferByReference : ByReference(16) {
 
 @Structure.FieldOrder("len", "data")
 internal open class ForeignBytes : Structure() {
-    @JvmField
-    var len: Int = 0
-    @JvmField
-    var data: Pointer? = null
+    @JvmField var len: Int = 0
+    @JvmField var data: Pointer? = null
 
     class ByValue : ForeignBytes(), Structure.ByValue
 }
-
 /**
  * The FfiConverter interface handles converter types to and from the FFI
  *
@@ -205,11 +199,11 @@ public interface FfiConverter<KotlinType, FfiType> {
     fun liftFromRustBuffer(rbuf: RustBuffer.ByValue): KotlinType {
         val byteBuf = rbuf.asByteBuffer()!!
         try {
-            val item = read(byteBuf)
-            if (byteBuf.hasRemaining()) {
-                throw RuntimeException("junk remaining in buffer after lifting, something is very wrong!!")
-            }
-            return item
+           val item = read(byteBuf)
+           if (byteBuf.hasRemaining()) {
+               throw RuntimeException("junk remaining in buffer after lifting, something is very wrong!!")
+           }
+           return item
         } finally {
             RustBuffer.free(rbuf)
         }
@@ -221,7 +215,7 @@ public interface FfiConverter<KotlinType, FfiType> {
  *
  * @suppress
  */
-public interface FfiConverterRustBuffer<KotlinType> : FfiConverter<KotlinType, RustBuffer.ByValue> {
+public interface FfiConverterRustBuffer<KotlinType>: FfiConverter<KotlinType, RustBuffer.ByValue> {
     override fun lift(value: RustBuffer.ByValue) = liftFromRustBuffer(value)
     override fun lower(value: KotlinType) = lowerIntoRustBuffer(value)
 }
@@ -234,12 +228,10 @@ internal const val UNIFFI_CALL_UNEXPECTED_ERROR = 2.toByte()
 
 @Structure.FieldOrder("code", "error_buf")
 internal open class UniffiRustCallStatus : Structure() {
-    @JvmField
-    var code: Byte = 0
-    @JvmField
-    var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
+    @JvmField var code: Byte = 0
+    @JvmField var error_buf: RustBuffer.ByValue = RustBuffer.ByValue()
 
-    class ByValue : UniffiRustCallStatus(), Structure.ByValue
+    class ByValue: UniffiRustCallStatus(), Structure.ByValue
 
     fun isSuccess(): Boolean {
         return code == UNIFFI_CALL_SUCCESS
@@ -279,10 +271,7 @@ interface UniffiRustCallStatusErrorHandler<E> {
 // synchronize itself
 
 // Call a rust function that returns a Result<>.  Pass in the Error class companion that corresponds to the Err
-private inline fun <U, E : kotlin.Exception> uniffiRustCallWithError(
-    errorHandler: UniffiRustCallStatusErrorHandler<E>,
-    callback: (UniffiRustCallStatus) -> U,
-): U {
+private inline fun <U, E: kotlin.Exception> uniffiRustCallWithError(errorHandler: UniffiRustCallStatusErrorHandler<E>, callback: (UniffiRustCallStatus) -> U): U {
     var status = UniffiRustCallStatus()
     val return_value = callback(status)
     uniffiCheckCallStatus(errorHandler, status)
@@ -290,10 +279,7 @@ private inline fun <U, E : kotlin.Exception> uniffiRustCallWithError(
 }
 
 // Check UniffiRustCallStatus and throw an error if the call wasn't successful
-private fun <E : kotlin.Exception> uniffiCheckCallStatus(
-    errorHandler: UniffiRustCallStatusErrorHandler<E>,
-    status: UniffiRustCallStatus,
-) {
+private fun<E: kotlin.Exception> uniffiCheckCallStatus(errorHandler: UniffiRustCallStatusErrorHandler<E>, status: UniffiRustCallStatus) {
     if (status.isSuccess()) {
         return
     } else if (status.isError()) {
@@ -317,7 +303,7 @@ private fun <E : kotlin.Exception> uniffiCheckCallStatus(
  *
  * @suppress
  */
-object UniffiNullRustCallStatusErrorHandler : UniffiRustCallStatusErrorHandler<InternalException> {
+object UniffiNullRustCallStatusErrorHandler: UniffiRustCallStatusErrorHandler<InternalException> {
     override fun lift(error_buf: RustBuffer.ByValue): InternalException {
         RustBuffer.free(error_buf)
         return InternalException("Unexpected CALL_ERROR")
@@ -329,28 +315,28 @@ private inline fun <U> uniffiRustCall(callback: (UniffiRustCallStatus) -> U): U 
     return uniffiRustCallWithError(UniffiNullRustCallStatusErrorHandler, callback)
 }
 
-internal inline fun <T> uniffiTraitInterfaceCall(
+internal inline fun<T> uniffiTraitInterfaceCall(
     callStatus: UniffiRustCallStatus,
     makeCall: () -> T,
     writeReturn: (T) -> Unit,
 ) {
     try {
         writeReturn(makeCall())
-    } catch (e: kotlin.Exception) {
+    } catch(e: kotlin.Exception) {
         callStatus.code = UNIFFI_CALL_UNEXPECTED_ERROR
         callStatus.error_buf = FfiConverterString.lower(e.toString())
     }
 }
 
-internal inline fun <T, reified E : Throwable> uniffiTraitInterfaceCallWithError(
+internal inline fun<T, reified E: Throwable> uniffiTraitInterfaceCallWithError(
     callStatus: UniffiRustCallStatus,
     makeCall: () -> T,
     writeReturn: (T) -> Unit,
-    lowerError: (E) -> RustBuffer.ByValue,
+    lowerError: (E) -> RustBuffer.ByValue
 ) {
     try {
         writeReturn(makeCall())
-    } catch (e: kotlin.Exception) {
+    } catch(e: kotlin.Exception) {
         if (e is E) {
             callStatus.code = UNIFFI_CALL_ERROR
             callStatus.error_buf = lowerError(e)
@@ -360,11 +346,10 @@ internal inline fun <T, reified E : Throwable> uniffiTraitInterfaceCallWithError
         }
     }
 }
-
 // Map handles to objects
 //
 // This is used pass an opaque 64-bit handle representing a foreign object to the Rust code.
-internal class UniffiHandleMap<T : Any> {
+internal class UniffiHandleMap<T: Any> {
     private val map = ConcurrentHashMap<Long, T>()
     private val counter = java.util.concurrent.atomic.AtomicLong(0)
 
@@ -401,24 +386,21 @@ private fun findLibraryName(componentName: String): String {
 }
 
 private inline fun <reified Lib : Library> loadIndirect(
-    componentName: String,
+    componentName: String
 ): Lib {
     return Native.load<Lib>(findLibraryName(componentName), Lib::class.java)
 }
 
 // Define FFI callback types
 internal interface UniffiRustFutureContinuationCallback : com.sun.jna.Callback {
-    fun callback(`data`: Long, `pollResult`: Byte)
+    fun callback(`data`: Long,`pollResult`: Byte,)
 }
-
 internal interface UniffiForeignFutureFree : com.sun.jna.Callback {
-    fun callback(`handle`: Long)
+    fun callback(`handle`: Long,)
 }
-
 internal interface UniffiCallbackInterfaceFree : com.sun.jna.Callback {
-    fun callback(`handle`: Long)
+    fun callback(`handle`: Long,)
 }
-
 @Structure.FieldOrder("handle", "free")
 internal open class UniffiForeignFuture(
     @JvmField internal var `handle`: Long = 0.toLong(),
@@ -427,15 +409,14 @@ internal open class UniffiForeignFuture(
     class UniffiByValue(
         `handle`: Long = 0.toLong(),
         `free`: UniffiForeignFutureFree? = null,
-    ) : UniffiForeignFuture(`handle`, `free`), Structure.ByValue
+    ): UniffiForeignFuture(`handle`,`free`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFuture) {
+   internal fun uniffiSetValue(other: UniffiForeignFuture) {
         `handle` = other.`handle`
         `free` = other.`free`
     }
 
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructU8(
     @JvmField internal var `returnValue`: Byte = 0.toByte(),
@@ -444,19 +425,17 @@ internal open class UniffiForeignFutureStructU8(
     class UniffiByValue(
         `returnValue`: Byte = 0.toByte(),
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructU8(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructU8(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructU8) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructU8) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteU8 : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructU8.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructU8.UniffiByValue,)
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructI8(
     @JvmField internal var `returnValue`: Byte = 0.toByte(),
@@ -465,19 +444,17 @@ internal open class UniffiForeignFutureStructI8(
     class UniffiByValue(
         `returnValue`: Byte = 0.toByte(),
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructI8(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructI8(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructI8) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructI8) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteI8 : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructI8.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructI8.UniffiByValue,)
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructU16(
     @JvmField internal var `returnValue`: Short = 0.toShort(),
@@ -486,19 +463,17 @@ internal open class UniffiForeignFutureStructU16(
     class UniffiByValue(
         `returnValue`: Short = 0.toShort(),
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructU16(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructU16(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructU16) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructU16) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteU16 : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructU16.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructU16.UniffiByValue,)
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructI16(
     @JvmField internal var `returnValue`: Short = 0.toShort(),
@@ -507,19 +482,17 @@ internal open class UniffiForeignFutureStructI16(
     class UniffiByValue(
         `returnValue`: Short = 0.toShort(),
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructI16(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructI16(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructI16) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructI16) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteI16 : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructI16.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructI16.UniffiByValue,)
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructU32(
     @JvmField internal var `returnValue`: Int = 0,
@@ -528,19 +501,17 @@ internal open class UniffiForeignFutureStructU32(
     class UniffiByValue(
         `returnValue`: Int = 0,
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructU32(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructU32(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructU32) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructU32) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteU32 : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructU32.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructU32.UniffiByValue,)
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructI32(
     @JvmField internal var `returnValue`: Int = 0,
@@ -549,19 +520,17 @@ internal open class UniffiForeignFutureStructI32(
     class UniffiByValue(
         `returnValue`: Int = 0,
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructI32(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructI32(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructI32) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructI32) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteI32 : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructI32.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructI32.UniffiByValue,)
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructU64(
     @JvmField internal var `returnValue`: Long = 0.toLong(),
@@ -570,19 +539,17 @@ internal open class UniffiForeignFutureStructU64(
     class UniffiByValue(
         `returnValue`: Long = 0.toLong(),
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructU64(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructU64(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructU64) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructU64) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteU64 : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructU64.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructU64.UniffiByValue,)
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructI64(
     @JvmField internal var `returnValue`: Long = 0.toLong(),
@@ -591,19 +558,17 @@ internal open class UniffiForeignFutureStructI64(
     class UniffiByValue(
         `returnValue`: Long = 0.toLong(),
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructI64(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructI64(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructI64) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructI64) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteI64 : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructI64.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructI64.UniffiByValue,)
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructF32(
     @JvmField internal var `returnValue`: Float = 0.0f,
@@ -612,19 +577,17 @@ internal open class UniffiForeignFutureStructF32(
     class UniffiByValue(
         `returnValue`: Float = 0.0f,
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructF32(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructF32(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructF32) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructF32) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteF32 : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructF32.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructF32.UniffiByValue,)
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructF64(
     @JvmField internal var `returnValue`: Double = 0.0,
@@ -633,19 +596,17 @@ internal open class UniffiForeignFutureStructF64(
     class UniffiByValue(
         `returnValue`: Double = 0.0,
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructF64(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructF64(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructF64) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructF64) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteF64 : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructF64.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructF64.UniffiByValue,)
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructPointer(
     @JvmField internal var `returnValue`: Pointer = Pointer.NULL,
@@ -654,19 +615,17 @@ internal open class UniffiForeignFutureStructPointer(
     class UniffiByValue(
         `returnValue`: Pointer = Pointer.NULL,
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructPointer(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructPointer(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructPointer) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructPointer) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompletePointer : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructPointer.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructPointer.UniffiByValue,)
 }
-
 @Structure.FieldOrder("returnValue", "callStatus")
 internal open class UniffiForeignFutureStructRustBuffer(
     @JvmField internal var `returnValue`: RustBuffer.ByValue = RustBuffer.ByValue(),
@@ -675,168 +634,63 @@ internal open class UniffiForeignFutureStructRustBuffer(
     class UniffiByValue(
         `returnValue`: RustBuffer.ByValue = RustBuffer.ByValue(),
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructRustBuffer(`returnValue`, `callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructRustBuffer(`returnValue`,`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructRustBuffer) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructRustBuffer) {
         `returnValue` = other.`returnValue`
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteRustBuffer : com.sun.jna.Callback {
-    fun callback(
-        `callbackData`: Long,
-        `result`: UniffiForeignFutureStructRustBuffer.UniffiByValue,
-    )
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructRustBuffer.UniffiByValue,)
 }
-
 @Structure.FieldOrder("callStatus")
 internal open class UniffiForeignFutureStructVoid(
     @JvmField internal var `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
 ) : Structure() {
     class UniffiByValue(
         `callStatus`: UniffiRustCallStatus.ByValue = UniffiRustCallStatus.ByValue(),
-    ) : UniffiForeignFutureStructVoid(`callStatus`), Structure.ByValue
+    ): UniffiForeignFutureStructVoid(`callStatus`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiForeignFutureStructVoid) {
+   internal fun uniffiSetValue(other: UniffiForeignFutureStructVoid) {
         `callStatus` = other.`callStatus`
     }
 
 }
-
 internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
-    fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructVoid.UniffiByValue)
+    fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructVoid.UniffiByValue,)
 }
-
-internal interface UniffiCallbackInterfaceFfiInboxOwnerMethod0 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `uniffiOutReturn`: RustBuffer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-internal interface UniffiCallbackInterfaceFfiInboxOwnerMethod1 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `text`: RustBuffer.ByValue,
-        `uniffiOutReturn`: RustBuffer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
 internal interface UniffiCallbackInterfaceFfiConsentCallbackMethod0 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `consent`: RustBuffer.ByValue,
-        `uniffiOutReturn`: Pointer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
+    fun callback(`uniffiHandle`: Long,`consent`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
-
 internal interface UniffiCallbackInterfaceFfiConsentCallbackMethod1 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `error`: RustBuffer.ByValue,
-        `uniffiOutReturn`: Pointer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
+    fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
-
 internal interface UniffiCallbackInterfaceFfiConversationCallbackMethod0 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `conversation`: Pointer,
-        `uniffiOutReturn`: Pointer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
+    fun callback(`uniffiHandle`: Long,`conversation`: Pointer,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
-
 internal interface UniffiCallbackInterfaceFfiConversationCallbackMethod1 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `error`: RustBuffer.ByValue,
-        `uniffiOutReturn`: Pointer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
+    fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
-
+internal interface UniffiCallbackInterfaceFfiInboxOwnerMethod0 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceFfiInboxOwnerMethod1 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`text`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
+}
 internal interface UniffiCallbackInterfaceFfiMessageCallbackMethod0 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `message`: RustBuffer.ByValue,
-        `uniffiOutReturn`: Pointer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
+    fun callback(`uniffiHandle`: Long,`message`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
-
 internal interface UniffiCallbackInterfaceFfiMessageCallbackMethod1 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `error`: RustBuffer.ByValue,
-        `uniffiOutReturn`: Pointer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
+    fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
-
 internal interface UniffiCallbackInterfaceFfiPreferenceCallbackMethod0 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `preference`: RustBuffer.ByValue,
-        `uniffiOutReturn`: Pointer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
+    fun callback(`uniffiHandle`: Long,`preference`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
-
 internal interface UniffiCallbackInterfaceFfiPreferenceCallbackMethod1 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `error`: RustBuffer.ByValue,
-        `uniffiOutReturn`: Pointer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
+    fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
-
-internal interface UniffiCallbackInterfaceFfiV2SubscriptionCallbackMethod0 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `message`: RustBuffer.ByValue,
-        `uniffiOutReturn`: Pointer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-internal interface UniffiCallbackInterfaceFfiV2SubscriptionCallbackMethod1 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `error`: RustBuffer.ByValue,
-        `uniffiOutReturn`: Pointer,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-@Structure.FieldOrder("getAddress", "sign", "uniffiFree")
-internal open class UniffiVTableCallbackInterfaceFfiInboxOwner(
-    @JvmField internal var `getAddress`: UniffiCallbackInterfaceFfiInboxOwnerMethod0? = null,
-    @JvmField internal var `sign`: UniffiCallbackInterfaceFfiInboxOwnerMethod1? = null,
-    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-) : Structure() {
-    class UniffiByValue(
-        `getAddress`: UniffiCallbackInterfaceFfiInboxOwnerMethod0? = null,
-        `sign`: UniffiCallbackInterfaceFfiInboxOwnerMethod1? = null,
-        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ) : UniffiVTableCallbackInterfaceFfiInboxOwner(`getAddress`, `sign`, `uniffiFree`),
-        Structure.ByValue
-
-    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiInboxOwner) {
-        `getAddress` = other.`getAddress`
-        `sign` = other.`sign`
-        `uniffiFree` = other.`uniffiFree`
-    }
-
-}
-
 @Structure.FieldOrder("onConsentUpdate", "onError", "uniffiFree")
 internal open class UniffiVTableCallbackInterfaceFfiConsentCallback(
     @JvmField internal var `onConsentUpdate`: UniffiCallbackInterfaceFfiConsentCallbackMethod0? = null,
@@ -847,20 +701,15 @@ internal open class UniffiVTableCallbackInterfaceFfiConsentCallback(
         `onConsentUpdate`: UniffiCallbackInterfaceFfiConsentCallbackMethod0? = null,
         `onError`: UniffiCallbackInterfaceFfiConsentCallbackMethod1? = null,
         `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ) : UniffiVTableCallbackInterfaceFfiConsentCallback(
-        `onConsentUpdate`,
-        `onError`,
-        `uniffiFree`,
-    ), Structure.ByValue
+    ): UniffiVTableCallbackInterfaceFfiConsentCallback(`onConsentUpdate`,`onError`,`uniffiFree`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiConsentCallback) {
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiConsentCallback) {
         `onConsentUpdate` = other.`onConsentUpdate`
         `onError` = other.`onError`
         `uniffiFree` = other.`uniffiFree`
     }
 
 }
-
 @Structure.FieldOrder("onConversation", "onError", "uniffiFree")
 internal open class UniffiVTableCallbackInterfaceFfiConversationCallback(
     @JvmField internal var `onConversation`: UniffiCallbackInterfaceFfiConversationCallbackMethod0? = null,
@@ -871,20 +720,34 @@ internal open class UniffiVTableCallbackInterfaceFfiConversationCallback(
         `onConversation`: UniffiCallbackInterfaceFfiConversationCallbackMethod0? = null,
         `onError`: UniffiCallbackInterfaceFfiConversationCallbackMethod1? = null,
         `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ) : UniffiVTableCallbackInterfaceFfiConversationCallback(
-        `onConversation`,
-        `onError`,
-        `uniffiFree`,
-    ), Structure.ByValue
+    ): UniffiVTableCallbackInterfaceFfiConversationCallback(`onConversation`,`onError`,`uniffiFree`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiConversationCallback) {
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiConversationCallback) {
         `onConversation` = other.`onConversation`
         `onError` = other.`onError`
         `uniffiFree` = other.`uniffiFree`
     }
 
 }
+@Structure.FieldOrder("getIdentifier", "sign", "uniffiFree")
+internal open class UniffiVTableCallbackInterfaceFfiInboxOwner(
+    @JvmField internal var `getIdentifier`: UniffiCallbackInterfaceFfiInboxOwnerMethod0? = null,
+    @JvmField internal var `sign`: UniffiCallbackInterfaceFfiInboxOwnerMethod1? = null,
+    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+) : Structure() {
+    class UniffiByValue(
+        `getIdentifier`: UniffiCallbackInterfaceFfiInboxOwnerMethod0? = null,
+        `sign`: UniffiCallbackInterfaceFfiInboxOwnerMethod1? = null,
+        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+    ): UniffiVTableCallbackInterfaceFfiInboxOwner(`getIdentifier`,`sign`,`uniffiFree`,), Structure.ByValue
 
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiInboxOwner) {
+        `getIdentifier` = other.`getIdentifier`
+        `sign` = other.`sign`
+        `uniffiFree` = other.`uniffiFree`
+    }
+
+}
 @Structure.FieldOrder("onMessage", "onError", "uniffiFree")
 internal open class UniffiVTableCallbackInterfaceFfiMessageCallback(
     @JvmField internal var `onMessage`: UniffiCallbackInterfaceFfiMessageCallbackMethod0? = null,
@@ -895,17 +758,15 @@ internal open class UniffiVTableCallbackInterfaceFfiMessageCallback(
         `onMessage`: UniffiCallbackInterfaceFfiMessageCallbackMethod0? = null,
         `onError`: UniffiCallbackInterfaceFfiMessageCallbackMethod1? = null,
         `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ) : UniffiVTableCallbackInterfaceFfiMessageCallback(`onMessage`, `onError`, `uniffiFree`),
-        Structure.ByValue
+    ): UniffiVTableCallbackInterfaceFfiMessageCallback(`onMessage`,`onError`,`uniffiFree`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiMessageCallback) {
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiMessageCallback) {
         `onMessage` = other.`onMessage`
         `onError` = other.`onError`
         `uniffiFree` = other.`uniffiFree`
     }
 
 }
-
 @Structure.FieldOrder("onPreferenceUpdate", "onError", "uniffiFree")
 internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
     @JvmField internal var `onPreferenceUpdate`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod0? = null,
@@ -916,13 +777,9 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
         `onPreferenceUpdate`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod0? = null,
         `onError`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod1? = null,
         `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ) : UniffiVTableCallbackInterfaceFfiPreferenceCallback(
-        `onPreferenceUpdate`,
-        `onError`,
-        `uniffiFree`,
-    ), Structure.ByValue
+    ): UniffiVTableCallbackInterfaceFfiPreferenceCallback(`onPreferenceUpdate`,`onError`,`uniffiFree`,), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiPreferenceCallback) {
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiPreferenceCallback) {
         `onPreferenceUpdate` = other.`onPreferenceUpdate`
         `onError` = other.`onError`
         `uniffiFree` = other.`uniffiFree`
@@ -930,1481 +787,1201 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
 
 }
 
-@Structure.FieldOrder("onMessage", "onError", "uniffiFree")
-internal open class UniffiVTableCallbackInterfaceFfiV2SubscriptionCallback(
-    @JvmField internal var `onMessage`: UniffiCallbackInterfaceFfiV2SubscriptionCallbackMethod0? = null,
-    @JvmField internal var `onError`: UniffiCallbackInterfaceFfiV2SubscriptionCallbackMethod1? = null,
-    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-) : Structure() {
-    class UniffiByValue(
-        `onMessage`: UniffiCallbackInterfaceFfiV2SubscriptionCallbackMethod0? = null,
-        `onError`: UniffiCallbackInterfaceFfiV2SubscriptionCallbackMethod1? = null,
-        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ) : UniffiVTableCallbackInterfaceFfiV2SubscriptionCallback(
-        `onMessage`,
-        `onError`,
-        `uniffiFree`,
-    ), Structure.ByValue
 
-    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiV2SubscriptionCallback) {
-        `onMessage` = other.`onMessage`
-        `onError` = other.`onError`
-        `uniffiFree` = other.`uniffiFree`
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// For large crates we prevent `MethodTooLargeException` (see #2340)
+// N.B. the name of the extension is very misleading, since it is 
+// rather `InterfaceTooLargeException`, caused by too many methods 
+// in the interface for large crates.
+//
+// By splitting the otherwise huge interface into two parts
+// * UniffiLib 
+// * IntegrityCheckingUniffiLib (this)
+// we allow for ~2x as many methods in the UniffiLib interface.
+// 
+// The `ffi_uniffi_contract_version` method and all checksum methods are put 
+// into `IntegrityCheckingUniffiLib` and these methods are called only once,
+// when the library is loaded.
+internal interface IntegrityCheckingUniffiLib : Library {
+    // Integrity check functions only
+    fun uniffi_xmtpv3_checksum_func_connect_to_backend(
+): Short
+fun uniffi_xmtpv3_checksum_func_create_client(
+): Short
+fun uniffi_xmtpv3_checksum_func_decode_multi_remote_attachment(
+): Short
+fun uniffi_xmtpv3_checksum_func_decode_reaction(
+): Short
+fun uniffi_xmtpv3_checksum_func_encode_multi_remote_attachment(
+): Short
+fun uniffi_xmtpv3_checksum_func_encode_reaction(
+): Short
+fun uniffi_xmtpv3_checksum_func_enter_debug_writer(
+): Short
+fun uniffi_xmtpv3_checksum_func_enter_debug_writer_with_level(
+): Short
+fun uniffi_xmtpv3_checksum_func_exit_debug_writer(
+): Short
+fun uniffi_xmtpv3_checksum_func_generate_inbox_id(
+): Short
+fun uniffi_xmtpv3_checksum_func_get_inbox_id_for_identifier(
+): Short
+fun uniffi_xmtpv3_checksum_func_get_version_info(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonsentcallback_on_consent_update(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonsentcallback_on_error(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_add_admin(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_add_members(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_add_members_by_inbox_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_add_super_admin(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_added_by_inbox_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_admin_list(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_consent_state(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_conversation_message_disappearing_settings(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_conversation_type(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_created_at_ns(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_dm_peer_inbox_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_find_messages(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_find_messages_with_reactions(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_get_hmac_keys(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_group_description(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_group_image_url_square(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_group_metadata(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_group_name(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_group_permissions(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_is_active(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_is_admin(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_is_conversation_message_disappearing_enabled(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_is_super_admin(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_list_members(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_paused_for_version(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_process_streamed_conversation_message(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_publish_messages(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_remove_admin(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_remove_conversation_message_disappearing_settings(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_remove_members(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_remove_members_by_inbox_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_remove_super_admin(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_send(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_send_optimistic(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_send_text(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_stream(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_super_admin_list(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_sync(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_update_consent_state(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_update_conversation_message_disappearing_settings(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_update_group_description(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_update_group_image_url_square(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_update_group_name(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_update_permission_policy(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversationcallback_on_conversation(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversationcallback_on_error(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversationlistitem_conversation(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversationlistitem_last_message(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversationmetadata_conversation_type(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversationmetadata_creator_inbox_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_create_group(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_create_group_with_inbox_ids(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_find_or_create_dm(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_find_or_create_dm_by_inbox_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_get_hmac_keys(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_list(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_list_dms(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_list_groups(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_process_streamed_welcome_message(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_stream(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_stream_all_dm_messages(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_stream_all_group_messages(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_stream_all_messages(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_stream_consent(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_stream_dms(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_stream_groups(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_stream_messages(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_stream_preferences(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_sync(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversations_sync_all_conversations(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffigrouppermissions_policy_set(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffigrouppermissions_policy_type(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffiinboxowner_get_identifier(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffiinboxowner_sign(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffimessagecallback_on_message(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffimessagecallback_on_error(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffipreferencecallback_on_preference_update(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffipreferencecallback_on_error(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_ecdsa_signature(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_passkey_signature(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_scw_signature(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_is_ready(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_missing_address_signatures(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_signature_text(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffistreamcloser_end(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffistreamcloser_end_and_wait(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffistreamcloser_is_closed(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffistreamcloser_wait_for_ready(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_add_identity(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_addresses_from_inbox_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_apply_signature_request(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_backup_metadata(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_backup_to_file(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_can_message(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_change_recovery_identifier(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_conversation(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_conversations(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_db_reconnect(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_dm_conversation(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_find_inbox_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_get_consent_state(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_get_key_package_statuses_for_installation_ids(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_get_latest_inbox_state(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_import_from_file(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_inbox_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_inbox_state(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_installation_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_message(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_register_identity(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_release_db_connection(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_all_other_installations(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_identity(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_installations(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_send_sync_request(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_set_consent_states(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_sign_with_installation_key(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_signature_request(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_sync_preferences(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_verify_signed_with_installation_key(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_verify_signed_with_public_key(
+): Short
+fun ffi_xmtpv3_uniffi_contract_version(
+): Int
 
 }
 
-
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
-
 internal interface UniffiLib : Library {
     companion object {
         internal val INSTANCE: UniffiLib by lazy {
-            loadIndirect<UniffiLib>(componentName = "xmtpv3")
-                .also { lib: UniffiLib ->
+            val componentName = "xmtpv3"
+            // For large crates we prevent `MethodTooLargeException` (see #2340)
+            // N.B. the name of the extension is very misleading, since it is 
+            // rather `InterfaceTooLargeException`, caused by too many methods 
+            // in the interface for large crates.
+            //
+            // By splitting the otherwise huge interface into two parts
+            // * UniffiLib (this)
+            // * IntegrityCheckingUniffiLib
+            // And all checksum methods are put into `IntegrityCheckingUniffiLib`
+            // we allow for ~2x as many methods in the UniffiLib interface.
+            // 
+            // Thus we first load the library with `loadIndirect` as `IntegrityCheckingUniffiLib`
+            // so that we can (optionally!) call `uniffiCheckApiChecksums`...
+            loadIndirect<IntegrityCheckingUniffiLib>(componentName)
+                .also { lib: IntegrityCheckingUniffiLib ->
                     uniffiCheckContractApiVersion(lib)
                     uniffiCheckApiChecksums(lib)
-                    uniffiCallbackInterfaceFfiConsentCallback.register(lib)
-                    uniffiCallbackInterfaceFfiConversationCallback.register(lib)
-                    uniffiCallbackInterfaceFfiMessageCallback.register(lib)
-                    uniffiCallbackInterfaceFfiPreferenceCallback.register(lib)
-                    uniffiCallbackInterfaceFfiV2SubscriptionCallback.register(lib)
-                    uniffiCallbackInterfaceFfiInboxOwner.register(lib)
                 }
+            // ... and then we load the library as `UniffiLib`
+            // N.B. we cannot use `loadIndirect` once and then try to cast it to `UniffiLib`
+            // => results in `java.lang.ClassCastException: com.sun.proxy.$Proxy cannot be cast to ...`
+            // error. So we must call `loadIndirect` twice. For crates large enough
+            // to trigger this issue, the performance impact is negligible, running on
+            // a macOS M1 machine the `loadIndirect` call takes ~50ms.
+            val lib = loadIndirect<UniffiLib>(componentName)
+            // No need to check the contract version and checksums, since 
+            // we already did that with `IntegrityCheckingUniffiLib` above.
+            uniffiCallbackInterfaceFfiConsentCallback.register(lib)
+            uniffiCallbackInterfaceFfiConversationCallback.register(lib)
+            uniffiCallbackInterfaceFfiInboxOwner.register(lib)
+            uniffiCallbackInterfaceFfiMessageCallback.register(lib)
+            uniffiCallbackInterfaceFfiPreferenceCallback.register(lib)
+            // Loading of library with integrity check done.
+            lib
         }
-
+        
         // The Cleaner for the whole library
         internal val CLEANER: UniffiCleaner by lazy {
             UniffiCleaner.create()
         }
     }
 
-    fun uniffi_xmtpv3_fn_clone_fficonsentcallback(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_fficonsentcallback(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_init_callback_vtable_fficonsentcallback(
-        `vtable`: UniffiVTableCallbackInterfaceFfiConsentCallback,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_fficonsentcallback_on_consent_update(
-        `ptr`: Pointer, `consent`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_fficonsentcallback_on_error(
-        `ptr`: Pointer, `error`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_clone_fficonversation(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_fficonversation(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_add_admin(
-        `ptr`: Pointer, `inboxId`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_add_members(
-        `ptr`: Pointer, `accountAddresses`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_add_members_by_inbox_id(
-        `ptr`: Pointer, `inboxIds`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_add_super_admin(
-        `ptr`: Pointer, `inboxId`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_added_by_inbox_id(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_admin_list(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_consent_state(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_conversation_type(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_created_at_ns(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_dm_peer_inbox_id(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_find_messages(
-        `ptr`: Pointer, `opts`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_group_description(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_group_image_url_square(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_group_metadata(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_group_name(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_group_permissions(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_group_pinned_frame_url(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_id(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_is_active(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Byte
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_is_admin(
-        `ptr`: Pointer, `inboxId`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Byte
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_is_super_admin(
-        `ptr`: Pointer, `inboxId`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Byte
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_list_members(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_process_streamed_conversation_message(
-        `ptr`: Pointer, `envelopeBytes`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_publish_messages(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_remove_admin(
-        `ptr`: Pointer, `inboxId`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_remove_members(
-        `ptr`: Pointer, `accountAddresses`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_remove_members_by_inbox_id(
-        `ptr`: Pointer, `inboxIds`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_remove_super_admin(
-        `ptr`: Pointer, `inboxId`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_send(
-        `ptr`: Pointer, `contentBytes`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_send_optimistic(
-        `ptr`: Pointer, `contentBytes`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_stream(
-        `ptr`: Pointer, `messageCallback`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_super_admin_list(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_sync(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_update_consent_state(
-        `ptr`: Pointer, `state`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_update_group_description(
-        `ptr`: Pointer, `groupDescription`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_update_group_image_url_square(
-        `ptr`: Pointer, `groupImageUrlSquare`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_update_group_name(
-        `ptr`: Pointer, `groupName`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_update_group_pinned_frame_url(
-        `ptr`: Pointer, `pinnedFrameUrl`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversation_update_permission_policy(
-        `ptr`: Pointer,
-        `permissionUpdateType`: RustBuffer.ByValue,
-        `permissionPolicyOption`: RustBuffer.ByValue,
-        `metadataField`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_clone_fficonversationcallback(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_fficonversationcallback(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_init_callback_vtable_fficonversationcallback(
-        `vtable`: UniffiVTableCallbackInterfaceFfiConversationCallback,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_fficonversationcallback_on_conversation(
-        `ptr`: Pointer, `conversation`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_fficonversationcallback_on_error(
-        `ptr`: Pointer, `error`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_clone_fficonversationlistitem(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_fficonversationlistitem(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_fficonversationlistitem_conversation(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_method_fficonversationlistitem_last_message(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_clone_fficonversationmetadata(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_fficonversationmetadata(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_fficonversationmetadata_conversation_type(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversationmetadata_creator_inbox_id(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_clone_fficonversations(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_fficonversations(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_create_dm(
-        `ptr`: Pointer, `accountAddress`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_create_group(
-        `ptr`: Pointer, `accountAddresses`: RustBuffer.ByValue, `opts`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_get_hmac_keys(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_get_sync_group(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_list(
-        `ptr`: Pointer, `opts`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_list_dms(
-        `ptr`: Pointer, `opts`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_list_groups(
-        `ptr`: Pointer, `opts`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_process_streamed_welcome_message(
-        `ptr`: Pointer, `envelopeBytes`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_stream(
-        `ptr`: Pointer, `callback`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_stream_all_dm_messages(
-        `ptr`: Pointer, `messageCallback`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_stream_all_group_messages(
-        `ptr`: Pointer, `messageCallback`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_stream_all_messages(
-        `ptr`: Pointer, `messageCallback`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_stream_consent(
-        `ptr`: Pointer, `callback`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_stream_dms(
-        `ptr`: Pointer, `callback`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_stream_groups(
-        `ptr`: Pointer, `callback`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_stream_messages(
-        `ptr`: Pointer, `messageCallback`: Pointer, `conversationType`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_stream_preferences(
-        `ptr`: Pointer, `callback`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_sync(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_fficonversations_sync_all_conversations(
-        `ptr`: Pointer, `consentState`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_clone_ffigrouppermissions(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_ffigrouppermissions(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffigrouppermissions_policy_set(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_ffigrouppermissions_policy_type(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_clone_ffimessagecallback(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_ffimessagecallback(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_init_callback_vtable_ffimessagecallback(
-        `vtable`: UniffiVTableCallbackInterfaceFfiMessageCallback,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffimessagecallback_on_message(
-        `ptr`: Pointer, `message`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffimessagecallback_on_error(
-        `ptr`: Pointer, `error`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_clone_ffipreferencecallback(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_ffipreferencecallback(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_init_callback_vtable_ffipreferencecallback(
-        `vtable`: UniffiVTableCallbackInterfaceFfiPreferenceCallback,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffipreferencecallback_on_preference_update(
-        `ptr`: Pointer, `preference`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffipreferencecallback_on_error(
-        `ptr`: Pointer, `error`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_clone_ffisignaturerequest(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_ffisignaturerequest(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffisignaturerequest_add_ecdsa_signature(
-        `ptr`: Pointer, `signatureBytes`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffisignaturerequest_add_scw_signature(
-        `ptr`: Pointer,
-        `signatureBytes`: RustBuffer.ByValue,
-        `address`: RustBuffer.ByValue,
-        `chainId`: Long,
-        `blockNumber`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffisignaturerequest_is_ready(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffisignaturerequest_missing_address_signatures(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffisignaturerequest_signature_text(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_clone_ffistreamcloser(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_ffistreamcloser(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffistreamcloser_end(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffistreamcloser_end_and_wait(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffistreamcloser_is_closed(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Byte
-
-    fun uniffi_xmtpv3_fn_method_ffistreamcloser_wait_for_ready(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_clone_ffiv2apiclient(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_ffiv2apiclient(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffiv2apiclient_batch_query(
-        `ptr`: Pointer, `req`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffiv2apiclient_publish(
-        `ptr`: Pointer, `request`: RustBuffer.ByValue, `authToken`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffiv2apiclient_query(
-        `ptr`: Pointer, `request`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffiv2apiclient_set_app_version(
-        `ptr`: Pointer, `version`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffiv2apiclient_subscribe(
-        `ptr`: Pointer, `request`: RustBuffer.ByValue, `callback`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_clone_ffiv2subscription(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_ffiv2subscription(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffiv2subscription_end(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffiv2subscription_is_closed(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Byte
-
-    fun uniffi_xmtpv3_fn_method_ffiv2subscription_update(
-        `ptr`: Pointer, `req`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_clone_ffiv2subscriptioncallback(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_ffiv2subscriptioncallback(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_init_callback_vtable_ffiv2subscriptioncallback(
-        `vtable`: UniffiVTableCallbackInterfaceFfiV2SubscriptionCallback,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffiv2subscriptioncallback_on_message(
-        `ptr`: Pointer, `message`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffiv2subscriptioncallback_on_error(
-        `ptr`: Pointer, `error`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_clone_ffixmtpclient(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_ffixmtpclient(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_add_wallet(
-        `ptr`: Pointer, `newWalletAddress`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_addresses_from_inbox_id(
-        `ptr`: Pointer, `refreshFromNetwork`: Byte, `inboxIds`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_apply_signature_request(
-        `ptr`: Pointer, `signatureRequest`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_can_message(
-        `ptr`: Pointer, `accountAddresses`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_conversation(
-        `ptr`: Pointer, `conversationId`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_conversations(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_db_reconnect(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_dm_conversation(
-        `ptr`: Pointer, `targetInboxId`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_find_inbox_id(
-        `ptr`: Pointer, `address`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_get_consent_state(
-        `ptr`: Pointer, `entityType`: RustBuffer.ByValue, `entity`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_get_latest_inbox_state(
-        `ptr`: Pointer, `inboxId`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_inbox_id(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_inbox_state(
-        `ptr`: Pointer, `refreshFromNetwork`: Byte,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_installation_id(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_message(
-        `ptr`: Pointer, `messageId`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_register_identity(
-        `ptr`: Pointer, `signatureRequest`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_release_db_connection(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_all_other_installations(
-        `ptr`: Pointer,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_installations(
-        `ptr`: Pointer, `installationIds`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_wallet(
-        `ptr`: Pointer, `walletAddress`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_send_sync_request(
-        `ptr`: Pointer, `kind`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_set_consent_states(
-        `ptr`: Pointer, `records`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_sign_with_installation_key(
-        `ptr`: Pointer, `text`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_signature_request(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_verify_signed_with_installation_key(
-        `ptr`: Pointer,
-        `signatureText`: RustBuffer.ByValue,
-        `signatureBytes`: RustBuffer.ByValue,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_method_ffixmtpclient_verify_signed_with_public_key(
-        `ptr`: Pointer,
-        `signatureText`: RustBuffer.ByValue,
-        `signatureBytes`: RustBuffer.ByValue,
-        `publicKey`: RustBuffer.ByValue,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_clone_xmtpapiclient(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_xmtpv3_fn_free_xmtpapiclient(
-        `ptr`: Pointer, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_init_callback_vtable_ffiinboxowner(
-        `vtable`: UniffiVTableCallbackInterfaceFfiInboxOwner,
-    ): Unit
-
-    fun uniffi_xmtpv3_fn_func_connect_to_backend(
-        `host`: RustBuffer.ByValue, `isSecure`: Byte,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_func_create_client(
-        `api`: Pointer,
-        `db`: RustBuffer.ByValue,
-        `encryptionKey`: RustBuffer.ByValue,
-        `inboxId`: RustBuffer.ByValue,
-        `accountAddress`: RustBuffer.ByValue,
-        `nonce`: Long,
-        `legacySignedPrivateKeyProto`: RustBuffer.ByValue,
-        `historySyncUrl`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_func_create_v2_client(
-        `host`: RustBuffer.ByValue, `isSecure`: Byte,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_func_diffie_hellman_k256(
-        `privateKeyBytes`: RustBuffer.ByValue,
-        `publicKeyBytes`: RustBuffer.ByValue,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_generate_inbox_id(
-        `accountAddress`: RustBuffer.ByValue, `nonce`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_generate_private_preferences_topic_identifier(
-        `privateKey`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_get_inbox_id_for_address(
-        `api`: Pointer, `accountAddress`: RustBuffer.ByValue,
-    ): Long
-
-    fun uniffi_xmtpv3_fn_func_get_version_info(
-        uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_keccak256(
-        `input`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_public_key_from_private_key_k256(
-        `privateKeyBytes`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_recover_address(
-        `signatureBytes`: RustBuffer.ByValue,
-        `predigestMessage`: RustBuffer.ByValue,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_recover_public_key_k256_keccak256(
-        `message`: RustBuffer.ByValue,
-        `signature`: RustBuffer.ByValue,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_recover_public_key_k256_sha256(
-        `message`: RustBuffer.ByValue,
-        `signature`: RustBuffer.ByValue,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_sha256(
-        `input`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_user_preferences_decrypt(
-        `publicKey`: RustBuffer.ByValue,
-        `privateKey`: RustBuffer.ByValue,
-        `message`: RustBuffer.ByValue,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_user_preferences_encrypt(
-        `publicKey`: RustBuffer.ByValue,
-        `privateKey`: RustBuffer.ByValue,
-        `message`: RustBuffer.ByValue,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun uniffi_xmtpv3_fn_func_verify_k256_sha256(
-        `signedBy`: RustBuffer.ByValue,
-        `message`: RustBuffer.ByValue,
-        `signature`: RustBuffer.ByValue,
-        `recoveryId`: Byte,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Byte
-
-    fun ffi_xmtpv3_rustbuffer_alloc(
-        `size`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun ffi_xmtpv3_rustbuffer_from_bytes(
-        `bytes`: ForeignBytes.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun ffi_xmtpv3_rustbuffer_free(
-        `buf`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun ffi_xmtpv3_rustbuffer_reserve(
-        `buf`: RustBuffer.ByValue, `additional`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun ffi_xmtpv3_rust_future_poll_u8(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_u8(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_u8(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_u8(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Byte
-
-    fun ffi_xmtpv3_rust_future_poll_i8(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_i8(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_i8(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_i8(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Byte
-
-    fun ffi_xmtpv3_rust_future_poll_u16(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_u16(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_u16(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_u16(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Short
-
-    fun ffi_xmtpv3_rust_future_poll_i16(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_i16(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_i16(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_i16(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Short
-
-    fun ffi_xmtpv3_rust_future_poll_u32(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_u32(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_u32(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_u32(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Int
-
-    fun ffi_xmtpv3_rust_future_poll_i32(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_i32(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_i32(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_i32(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Int
-
-    fun ffi_xmtpv3_rust_future_poll_u64(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_u64(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_u64(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_u64(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Long
-
-    fun ffi_xmtpv3_rust_future_poll_i64(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_i64(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_i64(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_i64(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Long
-
-    fun ffi_xmtpv3_rust_future_poll_f32(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_f32(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_f32(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_f32(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Float
-
-    fun ffi_xmtpv3_rust_future_poll_f64(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_f64(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_f64(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_f64(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Double
-
-    fun ffi_xmtpv3_rust_future_poll_pointer(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_pointer(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_pointer(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_pointer(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun ffi_xmtpv3_rust_future_poll_rust_buffer(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_rust_buffer(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_rust_buffer(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_rust_buffer(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): RustBuffer.ByValue
-
-    fun ffi_xmtpv3_rust_future_poll_void(
-        `handle`: Long, `callback`: UniffiRustFutureContinuationCallback, `callbackData`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_cancel_void(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_free_void(
-        `handle`: Long,
-    ): Unit
-
-    fun ffi_xmtpv3_rust_future_complete_void(
-        `handle`: Long, uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_xmtpv3_checksum_func_connect_to_backend(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_create_client(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_create_v2_client(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_diffie_hellman_k256(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_generate_inbox_id(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_generate_private_preferences_topic_identifier(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_get_inbox_id_for_address(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_get_version_info(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_keccak256(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_public_key_from_private_key_k256(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_recover_address(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_recover_public_key_k256_keccak256(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_recover_public_key_k256_sha256(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_sha256(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_user_preferences_decrypt(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_user_preferences_encrypt(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_func_verify_k256_sha256(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonsentcallback_on_consent_update(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonsentcallback_on_error(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_add_admin(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_add_members(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_add_members_by_inbox_id(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_add_super_admin(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_added_by_inbox_id(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_admin_list(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_consent_state(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_conversation_type(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_created_at_ns(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_dm_peer_inbox_id(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_find_messages(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_group_description(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_group_image_url_square(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_group_metadata(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_group_name(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_group_permissions(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_group_pinned_frame_url(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_id(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_is_active(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_is_admin(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_is_super_admin(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_list_members(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_process_streamed_conversation_message(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_publish_messages(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_remove_admin(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_remove_members(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_remove_members_by_inbox_id(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_remove_super_admin(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_send(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_send_optimistic(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_stream(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_super_admin_list(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_sync(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_update_consent_state(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_update_group_description(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_update_group_image_url_square(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_update_group_name(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_update_group_pinned_frame_url(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversation_update_permission_policy(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversationcallback_on_conversation(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversationcallback_on_error(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversationlistitem_conversation(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversationlistitem_last_message(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversationmetadata_conversation_type(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversationmetadata_creator_inbox_id(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_create_dm(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_create_group(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_get_hmac_keys(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_get_sync_group(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_list(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_list_dms(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_list_groups(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_process_streamed_welcome_message(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_stream(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_stream_all_dm_messages(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_stream_all_group_messages(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_stream_all_messages(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_stream_consent(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_stream_dms(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_stream_groups(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_stream_messages(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_stream_preferences(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_sync(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_fficonversations_sync_all_conversations(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffigrouppermissions_policy_set(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffigrouppermissions_policy_type(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffimessagecallback_on_message(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffimessagecallback_on_error(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffipreferencecallback_on_preference_update(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffipreferencecallback_on_error(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_ecdsa_signature(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_scw_signature(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_is_ready(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_missing_address_signatures(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_signature_text(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffistreamcloser_end(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffistreamcloser_end_and_wait(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffistreamcloser_is_closed(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffistreamcloser_wait_for_ready(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiv2apiclient_batch_query(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiv2apiclient_publish(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiv2apiclient_query(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiv2apiclient_set_app_version(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiv2apiclient_subscribe(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiv2subscription_end(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiv2subscription_is_closed(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiv2subscription_update(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiv2subscriptioncallback_on_message(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiv2subscriptioncallback_on_error(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_add_wallet(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_addresses_from_inbox_id(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_apply_signature_request(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_can_message(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_conversation(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_conversations(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_db_reconnect(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_dm_conversation(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_find_inbox_id(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_get_consent_state(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_get_latest_inbox_state(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_inbox_id(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_inbox_state(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_installation_id(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_message(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_register_identity(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_release_db_connection(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_all_other_installations(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_installations(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_wallet(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_send_sync_request(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_set_consent_states(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_sign_with_installation_key(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_signature_request(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_verify_signed_with_installation_key(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffixmtpclient_verify_signed_with_public_key(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiinboxowner_get_address(
-    ): Short
-
-    fun uniffi_xmtpv3_checksum_method_ffiinboxowner_sign(
-    ): Short
-
-    fun ffi_xmtpv3_uniffi_contract_version(
-    ): Int
+    // FFI functions
+    fun uniffi_xmtpv3_fn_clone_fficonsentcallback(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_fficonsentcallback(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_init_callback_vtable_fficonsentcallback(`vtable`: UniffiVTableCallbackInterfaceFfiConsentCallback,
+): Unit
+fun uniffi_xmtpv3_fn_method_fficonsentcallback_on_consent_update(`ptr`: Pointer,`consent`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_fficonsentcallback_on_error(`ptr`: Pointer,`error`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_clone_fficonversation(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_fficonversation(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_fficonversation_add_admin(`ptr`: Pointer,`inboxId`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_add_members(`ptr`: Pointer,`accountIdentifiers`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_add_members_by_inbox_id(`ptr`: Pointer,`inboxIds`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_add_super_admin(`ptr`: Pointer,`inboxId`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_added_by_inbox_id(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_admin_list(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_consent_state(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_conversation_message_disappearing_settings(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_conversation_type(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_created_at_ns(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_dm_peer_inbox_id(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_find_messages(`ptr`: Pointer,`opts`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_find_messages_with_reactions(`ptr`: Pointer,`opts`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_get_hmac_keys(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_group_description(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_group_image_url_square(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_group_metadata(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_group_name(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_group_permissions(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_method_fficonversation_id(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_is_active(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+fun uniffi_xmtpv3_fn_method_fficonversation_is_admin(`ptr`: Pointer,`inboxId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+fun uniffi_xmtpv3_fn_method_fficonversation_is_conversation_message_disappearing_enabled(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+fun uniffi_xmtpv3_fn_method_fficonversation_is_super_admin(`ptr`: Pointer,`inboxId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+fun uniffi_xmtpv3_fn_method_fficonversation_list_members(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_paused_for_version(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_process_streamed_conversation_message(`ptr`: Pointer,`envelopeBytes`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_publish_messages(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_remove_admin(`ptr`: Pointer,`inboxId`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_remove_conversation_message_disappearing_settings(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_remove_members(`ptr`: Pointer,`accountIdentifiers`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_remove_members_by_inbox_id(`ptr`: Pointer,`inboxIds`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_remove_super_admin(`ptr`: Pointer,`inboxId`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_send(`ptr`: Pointer,`contentBytes`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_send_optimistic(`ptr`: Pointer,`contentBytes`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_send_text(`ptr`: Pointer,`text`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_stream(`ptr`: Pointer,`messageCallback`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_super_admin_list(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversation_sync(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_update_consent_state(`ptr`: Pointer,`state`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_fficonversation_update_conversation_message_disappearing_settings(`ptr`: Pointer,`settings`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_update_group_description(`ptr`: Pointer,`groupDescription`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_update_group_image_url_square(`ptr`: Pointer,`groupImageUrlSquare`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_update_group_name(`ptr`: Pointer,`groupName`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversation_update_permission_policy(`ptr`: Pointer,`permissionUpdateType`: RustBuffer.ByValue,`permissionPolicyOption`: RustBuffer.ByValue,`metadataField`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_clone_fficonversationcallback(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_fficonversationcallback(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_init_callback_vtable_fficonversationcallback(`vtable`: UniffiVTableCallbackInterfaceFfiConversationCallback,
+): Unit
+fun uniffi_xmtpv3_fn_method_fficonversationcallback_on_conversation(`ptr`: Pointer,`conversation`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_fficonversationcallback_on_error(`ptr`: Pointer,`error`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_clone_fficonversationlistitem(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_fficonversationlistitem(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_fficonversationlistitem_conversation(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_method_fficonversationlistitem_last_message(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_clone_fficonversationmetadata(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_fficonversationmetadata(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_fficonversationmetadata_conversation_type(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversationmetadata_creator_inbox_id(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_clone_fficonversations(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_fficonversations(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_fficonversations_create_group(`ptr`: Pointer,`accountIdentities`: RustBuffer.ByValue,`opts`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_create_group_with_inbox_ids(`ptr`: Pointer,`inboxIds`: RustBuffer.ByValue,`opts`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_find_or_create_dm(`ptr`: Pointer,`targetIdentity`: RustBuffer.ByValue,`opts`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_find_or_create_dm_by_inbox_id(`ptr`: Pointer,`inboxId`: RustBuffer.ByValue,`opts`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_get_hmac_keys(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversations_list(`ptr`: Pointer,`opts`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversations_list_dms(`ptr`: Pointer,`opts`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversations_list_groups(`ptr`: Pointer,`opts`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_fficonversations_process_streamed_welcome_message(`ptr`: Pointer,`envelopeBytes`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_stream(`ptr`: Pointer,`callback`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_stream_all_dm_messages(`ptr`: Pointer,`messageCallback`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_stream_all_group_messages(`ptr`: Pointer,`messageCallback`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_stream_all_messages(`ptr`: Pointer,`messageCallback`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_stream_consent(`ptr`: Pointer,`callback`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_stream_dms(`ptr`: Pointer,`callback`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_stream_groups(`ptr`: Pointer,`callback`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_stream_messages(`ptr`: Pointer,`messageCallback`: Pointer,`conversationType`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_stream_preferences(`ptr`: Pointer,`callback`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_sync(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_fficonversations_sync_all_conversations(`ptr`: Pointer,`consentStates`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_clone_ffigrouppermissions(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_ffigrouppermissions(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_ffigrouppermissions_policy_set(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_ffigrouppermissions_policy_type(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_clone_ffiinboxowner(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_ffiinboxowner(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_init_callback_vtable_ffiinboxowner(`vtable`: UniffiVTableCallbackInterfaceFfiInboxOwner,
+): Unit
+fun uniffi_xmtpv3_fn_method_ffiinboxowner_get_identifier(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_ffiinboxowner_sign(`ptr`: Pointer,`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_clone_ffimessagecallback(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_ffimessagecallback(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_init_callback_vtable_ffimessagecallback(`vtable`: UniffiVTableCallbackInterfaceFfiMessageCallback,
+): Unit
+fun uniffi_xmtpv3_fn_method_ffimessagecallback_on_message(`ptr`: Pointer,`message`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_ffimessagecallback_on_error(`ptr`: Pointer,`error`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_clone_ffipreferencecallback(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_ffipreferencecallback(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_init_callback_vtable_ffipreferencecallback(`vtable`: UniffiVTableCallbackInterfaceFfiPreferenceCallback,
+): Unit
+fun uniffi_xmtpv3_fn_method_ffipreferencecallback_on_preference_update(`ptr`: Pointer,`preference`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_ffipreferencecallback_on_error(`ptr`: Pointer,`error`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_clone_ffisignaturerequest(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_ffisignaturerequest(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_ffisignaturerequest_add_ecdsa_signature(`ptr`: Pointer,`signatureBytes`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffisignaturerequest_add_passkey_signature(`ptr`: Pointer,`signature`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffisignaturerequest_add_scw_signature(`ptr`: Pointer,`signatureBytes`: RustBuffer.ByValue,`address`: RustBuffer.ByValue,`chainId`: Long,`blockNumber`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffisignaturerequest_is_ready(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_ffisignaturerequest_missing_address_signatures(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_ffisignaturerequest_signature_text(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_clone_ffistreamcloser(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_ffistreamcloser(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_ffistreamcloser_end(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_ffistreamcloser_end_and_wait(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_ffistreamcloser_is_closed(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+fun uniffi_xmtpv3_fn_method_ffistreamcloser_wait_for_ready(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_clone_ffixmtpclient(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_ffixmtpclient(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_add_identity(`ptr`: Pointer,`newIdentity`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_addresses_from_inbox_id(`ptr`: Pointer,`refreshFromNetwork`: Byte,`inboxIds`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_apply_signature_request(`ptr`: Pointer,`signatureRequest`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_backup_metadata(`ptr`: Pointer,`path`: RustBuffer.ByValue,`key`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_backup_to_file(`ptr`: Pointer,`path`: RustBuffer.ByValue,`opts`: RustBuffer.ByValue,`key`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_can_message(`ptr`: Pointer,`accountIdentifiers`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_change_recovery_identifier(`ptr`: Pointer,`newRecoveryIdentifier`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_conversation(`ptr`: Pointer,`conversationId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_conversations(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_db_reconnect(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_dm_conversation(`ptr`: Pointer,`targetInboxId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_find_inbox_id(`ptr`: Pointer,`identifier`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_get_consent_state(`ptr`: Pointer,`entityType`: RustBuffer.ByValue,`entity`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_get_key_package_statuses_for_installation_ids(`ptr`: Pointer,`installationIds`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_get_latest_inbox_state(`ptr`: Pointer,`inboxId`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_import_from_file(`ptr`: Pointer,`path`: RustBuffer.ByValue,`key`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_inbox_id(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_inbox_state(`ptr`: Pointer,`refreshFromNetwork`: Byte,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_installation_id(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_message(`ptr`: Pointer,`messageId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_register_identity(`ptr`: Pointer,`signatureRequest`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_release_db_connection(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_all_other_installations(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_identity(`ptr`: Pointer,`identifier`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_installations(`ptr`: Pointer,`installationIds`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_send_sync_request(`ptr`: Pointer,`kind`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_set_consent_states(`ptr`: Pointer,`records`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_sign_with_installation_key(`ptr`: Pointer,`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_signature_request(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_sync_preferences(`ptr`: Pointer,
+): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_verify_signed_with_installation_key(`ptr`: Pointer,`signatureText`: RustBuffer.ByValue,`signatureBytes`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_verify_signed_with_public_key(`ptr`: Pointer,`signatureText`: RustBuffer.ByValue,`signatureBytes`: RustBuffer.ByValue,`publicKey`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_clone_xmtpapiclient(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun uniffi_xmtpv3_fn_free_xmtpapiclient(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_func_connect_to_backend(`host`: RustBuffer.ByValue,`isSecure`: Byte,
+): Long
+fun uniffi_xmtpv3_fn_func_create_client(`api`: Pointer,`db`: RustBuffer.ByValue,`encryptionKey`: RustBuffer.ByValue,`inboxId`: RustBuffer.ByValue,`accountIdentifier`: RustBuffer.ByValue,`nonce`: Long,`legacySignedPrivateKeyProto`: RustBuffer.ByValue,`historySyncUrl`: RustBuffer.ByValue,`syncWorkerMode`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_func_decode_multi_remote_attachment(`bytes`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_func_decode_reaction(`bytes`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_func_encode_multi_remote_attachment(`ffiMultiRemoteAttachment`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_func_encode_reaction(`reaction`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_func_enter_debug_writer(`directory`: RustBuffer.ByValue,`logLevel`: RustBuffer.ByValue,`rotation`: RustBuffer.ByValue,`maxFiles`: Int,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_func_enter_debug_writer_with_level(`directory`: RustBuffer.ByValue,`rotation`: RustBuffer.ByValue,`maxFiles`: Int,`logLevel`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_func_exit_debug_writer(uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_func_generate_inbox_id(`accountIdentifier`: RustBuffer.ByValue,`nonce`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_func_get_inbox_id_for_identifier(`api`: Pointer,`accountIdentifier`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_func_get_version_info(uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun ffi_xmtpv3_rustbuffer_alloc(`size`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun ffi_xmtpv3_rustbuffer_from_bytes(`bytes`: ForeignBytes.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun ffi_xmtpv3_rustbuffer_free(`buf`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun ffi_xmtpv3_rustbuffer_reserve(`buf`: RustBuffer.ByValue,`additional`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun ffi_xmtpv3_rust_future_poll_u8(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_u8(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_u8(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_u8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+fun ffi_xmtpv3_rust_future_poll_i8(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_i8(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_i8(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_i8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Byte
+fun ffi_xmtpv3_rust_future_poll_u16(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_u16(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_u16(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_u16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Short
+fun ffi_xmtpv3_rust_future_poll_i16(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_i16(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_i16(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_i16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Short
+fun ffi_xmtpv3_rust_future_poll_u32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_u32(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_u32(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_u32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Int
+fun ffi_xmtpv3_rust_future_poll_i32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_i32(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_i32(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_i32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Int
+fun ffi_xmtpv3_rust_future_poll_u64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_u64(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_u64(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_u64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+fun ffi_xmtpv3_rust_future_poll_i64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_i64(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_i64(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_i64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Long
+fun ffi_xmtpv3_rust_future_poll_f32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_f32(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_f32(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_f32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Float
+fun ffi_xmtpv3_rust_future_poll_f64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_f64(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_f64(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_f64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Double
+fun ffi_xmtpv3_rust_future_poll_pointer(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_pointer(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_pointer(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_pointer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Pointer
+fun ffi_xmtpv3_rust_future_poll_rust_buffer(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_rust_buffer(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_rust_buffer(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_rust_buffer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun ffi_xmtpv3_rust_future_poll_void(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_cancel_void(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_free_void(`handle`: Long,
+): Unit
+fun ffi_xmtpv3_rust_future_complete_void(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
 
 }
 
-private fun uniffiCheckContractApiVersion(lib: UniffiLib) {
+private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
     // Get the bindings contract version from our ComponentInterface
-    val bindings_contract_version = 26
+    val bindings_contract_version = 29
     // Get the scaffolding contract version by calling the into the dylib
     val scaffolding_contract_version = lib.ffi_xmtpv3_uniffi_contract_version()
     if (bindings_contract_version != scaffolding_contract_version) {
         throw RuntimeException("UniFFI contract version mismatch: try cleaning and rebuilding your project")
     }
 }
-
 @Suppress("UNUSED_PARAMETER")
-private fun uniffiCheckApiChecksums(lib: UniffiLib) {
+private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_func_connect_to_backend() != 26018.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_func_create_client() != 24982.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_func_create_client() != 35135.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_func_create_v2_client() != 48060.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_func_decode_multi_remote_attachment() != 59746.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_func_diffie_hellman_k256() != 37475.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_func_decode_reaction() != 28885.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_func_generate_inbox_id() != 47637.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_func_encode_multi_remote_attachment() != 28938.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_func_generate_private_preferences_topic_identifier() != 59124.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_func_encode_reaction() != 6548.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_func_get_inbox_id_for_address() != 19849.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_func_enter_debug_writer() != 7266.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_enter_debug_writer_with_level() != 7232.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_exit_debug_writer() != 31716.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_generate_inbox_id() != 35602.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_get_inbox_id_for_identifier() != 54811.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_func_get_version_info() != 29277.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_func_keccak256() != 61901.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_func_public_key_from_private_key_k256() != 22921.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_func_recover_address() != 48606.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_func_recover_public_key_k256_keccak256() != 45215.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_func_recover_public_key_k256_sha256() != 42303.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_func_sha256() != 32492.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_func_user_preferences_decrypt() != 43766.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_func_user_preferences_encrypt() != 184.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_func_verify_k256_sha256() != 25521.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonsentcallback_on_consent_update() != 12532.toShort()) {
@@ -2416,10 +1993,10 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_admin() != 52417.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_members() != 3260.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_members() != 52510.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_members_by_inbox_id() != 28069.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_members_by_inbox_id() != 30553.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_super_admin() != 62984.toShort()) {
@@ -2434,6 +2011,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_consent_state() != 25033.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_conversation_message_disappearing_settings() != 53380.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_conversation_type() != 51396.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2444,6 +2024,12 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_find_messages() != 19931.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_find_messages_with_reactions() != 33179.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_get_hmac_keys() != 4665.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_group_description() != 53570.toShort()) {
@@ -2461,9 +2047,6 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_group_permissions() != 61947.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_group_pinned_frame_url() != 40964.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_id() != 5542.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2473,10 +2056,16 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_is_admin() != 12325.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_is_conversation_message_disappearing_enabled() != 13756.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_is_super_admin() != 25811.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_list_members() != 21260.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_paused_for_version() != 61438.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_process_streamed_conversation_message() != 4359.toShort()) {
@@ -2488,7 +2077,10 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_remove_admin() != 7973.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_remove_members() != 49452.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_remove_conversation_message_disappearing_settings() != 37503.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_remove_members() != 27638.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_remove_members_by_inbox_id() != 53192.toShort()) {
@@ -2503,6 +2095,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_send_optimistic() != 5885.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_send_text() != 55684.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_stream() != 26870.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2515,6 +2110,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_update_consent_state() != 27721.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_update_conversation_message_disappearing_settings() != 18023.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_update_group_description() != 14549.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2522,9 +2120,6 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_update_group_name() != 62600.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_update_group_pinned_frame_url() != 21997.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_update_permission_policy() != 3743.toShort()) {
@@ -2548,16 +2143,19 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversationmetadata_creator_inbox_id() != 61067.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_create_dm() != 63785.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_create_group() != 5386.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_create_group() != 7282.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_create_group_with_inbox_ids() != 56407.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_find_or_create_dm() != 25610.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_find_or_create_dm_by_inbox_id() != 42164.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_get_hmac_keys() != 44064.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_get_sync_group() != 42973.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_list() != 23197.toShort()) {
@@ -2602,13 +2200,19 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversations_sync() != 9054.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_sync_all_conversations() != 2613.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversations_sync_all_conversations() != 30657.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigrouppermissions_policy_set() != 24928.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffigrouppermissions_policy_type() != 56975.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffiinboxowner_get_identifier() != 4926.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffiinboxowner_sign() != 10423.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffimessagecallback_on_message() != 5286.toShort()) {
@@ -2626,6 +2230,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_ecdsa_signature() != 8706.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_passkey_signature() != 11222.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_scw_signature() != 52793.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2641,7 +2248,7 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffistreamcloser_end() != 11040.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffistreamcloser_end_and_wait() != 1181.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffistreamcloser_end_and_wait() != 23074.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffistreamcloser_is_closed() != 62423.toShort()) {
@@ -2650,37 +2257,7 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffistreamcloser_wait_for_ready() != 38545.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiv2apiclient_batch_query() != 26551.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiv2apiclient_publish() != 3309.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiv2apiclient_query() != 58821.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiv2apiclient_set_app_version() != 28472.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiv2apiclient_subscribe() != 39124.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiv2subscription_end() != 38721.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiv2subscription_is_closed() != 4358.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiv2subscription_update() != 24211.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiv2subscriptioncallback_on_message() != 30049.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiv2subscriptioncallback_on_error() != 24930.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_add_wallet() != 24482.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_add_identity() != 61490.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_addresses_from_inbox_id() != 29264.toShort()) {
@@ -2689,7 +2266,16 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_apply_signature_request() != 32172.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_can_message() != 53502.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_backup_metadata() != 5211.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_backup_to_file() != 10877.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_can_message() != 32993.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_change_recovery_identifier() != 39513.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_conversation() != 60290.toShort()) {
@@ -2704,13 +2290,19 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_dm_conversation() != 23917.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_find_inbox_id() != 59020.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_find_inbox_id() != 17517.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_get_consent_state() != 58208.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_get_key_package_statuses_for_installation_ids() != 60893.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_get_latest_inbox_state() != 3165.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_import_from_file() != 29366.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_inbox_id() != 25128.toShort()) {
@@ -2734,36 +2326,40 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_all_other_installations() != 36450.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_identity() != 63231.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_installations() != 2611.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_revoke_wallet() != 12211.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_send_sync_request() != 41331.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_send_sync_request() != 58978.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_set_consent_states() != 64566.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_sign_with_installation_key() != 49813.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_sign_with_installation_key() != 42647.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_signature_request() != 18270.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_verify_signed_with_installation_key() != 4340.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_sync_preferences() != 59168.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_verify_signed_with_public_key() != 21532.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_verify_signed_with_installation_key() != 3285.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiinboxowner_get_address() != 2205.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_verify_signed_with_public_key() != 10898.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_ffiinboxowner_sign() != 30268.toShort()) {
-        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
-    }
+}
+
+/**
+ * @suppress
+ */
+public fun uniffiEnsureInitialized() {
+    UniffiLib.INSTANCE
 }
 
 // Async support
@@ -2775,19 +2371,19 @@ internal const val UNIFFI_RUST_FUTURE_POLL_MAYBE_READY = 1.toByte()
 internal val uniffiContinuationHandleMap = UniffiHandleMap<CancellableContinuation<Byte>>()
 
 // FFI type for Rust future continuations
-internal object uniffiRustFutureContinuationCallbackImpl : UniffiRustFutureContinuationCallback {
+internal object uniffiRustFutureContinuationCallbackImpl: UniffiRustFutureContinuationCallback {
     override fun callback(data: Long, pollResult: Byte) {
         uniffiContinuationHandleMap.remove(data).resume(pollResult)
     }
 }
 
-internal suspend fun <T, F, E : kotlin.Exception> uniffiRustCallAsync(
+internal suspend fun<T, F, E: kotlin.Exception> uniffiRustCallAsync(
     rustFuture: Long,
     pollFunc: (Long, UniffiRustFutureContinuationCallback, Long) -> Unit,
     completeFunc: (Long, UniffiRustCallStatus) -> F,
     freeFunc: (Long) -> Unit,
     liftFunc: (F) -> T,
-    errorHandler: UniffiRustCallStatusErrorHandler<E>,
+    errorHandler: UniffiRustCallStatusErrorHandler<E>
 ): T {
     try {
         do {
@@ -2821,11 +2417,35 @@ internal suspend fun <T, F, E : kotlin.Exception> uniffiRustCallAsync(
 // helper method to execute a block and destroy the object at the end.
 interface Disposable {
     fun destroy()
-
     companion object {
         fun destroy(vararg args: Any?) {
-            args.filterIsInstance<Disposable>()
-                .forEach(Disposable::destroy)
+            for (arg in args) {
+                when (arg) {
+                    is Disposable -> arg.destroy()
+                    is ArrayList<*> -> {
+                        for (idx in arg.indices) {
+                            val element = arg[idx]
+                            if (element is Disposable) {
+                                element.destroy()
+                            }
+                        }
+                    }
+                    is Map<*, *> -> {
+                        for (element in arg.values) {
+                            if (element is Disposable) {
+                                element.destroy()
+                            }
+                        }
+                    }
+                    is Iterable<*> -> {
+                        for (element in arg) {
+                            if (element is Disposable) {
+                                element.destroy()
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -2845,7 +2465,7 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
         }
     }
 
-/**
+/** 
  * Used to instantiate an interface without an actual pointer, for fakes in tests, mostly.
  *
  * @suppress
@@ -2855,30 +2475,30 @@ object NoPointer
 /**
  * @suppress
  */
-public object FfiConverterUByte : FfiConverter<UByte, Byte> {
-    override fun lift(value: Byte): UByte {
-        return value.toUByte()
+public object FfiConverterUShort: FfiConverter<UShort, Short> {
+    override fun lift(value: Short): UShort {
+        return value.toUShort()
     }
 
-    override fun read(buf: ByteBuffer): UByte {
-        return lift(buf.get())
+    override fun read(buf: ByteBuffer): UShort {
+        return lift(buf.getShort())
     }
 
-    override fun lower(value: UByte): Byte {
-        return value.toByte()
+    override fun lower(value: UShort): Short {
+        return value.toShort()
     }
 
-    override fun allocationSize(value: UByte) = 1UL
+    override fun allocationSize(value: UShort) = 2UL
 
-    override fun write(value: UByte, buf: ByteBuffer) {
-        buf.put(value.toByte())
+    override fun write(value: UShort, buf: ByteBuffer) {
+        buf.putShort(value.toShort())
     }
 }
 
 /**
  * @suppress
  */
-public object FfiConverterUInt : FfiConverter<UInt, Int> {
+public object FfiConverterUInt: FfiConverter<UInt, Int> {
     override fun lift(value: Int): UInt {
         return value.toUInt()
     }
@@ -2901,7 +2521,7 @@ public object FfiConverterUInt : FfiConverter<UInt, Int> {
 /**
  * @suppress
  */
-public object FfiConverterULong : FfiConverter<ULong, Long> {
+public object FfiConverterULong: FfiConverter<ULong, Long> {
     override fun lift(value: Long): ULong {
         return value.toULong()
     }
@@ -2924,7 +2544,7 @@ public object FfiConverterULong : FfiConverter<ULong, Long> {
 /**
  * @suppress
  */
-public object FfiConverterLong : FfiConverter<Long, Long> {
+public object FfiConverterLong: FfiConverter<Long, Long> {
     override fun lift(value: Long): Long {
         return value
     }
@@ -2947,7 +2567,7 @@ public object FfiConverterLong : FfiConverter<Long, Long> {
 /**
  * @suppress
  */
-public object FfiConverterBoolean : FfiConverter<Boolean, Byte> {
+public object FfiConverterBoolean: FfiConverter<Boolean, Byte> {
     override fun lift(value: Byte): Boolean {
         return value.toInt() != 0
     }
@@ -2970,7 +2590,7 @@ public object FfiConverterBoolean : FfiConverter<Boolean, Byte> {
 /**
  * @suppress
  */
-public object FfiConverterString : FfiConverter<String, RustBuffer.ByValue> {
+public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
     // Note: we don't inherit from FfiConverterRustBuffer, because we use a
     // special encoding when lowering/lifting.  We can use `RustBuffer.len` to
     // store our length and avoid writing it out to the buffer.
@@ -3027,18 +2647,16 @@ public object FfiConverterString : FfiConverter<String, RustBuffer.ByValue> {
 /**
  * @suppress
  */
-public object FfiConverterByteArray : FfiConverterRustBuffer<ByteArray> {
+public object FfiConverterByteArray: FfiConverterRustBuffer<ByteArray> {
     override fun read(buf: ByteBuffer): ByteArray {
         val len = buf.getInt()
         val byteArr = ByteArray(len)
         buf.get(byteArr)
         return byteArr
     }
-
     override fun allocationSize(value: ByteArray): ULong {
         return 4UL + value.size.toULong()
     }
-
     override fun write(value: ByteArray, buf: ByteBuffer) {
         buf.putInt(value.size)
         buf.put(value)
@@ -3178,6 +2796,7 @@ private class UniffiJnaCleanable(
     override fun clean() = cleanable.clean()
 }
 
+
 // We decide at uniffi binding generation time whether we were
 // using Android or not.
 // There are further runtime checks to chose the correct implementation
@@ -3203,21 +2822,21 @@ private class JavaLangRefCleaner : UniffiCleaner {
 }
 
 private class JavaLangRefCleanable(
-    val cleanable: java.lang.ref.Cleaner.Cleanable,
+    val cleanable: java.lang.ref.Cleaner.Cleanable
 ) : UniffiCleaner.Cleanable {
     override fun clean() = cleanable.clean()
 }
-
 public interface FfiConsentCallback {
-
+    
     fun `onConsentUpdate`(`consent`: List<FfiConsent>)
-
+    
     fun `onError`(`error`: FfiSubscribeException)
-
+    
     companion object
 }
 
-open class FfiConsentCallbackImpl : Disposable, AutoCloseable, FfiConsentCallback {
+open class FfiConsentCallbackImpl: Disposable, AutoCloseable, FfiConsentCallback
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -3268,7 +2887,7 @@ open class FfiConsentCallbackImpl : Disposable, AutoCloseable, FfiConsentCallbac
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -3298,34 +2917,38 @@ open class FfiConsentCallbackImpl : Disposable, AutoCloseable, FfiConsentCallbac
         }
     }
 
-    override fun `onConsentUpdate`(`consent`: List<FfiConsent>) =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonsentcallback_on_consent_update(
-                    it, FfiConverterSequenceTypeFfiConsent.lower(`consent`), _status
-                )
-            }
-        }
-
-
-    override fun `onError`(`error`: FfiSubscribeException) =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonsentcallback_on_error(
-                    it, FfiConverterTypeFfiSubscribeError.lower(`error`), _status
-                )
-            }
-        }
-
-
-    companion object
-
+    override fun `onConsentUpdate`(`consent`: List<FfiConsent>)
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonsentcallback_on_consent_update(
+        it, FfiConverterSequenceTypeFfiConsent.lower(`consent`),_status)
 }
+    }
+    
+    
 
+    override fun `onError`(`error`: FfiSubscribeException)
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonsentcallback_on_error(
+        it, FfiConverterTypeFfiSubscribeError.lower(`error`),_status)
+}
+    }
+    
+    
+
+    
+
+    
+    
+    companion object
+    
+}
 // Magic number for the Rust proxy to call using the same mechanism as every other method,
 // to free the callback once it's dropped by Rust.
 internal const val IDX_CALLBACK_FREE = 0
-
 // Callback return codes
 internal const val UNIFFI_CALLBACK_SUCCESS = 0
 internal const val UNIFFI_CALLBACK_ERROR = 1
@@ -3334,8 +2957,7 @@ internal const val UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
 /**
  * @suppress
  */
-public abstract class FfiConverterCallbackInterface<CallbackInterface : Any> :
-    FfiConverter<CallbackInterface, Long> {
+public abstract class FfiConverterCallbackInterface<CallbackInterface: Any>: FfiConverter<CallbackInterface, Long> {
     internal val handleMap = UniffiHandleMap<CallbackInterface>()
 
     internal fun drop(handle: Long) {
@@ -3359,13 +2981,8 @@ public abstract class FfiConverterCallbackInterface<CallbackInterface : Any> :
 
 // Put the implementation in an object so we don't pollute the top-level namespace
 internal object uniffiCallbackInterfaceFfiConsentCallback {
-    internal object `onConsentUpdate` : UniffiCallbackInterfaceFfiConsentCallbackMethod0 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `consent`: RustBuffer.ByValue,
-            `uniffiOutReturn`: Pointer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
+    internal object `onConsentUpdate`: UniffiCallbackInterfaceFfiConsentCallbackMethod0 {
+        override fun callback(`uniffiHandle`: Long,`consent`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
             val uniffiObj = FfiConverterTypeFfiConsentCallback.handleMap.get(uniffiHandle)
             val makeCall = { ->
                 uniffiObj.`onConsentUpdate`(
@@ -3376,14 +2993,8 @@ internal object uniffiCallbackInterfaceFfiConsentCallback {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
-
-    internal object `onError` : UniffiCallbackInterfaceFfiConsentCallbackMethod1 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `error`: RustBuffer.ByValue,
-            `uniffiOutReturn`: Pointer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
+    internal object `onError`: UniffiCallbackInterfaceFfiConsentCallbackMethod1 {
+        override fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
             val uniffiObj = FfiConverterTypeFfiConsentCallback.handleMap.get(uniffiHandle)
             val makeCall = { ->
                 uniffiObj.`onError`(
@@ -3395,7 +3006,7 @@ internal object uniffiCallbackInterfaceFfiConsentCallback {
         }
     }
 
-    internal object uniffiFree : UniffiCallbackInterfaceFree {
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
         override fun callback(handle: Long) {
             FfiConverterTypeFfiConsentCallback.handleMap.remove(handle)
         }
@@ -3417,7 +3028,7 @@ internal object uniffiCallbackInterfaceFfiConsentCallback {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConsentCallback : FfiConverter<FfiConsentCallback, Pointer> {
+public object FfiConverterTypeFfiConsentCallback: FfiConverter<FfiConsentCallback, Pointer> {
     internal val handleMap = UniffiHandleMap<FfiConsentCallback>()
 
     override fun lower(value: FfiConsentCallback): Pointer {
@@ -3543,99 +3154,108 @@ public object FfiConverterTypeFfiConsentCallback : FfiConverter<FfiConsentCallba
 
 
 public interface FfiConversationInterface {
-
+    
     suspend fun `addAdmin`(`inboxId`: kotlin.String)
-
-    suspend fun `addMembers`(`accountAddresses`: List<kotlin.String>)
-
-    suspend fun `addMembersByInboxId`(`inboxIds`: List<kotlin.String>)
-
+    
+    suspend fun `addMembers`(`accountIdentifiers`: List<FfiIdentifier>): FfiUpdateGroupMembershipResult
+    
+    suspend fun `addMembersByInboxId`(`inboxIds`: List<kotlin.String>): FfiUpdateGroupMembershipResult
+    
     suspend fun `addSuperAdmin`(`inboxId`: kotlin.String)
-
+    
     fun `addedByInboxId`(): kotlin.String
-
+    
     fun `adminList`(): List<kotlin.String>
-
+    
     fun `consentState`(): FfiConsentState
-
+    
+    fun `conversationMessageDisappearingSettings`(): FfiMessageDisappearingSettings?
+    
     suspend fun `conversationType`(): FfiConversationType
-
+    
     fun `createdAtNs`(): kotlin.Long
-
+    
     fun `dmPeerInboxId`(): kotlin.String
-
+    
     suspend fun `findMessages`(`opts`: FfiListMessagesOptions): List<FfiMessage>
-
+    
+    suspend fun `findMessagesWithReactions`(`opts`: FfiListMessagesOptions): List<FfiMessageWithReactions>
+    
+    fun `getHmacKeys`(): List<FfiHmacKey>
+    
     fun `groupDescription`(): kotlin.String
-
+    
     fun `groupImageUrlSquare`(): kotlin.String
-
+    
     suspend fun `groupMetadata`(): FfiConversationMetadata
-
+    
     fun `groupName`(): kotlin.String
-
+    
     fun `groupPermissions`(): FfiGroupPermissions
-
-    fun `groupPinnedFrameUrl`(): kotlin.String
-
+    
     fun `id`(): kotlin.ByteArray
-
+    
     fun `isActive`(): kotlin.Boolean
-
+    
     fun `isAdmin`(`inboxId`: kotlin.String): kotlin.Boolean
-
+    
+    fun `isConversationMessageDisappearingEnabled`(): kotlin.Boolean
+    
     fun `isSuperAdmin`(`inboxId`: kotlin.String): kotlin.Boolean
-
+    
     suspend fun `listMembers`(): List<FfiConversationMember>
-
+    
+    fun `pausedForVersion`(): kotlin.String?
+    
     suspend fun `processStreamedConversationMessage`(`envelopeBytes`: kotlin.ByteArray): FfiMessage
-
+    
     /**
      * Publish all unpublished messages
      */
     suspend fun `publishMessages`()
-
+    
     suspend fun `removeAdmin`(`inboxId`: kotlin.String)
-
-    suspend fun `removeMembers`(`accountAddresses`: List<kotlin.String>)
-
+    
+    suspend fun `removeConversationMessageDisappearingSettings`()
+    
+    suspend fun `removeMembers`(`accountIdentifiers`: List<FfiIdentifier>)
+    
     suspend fun `removeMembersByInboxId`(`inboxIds`: List<kotlin.String>)
-
+    
     suspend fun `removeSuperAdmin`(`inboxId`: kotlin.String)
-
+    
     suspend fun `send`(`contentBytes`: kotlin.ByteArray): kotlin.ByteArray
-
+    
     /**
      * send a message without immediately publishing to the delivery service.
      */
     fun `sendOptimistic`(`contentBytes`: kotlin.ByteArray): kotlin.ByteArray
-
+    
+    suspend fun `sendText`(`text`: kotlin.String): kotlin.ByteArray
+    
     suspend fun `stream`(`messageCallback`: FfiMessageCallback): FfiStreamCloser
-
+    
     fun `superAdminList`(): List<kotlin.String>
-
+    
     suspend fun `sync`()
-
+    
     fun `updateConsentState`(`state`: FfiConsentState)
-
+    
+    suspend fun `updateConversationMessageDisappearingSettings`(`settings`: FfiMessageDisappearingSettings)
+    
     suspend fun `updateGroupDescription`(`groupDescription`: kotlin.String)
-
+    
     suspend fun `updateGroupImageUrlSquare`(`groupImageUrlSquare`: kotlin.String)
-
+    
     suspend fun `updateGroupName`(`groupName`: kotlin.String)
-
-    suspend fun `updateGroupPinnedFrameUrl`(`pinnedFrameUrl`: kotlin.String)
-
-    suspend fun `updatePermissionPolicy`(
-        `permissionUpdateType`: FfiPermissionUpdateType,
-        `permissionPolicyOption`: FfiPermissionPolicy,
-        `metadataField`: FfiMetadataField?,
-    )
-
+    
+    suspend fun `updatePermissionPolicy`(`permissionUpdateType`: FfiPermissionUpdateType, `permissionPolicyOption`: FfiPermissionPolicy, `metadataField`: FfiMetadataField?)
+    
     companion object
 }
 
-open class FfiConversation : Disposable, AutoCloseable, FfiConversationInterface {
+open class FfiConversation: Disposable, AutoCloseable, FfiConversationInterface
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -3686,7 +3306,7 @@ open class FfiConversation : Disposable, AutoCloseable, FfiConversationInterface
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -3716,492 +3336,438 @@ open class FfiConversation : Disposable, AutoCloseable, FfiConversationInterface
         }
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `addAdmin`(`inboxId`: kotlin.String) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_add_admin(
-                    thisPtr,
-                    FfiConverterString.lower(`inboxId`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_add_admin(
+                thisPtr,
+                FfiConverterString.lower(`inboxId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `addMembers`(`accountAddresses`: List<kotlin.String>) {
+    override suspend fun `addMembers`(`accountIdentifiers`: List<FfiIdentifier>) : FfiUpdateGroupMembershipResult {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_add_members(
-                    thisPtr,
-                    FfiConverterSequenceString.lower(`accountAddresses`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_add_members(
+                thisPtr,
+                FfiConverterSequenceTypeFfiIdentifier.lower(`accountIdentifiers`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeFfiUpdateGroupMembershipResult.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `addMembersByInboxId`(`inboxIds`: List<kotlin.String>) {
+    override suspend fun `addMembersByInboxId`(`inboxIds`: List<kotlin.String>) : FfiUpdateGroupMembershipResult {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_add_members_by_inbox_id(
-                    thisPtr,
-                    FfiConverterSequenceString.lower(`inboxIds`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_add_members_by_inbox_id(
+                thisPtr,
+                FfiConverterSequenceString.lower(`inboxIds`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeFfiUpdateGroupMembershipResult.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `addSuperAdmin`(`inboxId`: kotlin.String) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_add_super_admin(
-                    thisPtr,
-                    FfiConverterString.lower(`inboxId`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_add_super_admin(
+                thisPtr,
+                FfiConverterString.lower(`inboxId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
-    @Throws(GenericException::class)
-    override fun `addedByInboxId`(): kotlin.String {
-        return FfiConverterString.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_added_by_inbox_id(
-                        it, _status
-                    )
-                }
-            }
-        )
+    
+    @Throws(GenericException::class)override fun `addedByInboxId`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_added_by_inbox_id(
+        it, _status)
+}
     }
-
-
-    @Throws(GenericException::class)
-    override fun `adminList`(): List<kotlin.String> {
-        return FfiConverterSequenceString.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_admin_list(
-                        it, _status
-                    )
-                }
-            }
-        )
+    )
     }
+    
 
-
-    @Throws(GenericException::class)
-    override fun `consentState`(): FfiConsentState {
-        return FfiConverterTypeFfiConsentState.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_consent_state(
-                        it, _status
-                    )
-                }
-            }
-        )
+    
+    @Throws(GenericException::class)override fun `adminList`(): List<kotlin.String> {
+            return FfiConverterSequenceString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_admin_list(
+        it, _status)
+}
     }
+    )
+    }
+    
 
+    
+    @Throws(GenericException::class)override fun `consentState`(): FfiConsentState {
+            return FfiConverterTypeFfiConsentState.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_consent_state(
+        it, _status)
+}
+    }
+    )
+    }
+    
 
+    
+    @Throws(GenericException::class)override fun `conversationMessageDisappearingSettings`(): FfiMessageDisappearingSettings? {
+            return FfiConverterOptionalTypeFfiMessageDisappearingSettings.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_conversation_message_disappearing_settings(
+        it, _status)
+}
+    }
+    )
+    }
+    
+
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `conversationType`(): FfiConversationType {
+    override suspend fun `conversationType`() : FfiConversationType {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_conversation_type(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterTypeFfiConversationType.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_conversation_type(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeFfiConversationType.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
     override fun `createdAtNs`(): kotlin.Long {
-        return FfiConverterLong.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_created_at_ns(
-                        it, _status
-                    )
-                }
-            }
-        )
+            return FfiConverterLong.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_created_at_ns(
+        it, _status)
+}
     }
-
-
-    @Throws(GenericException::class)
-    override fun `dmPeerInboxId`(): kotlin.String {
-        return FfiConverterString.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_dm_peer_inbox_id(
-                        it, _status
-                    )
-                }
-            }
-        )
+    )
     }
+    
 
-
-    @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `findMessages`(`opts`: FfiListMessagesOptions): List<FfiMessage> {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_find_messages(
-                    thisPtr,
-                    FfiConverterTypeFfiListMessagesOptions.lower(`opts`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterSequenceTypeFfiMessage.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+    
+    @Throws(GenericException::class)override fun `dmPeerInboxId`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_dm_peer_inbox_id(
+        it, _status)
+}
     }
-
-
-    @Throws(GenericException::class)
-    override fun `groupDescription`(): kotlin.String {
-        return FfiConverterString.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_group_description(
-                        it, _status
-                    )
-                }
-            }
-        )
+    )
     }
+    
 
-
-    @Throws(GenericException::class)
-    override fun `groupImageUrlSquare`(): kotlin.String {
-        return FfiConverterString.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_group_image_url_square(
-                        it, _status
-                    )
-                }
-            }
-        )
-    }
-
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `groupMetadata`(): FfiConversationMetadata {
+    override suspend fun `findMessages`(`opts`: FfiListMessagesOptions) : List<FfiMessage> {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_group_metadata(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiConversationMetadata.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_find_messages(
+                thisPtr,
+                FfiConverterTypeFfiListMessagesOptions.lower(`opts`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeFfiMessage.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
-    override fun `groupName`(): kotlin.String {
-        return FfiConverterString.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_group_name(
-                        it, _status
-                    )
-                }
-            }
-        )
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `findMessagesWithReactions`(`opts`: FfiListMessagesOptions) : List<FfiMessageWithReactions> {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_find_messages_with_reactions(
+                thisPtr,
+                FfiConverterTypeFfiListMessagesOptions.lower(`opts`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeFfiMessageWithReactions.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
+    @Throws(GenericException::class)override fun `getHmacKeys`(): List<FfiHmacKey> {
+            return FfiConverterSequenceTypeFfiHmacKey.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_get_hmac_keys(
+        it, _status)
+}
+    }
+    )
+    }
+    
 
+    
+    @Throws(GenericException::class)override fun `groupDescription`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_group_description(
+        it, _status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(GenericException::class)override fun `groupImageUrlSquare`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_group_image_url_square(
+        it, _status)
+}
+    }
+    )
+    }
+    
+
+    
     @Throws(GenericException::class)
-    override fun `groupPermissions`(): FfiGroupPermissions {
-        return FfiConverterTypeFfiGroupPermissions.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_group_permissions(
-                        it, _status
-                    )
-                }
-            }
-        )
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `groupMetadata`() : FfiConversationMetadata {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_group_metadata(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiConversationMetadata.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
-    @Throws(GenericException::class)
-    override fun `groupPinnedFrameUrl`(): kotlin.String {
-        return FfiConverterString.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_group_pinned_frame_url(
-                        it, _status
-                    )
-                }
-            }
-        )
+    
+    @Throws(GenericException::class)override fun `groupName`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_group_name(
+        it, _status)
+}
     }
+    )
+    }
+    
 
+    
+    @Throws(GenericException::class)override fun `groupPermissions`(): FfiGroupPermissions {
+            return FfiConverterTypeFfiGroupPermissions.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_group_permissions(
+        it, _status)
+}
+    }
+    )
+    }
+    
 
     override fun `id`(): kotlin.ByteArray {
-        return FfiConverterByteArray.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_id(
-                        it, _status
-                    )
-                }
-            }
-        )
+            return FfiConverterByteArray.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_id(
+        it, _status)
+}
     }
-
-
-    @Throws(GenericException::class)
-    override fun `isActive`(): kotlin.Boolean {
-        return FfiConverterBoolean.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_is_active(
-                        it, _status
-                    )
-                }
-            }
-        )
+    )
     }
+    
 
-
-    @Throws(GenericException::class)
-    override fun `isAdmin`(`inboxId`: kotlin.String): kotlin.Boolean {
-        return FfiConverterBoolean.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_is_admin(
-                        it, FfiConverterString.lower(`inboxId`), _status
-                    )
-                }
-            }
-        )
+    
+    @Throws(GenericException::class)override fun `isActive`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_is_active(
+        it, _status)
+}
     }
-
-
-    @Throws(GenericException::class)
-    override fun `isSuperAdmin`(`inboxId`: kotlin.String): kotlin.Boolean {
-        return FfiConverterBoolean.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_is_super_admin(
-                        it, FfiConverterString.lower(`inboxId`), _status
-                    )
-                }
-            }
-        )
+    )
     }
+    
 
+    
+    @Throws(GenericException::class)override fun `isAdmin`(`inboxId`: kotlin.String): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_is_admin(
+        it, FfiConverterString.lower(`inboxId`),_status)
+}
+    }
+    )
+    }
+    
 
+    
+    @Throws(GenericException::class)override fun `isConversationMessageDisappearingEnabled`(): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_is_conversation_message_disappearing_enabled(
+        it, _status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(GenericException::class)override fun `isSuperAdmin`(`inboxId`: kotlin.String): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_is_super_admin(
+        it, FfiConverterString.lower(`inboxId`),_status)
+}
+    }
+    )
+    }
+    
+
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `listMembers`(): List<FfiConversationMember> {
+    override suspend fun `listMembers`() : List<FfiConversationMember> {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_list_members(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterSequenceTypeFfiConversationMember.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_list_members(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeFfiConversationMember.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
+    @Throws(GenericException::class)override fun `pausedForVersion`(): kotlin.String? {
+            return FfiConverterOptionalString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_paused_for_version(
+        it, _status)
+}
+    }
+    )
+    }
+    
 
+    
     @Throws(FfiSubscribeException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `processStreamedConversationMessage`(`envelopeBytes`: kotlin.ByteArray): FfiMessage {
+    override suspend fun `processStreamedConversationMessage`(`envelopeBytes`: kotlin.ByteArray) : FfiMessage {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_process_streamed_conversation_message(
-                    thisPtr,
-                    FfiConverterByteArray.lower(`envelopeBytes`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterTypeFfiMessage.lift(it) },
-            // Error FFI converter
-            FfiSubscribeException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_process_streamed_conversation_message(
+                thisPtr,
+                FfiConverterByteArray.lower(`envelopeBytes`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeFfiMessage.lift(it) },
+        // Error FFI converter
+        FfiSubscribeException.ErrorHandler,
+    )
     }
 
-
+    
     /**
      * Publish all unpublished messages
      */
@@ -4209,484 +3775,380 @@ open class FfiConversation : Disposable, AutoCloseable, FfiConversationInterface
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `publishMessages`() {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_publish_messages(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_publish_messages(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `removeAdmin`(`inboxId`: kotlin.String) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_remove_admin(
-                    thisPtr,
-                    FfiConverterString.lower(`inboxId`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_remove_admin(
+                thisPtr,
+                FfiConverterString.lower(`inboxId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `removeMembers`(`accountAddresses`: List<kotlin.String>) {
+    override suspend fun `removeConversationMessageDisappearingSettings`() {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_remove_members(
-                    thisPtr,
-                    FfiConverterSequenceString.lower(`accountAddresses`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_remove_conversation_message_disappearing_settings(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `removeMembers`(`accountIdentifiers`: List<FfiIdentifier>) {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_remove_members(
+                thisPtr,
+                FfiConverterSequenceTypeFfiIdentifier.lower(`accountIdentifiers`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
+    }
 
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `removeMembersByInboxId`(`inboxIds`: List<kotlin.String>) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_remove_members_by_inbox_id(
-                    thisPtr,
-                    FfiConverterSequenceString.lower(`inboxIds`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_remove_members_by_inbox_id(
+                thisPtr,
+                FfiConverterSequenceString.lower(`inboxIds`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `removeSuperAdmin`(`inboxId`: kotlin.String) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_remove_super_admin(
-                    thisPtr,
-                    FfiConverterString.lower(`inboxId`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_remove_super_admin(
+                thisPtr,
+                FfiConverterString.lower(`inboxId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `send`(`contentBytes`: kotlin.ByteArray): kotlin.ByteArray {
+    override suspend fun `send`(`contentBytes`: kotlin.ByteArray) : kotlin.ByteArray {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_send(
-                    thisPtr,
-                    FfiConverterByteArray.lower(`contentBytes`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterByteArray.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_send(
+                thisPtr,
+                FfiConverterByteArray.lower(`contentBytes`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterByteArray.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     /**
      * send a message without immediately publishing to the delivery service.
      */
-    @Throws(GenericException::class)
-    override fun `sendOptimistic`(`contentBytes`: kotlin.ByteArray): kotlin.ByteArray {
-        return FfiConverterByteArray.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_send_optimistic(
-                        it, FfiConverterByteArray.lower(`contentBytes`), _status
-                    )
-                }
-            }
-        )
+    @Throws(GenericException::class)override fun `sendOptimistic`(`contentBytes`: kotlin.ByteArray): kotlin.ByteArray {
+            return FfiConverterByteArray.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_send_optimistic(
+        it, FfiConverterByteArray.lower(`contentBytes`),_status)
+}
     }
+    )
+    }
+    
 
-
+    
+    @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `stream`(`messageCallback`: FfiMessageCallback): FfiStreamCloser {
+    override suspend fun `sendText`(`text`: kotlin.String) : kotlin.ByteArray {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_stream(
-                    thisPtr,
-                    FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiStreamCloser.lift(it) },
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_send_text(
+                thisPtr,
+                FfiConverterString.lower(`text`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterByteArray.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
-    @Throws(GenericException::class)
-    override fun `superAdminList`(): List<kotlin.String> {
-        return FfiConverterSequenceString.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_super_admin_list(
-                        it, _status
-                    )
-                }
-            }
-        )
+    
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `stream`(`messageCallback`: FfiMessageCallback) : FfiStreamCloser {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_stream(
+                thisPtr,
+                FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiStreamCloser.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
     }
 
+    
+    @Throws(GenericException::class)override fun `superAdminList`(): List<kotlin.String> {
+            return FfiConverterSequenceString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_super_admin_list(
+        it, _status)
+}
+    }
+    )
+    }
+    
 
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `sync`() {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_sync(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_sync(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
+    @Throws(GenericException::class)override fun `updateConsentState`(`state`: FfiConsentState)
+        = 
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_consent_state(
+        it, FfiConverterTypeFfiConsentState.lower(`state`),_status)
+}
+    }
+    
+    
 
+    
     @Throws(GenericException::class)
-    override fun `updateConsentState`(`state`: FfiConsentState) =
-        callWithPointer {
-            uniffiRustCallWithError(GenericException) { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_consent_state(
-                    it, FfiConverterTypeFfiConsentState.lower(`state`), _status
-                )
-            }
-        }
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `updateConversationMessageDisappearingSettings`(`settings`: FfiMessageDisappearingSettings) {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_conversation_message_disappearing_settings(
+                thisPtr,
+                FfiConverterTypeFfiMessageDisappearingSettings.lower(`settings`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
+    }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `updateGroupDescription`(`groupDescription`: kotlin.String) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_group_description(
-                    thisPtr,
-                    FfiConverterString.lower(`groupDescription`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_group_description(
+                thisPtr,
+                FfiConverterString.lower(`groupDescription`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `updateGroupImageUrlSquare`(`groupImageUrlSquare`: kotlin.String) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_group_image_url_square(
-                    thisPtr,
-                    FfiConverterString.lower(`groupImageUrlSquare`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_group_image_url_square(
+                thisPtr,
+                FfiConverterString.lower(`groupImageUrlSquare`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `updateGroupName`(`groupName`: kotlin.String) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_group_name(
-                    thisPtr,
-                    FfiConverterString.lower(`groupName`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_group_name(
+                thisPtr,
+                FfiConverterString.lower(`groupName`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `updateGroupPinnedFrameUrl`(`pinnedFrameUrl`: kotlin.String) {
+    override suspend fun `updatePermissionPolicy`(`permissionUpdateType`: FfiPermissionUpdateType, `permissionPolicyOption`: FfiPermissionPolicy, `metadataField`: FfiMetadataField?) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_group_pinned_frame_url(
-                    thisPtr,
-                    FfiConverterString.lower(`pinnedFrameUrl`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_permission_policy(
+                thisPtr,
+                FfiConverterTypeFfiPermissionUpdateType.lower(`permissionUpdateType`),FfiConverterTypeFfiPermissionPolicy.lower(`permissionPolicyOption`),FfiConverterOptionalTypeFfiMetadataField.lower(`metadataField`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
 
-    @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `updatePermissionPolicy`(
-        `permissionUpdateType`: FfiPermissionUpdateType,
-        `permissionPolicyOption`: FfiPermissionPolicy,
-        `metadataField`: FfiMetadataField?,
-    ) {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_update_permission_policy(
-                    thisPtr,
-                    FfiConverterTypeFfiPermissionUpdateType.lower(`permissionUpdateType`),
-                    FfiConverterTypeFfiPermissionPolicy.lower(`permissionPolicyOption`),
-                    FfiConverterOptionalTypeFfiMetadataField.lower(`metadataField`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
-    }
-
-
+    
+    
     companion object
-
+    
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConversation : FfiConverter<FfiConversation, Pointer> {
+public object FfiConverterTypeFfiConversation: FfiConverter<FfiConversation, Pointer> {
 
     override fun lower(value: FfiConversation): Pointer {
         return value.uniffiClonePointer()
@@ -4811,15 +4273,16 @@ public object FfiConverterTypeFfiConversation : FfiConverter<FfiConversation, Po
 
 
 public interface FfiConversationCallback {
-
+    
     fun `onConversation`(`conversation`: FfiConversation)
-
+    
     fun `onError`(`error`: FfiSubscribeException)
-
+    
     companion object
 }
 
-open class FfiConversationCallbackImpl : Disposable, AutoCloseable, FfiConversationCallback {
+open class FfiConversationCallbackImpl: Disposable, AutoCloseable, FfiConversationCallback
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -4870,7 +4333,7 @@ open class FfiConversationCallbackImpl : Disposable, AutoCloseable, FfiConversat
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -4900,40 +4363,41 @@ open class FfiConversationCallbackImpl : Disposable, AutoCloseable, FfiConversat
         }
     }
 
-    override fun `onConversation`(`conversation`: FfiConversation) =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationcallback_on_conversation(
-                    it, FfiConverterTypeFfiConversation.lower(`conversation`), _status
-                )
-            }
-        }
+    override fun `onConversation`(`conversation`: FfiConversation)
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationcallback_on_conversation(
+        it, FfiConverterTypeFfiConversation.lower(`conversation`),_status)
+}
+    }
+    
+    
 
+    override fun `onError`(`error`: FfiSubscribeException)
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationcallback_on_error(
+        it, FfiConverterTypeFfiSubscribeError.lower(`error`),_status)
+}
+    }
+    
+    
 
-    override fun `onError`(`error`: FfiSubscribeException) =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationcallback_on_error(
-                    it, FfiConverterTypeFfiSubscribeError.lower(`error`), _status
-                )
-            }
-        }
+    
 
-
+    
+    
     companion object
-
+    
 }
 
 
 // Put the implementation in an object so we don't pollute the top-level namespace
 internal object uniffiCallbackInterfaceFfiConversationCallback {
-    internal object `onConversation` : UniffiCallbackInterfaceFfiConversationCallbackMethod0 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `conversation`: Pointer,
-            `uniffiOutReturn`: Pointer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
+    internal object `onConversation`: UniffiCallbackInterfaceFfiConversationCallbackMethod0 {
+        override fun callback(`uniffiHandle`: Long,`conversation`: Pointer,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
             val uniffiObj = FfiConverterTypeFfiConversationCallback.handleMap.get(uniffiHandle)
             val makeCall = { ->
                 uniffiObj.`onConversation`(
@@ -4944,14 +4408,8 @@ internal object uniffiCallbackInterfaceFfiConversationCallback {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
-
-    internal object `onError` : UniffiCallbackInterfaceFfiConversationCallbackMethod1 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `error`: RustBuffer.ByValue,
-            `uniffiOutReturn`: Pointer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
+    internal object `onError`: UniffiCallbackInterfaceFfiConversationCallbackMethod1 {
+        override fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
             val uniffiObj = FfiConverterTypeFfiConversationCallback.handleMap.get(uniffiHandle)
             val makeCall = { ->
                 uniffiObj.`onError`(
@@ -4963,7 +4421,7 @@ internal object uniffiCallbackInterfaceFfiConversationCallback {
         }
     }
 
-    internal object uniffiFree : UniffiCallbackInterfaceFree {
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
         override fun callback(handle: Long) {
             FfiConverterTypeFfiConversationCallback.handleMap.remove(handle)
         }
@@ -4985,8 +4443,7 @@ internal object uniffiCallbackInterfaceFfiConversationCallback {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConversationCallback :
-    FfiConverter<FfiConversationCallback, Pointer> {
+public object FfiConverterTypeFfiConversationCallback: FfiConverter<FfiConversationCallback, Pointer> {
     internal val handleMap = UniffiHandleMap<FfiConversationCallback>()
 
     override fun lower(value: FfiConversationCallback): Pointer {
@@ -5112,15 +4569,16 @@ public object FfiConverterTypeFfiConversationCallback :
 
 
 public interface FfiConversationListItemInterface {
-
+    
     fun `conversation`(): FfiConversation
-
+    
     fun `lastMessage`(): FfiMessage?
-
+    
     companion object
 }
 
-open class FfiConversationListItem : Disposable, AutoCloseable, FfiConversationListItemInterface {
+open class FfiConversationListItem: Disposable, AutoCloseable, FfiConversationListItemInterface
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -5171,7 +4629,7 @@ open class FfiConversationListItem : Disposable, AutoCloseable, FfiConversationL
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -5202,40 +4660,41 @@ open class FfiConversationListItem : Disposable, AutoCloseable, FfiConversationL
     }
 
     override fun `conversation`(): FfiConversation {
-        return FfiConverterTypeFfiConversation.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationlistitem_conversation(
-                        it, _status
-                    )
-                }
-            }
-        )
+            return FfiConverterTypeFfiConversation.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationlistitem_conversation(
+        it, _status)
+}
     }
-
+    )
+    }
+    
 
     override fun `lastMessage`(): FfiMessage? {
-        return FfiConverterOptionalTypeFfiMessage.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationlistitem_last_message(
-                        it, _status
-                    )
-                }
-            }
-        )
+            return FfiConverterOptionalTypeFfiMessage.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationlistitem_last_message(
+        it, _status)
+}
     }
+    )
+    }
+    
 
+    
 
+    
+    
     companion object
-
+    
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConversationListItem :
-    FfiConverter<FfiConversationListItem, Pointer> {
+public object FfiConverterTypeFfiConversationListItem: FfiConverter<FfiConversationListItem, Pointer> {
 
     override fun lower(value: FfiConversationListItem): Pointer {
         return value.uniffiClonePointer()
@@ -5360,15 +4819,16 @@ public object FfiConverterTypeFfiConversationListItem :
 
 
 public interface FfiConversationMetadataInterface {
-
+    
     fun `conversationType`(): FfiConversationType
-
+    
     fun `creatorInboxId`(): kotlin.String
-
+    
     companion object
 }
 
-open class FfiConversationMetadata : Disposable, AutoCloseable, FfiConversationMetadataInterface {
+open class FfiConversationMetadata: Disposable, AutoCloseable, FfiConversationMetadataInterface
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -5419,7 +4879,7 @@ open class FfiConversationMetadata : Disposable, AutoCloseable, FfiConversationM
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -5450,40 +4910,41 @@ open class FfiConversationMetadata : Disposable, AutoCloseable, FfiConversationM
     }
 
     override fun `conversationType`(): FfiConversationType {
-        return FfiConverterTypeFfiConversationType.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationmetadata_conversation_type(
-                        it, _status
-                    )
-                }
-            }
-        )
+            return FfiConverterTypeFfiConversationType.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationmetadata_conversation_type(
+        it, _status)
+}
     }
-
+    )
+    }
+    
 
     override fun `creatorInboxId`(): kotlin.String {
-        return FfiConverterString.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationmetadata_creator_inbox_id(
-                        it, _status
-                    )
-                }
-            }
-        )
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationmetadata_creator_inbox_id(
+        it, _status)
+}
     }
+    )
+    }
+    
 
+    
 
+    
+    
     companion object
-
+    
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConversationMetadata :
-    FfiConverter<FfiConversationMetadata, Pointer> {
+public object FfiConverterTypeFfiConversationMetadata: FfiConverter<FfiConversationMetadata, Pointer> {
 
     override fun lower(value: FfiConversationMetadata): Pointer {
         return value.uniffiClonePointer()
@@ -5608,63 +5069,60 @@ public object FfiConverterTypeFfiConversationMetadata :
 
 
 public interface FfiConversationsInterface {
-
-    suspend fun `createDm`(`accountAddress`: kotlin.String): FfiConversation
-
-    suspend fun `createGroup`(
-        `accountAddresses`: List<kotlin.String>,
-        `opts`: FfiCreateGroupOptions,
-    ): FfiConversation
-
+    
+    suspend fun `createGroup`(`accountIdentities`: List<FfiIdentifier>, `opts`: FfiCreateGroupOptions): FfiConversation
+    
+    suspend fun `createGroupWithInboxIds`(`inboxIds`: List<kotlin.String>, `opts`: FfiCreateGroupOptions): FfiConversation
+    
+    suspend fun `findOrCreateDm`(`targetIdentity`: FfiIdentifier, `opts`: FfiCreateDmOptions): FfiConversation
+    
+    suspend fun `findOrCreateDmByInboxId`(`inboxId`: kotlin.String, `opts`: FfiCreateDmOptions): FfiConversation
+    
     fun `getHmacKeys`(): Map<kotlin.ByteArray, List<FfiHmacKey>>
-
-    fun `getSyncGroup`(): FfiConversation
-
+    
     fun `list`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem>
-
+    
     fun `listDms`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem>
-
+    
     fun `listGroups`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem>
-
+    
     suspend fun `processStreamedWelcomeMessage`(`envelopeBytes`: kotlin.ByteArray): FfiConversation
-
+    
     suspend fun `stream`(`callback`: FfiConversationCallback): FfiStreamCloser
-
+    
     suspend fun `streamAllDmMessages`(`messageCallback`: FfiMessageCallback): FfiStreamCloser
-
+    
     suspend fun `streamAllGroupMessages`(`messageCallback`: FfiMessageCallback): FfiStreamCloser
-
+    
     suspend fun `streamAllMessages`(`messageCallback`: FfiMessageCallback): FfiStreamCloser
-
+    
     /**
      * Get notified when there is a new consent update either locally or is synced from another device
      * allowing the user to re-render the new state appropriately
      */
     suspend fun `streamConsent`(`callback`: FfiConsentCallback): FfiStreamCloser
-
+    
     suspend fun `streamDms`(`callback`: FfiConversationCallback): FfiStreamCloser
-
+    
     suspend fun `streamGroups`(`callback`: FfiConversationCallback): FfiStreamCloser
-
-    suspend fun `streamMessages`(
-        `messageCallback`: FfiMessageCallback,
-        `conversationType`: FfiConversationType?,
-    ): FfiStreamCloser
-
+    
+    suspend fun `streamMessages`(`messageCallback`: FfiMessageCallback, `conversationType`: FfiConversationType?): FfiStreamCloser
+    
     /**
      * Get notified when a preference changes either locally or is synced from another device
      * allowing the user to re-render the new state appropriately.
      */
     suspend fun `streamPreferences`(`callback`: FfiPreferenceCallback): FfiStreamCloser
-
+    
     suspend fun `sync`()
-
-    suspend fun `syncAllConversations`(`consentState`: FfiConsentState?): kotlin.UInt
-
+    
+    suspend fun `syncAllConversations`(`consentStates`: List<FfiConsentState>?): kotlin.UInt
+    
     companion object
 }
 
-open class FfiConversations : Disposable, AutoCloseable, FfiConversationsInterface {
+open class FfiConversations: Disposable, AutoCloseable, FfiConversationsInterface
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -5715,7 +5173,7 @@ open class FfiConversations : Disposable, AutoCloseable, FfiConversationsInterfa
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -5745,541 +5203,406 @@ open class FfiConversations : Disposable, AutoCloseable, FfiConversationsInterfa
         }
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `createDm`(`accountAddress`: kotlin.String): FfiConversation {
+    override suspend fun `createGroup`(`accountIdentities`: List<FfiIdentifier>, `opts`: FfiCreateGroupOptions) : FfiConversation {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_create_dm(
-                    thisPtr,
-                    FfiConverterString.lower(`accountAddress`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiConversation.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_create_group(
+                thisPtr,
+                FfiConverterSequenceTypeFfiIdentifier.lower(`accountIdentities`),FfiConverterTypeFfiCreateGroupOptions.lower(`opts`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiConversation.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `createGroup`(
-        `accountAddresses`: List<kotlin.String>,
-        `opts`: FfiCreateGroupOptions,
-    ): FfiConversation {
+    override suspend fun `createGroupWithInboxIds`(`inboxIds`: List<kotlin.String>, `opts`: FfiCreateGroupOptions) : FfiConversation {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_create_group(
-                    thisPtr,
-                    FfiConverterSequenceString.lower(`accountAddresses`),
-                    FfiConverterTypeFfiCreateGroupOptions.lower(`opts`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiConversation.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_create_group_with_inbox_ids(
+                thisPtr,
+                FfiConverterSequenceString.lower(`inboxIds`),FfiConverterTypeFfiCreateGroupOptions.lower(`opts`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiConversation.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
-    @Throws(GenericException::class)
-    override fun `getHmacKeys`(): Map<kotlin.ByteArray, List<FfiHmacKey>> {
-        return FfiConverterMapByteArraySequenceTypeFfiHmacKey.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_get_hmac_keys(
-                        it, _status
-                    )
-                }
-            }
-        )
-    }
-
-
-    @Throws(GenericException::class)
-    override fun `getSyncGroup`(): FfiConversation {
-        return FfiConverterTypeFfiConversation.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_get_sync_group(
-                        it, _status
-                    )
-                }
-            }
-        )
-    }
-
-
-    @Throws(GenericException::class)
-    override fun `list`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
-        return FfiConverterSequenceTypeFfiConversationListItem.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list(
-                        it, FfiConverterTypeFfiListConversationsOptions.lower(`opts`), _status
-                    )
-                }
-            }
-        )
-    }
-
-
-    @Throws(GenericException::class)
-    override fun `listDms`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
-        return FfiConverterSequenceTypeFfiConversationListItem.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list_dms(
-                        it, FfiConverterTypeFfiListConversationsOptions.lower(`opts`), _status
-                    )
-                }
-            }
-        )
-    }
-
-
-    @Throws(GenericException::class)
-    override fun `listGroups`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
-        return FfiConverterSequenceTypeFfiConversationListItem.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list_groups(
-                        it, FfiConverterTypeFfiListConversationsOptions.lower(`opts`), _status
-                    )
-                }
-            }
-        )
-    }
-
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `processStreamedWelcomeMessage`(`envelopeBytes`: kotlin.ByteArray): FfiConversation {
+    override suspend fun `findOrCreateDm`(`targetIdentity`: FfiIdentifier, `opts`: FfiCreateDmOptions) : FfiConversation {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_process_streamed_welcome_message(
-                    thisPtr,
-                    FfiConverterByteArray.lower(`envelopeBytes`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiConversation.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_find_or_create_dm(
+                thisPtr,
+                FfiConverterTypeFfiIdentifier.lower(`targetIdentity`),FfiConverterTypeFfiCreateDMOptions.lower(`opts`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiConversation.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
+    @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `stream`(`callback`: FfiConversationCallback): FfiStreamCloser {
+    override suspend fun `findOrCreateDmByInboxId`(`inboxId`: kotlin.String, `opts`: FfiCreateDmOptions) : FfiConversation {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream(
-                    thisPtr,
-                    FfiConverterTypeFfiConversationCallback.lower(`callback`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiStreamCloser.lift(it) },
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_find_or_create_dm_by_inbox_id(
+                thisPtr,
+                FfiConverterString.lower(`inboxId`),FfiConverterTypeFfiCreateDMOptions.lower(`opts`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiConversation.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
+    @Throws(GenericException::class)override fun `getHmacKeys`(): Map<kotlin.ByteArray, List<FfiHmacKey>> {
+            return FfiConverterMapByteArraySequenceTypeFfiHmacKey.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_get_hmac_keys(
+        it, _status)
+}
+    }
+    )
+    }
+    
 
+    
+    @Throws(GenericException::class)override fun `list`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
+            return FfiConverterSequenceTypeFfiConversationListItem.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list(
+        it, FfiConverterTypeFfiListConversationsOptions.lower(`opts`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(GenericException::class)override fun `listDms`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
+            return FfiConverterSequenceTypeFfiConversationListItem.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list_dms(
+        it, FfiConverterTypeFfiListConversationsOptions.lower(`opts`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(GenericException::class)override fun `listGroups`(`opts`: FfiListConversationsOptions): List<FfiConversationListItem> {
+            return FfiConverterSequenceTypeFfiConversationListItem.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_list_groups(
+        it, FfiConverterTypeFfiListConversationsOptions.lower(`opts`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `streamAllDmMessages`(`messageCallback`: FfiMessageCallback): FfiStreamCloser {
+    override suspend fun `processStreamedWelcomeMessage`(`envelopeBytes`: kotlin.ByteArray) : FfiConversation {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_all_dm_messages(
-                    thisPtr,
-                    FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiStreamCloser.lift(it) },
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_process_streamed_welcome_message(
+                thisPtr,
+                FfiConverterByteArray.lower(`envelopeBytes`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiConversation.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `streamAllGroupMessages`(`messageCallback`: FfiMessageCallback): FfiStreamCloser {
+    override suspend fun `stream`(`callback`: FfiConversationCallback) : FfiStreamCloser {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_all_group_messages(
-                    thisPtr,
-                    FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiStreamCloser.lift(it) },
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream(
+                thisPtr,
+                FfiConverterTypeFfiConversationCallback.lower(`callback`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiStreamCloser.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
     }
 
-
+    
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `streamAllMessages`(`messageCallback`: FfiMessageCallback): FfiStreamCloser {
+    override suspend fun `streamAllDmMessages`(`messageCallback`: FfiMessageCallback) : FfiStreamCloser {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_all_messages(
-                    thisPtr,
-                    FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiStreamCloser.lift(it) },
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_all_dm_messages(
+                thisPtr,
+                FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiStreamCloser.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
     }
 
+    
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `streamAllGroupMessages`(`messageCallback`: FfiMessageCallback) : FfiStreamCloser {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_all_group_messages(
+                thisPtr,
+                FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiStreamCloser.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
+    }
 
+    
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `streamAllMessages`(`messageCallback`: FfiMessageCallback) : FfiStreamCloser {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_all_messages(
+                thisPtr,
+                FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiStreamCloser.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
+    }
+
+    
     /**
      * Get notified when there is a new consent update either locally or is synced from another device
      * allowing the user to re-render the new state appropriately
      */
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `streamConsent`(`callback`: FfiConsentCallback): FfiStreamCloser {
+    override suspend fun `streamConsent`(`callback`: FfiConsentCallback) : FfiStreamCloser {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_consent(
-                    thisPtr,
-                    FfiConverterTypeFfiConsentCallback.lower(`callback`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiStreamCloser.lift(it) },
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_consent(
+                thisPtr,
+                FfiConverterTypeFfiConsentCallback.lower(`callback`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiStreamCloser.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
     }
 
-
+    
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `streamDms`(`callback`: FfiConversationCallback): FfiStreamCloser {
+    override suspend fun `streamDms`(`callback`: FfiConversationCallback) : FfiStreamCloser {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_dms(
-                    thisPtr,
-                    FfiConverterTypeFfiConversationCallback.lower(`callback`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiStreamCloser.lift(it) },
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_dms(
+                thisPtr,
+                FfiConverterTypeFfiConversationCallback.lower(`callback`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiStreamCloser.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
     }
 
-
+    
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `streamGroups`(`callback`: FfiConversationCallback): FfiStreamCloser {
+    override suspend fun `streamGroups`(`callback`: FfiConversationCallback) : FfiStreamCloser {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_groups(
-                    thisPtr,
-                    FfiConverterTypeFfiConversationCallback.lower(`callback`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiStreamCloser.lift(it) },
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_groups(
+                thisPtr,
+                FfiConverterTypeFfiConversationCallback.lower(`callback`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiStreamCloser.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
     }
 
-
+    
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `streamMessages`(
-        `messageCallback`: FfiMessageCallback,
-        `conversationType`: FfiConversationType?,
-    ): FfiStreamCloser {
+    override suspend fun `streamMessages`(`messageCallback`: FfiMessageCallback, `conversationType`: FfiConversationType?) : FfiStreamCloser {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_messages(
-                    thisPtr,
-                    FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),
-                    FfiConverterOptionalTypeFfiConversationType.lower(`conversationType`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiStreamCloser.lift(it) },
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_messages(
+                thisPtr,
+                FfiConverterTypeFfiMessageCallback.lower(`messageCallback`),FfiConverterOptionalTypeFfiConversationType.lower(`conversationType`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiStreamCloser.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
     }
 
-
+    
     /**
      * Get notified when a preference changes either locally or is synced from another device
      * allowing the user to re-render the new state appropriately.
      */
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `streamPreferences`(`callback`: FfiPreferenceCallback): FfiStreamCloser {
+    override suspend fun `streamPreferences`(`callback`: FfiPreferenceCallback) : FfiStreamCloser {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_preferences(
-                    thisPtr,
-                    FfiConverterTypeFfiPreferenceCallback.lower(`callback`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiStreamCloser.lift(it) },
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_stream_preferences(
+                thisPtr,
+                FfiConverterTypeFfiPreferenceCallback.lower(`callback`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiStreamCloser.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `sync`() {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_sync(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_sync(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `syncAllConversations`(`consentState`: FfiConsentState?): kotlin.UInt {
+    override suspend fun `syncAllConversations`(`consentStates`: List<FfiConsentState>?) : kotlin.UInt {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_sync_all_conversations(
-                    thisPtr,
-                    FfiConverterOptionalTypeFfiConsentState.lower(`consentState`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_u32(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_u32(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_u32(future) },
-            // lift function
-            { FfiConverterUInt.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversations_sync_all_conversations(
+                thisPtr,
+                FfiConverterOptionalSequenceTypeFfiConsentState.lower(`consentStates`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_u32(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_u32(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_u32(future) },
+        // lift function
+        { FfiConverterUInt.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
 
+    
+    
     companion object
-
+    
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConversations : FfiConverter<FfiConversations, Pointer> {
+public object FfiConverterTypeFfiConversations: FfiConverter<FfiConversations, Pointer> {
 
     override fun lower(value: FfiConversations): Pointer {
         return value.uniffiClonePointer()
@@ -6404,15 +5727,16 @@ public object FfiConverterTypeFfiConversations : FfiConverter<FfiConversations, 
 
 
 public interface FfiGroupPermissionsInterface {
-
+    
     fun `policySet`(): FfiPermissionPolicySet
-
+    
     fun `policyType`(): FfiGroupPermissionsOptions
-
+    
     companion object
 }
 
-open class FfiGroupPermissions : Disposable, AutoCloseable, FfiGroupPermissionsInterface {
+open class FfiGroupPermissions: Disposable, AutoCloseable, FfiGroupPermissionsInterface
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -6463,7 +5787,7 @@ open class FfiGroupPermissions : Disposable, AutoCloseable, FfiGroupPermissionsI
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -6493,43 +5817,44 @@ open class FfiGroupPermissions : Disposable, AutoCloseable, FfiGroupPermissionsI
         }
     }
 
-
-    @Throws(GenericException::class)
-    override fun `policySet`(): FfiPermissionPolicySet {
-        return FfiConverterTypeFfiPermissionPolicySet.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffigrouppermissions_policy_set(
-                        it, _status
-                    )
-                }
-            }
-        )
+    
+    @Throws(GenericException::class)override fun `policySet`(): FfiPermissionPolicySet {
+            return FfiConverterTypeFfiPermissionPolicySet.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffigrouppermissions_policy_set(
+        it, _status)
+}
     }
-
-
-    @Throws(GenericException::class)
-    override fun `policyType`(): FfiGroupPermissionsOptions {
-        return FfiConverterTypeFfiGroupPermissionsOptions.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffigrouppermissions_policy_type(
-                        it, _status
-                    )
-                }
-            }
-        )
+    )
     }
+    
 
+    
+    @Throws(GenericException::class)override fun `policyType`(): FfiGroupPermissionsOptions {
+            return FfiConverterTypeFfiGroupPermissionsOptions.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffigrouppermissions_policy_type(
+        it, _status)
+}
+    }
+    )
+    }
+    
 
+    
+
+    
+    
     companion object
-
+    
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiGroupPermissions : FfiConverter<FfiGroupPermissions, Pointer> {
+public object FfiConverterTypeFfiGroupPermissions: FfiConverter<FfiGroupPermissions, Pointer> {
 
     override fun lower(value: FfiGroupPermissions): Pointer {
         return value.uniffiClonePointer()
@@ -6653,16 +5978,17 @@ public object FfiConverterTypeFfiGroupPermissions : FfiConverter<FfiGroupPermiss
 //
 
 
-public interface FfiMessageCallback {
-
-    fun `onMessage`(`message`: FfiMessage)
-
-    fun `onError`(`error`: FfiSubscribeException)
-
+public interface FfiInboxOwner {
+    
+    fun `getIdentifier`(): FfiIdentifier
+    
+    fun `sign`(`text`: kotlin.String): kotlin.ByteArray
+    
     companion object
 }
 
-open class FfiMessageCallbackImpl : Disposable, AutoCloseable, FfiMessageCallback {
+open class FfiInboxOwnerImpl: Disposable, AutoCloseable, FfiInboxOwner
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -6713,7 +6039,316 @@ open class FfiMessageCallbackImpl : Disposable, AutoCloseable, FfiMessageCallbac
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the pointer being freed concurrently.
+        try {
+            return block(this.uniffiClonePointer())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val pointer: Pointer?) : Runnable {
+        override fun run() {
+            pointer?.let { ptr ->
+                uniffiRustCall { status ->
+                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_free_ffiinboxowner(ptr, status)
+                }
+            }
+        }
+    }
+
+    fun uniffiClonePointer(): Pointer {
+        return uniffiRustCall() { status ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_clone_ffiinboxowner(pointer!!, status)
+        }
+    }
+
+    
+    @Throws(IdentityValidationException::class)override fun `getIdentifier`(): FfiIdentifier {
+            return FfiConverterTypeFfiIdentifier.lift(
+    callWithPointer {
+    uniffiRustCallWithError(IdentityValidationException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiinboxowner_get_identifier(
+        it, _status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(SigningException::class)override fun `sign`(`text`: kotlin.String): kotlin.ByteArray {
+            return FfiConverterByteArray.lift(
+    callWithPointer {
+    uniffiRustCallWithError(SigningException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiinboxowner_sign(
+        it, FfiConverterString.lower(`text`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+    
+    companion object
+    
+}
+
+
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object uniffiCallbackInterfaceFfiInboxOwner {
+    internal object `getIdentifier`: UniffiCallbackInterfaceFfiInboxOwnerMethod0 {
+        override fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeFfiInboxOwner.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`getIdentifier`(
+                )
+            }
+            val writeReturn = { value: FfiIdentifier -> uniffiOutReturn.setValue(FfiConverterTypeFfiIdentifier.lower(value)) }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: IdentityValidationException -> FfiConverterTypeIdentityValidationError.lower(e) }
+            )
+        }
+    }
+    internal object `sign`: UniffiCallbackInterfaceFfiInboxOwnerMethod1 {
+        override fun callback(`uniffiHandle`: Long,`text`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeFfiInboxOwner.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`sign`(
+                    FfiConverterString.lift(`text`),
+                )
+            }
+            val writeReturn = { value: kotlin.ByteArray -> uniffiOutReturn.setValue(FfiConverterByteArray.lower(value)) }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: SigningException -> FfiConverterTypeSigningError.lower(e) }
+            )
+        }
+    }
+
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
+        override fun callback(handle: Long) {
+            FfiConverterTypeFfiInboxOwner.handleMap.remove(handle)
+        }
+    }
+
+    internal var vtable = UniffiVTableCallbackInterfaceFfiInboxOwner.UniffiByValue(
+        `getIdentifier`,
+        `sign`,
+        uniffiFree,
+    )
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    internal fun register(lib: UniffiLib) {
+        lib.uniffi_xmtpv3_fn_init_callback_vtable_ffiinboxowner(vtable)
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiInboxOwner: FfiConverter<FfiInboxOwner, Pointer> {
+    internal val handleMap = UniffiHandleMap<FfiInboxOwner>()
+
+    override fun lower(value: FfiInboxOwner): Pointer {
+        return Pointer(handleMap.insert(value))
+    }
+
+    override fun lift(value: Pointer): FfiInboxOwner {
+        return FfiInboxOwnerImpl(value)
+    }
+
+    override fun read(buf: ByteBuffer): FfiInboxOwner {
+        // The Rust code always writes pointers as 8 bytes, and will
+        // fail to compile if they don't fit.
+        return lift(Pointer(buf.getLong()))
+    }
+
+    override fun allocationSize(value: FfiInboxOwner) = 8UL
+
+    override fun write(value: FfiInboxOwner, buf: ByteBuffer) {
+        // The Rust code always expects pointers written as 8 bytes,
+        // and will fail to compile if they don't fit.
+        buf.putLong(Pointer.nativeValue(lower(value)))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a Pointer/Arc<T>
+// to the live Rust struct on the other side of the FFI.
+//
+// Each instance implements core operations for working with the Rust `Arc<T>` and the
+// Kotlin Pointer to work with the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque pointer to the underlying Rust struct.
+//     Method calls need to read this pointer from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its pointer should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the pointer, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the pointer, but is interrupted
+//      before it can pass the pointer over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read pointer value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+public interface FfiMessageCallback {
+    
+    fun `onMessage`(`message`: FfiMessage)
+    
+    fun `onError`(`error`: FfiSubscribeException)
+    
+    companion object
+}
+
+open class FfiMessageCallbackImpl: Disposable, AutoCloseable, FfiMessageCallback
+{
+
+    constructor(pointer: Pointer) {
+        this.pointer = pointer
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
+    }
+
+    /**
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noPointer: NoPointer) {
+        this.pointer = null
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
+    }
+
+    protected val pointer: Pointer?
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithPointer(block: (ptr: Pointer) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -6743,40 +6378,41 @@ open class FfiMessageCallbackImpl : Disposable, AutoCloseable, FfiMessageCallbac
         }
     }
 
-    override fun `onMessage`(`message`: FfiMessage) =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffimessagecallback_on_message(
-                    it, FfiConverterTypeFfiMessage.lower(`message`), _status
-                )
-            }
-        }
+    override fun `onMessage`(`message`: FfiMessage)
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffimessagecallback_on_message(
+        it, FfiConverterTypeFfiMessage.lower(`message`),_status)
+}
+    }
+    
+    
 
+    override fun `onError`(`error`: FfiSubscribeException)
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffimessagecallback_on_error(
+        it, FfiConverterTypeFfiSubscribeError.lower(`error`),_status)
+}
+    }
+    
+    
 
-    override fun `onError`(`error`: FfiSubscribeException) =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffimessagecallback_on_error(
-                    it, FfiConverterTypeFfiSubscribeError.lower(`error`), _status
-                )
-            }
-        }
+    
 
-
+    
+    
     companion object
-
+    
 }
 
 
 // Put the implementation in an object so we don't pollute the top-level namespace
 internal object uniffiCallbackInterfaceFfiMessageCallback {
-    internal object `onMessage` : UniffiCallbackInterfaceFfiMessageCallbackMethod0 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `message`: RustBuffer.ByValue,
-            `uniffiOutReturn`: Pointer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
+    internal object `onMessage`: UniffiCallbackInterfaceFfiMessageCallbackMethod0 {
+        override fun callback(`uniffiHandle`: Long,`message`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
             val uniffiObj = FfiConverterTypeFfiMessageCallback.handleMap.get(uniffiHandle)
             val makeCall = { ->
                 uniffiObj.`onMessage`(
@@ -6787,14 +6423,8 @@ internal object uniffiCallbackInterfaceFfiMessageCallback {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
-
-    internal object `onError` : UniffiCallbackInterfaceFfiMessageCallbackMethod1 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `error`: RustBuffer.ByValue,
-            `uniffiOutReturn`: Pointer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
+    internal object `onError`: UniffiCallbackInterfaceFfiMessageCallbackMethod1 {
+        override fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
             val uniffiObj = FfiConverterTypeFfiMessageCallback.handleMap.get(uniffiHandle)
             val makeCall = { ->
                 uniffiObj.`onError`(
@@ -6806,7 +6436,7 @@ internal object uniffiCallbackInterfaceFfiMessageCallback {
         }
     }
 
-    internal object uniffiFree : UniffiCallbackInterfaceFree {
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
         override fun callback(handle: Long) {
             FfiConverterTypeFfiMessageCallback.handleMap.remove(handle)
         }
@@ -6828,7 +6458,7 @@ internal object uniffiCallbackInterfaceFfiMessageCallback {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiMessageCallback : FfiConverter<FfiMessageCallback, Pointer> {
+public object FfiConverterTypeFfiMessageCallback: FfiConverter<FfiMessageCallback, Pointer> {
     internal val handleMap = UniffiHandleMap<FfiMessageCallback>()
 
     override fun lower(value: FfiMessageCallback): Pointer {
@@ -6954,15 +6584,16 @@ public object FfiConverterTypeFfiMessageCallback : FfiConverter<FfiMessageCallba
 
 
 public interface FfiPreferenceCallback {
-
+    
     fun `onPreferenceUpdate`(`preference`: List<FfiPreferenceUpdate>)
-
+    
     fun `onError`(`error`: FfiSubscribeException)
-
+    
     companion object
 }
 
-open class FfiPreferenceCallbackImpl : Disposable, AutoCloseable, FfiPreferenceCallback {
+open class FfiPreferenceCallbackImpl: Disposable, AutoCloseable, FfiPreferenceCallback
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -7013,7 +6644,7 @@ open class FfiPreferenceCallbackImpl : Disposable, AutoCloseable, FfiPreferenceC
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -7043,40 +6674,41 @@ open class FfiPreferenceCallbackImpl : Disposable, AutoCloseable, FfiPreferenceC
         }
     }
 
-    override fun `onPreferenceUpdate`(`preference`: List<FfiPreferenceUpdate>) =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffipreferencecallback_on_preference_update(
-                    it, FfiConverterSequenceTypeFfiPreferenceUpdate.lower(`preference`), _status
-                )
-            }
-        }
+    override fun `onPreferenceUpdate`(`preference`: List<FfiPreferenceUpdate>)
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffipreferencecallback_on_preference_update(
+        it, FfiConverterSequenceTypeFfiPreferenceUpdate.lower(`preference`),_status)
+}
+    }
+    
+    
 
+    override fun `onError`(`error`: FfiSubscribeException)
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffipreferencecallback_on_error(
+        it, FfiConverterTypeFfiSubscribeError.lower(`error`),_status)
+}
+    }
+    
+    
 
-    override fun `onError`(`error`: FfiSubscribeException) =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffipreferencecallback_on_error(
-                    it, FfiConverterTypeFfiSubscribeError.lower(`error`), _status
-                )
-            }
-        }
+    
 
-
+    
+    
     companion object
-
+    
 }
 
 
 // Put the implementation in an object so we don't pollute the top-level namespace
 internal object uniffiCallbackInterfaceFfiPreferenceCallback {
-    internal object `onPreferenceUpdate` : UniffiCallbackInterfaceFfiPreferenceCallbackMethod0 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `preference`: RustBuffer.ByValue,
-            `uniffiOutReturn`: Pointer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
+    internal object `onPreferenceUpdate`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod0 {
+        override fun callback(`uniffiHandle`: Long,`preference`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
             val uniffiObj = FfiConverterTypeFfiPreferenceCallback.handleMap.get(uniffiHandle)
             val makeCall = { ->
                 uniffiObj.`onPreferenceUpdate`(
@@ -7087,14 +6719,8 @@ internal object uniffiCallbackInterfaceFfiPreferenceCallback {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
-
-    internal object `onError` : UniffiCallbackInterfaceFfiPreferenceCallbackMethod1 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `error`: RustBuffer.ByValue,
-            `uniffiOutReturn`: Pointer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
+    internal object `onError`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod1 {
+        override fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
             val uniffiObj = FfiConverterTypeFfiPreferenceCallback.handleMap.get(uniffiHandle)
             val makeCall = { ->
                 uniffiObj.`onError`(
@@ -7106,7 +6732,7 @@ internal object uniffiCallbackInterfaceFfiPreferenceCallback {
         }
     }
 
-    internal object uniffiFree : UniffiCallbackInterfaceFree {
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
         override fun callback(handle: Long) {
             FfiConverterTypeFfiPreferenceCallback.handleMap.remove(handle)
         }
@@ -7128,7 +6754,7 @@ internal object uniffiCallbackInterfaceFfiPreferenceCallback {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiPreferenceCallback : FfiConverter<FfiPreferenceCallback, Pointer> {
+public object FfiConverterTypeFfiPreferenceCallback: FfiConverter<FfiPreferenceCallback, Pointer> {
     internal val handleMap = UniffiHandleMap<FfiPreferenceCallback>()
 
     override fun lower(value: FfiPreferenceCallback): Pointer {
@@ -7254,29 +6880,27 @@ public object FfiConverterTypeFfiPreferenceCallback : FfiConverter<FfiPreference
 
 
 public interface FfiSignatureRequestInterface {
-
+    
     suspend fun `addEcdsaSignature`(`signatureBytes`: kotlin.ByteArray)
-
-    suspend fun `addScwSignature`(
-        `signatureBytes`: kotlin.ByteArray,
-        `address`: kotlin.String,
-        `chainId`: kotlin.ULong,
-        `blockNumber`: kotlin.ULong?,
-    )
-
+    
+    suspend fun `addPasskeySignature`(`signature`: FfiPasskeySignature)
+    
+    suspend fun `addScwSignature`(`signatureBytes`: kotlin.ByteArray, `address`: kotlin.String, `chainId`: kotlin.ULong, `blockNumber`: kotlin.ULong?)
+    
     suspend fun `isReady`(): kotlin.Boolean
-
+    
     /**
      * missing signatures that are from [MemberKind::Address]
      */
     suspend fun `missingAddressSignatures`(): List<kotlin.String>
-
+    
     suspend fun `signatureText`(): kotlin.String
-
+    
     companion object
 }
 
-open class FfiSignatureRequest : Disposable, AutoCloseable, FfiSignatureRequestInterface {
+open class FfiSignatureRequest: Disposable, AutoCloseable, FfiSignatureRequestInterface
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -7327,7 +6951,7 @@ open class FfiSignatureRequest : Disposable, AutoCloseable, FfiSignatureRequestI
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -7357,187 +6981,149 @@ open class FfiSignatureRequest : Disposable, AutoCloseable, FfiSignatureRequestI
         }
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `addEcdsaSignature`(`signatureBytes`: kotlin.ByteArray) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_add_ecdsa_signature(
-                    thisPtr,
-                    FfiConverterByteArray.lower(`signatureBytes`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_add_ecdsa_signature(
+                thisPtr,
+                FfiConverterByteArray.lower(`signatureBytes`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `addScwSignature`(
-        `signatureBytes`: kotlin.ByteArray,
-        `address`: kotlin.String,
-        `chainId`: kotlin.ULong,
-        `blockNumber`: kotlin.ULong?,
-    ) {
+    override suspend fun `addPasskeySignature`(`signature`: FfiPasskeySignature) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_add_scw_signature(
-                    thisPtr,
-                    FfiConverterByteArray.lower(`signatureBytes`),
-                    FfiConverterString.lower(`address`),
-                    FfiConverterULong.lower(`chainId`),
-                    FfiConverterOptionalULong.lower(`blockNumber`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_add_passkey_signature(
+                thisPtr,
+                FfiConverterTypeFfiPasskeySignature.lower(`signature`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
+    @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `isReady`(): kotlin.Boolean {
+    override suspend fun `addScwSignature`(`signatureBytes`: kotlin.ByteArray, `address`: kotlin.String, `chainId`: kotlin.ULong, `blockNumber`: kotlin.ULong?) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_is_ready(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_i8(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_i8(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_i8(future) },
-            // lift function
-            { FfiConverterBoolean.lift(it) },
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_add_scw_signature(
+                thisPtr,
+                FfiConverterByteArray.lower(`signatureBytes`),FfiConverterString.lower(`address`),FfiConverterULong.lower(`chainId`),FfiConverterOptionalULong.lower(`blockNumber`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `isReady`() : kotlin.Boolean {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_is_ready(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_i8(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_i8(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_i8(future) },
+        // lift function
+        { FfiConverterBoolean.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
+    }
 
+    
     /**
      * missing signatures that are from [MemberKind::Address]
      */
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `missingAddressSignatures`(): List<kotlin.String> {
+    override suspend fun `missingAddressSignatures`() : List<kotlin.String> {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_missing_address_signatures(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterSequenceString.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_missing_address_signatures(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceString.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `signatureText`(): kotlin.String {
+    override suspend fun `signatureText`() : kotlin.String {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_signature_text(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterString.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffisignaturerequest_signature_text(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterString.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
 
+    
+    
     companion object
-
+    
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiSignatureRequest : FfiConverter<FfiSignatureRequest, Pointer> {
+public object FfiConverterTypeFfiSignatureRequest: FfiConverter<FfiSignatureRequest, Pointer> {
 
     override fun lower(value: FfiSignatureRequest): Pointer {
         return value.uniffiClonePointer()
@@ -7662,26 +7248,27 @@ public object FfiConverterTypeFfiSignatureRequest : FfiConverter<FfiSignatureReq
 
 
 public interface FfiStreamCloserInterface {
-
+    
     /**
      * Signal the stream to end
      * Does not wait for the stream to end.
      */
     fun `end`()
-
+    
     /**
-     * End the stream and asyncronously wait for it to shutdown
+     * End the stream and asynchronously wait for it to shutdown
      */
     suspend fun `endAndWait`()
-
+    
     fun `isClosed`(): kotlin.Boolean
-
+    
     suspend fun `waitForReady`()
-
+    
     companion object
 }
 
-open class FfiStreamCloser : Disposable, AutoCloseable, FfiStreamCloserInterface {
+open class FfiStreamCloser: Disposable, AutoCloseable, FfiStreamCloserInterface
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -7732,7 +7319,7 @@ open class FfiStreamCloser : Disposable, AutoCloseable, FfiStreamCloserInterface
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -7762,109 +7349,91 @@ open class FfiStreamCloser : Disposable, AutoCloseable, FfiStreamCloserInterface
         }
     }
 
-
+    
     /**
      * Signal the stream to end
      * Does not wait for the stream to end.
-     */
-    override fun `end`() =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffistreamcloser_end(
-                    it, _status
-                )
-            }
-        }
+     */override fun `end`()
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffistreamcloser_end(
+        it, _status)
+}
+    }
+    
+    
 
-
+    
     /**
-     * End the stream and asyncronously wait for it to shutdown
+     * End the stream and asynchronously wait for it to shutdown
      */
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `endAndWait`() {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffistreamcloser_end_and_wait(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffistreamcloser_end_and_wait(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
     override fun `isClosed`(): kotlin.Boolean {
-        return FfiConverterBoolean.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffistreamcloser_is_closed(
-                        it, _status
-                    )
-                }
-            }
-        )
+            return FfiConverterBoolean.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffistreamcloser_is_closed(
+        it, _status)
+}
     }
+    )
+    }
+    
 
-
+    
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `waitForReady`() {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffistreamcloser_wait_for_ready(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            UniffiNullRustCallStatusErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffistreamcloser_wait_for_ready(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
     }
 
+    
 
+    
+    
     companion object
-
+    
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiStreamCloser : FfiConverter<FfiStreamCloser, Pointer> {
+public object FfiConverterTypeFfiStreamCloser: FfiConverter<FfiStreamCloser, Pointer> {
 
     override fun lower(value: FfiStreamCloser): Pointer {
         return value.uniffiClonePointer()
@@ -7988,1053 +7557,64 @@ public object FfiConverterTypeFfiStreamCloser : FfiConverter<FfiStreamCloser, Po
 //
 
 
-public interface FfiV2ApiClientInterface {
-
-    suspend fun `batchQuery`(`req`: FfiV2BatchQueryRequest): FfiV2BatchQueryResponse
-
-    suspend fun `publish`(`request`: FfiPublishRequest, `authToken`: kotlin.String)
-
-    suspend fun `query`(`request`: FfiV2QueryRequest): FfiV2QueryResponse
-
-    fun `setAppVersion`(`version`: kotlin.String)
-
-    suspend fun `subscribe`(
-        `request`: FfiV2SubscribeRequest,
-        `callback`: FfiV2SubscriptionCallback,
-    ): FfiV2Subscription
-
-    companion object
-}
-
-open class FfiV2ApiClient : Disposable, AutoCloseable, FfiV2ApiClientInterface {
-
-    constructor(pointer: Pointer) {
-        this.pointer = pointer
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
-    }
-
-    /**
-     * This constructor can be used to instantiate a fake object. Only used for tests. Any
-     * attempt to actually use an object constructed this way will fail as there is no
-     * connected Rust object.
-     */
-    @Suppress("UNUSED_PARAMETER")
-    constructor(noPointer: NoPointer) {
-        this.pointer = null
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
-    }
-
-    protected val pointer: Pointer?
-    protected val cleanable: UniffiCleaner.Cleanable
-
-    private val wasDestroyed = AtomicBoolean(false)
-    private val callCounter = AtomicLong(1)
-
-    override fun destroy() {
-        // Only allow a single call to this method.
-        // TODO: maybe we should log a warning if called more than once?
-        if (this.wasDestroyed.compareAndSet(false, true)) {
-            // This decrement always matches the initial count of 1 given at creation time.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
-            }
-        }
-    }
-
-    @Synchronized
-    override fun close() {
-        this.destroy()
-    }
-
-    internal inline fun <R> callWithPointer(block: (ptr: Pointer) -> R): R {
-        // Check and increment the call counter, to keep the object alive.
-        // This needs a compare-and-set retry loop in case of concurrent updates.
-        do {
-            val c = this.callCounter.get()
-            if (c == 0L) {
-                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
-            }
-            if (c == Long.MAX_VALUE) {
-                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
-            }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
-        // Now we can safely do the method call without the pointer being freed concurrently.
-        try {
-            return block(this.uniffiClonePointer())
-        } finally {
-            // This decrement always matches the increment we performed above.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
-            }
-        }
-    }
-
-    // Use a static inner class instead of a closure so as not to accidentally
-    // capture `this` as part of the cleanable's action.
-    private class UniffiCleanAction(private val pointer: Pointer?) : Runnable {
-        override fun run() {
-            pointer?.let { ptr ->
-                uniffiRustCall { status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_free_ffiv2apiclient(ptr, status)
-                }
-            }
-        }
-    }
-
-    fun uniffiClonePointer(): Pointer {
-        return uniffiRustCall() { status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_clone_ffiv2apiclient(pointer!!, status)
-        }
-    }
-
-
-    @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `batchQuery`(`req`: FfiV2BatchQueryRequest): FfiV2BatchQueryResponse {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiv2apiclient_batch_query(
-                    thisPtr,
-                    FfiConverterTypeFfiV2BatchQueryRequest.lower(`req`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterTypeFfiV2BatchQueryResponse.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
-    }
-
-
-    @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `publish`(`request`: FfiPublishRequest, `authToken`: kotlin.String) {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiv2apiclient_publish(
-                    thisPtr,
-                    FfiConverterTypeFfiPublishRequest.lower(`request`),
-                    FfiConverterString.lower(`authToken`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
-    }
-
-
-    @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `query`(`request`: FfiV2QueryRequest): FfiV2QueryResponse {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiv2apiclient_query(
-                    thisPtr,
-                    FfiConverterTypeFfiV2QueryRequest.lower(`request`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterTypeFfiV2QueryResponse.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
-    }
-
-    override fun `setAppVersion`(`version`: kotlin.String) =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiv2apiclient_set_app_version(
-                    it, FfiConverterString.lower(`version`), _status
-                )
-            }
-        }
-
-
-    @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `subscribe`(
-        `request`: FfiV2SubscribeRequest,
-        `callback`: FfiV2SubscriptionCallback,
-    ): FfiV2Subscription {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiv2apiclient_subscribe(
-                    thisPtr,
-                    FfiConverterTypeFfiV2SubscribeRequest.lower(`request`),
-                    FfiConverterTypeFfiV2SubscriptionCallback.lower(`callback`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiV2Subscription.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
-    }
-
-
-    companion object
-
-}
-
-/**
- * @suppress
- */
-public object FfiConverterTypeFfiV2ApiClient : FfiConverter<FfiV2ApiClient, Pointer> {
-
-    override fun lower(value: FfiV2ApiClient): Pointer {
-        return value.uniffiClonePointer()
-    }
-
-    override fun lift(value: Pointer): FfiV2ApiClient {
-        return FfiV2ApiClient(value)
-    }
-
-    override fun read(buf: ByteBuffer): FfiV2ApiClient {
-        // The Rust code always writes pointers as 8 bytes, and will
-        // fail to compile if they don't fit.
-        return lift(Pointer(buf.getLong()))
-    }
-
-    override fun allocationSize(value: FfiV2ApiClient) = 8UL
-
-    override fun write(value: FfiV2ApiClient, buf: ByteBuffer) {
-        // The Rust code always expects pointers written as 8 bytes,
-        // and will fail to compile if they don't fit.
-        buf.putLong(Pointer.nativeValue(lower(value)))
-    }
-}
-
-
-// This template implements a class for working with a Rust struct via a Pointer/Arc<T>
-// to the live Rust struct on the other side of the FFI.
-//
-// Each instance implements core operations for working with the Rust `Arc<T>` and the
-// Kotlin Pointer to work with the live Rust struct on the other side of the FFI.
-//
-// There's some subtlety here, because we have to be careful not to operate on a Rust
-// struct after it has been dropped, and because we must expose a public API for freeing
-// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
-//
-//   * Each instance holds an opaque pointer to the underlying Rust struct.
-//     Method calls need to read this pointer from the object's state and pass it in to
-//     the Rust FFI.
-//
-//   * When an instance is no longer needed, its pointer should be passed to a
-//     special destructor function provided by the Rust FFI, which will drop the
-//     underlying Rust struct.
-//
-//   * Given an instance, calling code is expected to call the special
-//     `destroy` method in order to free it after use, either by calling it explicitly
-//     or by using a higher-level helper like the `use` method. Failing to do so risks
-//     leaking the underlying Rust struct.
-//
-//   * We can't assume that calling code will do the right thing, and must be prepared
-//     to handle Kotlin method calls executing concurrently with or even after a call to
-//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
-//
-//   * We must never allow Rust code to operate on the underlying Rust struct after
-//     the destructor has been called, and must never call the destructor more than once.
-//     Doing so may trigger memory unsafety.
-//
-//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
-//     is implemented to call the destructor when the Kotlin object becomes unreachable.
-//     This is done in a background thread. This is not a panacea, and client code should be aware that
-//      1. the thread may starve if some there are objects that have poorly performing
-//     `drop` methods or do significant work in their `drop` methods.
-//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
-//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
-//
-// If we try to implement this with mutual exclusion on access to the pointer, there is the
-// possibility of a race between a method call and a concurrent call to `destroy`:
-//
-//    * Thread A starts a method call, reads the value of the pointer, but is interrupted
-//      before it can pass the pointer over the FFI to Rust.
-//    * Thread B calls `destroy` and frees the underlying Rust struct.
-//    * Thread A resumes, passing the already-read pointer value to Rust and triggering
-//      a use-after-free.
-//
-// One possible solution would be to use a `ReadWriteLock`, with each method call taking
-// a read lock (and thus allowed to run concurrently) and the special `destroy` method
-// taking a write lock (and thus blocking on live method calls). However, we aim not to
-// generate methods with any hidden blocking semantics, and a `destroy` method that might
-// block if called incorrectly seems to meet that bar.
-//
-// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
-// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
-// has been called. These are updated according to the following rules:
-//
-//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
-//      The initial value for the flag is false.
-//
-//    * At the start of each method call, we atomically check the counter.
-//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
-//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
-//
-//    * At the end of each method call, we atomically decrement and check the counter.
-//      If it has reached zero then we destroy the underlying Rust struct.
-//
-//    * When `destroy` is called, we atomically flip the flag from false to true.
-//      If the flag was already true we silently fail.
-//      Otherwise we atomically decrement and check the counter.
-//      If it has reached zero then we destroy the underlying Rust struct.
-//
-// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
-// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
-//
-// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
-// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
-// of the underlying Rust code.
-//
-// This makes a cleaner a better alternative to _not_ calling `destroy()` as
-// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
-// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
-// thread may be starved, and the app will leak memory.
-//
-// In this case, `destroy`ing manually may be a better solution.
-//
-// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
-// with Rust peers are reclaimed:
-//
-// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
-// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
-// 3. The memory is reclaimed when the process terminates.
-//
-// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
-//
-
-
-/**
- * Subscription to a stream of V2 Messages
- */
-public interface FfiV2SubscriptionInterface {
-
-    /**
-     * End the subscription, waiting for the subscription to close entirely.
-     * # Errors
-     * * Errors if subscription event task encounters join error
-     */
-    suspend fun `end`()
-
-    /**
-     * Check if the subscription is closed
-     */
-    fun `isClosed`(): kotlin.Boolean
-
-    /**
-     * Update subscription with new topics
-     */
-    suspend fun `update`(`req`: FfiV2SubscribeRequest)
-
-    companion object
-}
-
-/**
- * Subscription to a stream of V2 Messages
- */
-open class FfiV2Subscription : Disposable, AutoCloseable, FfiV2SubscriptionInterface {
-
-    constructor(pointer: Pointer) {
-        this.pointer = pointer
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
-    }
-
-    /**
-     * This constructor can be used to instantiate a fake object. Only used for tests. Any
-     * attempt to actually use an object constructed this way will fail as there is no
-     * connected Rust object.
-     */
-    @Suppress("UNUSED_PARAMETER")
-    constructor(noPointer: NoPointer) {
-        this.pointer = null
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
-    }
-
-    protected val pointer: Pointer?
-    protected val cleanable: UniffiCleaner.Cleanable
-
-    private val wasDestroyed = AtomicBoolean(false)
-    private val callCounter = AtomicLong(1)
-
-    override fun destroy() {
-        // Only allow a single call to this method.
-        // TODO: maybe we should log a warning if called more than once?
-        if (this.wasDestroyed.compareAndSet(false, true)) {
-            // This decrement always matches the initial count of 1 given at creation time.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
-            }
-        }
-    }
-
-    @Synchronized
-    override fun close() {
-        this.destroy()
-    }
-
-    internal inline fun <R> callWithPointer(block: (ptr: Pointer) -> R): R {
-        // Check and increment the call counter, to keep the object alive.
-        // This needs a compare-and-set retry loop in case of concurrent updates.
-        do {
-            val c = this.callCounter.get()
-            if (c == 0L) {
-                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
-            }
-            if (c == Long.MAX_VALUE) {
-                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
-            }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
-        // Now we can safely do the method call without the pointer being freed concurrently.
-        try {
-            return block(this.uniffiClonePointer())
-        } finally {
-            // This decrement always matches the increment we performed above.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
-            }
-        }
-    }
-
-    // Use a static inner class instead of a closure so as not to accidentally
-    // capture `this` as part of the cleanable's action.
-    private class UniffiCleanAction(private val pointer: Pointer?) : Runnable {
-        override fun run() {
-            pointer?.let { ptr ->
-                uniffiRustCall { status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_free_ffiv2subscription(ptr, status)
-                }
-            }
-        }
-    }
-
-    fun uniffiClonePointer(): Pointer {
-        return uniffiRustCall() { status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_clone_ffiv2subscription(pointer!!, status)
-        }
-    }
-
-
-    /**
-     * End the subscription, waiting for the subscription to close entirely.
-     * # Errors
-     * * Errors if subscription event task encounters join error
-     */
-    @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `end`() {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiv2subscription_end(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
-    }
-
-
-    /**
-     * Check if the subscription is closed
-     */
-    override fun `isClosed`(): kotlin.Boolean {
-        return FfiConverterBoolean.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiv2subscription_is_closed(
-                        it, _status
-                    )
-                }
-            }
-        )
-    }
-
-
-    /**
-     * Update subscription with new topics
-     */
-    @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `update`(`req`: FfiV2SubscribeRequest) {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiv2subscription_update(
-                    thisPtr,
-                    FfiConverterTypeFfiV2SubscribeRequest.lower(`req`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
-    }
-
-
-    companion object
-
-}
-
-/**
- * @suppress
- */
-public object FfiConverterTypeFfiV2Subscription : FfiConverter<FfiV2Subscription, Pointer> {
-
-    override fun lower(value: FfiV2Subscription): Pointer {
-        return value.uniffiClonePointer()
-    }
-
-    override fun lift(value: Pointer): FfiV2Subscription {
-        return FfiV2Subscription(value)
-    }
-
-    override fun read(buf: ByteBuffer): FfiV2Subscription {
-        // The Rust code always writes pointers as 8 bytes, and will
-        // fail to compile if they don't fit.
-        return lift(Pointer(buf.getLong()))
-    }
-
-    override fun allocationSize(value: FfiV2Subscription) = 8UL
-
-    override fun write(value: FfiV2Subscription, buf: ByteBuffer) {
-        // The Rust code always expects pointers written as 8 bytes,
-        // and will fail to compile if they don't fit.
-        buf.putLong(Pointer.nativeValue(lower(value)))
-    }
-}
-
-
-// This template implements a class for working with a Rust struct via a Pointer/Arc<T>
-// to the live Rust struct on the other side of the FFI.
-//
-// Each instance implements core operations for working with the Rust `Arc<T>` and the
-// Kotlin Pointer to work with the live Rust struct on the other side of the FFI.
-//
-// There's some subtlety here, because we have to be careful not to operate on a Rust
-// struct after it has been dropped, and because we must expose a public API for freeing
-// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
-//
-//   * Each instance holds an opaque pointer to the underlying Rust struct.
-//     Method calls need to read this pointer from the object's state and pass it in to
-//     the Rust FFI.
-//
-//   * When an instance is no longer needed, its pointer should be passed to a
-//     special destructor function provided by the Rust FFI, which will drop the
-//     underlying Rust struct.
-//
-//   * Given an instance, calling code is expected to call the special
-//     `destroy` method in order to free it after use, either by calling it explicitly
-//     or by using a higher-level helper like the `use` method. Failing to do so risks
-//     leaking the underlying Rust struct.
-//
-//   * We can't assume that calling code will do the right thing, and must be prepared
-//     to handle Kotlin method calls executing concurrently with or even after a call to
-//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
-//
-//   * We must never allow Rust code to operate on the underlying Rust struct after
-//     the destructor has been called, and must never call the destructor more than once.
-//     Doing so may trigger memory unsafety.
-//
-//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
-//     is implemented to call the destructor when the Kotlin object becomes unreachable.
-//     This is done in a background thread. This is not a panacea, and client code should be aware that
-//      1. the thread may starve if some there are objects that have poorly performing
-//     `drop` methods or do significant work in their `drop` methods.
-//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
-//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
-//
-// If we try to implement this with mutual exclusion on access to the pointer, there is the
-// possibility of a race between a method call and a concurrent call to `destroy`:
-//
-//    * Thread A starts a method call, reads the value of the pointer, but is interrupted
-//      before it can pass the pointer over the FFI to Rust.
-//    * Thread B calls `destroy` and frees the underlying Rust struct.
-//    * Thread A resumes, passing the already-read pointer value to Rust and triggering
-//      a use-after-free.
-//
-// One possible solution would be to use a `ReadWriteLock`, with each method call taking
-// a read lock (and thus allowed to run concurrently) and the special `destroy` method
-// taking a write lock (and thus blocking on live method calls). However, we aim not to
-// generate methods with any hidden blocking semantics, and a `destroy` method that might
-// block if called incorrectly seems to meet that bar.
-//
-// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
-// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
-// has been called. These are updated according to the following rules:
-//
-//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
-//      The initial value for the flag is false.
-//
-//    * At the start of each method call, we atomically check the counter.
-//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
-//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
-//
-//    * At the end of each method call, we atomically decrement and check the counter.
-//      If it has reached zero then we destroy the underlying Rust struct.
-//
-//    * When `destroy` is called, we atomically flip the flag from false to true.
-//      If the flag was already true we silently fail.
-//      Otherwise we atomically decrement and check the counter.
-//      If it has reached zero then we destroy the underlying Rust struct.
-//
-// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
-// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
-//
-// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
-// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
-// of the underlying Rust code.
-//
-// This makes a cleaner a better alternative to _not_ calling `destroy()` as
-// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
-// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
-// thread may be starved, and the app will leak memory.
-//
-// In this case, `destroy`ing manually may be a better solution.
-//
-// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
-// with Rust peers are reclaimed:
-//
-// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
-// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
-// 3. The memory is reclaimed when the process terminates.
-//
-// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
-//
-
-
-public interface FfiV2SubscriptionCallback {
-
-    fun `onMessage`(`message`: FfiEnvelope)
-
-    fun `onError`(`error`: GenericException)
-
-    companion object
-}
-
-open class FfiV2SubscriptionCallbackImpl : Disposable, AutoCloseable, FfiV2SubscriptionCallback {
-
-    constructor(pointer: Pointer) {
-        this.pointer = pointer
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
-    }
-
-    /**
-     * This constructor can be used to instantiate a fake object. Only used for tests. Any
-     * attempt to actually use an object constructed this way will fail as there is no
-     * connected Rust object.
-     */
-    @Suppress("UNUSED_PARAMETER")
-    constructor(noPointer: NoPointer) {
-        this.pointer = null
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
-    }
-
-    protected val pointer: Pointer?
-    protected val cleanable: UniffiCleaner.Cleanable
-
-    private val wasDestroyed = AtomicBoolean(false)
-    private val callCounter = AtomicLong(1)
-
-    override fun destroy() {
-        // Only allow a single call to this method.
-        // TODO: maybe we should log a warning if called more than once?
-        if (this.wasDestroyed.compareAndSet(false, true)) {
-            // This decrement always matches the initial count of 1 given at creation time.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
-            }
-        }
-    }
-
-    @Synchronized
-    override fun close() {
-        this.destroy()
-    }
-
-    internal inline fun <R> callWithPointer(block: (ptr: Pointer) -> R): R {
-        // Check and increment the call counter, to keep the object alive.
-        // This needs a compare-and-set retry loop in case of concurrent updates.
-        do {
-            val c = this.callCounter.get()
-            if (c == 0L) {
-                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
-            }
-            if (c == Long.MAX_VALUE) {
-                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
-            }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
-        // Now we can safely do the method call without the pointer being freed concurrently.
-        try {
-            return block(this.uniffiClonePointer())
-        } finally {
-            // This decrement always matches the increment we performed above.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
-            }
-        }
-    }
-
-    // Use a static inner class instead of a closure so as not to accidentally
-    // capture `this` as part of the cleanable's action.
-    private class UniffiCleanAction(private val pointer: Pointer?) : Runnable {
-        override fun run() {
-            pointer?.let { ptr ->
-                uniffiRustCall { status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_free_ffiv2subscriptioncallback(ptr, status)
-                }
-            }
-        }
-    }
-
-    fun uniffiClonePointer(): Pointer {
-        return uniffiRustCall() { status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_clone_ffiv2subscriptioncallback(pointer!!, status)
-        }
-    }
-
-    override fun `onMessage`(`message`: FfiEnvelope) =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiv2subscriptioncallback_on_message(
-                    it, FfiConverterTypeFfiEnvelope.lower(`message`), _status
-                )
-            }
-        }
-
-
-    override fun `onError`(`error`: GenericException) =
-        callWithPointer {
-            uniffiRustCall() { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiv2subscriptioncallback_on_error(
-                    it, FfiConverterTypeGenericError.lower(`error`), _status
-                )
-            }
-        }
-
-
-    companion object
-
-}
-
-
-// Put the implementation in an object so we don't pollute the top-level namespace
-internal object uniffiCallbackInterfaceFfiV2SubscriptionCallback {
-    internal object `onMessage` : UniffiCallbackInterfaceFfiV2SubscriptionCallbackMethod0 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `message`: RustBuffer.ByValue,
-            `uniffiOutReturn`: Pointer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeFfiV2SubscriptionCallback.handleMap.get(uniffiHandle)
-            val makeCall = { ->
-                uniffiObj.`onMessage`(
-                    FfiConverterTypeFfiEnvelope.lift(`message`),
-                )
-            }
-            val writeReturn = { _: Unit -> Unit }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object `onError` : UniffiCallbackInterfaceFfiV2SubscriptionCallbackMethod1 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `error`: RustBuffer.ByValue,
-            `uniffiOutReturn`: Pointer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeFfiV2SubscriptionCallback.handleMap.get(uniffiHandle)
-            val makeCall = { ->
-                uniffiObj.`onError`(
-                    FfiConverterTypeGenericError.lift(`error`),
-                )
-            }
-            val writeReturn = { _: Unit -> Unit }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object uniffiFree : UniffiCallbackInterfaceFree {
-        override fun callback(handle: Long) {
-            FfiConverterTypeFfiV2SubscriptionCallback.handleMap.remove(handle)
-        }
-    }
-
-    internal var vtable = UniffiVTableCallbackInterfaceFfiV2SubscriptionCallback.UniffiByValue(
-        `onMessage`,
-        `onError`,
-        uniffiFree,
-    )
-
-    // Registers the foreign callback with the Rust side.
-    // This method is generated for each callback interface.
-    internal fun register(lib: UniffiLib) {
-        lib.uniffi_xmtpv3_fn_init_callback_vtable_ffiv2subscriptioncallback(vtable)
-    }
-}
-
-/**
- * @suppress
- */
-public object FfiConverterTypeFfiV2SubscriptionCallback :
-    FfiConverter<FfiV2SubscriptionCallback, Pointer> {
-    internal val handleMap = UniffiHandleMap<FfiV2SubscriptionCallback>()
-
-    override fun lower(value: FfiV2SubscriptionCallback): Pointer {
-        return Pointer(handleMap.insert(value))
-    }
-
-    override fun lift(value: Pointer): FfiV2SubscriptionCallback {
-        return FfiV2SubscriptionCallbackImpl(value)
-    }
-
-    override fun read(buf: ByteBuffer): FfiV2SubscriptionCallback {
-        // The Rust code always writes pointers as 8 bytes, and will
-        // fail to compile if they don't fit.
-        return lift(Pointer(buf.getLong()))
-    }
-
-    override fun allocationSize(value: FfiV2SubscriptionCallback) = 8UL
-
-    override fun write(value: FfiV2SubscriptionCallback, buf: ByteBuffer) {
-        // The Rust code always expects pointers written as 8 bytes,
-        // and will fail to compile if they don't fit.
-        buf.putLong(Pointer.nativeValue(lower(value)))
-    }
-}
-
-
-// This template implements a class for working with a Rust struct via a Pointer/Arc<T>
-// to the live Rust struct on the other side of the FFI.
-//
-// Each instance implements core operations for working with the Rust `Arc<T>` and the
-// Kotlin Pointer to work with the live Rust struct on the other side of the FFI.
-//
-// There's some subtlety here, because we have to be careful not to operate on a Rust
-// struct after it has been dropped, and because we must expose a public API for freeing
-// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
-//
-//   * Each instance holds an opaque pointer to the underlying Rust struct.
-//     Method calls need to read this pointer from the object's state and pass it in to
-//     the Rust FFI.
-//
-//   * When an instance is no longer needed, its pointer should be passed to a
-//     special destructor function provided by the Rust FFI, which will drop the
-//     underlying Rust struct.
-//
-//   * Given an instance, calling code is expected to call the special
-//     `destroy` method in order to free it after use, either by calling it explicitly
-//     or by using a higher-level helper like the `use` method. Failing to do so risks
-//     leaking the underlying Rust struct.
-//
-//   * We can't assume that calling code will do the right thing, and must be prepared
-//     to handle Kotlin method calls executing concurrently with or even after a call to
-//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
-//
-//   * We must never allow Rust code to operate on the underlying Rust struct after
-//     the destructor has been called, and must never call the destructor more than once.
-//     Doing so may trigger memory unsafety.
-//
-//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
-//     is implemented to call the destructor when the Kotlin object becomes unreachable.
-//     This is done in a background thread. This is not a panacea, and client code should be aware that
-//      1. the thread may starve if some there are objects that have poorly performing
-//     `drop` methods or do significant work in their `drop` methods.
-//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
-//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
-//
-// If we try to implement this with mutual exclusion on access to the pointer, there is the
-// possibility of a race between a method call and a concurrent call to `destroy`:
-//
-//    * Thread A starts a method call, reads the value of the pointer, but is interrupted
-//      before it can pass the pointer over the FFI to Rust.
-//    * Thread B calls `destroy` and frees the underlying Rust struct.
-//    * Thread A resumes, passing the already-read pointer value to Rust and triggering
-//      a use-after-free.
-//
-// One possible solution would be to use a `ReadWriteLock`, with each method call taking
-// a read lock (and thus allowed to run concurrently) and the special `destroy` method
-// taking a write lock (and thus blocking on live method calls). However, we aim not to
-// generate methods with any hidden blocking semantics, and a `destroy` method that might
-// block if called incorrectly seems to meet that bar.
-//
-// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
-// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
-// has been called. These are updated according to the following rules:
-//
-//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
-//      The initial value for the flag is false.
-//
-//    * At the start of each method call, we atomically check the counter.
-//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
-//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
-//
-//    * At the end of each method call, we atomically decrement and check the counter.
-//      If it has reached zero then we destroy the underlying Rust struct.
-//
-//    * When `destroy` is called, we atomically flip the flag from false to true.
-//      If the flag was already true we silently fail.
-//      Otherwise we atomically decrement and check the counter.
-//      If it has reached zero then we destroy the underlying Rust struct.
-//
-// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
-// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
-//
-// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
-// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
-// of the underlying Rust code.
-//
-// This makes a cleaner a better alternative to _not_ calling `destroy()` as
-// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
-// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
-// thread may be starved, and the app will leak memory.
-//
-// In this case, `destroy`ing manually may be a better solution.
-//
-// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
-// with Rust peers are reclaimed:
-//
-// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
-// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
-// 3. The memory is reclaimed when the process terminates.
-//
-// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
-//
-
-
 public interface FfiXmtpClientInterface {
-
+    
     /**
      * Adds a wallet address to the existing client
      */
-    suspend fun `addWallet`(`newWalletAddress`: kotlin.String): FfiSignatureRequest
-
+    suspend fun `addIdentity`(`newIdentity`: FfiIdentifier): FfiSignatureRequest
+    
     /**
      * * Get the inbox state for each `inbox_id`.
      *      *
      *      * If `refresh_from_network` is true, the client will go to the network first to refresh the state.
      *      * Otherwise, the state will be read from the local database.
      */
-    suspend fun `addressesFromInboxId`(
-        `refreshFromNetwork`: kotlin.Boolean,
-        `inboxIds`: List<kotlin.String>,
-    ): List<FfiInboxState>
-
+    suspend fun `addressesFromInboxId`(`refreshFromNetwork`: kotlin.Boolean, `inboxIds`: List<kotlin.String>): List<FfiInboxState>
+    
     suspend fun `applySignatureRequest`(`signatureRequest`: FfiSignatureRequest)
-
-    suspend fun `canMessage`(`accountAddresses`: List<kotlin.String>): Map<kotlin.String, kotlin.Boolean>
-
+    
+    /**
+     * Load the metadata for a backup to see what it contains.
+     * Reads only the metadata without loading the entire file, so this function is quick.
+     */
+    suspend fun `backupMetadata`(`path`: kotlin.String, `key`: kotlin.ByteArray): FfiBackupMetadata
+    
+    /**
+     * Backup your application to file for later restoration.
+     */
+    suspend fun `backupToFile`(`path`: kotlin.String, `opts`: FfiBackupOptions, `key`: kotlin.ByteArray)
+    
+    suspend fun `canMessage`(`accountIdentifiers`: List<FfiIdentifier>): Map<FfiIdentifier, kotlin.Boolean>
+    
+    /**
+     * * Change the recovery identifier for your inboxId
+     */
+    suspend fun `changeRecoveryIdentifier`(`newRecoveryIdentifier`: FfiIdentifier): FfiSignatureRequest
+    
     fun `conversation`(`conversationId`: kotlin.ByteArray): FfiConversation
-
+    
     fun `conversations`(): FfiConversations
-
+    
     suspend fun `dbReconnect`()
-
+    
     fun `dmConversation`(`targetInboxId`: kotlin.String): FfiConversation
-
-    suspend fun `findInboxId`(`address`: kotlin.String): kotlin.String?
-
-    suspend fun `getConsentState`(
-        `entityType`: FfiConsentEntityType,
-        `entity`: kotlin.String,
-    ): FfiConsentState
-
+    
+    suspend fun `findInboxId`(`identifier`: FfiIdentifier): kotlin.String?
+    
+    suspend fun `getConsentState`(`entityType`: FfiConsentEntityType, `entity`: kotlin.String): FfiConsentState
+    
+    suspend fun `getKeyPackageStatusesForInstallationIds`(`installationIds`: List<kotlin.ByteArray>): Map<kotlin.ByteArray, FfiKeyPackageStatus>
+    
     suspend fun `getLatestInboxState`(`inboxId`: kotlin.String): FfiInboxState
-
+    
+    /**
+     * Import a previous backup
+     */
+    suspend fun `importFromFile`(`path`: kotlin.String, `key`: kotlin.ByteArray)
+    
     fun `inboxId`(): kotlin.String
-
+    
     /**
      * * Get the client's inbox state.
      *      *
@@ -9042,53 +7622,62 @@ public interface FfiXmtpClientInterface {
      *      * Otherwise, the state will be read from the local database.
      */
     suspend fun `inboxState`(`refreshFromNetwork`: kotlin.Boolean): FfiInboxState
-
+    
     fun `installationId`(): kotlin.ByteArray
-
+    
     fun `message`(`messageId`: kotlin.ByteArray): FfiMessage
-
+    
     suspend fun `registerIdentity`(`signatureRequest`: FfiSignatureRequest)
-
+    
     fun `releaseDbConnection`()
-
+    
     /**
      * * Revokes all installations except the one the client is currently using
      */
     suspend fun `revokeAllOtherInstallations`(): FfiSignatureRequest
-
+    
+    /**
+     * Revokes or removes an identity from the existing client
+     */
+    suspend fun `revokeIdentity`(`identifier`: FfiIdentifier): FfiSignatureRequest
+    
     /**
      * * Revoke a list of installations
      */
     suspend fun `revokeInstallations`(`installationIds`: List<kotlin.ByteArray>): FfiSignatureRequest
-
+    
     /**
-     * Revokes or removes an identity - really a wallet address - from the existing client
+     * Manually trigger a device sync request to sync records from another active device on this account.
      */
-    suspend fun `revokeWallet`(`walletAddress`: kotlin.String): FfiSignatureRequest
-
     suspend fun `sendSyncRequest`(`kind`: FfiDeviceSyncKind)
-
+    
     suspend fun `setConsentStates`(`records`: List<FfiConsent>)
-
+    
+    /**
+     * A utility function to sign a piece of text with this installation's private key.
+     */
     fun `signWithInstallationKey`(`text`: kotlin.String): kotlin.ByteArray
-
+    
     fun `signatureRequest`(): FfiSignatureRequest?
-
-    fun `verifySignedWithInstallationKey`(
-        `signatureText`: kotlin.String,
-        `signatureBytes`: kotlin.ByteArray,
-    )
-
-    fun `verifySignedWithPublicKey`(
-        `signatureText`: kotlin.String,
-        `signatureBytes`: kotlin.ByteArray,
-        `publicKey`: kotlin.ByteArray,
-    )
-
+    
+    suspend fun `syncPreferences`(): kotlin.ULong
+    
+    /**
+     * A utility function to easily verify that a piece of text was signed by this installation.
+     */
+    fun `verifySignedWithInstallationKey`(`signatureText`: kotlin.String, `signatureBytes`: kotlin.ByteArray)
+    
+    /**
+     * A utility function to easily verify that a string has been signed by another libXmtp installation.
+     * Only works for verifying libXmtp public context signatures.
+     */
+    fun `verifySignedWithPublicKey`(`signatureText`: kotlin.String, `signatureBytes`: kotlin.ByteArray, `publicKey`: kotlin.ByteArray)
+    
     companion object
 }
 
-open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
+open class FfiXmtpClient: Disposable, AutoCloseable, FfiXmtpClientInterface
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -9139,7 +7728,7 @@ open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -9169,42 +7758,31 @@ open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
         }
     }
 
-
+    
     /**
      * Adds a wallet address to the existing client
      */
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `addWallet`(`newWalletAddress`: kotlin.String): FfiSignatureRequest {
+    override suspend fun `addIdentity`(`newIdentity`: FfiIdentifier) : FfiSignatureRequest {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_add_wallet(
-                    thisPtr,
-                    FfiConverterString.lower(`newWalletAddress`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiSignatureRequest.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_add_identity(
+                thisPtr,
+                FfiConverterTypeFfiIdentifier.lower(`newIdentity`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiSignatureRequest.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     /**
      * * Get the inbox state for each `inbox_id`.
      *      *
@@ -9213,291 +7791,323 @@ open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
      */
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `addressesFromInboxId`(
-        `refreshFromNetwork`: kotlin.Boolean,
-        `inboxIds`: List<kotlin.String>,
-    ): List<FfiInboxState> {
+    override suspend fun `addressesFromInboxId`(`refreshFromNetwork`: kotlin.Boolean, `inboxIds`: List<kotlin.String>) : List<FfiInboxState> {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_addresses_from_inbox_id(
-                    thisPtr,
-                    FfiConverterBoolean.lower(`refreshFromNetwork`),
-                    FfiConverterSequenceString.lower(`inboxIds`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterSequenceTypeFfiInboxState.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_addresses_from_inbox_id(
+                thisPtr,
+                FfiConverterBoolean.lower(`refreshFromNetwork`),FfiConverterSequenceString.lower(`inboxIds`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeFfiInboxState.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `applySignatureRequest`(`signatureRequest`: FfiSignatureRequest) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_apply_signature_request(
-                    thisPtr,
-                    FfiConverterTypeFfiSignatureRequest.lower(`signatureRequest`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_apply_signature_request(
+                thisPtr,
+                FfiConverterTypeFfiSignatureRequest.lower(`signatureRequest`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
+    /**
+     * Load the metadata for a backup to see what it contains.
+     * Reads only the metadata without loading the entire file, so this function is quick.
+     */
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `canMessage`(`accountAddresses`: List<kotlin.String>): Map<kotlin.String, kotlin.Boolean> {
+    override suspend fun `backupMetadata`(`path`: kotlin.String, `key`: kotlin.ByteArray) : FfiBackupMetadata {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_can_message(
-                    thisPtr,
-                    FfiConverterSequenceString.lower(`accountAddresses`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterMapStringBoolean.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_backup_metadata(
+                thisPtr,
+                FfiConverterString.lower(`path`),FfiConverterByteArray.lower(`key`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeFfiBackupMetadata.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
+    /**
+     * Backup your application to file for later restoration.
+     */
     @Throws(GenericException::class)
-    override fun `conversation`(`conversationId`: kotlin.ByteArray): FfiConversation {
-        return FfiConverterTypeFfiConversation.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_conversation(
-                        it, FfiConverterByteArray.lower(`conversationId`), _status
-                    )
-                }
-            }
-        )
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `backupToFile`(`path`: kotlin.String, `opts`: FfiBackupOptions, `key`: kotlin.ByteArray) {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_backup_to_file(
+                thisPtr,
+                FfiConverterString.lower(`path`),FfiConverterTypeFfiBackupOptions.lower(`opts`),FfiConverterByteArray.lower(`key`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `canMessage`(`accountIdentifiers`: List<FfiIdentifier>) : Map<FfiIdentifier, kotlin.Boolean> {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_can_message(
+                thisPtr,
+                FfiConverterSequenceTypeFfiIdentifier.lower(`accountIdentifiers`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterMapTypeFfiIdentifierBoolean.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * * Change the recovery identifier for your inboxId
+     */
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `changeRecoveryIdentifier`(`newRecoveryIdentifier`: FfiIdentifier) : FfiSignatureRequest {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_change_recovery_identifier(
+                thisPtr,
+                FfiConverterTypeFfiIdentifier.lower(`newRecoveryIdentifier`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiSignatureRequest.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(GenericException::class)override fun `conversation`(`conversationId`: kotlin.ByteArray): FfiConversation {
+            return FfiConverterTypeFfiConversation.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_conversation(
+        it, FfiConverterByteArray.lower(`conversationId`),_status)
+}
+    }
+    )
+    }
+    
 
     override fun `conversations`(): FfiConversations {
-        return FfiConverterTypeFfiConversations.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_conversations(
-                        it, _status
-                    )
-                }
-            }
-        )
+            return FfiConverterTypeFfiConversations.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_conversations(
+        it, _status)
+}
     }
+    )
+    }
+    
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `dbReconnect`() {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_db_reconnect(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_db_reconnect(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
-    @Throws(GenericException::class)
-    override fun `dmConversation`(`targetInboxId`: kotlin.String): FfiConversation {
-        return FfiConverterTypeFfiConversation.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_dm_conversation(
-                        it, FfiConverterString.lower(`targetInboxId`), _status
-                    )
-                }
-            }
-        )
+    
+    @Throws(GenericException::class)override fun `dmConversation`(`targetInboxId`: kotlin.String): FfiConversation {
+            return FfiConverterTypeFfiConversation.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_dm_conversation(
+        it, FfiConverterString.lower(`targetInboxId`),_status)
+}
     }
+    )
+    }
+    
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `findInboxId`(`address`: kotlin.String): kotlin.String? {
+    override suspend fun `findInboxId`(`identifier`: FfiIdentifier) : kotlin.String? {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_find_inbox_id(
-                    thisPtr,
-                    FfiConverterString.lower(`address`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterOptionalString.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_find_inbox_id(
+                thisPtr,
+                FfiConverterTypeFfiIdentifier.lower(`identifier`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterOptionalString.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `getConsentState`(
-        `entityType`: FfiConsentEntityType,
-        `entity`: kotlin.String,
-    ): FfiConsentState {
+    override suspend fun `getConsentState`(`entityType`: FfiConsentEntityType, `entity`: kotlin.String) : FfiConsentState {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_get_consent_state(
-                    thisPtr,
-                    FfiConverterTypeFfiConsentEntityType.lower(`entityType`),
-                    FfiConverterString.lower(`entity`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterTypeFfiConsentState.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_get_consent_state(
+                thisPtr,
+                FfiConverterTypeFfiConsentEntityType.lower(`entityType`),FfiConverterString.lower(`entity`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeFfiConsentState.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `getLatestInboxState`(`inboxId`: kotlin.String): FfiInboxState {
+    override suspend fun `getKeyPackageStatusesForInstallationIds`(`installationIds`: List<kotlin.ByteArray>) : Map<kotlin.ByteArray, FfiKeyPackageStatus> {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_get_latest_inbox_state(
-                    thisPtr,
-                    FfiConverterString.lower(`inboxId`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterTypeFfiInboxState.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_get_key_package_statuses_for_installation_ids(
+                thisPtr,
+                FfiConverterSequenceByteArray.lower(`installationIds`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterMapByteArrayTypeFfiKeyPackageStatus.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `getLatestInboxState`(`inboxId`: kotlin.String) : FfiInboxState {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_get_latest_inbox_state(
+                thisPtr,
+                FfiConverterString.lower(`inboxId`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeFfiInboxState.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
+    }
+
+    
+    /**
+     * Import a previous backup
+     */
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `importFromFile`(`path`: kotlin.String, `key`: kotlin.ByteArray) {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_import_from_file(
+                thisPtr,
+                FfiConverterString.lower(`path`),FfiConverterByteArray.lower(`key`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
     override fun `inboxId`(): kotlin.String {
-        return FfiConverterString.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_inbox_id(
-                        it, _status
-                    )
-                }
-            }
-        )
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_inbox_id(
+        it, _status)
+}
     }
+    )
+    }
+    
 
-
+    
     /**
      * * Get the client's inbox state.
      *      *
@@ -9506,348 +8116,294 @@ open class FfiXmtpClient : Disposable, AutoCloseable, FfiXmtpClientInterface {
      */
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `inboxState`(`refreshFromNetwork`: kotlin.Boolean): FfiInboxState {
+    override suspend fun `inboxState`(`refreshFromNetwork`: kotlin.Boolean) : FfiInboxState {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_inbox_state(
-                    thisPtr,
-                    FfiConverterBoolean.lower(`refreshFromNetwork`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
-            // lift function
-            { FfiConverterTypeFfiInboxState.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_inbox_state(
+                thisPtr,
+                FfiConverterBoolean.lower(`refreshFromNetwork`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterTypeFfiInboxState.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
     override fun `installationId`(): kotlin.ByteArray {
-        return FfiConverterByteArray.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_installation_id(
-                        it, _status
-                    )
-                }
-            }
-        )
+            return FfiConverterByteArray.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_installation_id(
+        it, _status)
+}
     }
-
-
-    @Throws(GenericException::class)
-    override fun `message`(`messageId`: kotlin.ByteArray): FfiMessage {
-        return FfiConverterTypeFfiMessage.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_message(
-                        it, FfiConverterByteArray.lower(`messageId`), _status
-                    )
-                }
-            }
-        )
+    )
     }
+    
 
+    
+    @Throws(GenericException::class)override fun `message`(`messageId`: kotlin.ByteArray): FfiMessage {
+            return FfiConverterTypeFfiMessage.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_message(
+        it, FfiConverterByteArray.lower(`messageId`),_status)
+}
+    }
+    )
+    }
+    
 
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `registerIdentity`(`signatureRequest`: FfiSignatureRequest) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_register_identity(
-                    thisPtr,
-                    FfiConverterTypeFfiSignatureRequest.lower(`signatureRequest`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_register_identity(
+                thisPtr,
+                FfiConverterTypeFfiSignatureRequest.lower(`signatureRequest`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
+    @Throws(GenericException::class)override fun `releaseDbConnection`()
+        = 
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_release_db_connection(
+        it, _status)
+}
+    }
+    
+    
 
-    @Throws(GenericException::class)
-    override fun `releaseDbConnection`() =
-        callWithPointer {
-            uniffiRustCallWithError(GenericException) { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_release_db_connection(
-                    it, _status
-                )
-            }
-        }
-
-
+    
     /**
      * * Revokes all installations except the one the client is currently using
      */
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `revokeAllOtherInstallations`(): FfiSignatureRequest {
+    override suspend fun `revokeAllOtherInstallations`() : FfiSignatureRequest {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_all_other_installations(
-                    thisPtr,
-
-                    )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiSignatureRequest.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_all_other_installations(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiSignatureRequest.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
+    /**
+     * Revokes or removes an identity from the existing client
+     */
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `revokeIdentity`(`identifier`: FfiIdentifier) : FfiSignatureRequest {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_identity(
+                thisPtr,
+                FfiConverterTypeFfiIdentifier.lower(`identifier`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiSignatureRequest.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
+    }
 
+    
     /**
      * * Revoke a list of installations
      */
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `revokeInstallations`(`installationIds`: List<kotlin.ByteArray>): FfiSignatureRequest {
+    override suspend fun `revokeInstallations`(`installationIds`: List<kotlin.ByteArray>) : FfiSignatureRequest {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_installations(
-                    thisPtr,
-                    FfiConverterSequenceByteArray.lower(`installationIds`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiSignatureRequest.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_installations(
+                thisPtr,
+                FfiConverterSequenceByteArray.lower(`installationIds`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
+        // lift function
+        { FfiConverterTypeFfiSignatureRequest.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     /**
-     * Revokes or removes an identity - really a wallet address - from the existing client
+     * Manually trigger a device sync request to sync records from another active device on this account.
      */
-    @Throws(GenericException::class)
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `revokeWallet`(`walletAddress`: kotlin.String): FfiSignatureRequest {
-        return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_revoke_wallet(
-                    thisPtr,
-                    FfiConverterString.lower(`walletAddress`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-            // lift function
-            { FfiConverterTypeFfiSignatureRequest.lift(it) },
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
-    }
-
-
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `sendSyncRequest`(`kind`: FfiDeviceSyncKind) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_send_sync_request(
-                    thisPtr,
-                    FfiConverterTypeFfiDeviceSyncKind.lower(`kind`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_send_sync_request(
+                thisPtr,
+                FfiConverterTypeFfiDeviceSyncKind.lower(`kind`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
+    
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     override suspend fun `setConsentStates`(`records`: List<FfiConsent>) {
         return uniffiRustCallAsync(
-            callWithPointer { thisPtr ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_set_consent_states(
-                    thisPtr,
-                    FfiConverterSequenceTypeFfiConsent.lower(`records`),
-                )
-            },
-            { future, callback, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(
-                    future,
-                    callback,
-                    continuation
-                )
-            },
-            { future, continuation ->
-                UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(
-                    future,
-                    continuation
-                )
-            },
-            { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
-            // lift function
-            { Unit },
-
-            // Error FFI converter
-            GenericException.ErrorHandler,
-        )
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_set_consent_states(
+                thisPtr,
+                FfiConverterSequenceTypeFfiConsent.lower(`records`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
-
-    @Throws(GenericException::class)
-    override fun `signWithInstallationKey`(`text`: kotlin.String): kotlin.ByteArray {
-        return FfiConverterByteArray.lift(
-            callWithPointer {
-                uniffiRustCallWithError(GenericException) { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_sign_with_installation_key(
-                        it, FfiConverterString.lower(`text`), _status
-                    )
-                }
-            }
-        )
+    
+    /**
+     * A utility function to sign a piece of text with this installation's private key.
+     */
+    @Throws(GenericException::class)override fun `signWithInstallationKey`(`text`: kotlin.String): kotlin.ByteArray {
+            return FfiConverterByteArray.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_sign_with_installation_key(
+        it, FfiConverterString.lower(`text`),_status)
+}
     }
-
+    )
+    }
+    
 
     override fun `signatureRequest`(): FfiSignatureRequest? {
-        return FfiConverterOptionalTypeFfiSignatureRequest.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_signature_request(
-                        it, _status
-                    )
-                }
-            }
-        )
+            return FfiConverterOptionalTypeFfiSignatureRequest.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_signature_request(
+        it, _status)
+}
+    }
+    )
+    }
+    
+
+    
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `syncPreferences`() : kotlin.ULong {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_sync_preferences(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_u64(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_u64(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_u64(future) },
+        // lift function
+        { FfiConverterULong.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
     }
 
+    
+    /**
+     * A utility function to easily verify that a piece of text was signed by this installation.
+     */
+    @Throws(GenericException::class)override fun `verifySignedWithInstallationKey`(`signatureText`: kotlin.String, `signatureBytes`: kotlin.ByteArray)
+        = 
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_verify_signed_with_installation_key(
+        it, FfiConverterString.lower(`signatureText`),FfiConverterByteArray.lower(`signatureBytes`),_status)
+}
+    }
+    
+    
 
-    @Throws(GenericException::class)
-    override fun `verifySignedWithInstallationKey`(
-        `signatureText`: kotlin.String,
-        `signatureBytes`: kotlin.ByteArray,
-    ) =
-        callWithPointer {
-            uniffiRustCallWithError(GenericException) { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_verify_signed_with_installation_key(
-                    it,
-                    FfiConverterString.lower(`signatureText`),
-                    FfiConverterByteArray.lower(`signatureBytes`),
-                    _status
-                )
-            }
-        }
+    
+    /**
+     * A utility function to easily verify that a string has been signed by another libXmtp installation.
+     * Only works for verifying libXmtp public context signatures.
+     */
+    @Throws(GenericException::class)override fun `verifySignedWithPublicKey`(`signatureText`: kotlin.String, `signatureBytes`: kotlin.ByteArray, `publicKey`: kotlin.ByteArray)
+        = 
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_verify_signed_with_public_key(
+        it, FfiConverterString.lower(`signatureText`),FfiConverterByteArray.lower(`signatureBytes`),FfiConverterByteArray.lower(`publicKey`),_status)
+}
+    }
+    
+    
 
+    
 
-    @Throws(GenericException::class)
-    override fun `verifySignedWithPublicKey`(
-        `signatureText`: kotlin.String,
-        `signatureBytes`: kotlin.ByteArray,
-        `publicKey`: kotlin.ByteArray,
-    ) =
-        callWithPointer {
-            uniffiRustCallWithError(GenericException) { _status ->
-                UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_verify_signed_with_public_key(
-                    it,
-                    FfiConverterString.lower(`signatureText`),
-                    FfiConverterByteArray.lower(`signatureBytes`),
-                    FfiConverterByteArray.lower(`publicKey`),
-                    _status
-                )
-            }
-        }
-
-
+    
+    
     companion object
-
+    
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiXmtpClient : FfiConverter<FfiXmtpClient, Pointer> {
+public object FfiConverterTypeFfiXmtpClient: FfiConverter<FfiXmtpClient, Pointer> {
 
     override fun lower(value: FfiXmtpClient): Pointer {
         return value.uniffiClonePointer()
@@ -9972,11 +8528,12 @@ public object FfiConverterTypeFfiXmtpClient : FfiConverter<FfiXmtpClient, Pointe
 
 
 public interface XmtpApiClientInterface {
-
+    
     companion object
 }
 
-open class XmtpApiClient : Disposable, AutoCloseable, XmtpApiClientInterface {
+open class XmtpApiClient: Disposable, AutoCloseable, XmtpApiClientInterface
+{
 
     constructor(pointer: Pointer) {
         this.pointer = pointer
@@ -10027,7 +8584,7 @@ open class XmtpApiClient : Disposable, AutoCloseable, XmtpApiClientInterface {
             if (c == Long.MAX_VALUE) {
                 throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
             }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
         // Now we can safely do the method call without the pointer being freed concurrently.
         try {
             return block(this.uniffiClonePointer())
@@ -10057,15 +8614,18 @@ open class XmtpApiClient : Disposable, AutoCloseable, XmtpApiClientInterface {
         }
     }
 
+    
 
+    
+    
     companion object
-
+    
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeXmtpApiClient : FfiConverter<XmtpApiClient, Pointer> {
+public object FfiConverterTypeXmtpApiClient: FfiConverter<XmtpApiClient, Pointer> {
 
     override fun lower(value: XmtpApiClient): Pointer {
         return value.uniffiClonePointer()
@@ -10091,19 +8651,100 @@ public object FfiConverterTypeXmtpApiClient : FfiConverter<XmtpApiClient, Pointe
 }
 
 
-data class FfiConsent(
-    var `entityType`: FfiConsentEntityType,
-    var `state`: FfiConsentState,
-    var `entity`: kotlin.String,
-) {
 
+data class FfiBackupMetadata (
+    var `backupVersion`: kotlin.UShort, 
+    var `elements`: List<FfiBackupElementSelection>, 
+    var `exportedAtNs`: kotlin.Long, 
+    var `startNs`: kotlin.Long?, 
+    var `endNs`: kotlin.Long?
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConsent : FfiConverterRustBuffer<FfiConsent> {
+public object FfiConverterTypeFfiBackupMetadata: FfiConverterRustBuffer<FfiBackupMetadata> {
+    override fun read(buf: ByteBuffer): FfiBackupMetadata {
+        return FfiBackupMetadata(
+            FfiConverterUShort.read(buf),
+            FfiConverterSequenceTypeFfiBackupElementSelection.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiBackupMetadata) = (
+            FfiConverterUShort.allocationSize(value.`backupVersion`) +
+            FfiConverterSequenceTypeFfiBackupElementSelection.allocationSize(value.`elements`) +
+            FfiConverterLong.allocationSize(value.`exportedAtNs`) +
+            FfiConverterOptionalLong.allocationSize(value.`startNs`) +
+            FfiConverterOptionalLong.allocationSize(value.`endNs`)
+    )
+
+    override fun write(value: FfiBackupMetadata, buf: ByteBuffer) {
+            FfiConverterUShort.write(value.`backupVersion`, buf)
+            FfiConverterSequenceTypeFfiBackupElementSelection.write(value.`elements`, buf)
+            FfiConverterLong.write(value.`exportedAtNs`, buf)
+            FfiConverterOptionalLong.write(value.`startNs`, buf)
+            FfiConverterOptionalLong.write(value.`endNs`, buf)
+    }
+}
+
+
+
+data class FfiBackupOptions (
+    var `startNs`: kotlin.Long?, 
+    var `endNs`: kotlin.Long?, 
+    var `elements`: List<FfiBackupElementSelection>
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiBackupOptions: FfiConverterRustBuffer<FfiBackupOptions> {
+    override fun read(buf: ByteBuffer): FfiBackupOptions {
+        return FfiBackupOptions(
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterSequenceTypeFfiBackupElementSelection.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiBackupOptions) = (
+            FfiConverterOptionalLong.allocationSize(value.`startNs`) +
+            FfiConverterOptionalLong.allocationSize(value.`endNs`) +
+            FfiConverterSequenceTypeFfiBackupElementSelection.allocationSize(value.`elements`)
+    )
+
+    override fun write(value: FfiBackupOptions, buf: ByteBuffer) {
+            FfiConverterOptionalLong.write(value.`startNs`, buf)
+            FfiConverterOptionalLong.write(value.`endNs`, buf)
+            FfiConverterSequenceTypeFfiBackupElementSelection.write(value.`elements`, buf)
+    }
+}
+
+
+
+data class FfiConsent (
+    var `entityType`: FfiConsentEntityType, 
+    var `state`: FfiConsentState, 
+    var `entity`: kotlin.String
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiConsent: FfiConverterRustBuffer<FfiConsent> {
     override fun read(buf: ByteBuffer): FfiConsent {
         return FfiConsent(
             FfiConverterTypeFfiConsentEntityType.read(buf),
@@ -10114,38 +8755,38 @@ public object FfiConverterTypeFfiConsent : FfiConverterRustBuffer<FfiConsent> {
 
     override fun allocationSize(value: FfiConsent) = (
             FfiConverterTypeFfiConsentEntityType.allocationSize(value.`entityType`) +
-                    FfiConverterTypeFfiConsentState.allocationSize(value.`state`) +
-                    FfiConverterString.allocationSize(value.`entity`)
-            )
+            FfiConverterTypeFfiConsentState.allocationSize(value.`state`) +
+            FfiConverterString.allocationSize(value.`entity`)
+    )
 
     override fun write(value: FfiConsent, buf: ByteBuffer) {
-        FfiConverterTypeFfiConsentEntityType.write(value.`entityType`, buf)
-        FfiConverterTypeFfiConsentState.write(value.`state`, buf)
-        FfiConverterString.write(value.`entity`, buf)
+            FfiConverterTypeFfiConsentEntityType.write(value.`entityType`, buf)
+            FfiConverterTypeFfiConsentState.write(value.`state`, buf)
+            FfiConverterString.write(value.`entity`, buf)
     }
 }
 
 
-data class FfiConversationMember(
-    var `inboxId`: kotlin.String,
-    var `accountAddresses`: List<kotlin.String>,
-    var `installationIds`: List<kotlin.ByteArray>,
-    var `permissionLevel`: FfiPermissionLevel,
-    var `consentState`: FfiConsentState,
-) {
 
+data class FfiConversationMember (
+    var `inboxId`: kotlin.String, 
+    var `accountIdentifiers`: List<FfiIdentifier>, 
+    var `installationIds`: List<kotlin.ByteArray>, 
+    var `permissionLevel`: FfiPermissionLevel, 
+    var `consentState`: FfiConsentState
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConversationMember :
-    FfiConverterRustBuffer<FfiConversationMember> {
+public object FfiConverterTypeFfiConversationMember: FfiConverterRustBuffer<FfiConversationMember> {
     override fun read(buf: ByteBuffer): FfiConversationMember {
         return FfiConversationMember(
             FfiConverterString.read(buf),
-            FfiConverterSequenceString.read(buf),
+            FfiConverterSequenceTypeFfiIdentifier.read(buf),
             FfiConverterSequenceByteArray.read(buf),
             FfiConverterTypeFfiPermissionLevel.read(buf),
             FfiConverterTypeFfiConsentState.read(buf),
@@ -10154,148 +8795,111 @@ public object FfiConverterTypeFfiConversationMember :
 
     override fun allocationSize(value: FfiConversationMember) = (
             FfiConverterString.allocationSize(value.`inboxId`) +
-                    FfiConverterSequenceString.allocationSize(value.`accountAddresses`) +
-                    FfiConverterSequenceByteArray.allocationSize(value.`installationIds`) +
-                    FfiConverterTypeFfiPermissionLevel.allocationSize(value.`permissionLevel`) +
-                    FfiConverterTypeFfiConsentState.allocationSize(value.`consentState`)
-            )
+            FfiConverterSequenceTypeFfiIdentifier.allocationSize(value.`accountIdentifiers`) +
+            FfiConverterSequenceByteArray.allocationSize(value.`installationIds`) +
+            FfiConverterTypeFfiPermissionLevel.allocationSize(value.`permissionLevel`) +
+            FfiConverterTypeFfiConsentState.allocationSize(value.`consentState`)
+    )
 
     override fun write(value: FfiConversationMember, buf: ByteBuffer) {
-        FfiConverterString.write(value.`inboxId`, buf)
-        FfiConverterSequenceString.write(value.`accountAddresses`, buf)
-        FfiConverterSequenceByteArray.write(value.`installationIds`, buf)
-        FfiConverterTypeFfiPermissionLevel.write(value.`permissionLevel`, buf)
-        FfiConverterTypeFfiConsentState.write(value.`consentState`, buf)
+            FfiConverterString.write(value.`inboxId`, buf)
+            FfiConverterSequenceTypeFfiIdentifier.write(value.`accountIdentifiers`, buf)
+            FfiConverterSequenceByteArray.write(value.`installationIds`, buf)
+            FfiConverterTypeFfiPermissionLevel.write(value.`permissionLevel`, buf)
+            FfiConverterTypeFfiConsentState.write(value.`consentState`, buf)
     }
 }
 
 
-data class FfiCreateGroupOptions(
-    var `permissions`: FfiGroupPermissionsOptions?,
-    var `groupName`: kotlin.String?,
-    var `groupImageUrlSquare`: kotlin.String?,
-    var `groupDescription`: kotlin.String?,
-    var `groupPinnedFrameUrl`: kotlin.String?,
-    var `customPermissionPolicySet`: FfiPermissionPolicySet?,
-) {
 
+data class FfiCreateDmOptions (
+    var `messageDisappearingSettings`: FfiMessageDisappearingSettings?
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiCreateGroupOptions :
-    FfiConverterRustBuffer<FfiCreateGroupOptions> {
+public object FfiConverterTypeFfiCreateDMOptions: FfiConverterRustBuffer<FfiCreateDmOptions> {
+    override fun read(buf: ByteBuffer): FfiCreateDmOptions {
+        return FfiCreateDmOptions(
+            FfiConverterOptionalTypeFfiMessageDisappearingSettings.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiCreateDmOptions) = (
+            FfiConverterOptionalTypeFfiMessageDisappearingSettings.allocationSize(value.`messageDisappearingSettings`)
+    )
+
+    override fun write(value: FfiCreateDmOptions, buf: ByteBuffer) {
+            FfiConverterOptionalTypeFfiMessageDisappearingSettings.write(value.`messageDisappearingSettings`, buf)
+    }
+}
+
+
+
+data class FfiCreateGroupOptions (
+    var `permissions`: FfiGroupPermissionsOptions?, 
+    var `groupName`: kotlin.String?, 
+    var `groupImageUrlSquare`: kotlin.String?, 
+    var `groupDescription`: kotlin.String?, 
+    var `customPermissionPolicySet`: FfiPermissionPolicySet?, 
+    var `messageDisappearingSettings`: FfiMessageDisappearingSettings?
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiCreateGroupOptions: FfiConverterRustBuffer<FfiCreateGroupOptions> {
     override fun read(buf: ByteBuffer): FfiCreateGroupOptions {
         return FfiCreateGroupOptions(
             FfiConverterOptionalTypeFfiGroupPermissionsOptions.read(buf),
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalString.read(buf),
             FfiConverterOptionalString.read(buf),
-            FfiConverterOptionalString.read(buf),
             FfiConverterOptionalTypeFfiPermissionPolicySet.read(buf),
+            FfiConverterOptionalTypeFfiMessageDisappearingSettings.read(buf),
         )
     }
 
     override fun allocationSize(value: FfiCreateGroupOptions) = (
             FfiConverterOptionalTypeFfiGroupPermissionsOptions.allocationSize(value.`permissions`) +
-                    FfiConverterOptionalString.allocationSize(value.`groupName`) +
-                    FfiConverterOptionalString.allocationSize(value.`groupImageUrlSquare`) +
-                    FfiConverterOptionalString.allocationSize(value.`groupDescription`) +
-                    FfiConverterOptionalString.allocationSize(value.`groupPinnedFrameUrl`) +
-                    FfiConverterOptionalTypeFfiPermissionPolicySet.allocationSize(value.`customPermissionPolicySet`)
-            )
+            FfiConverterOptionalString.allocationSize(value.`groupName`) +
+            FfiConverterOptionalString.allocationSize(value.`groupImageUrlSquare`) +
+            FfiConverterOptionalString.allocationSize(value.`groupDescription`) +
+            FfiConverterOptionalTypeFfiPermissionPolicySet.allocationSize(value.`customPermissionPolicySet`) +
+            FfiConverterOptionalTypeFfiMessageDisappearingSettings.allocationSize(value.`messageDisappearingSettings`)
+    )
 
     override fun write(value: FfiCreateGroupOptions, buf: ByteBuffer) {
-        FfiConverterOptionalTypeFfiGroupPermissionsOptions.write(value.`permissions`, buf)
-        FfiConverterOptionalString.write(value.`groupName`, buf)
-        FfiConverterOptionalString.write(value.`groupImageUrlSquare`, buf)
-        FfiConverterOptionalString.write(value.`groupDescription`, buf)
-        FfiConverterOptionalString.write(value.`groupPinnedFrameUrl`, buf)
-        FfiConverterOptionalTypeFfiPermissionPolicySet.write(value.`customPermissionPolicySet`, buf)
+            FfiConverterOptionalTypeFfiGroupPermissionsOptions.write(value.`permissions`, buf)
+            FfiConverterOptionalString.write(value.`groupName`, buf)
+            FfiConverterOptionalString.write(value.`groupImageUrlSquare`, buf)
+            FfiConverterOptionalString.write(value.`groupDescription`, buf)
+            FfiConverterOptionalTypeFfiPermissionPolicySet.write(value.`customPermissionPolicySet`, buf)
+            FfiConverterOptionalTypeFfiMessageDisappearingSettings.write(value.`messageDisappearingSettings`, buf)
     }
 }
 
 
-data class FfiCursor(
-    var `digest`: kotlin.ByteArray,
-    var `senderTimeNs`: kotlin.ULong,
-) {
 
+data class FfiHmacKey (
+    var `key`: kotlin.ByteArray, 
+    var `epoch`: kotlin.Long
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiCursor : FfiConverterRustBuffer<FfiCursor> {
-    override fun read(buf: ByteBuffer): FfiCursor {
-        return FfiCursor(
-            FfiConverterByteArray.read(buf),
-            FfiConverterULong.read(buf),
-        )
-    }
-
-    override fun allocationSize(value: FfiCursor) = (
-            FfiConverterByteArray.allocationSize(value.`digest`) +
-                    FfiConverterULong.allocationSize(value.`senderTimeNs`)
-            )
-
-    override fun write(value: FfiCursor, buf: ByteBuffer) {
-        FfiConverterByteArray.write(value.`digest`, buf)
-        FfiConverterULong.write(value.`senderTimeNs`, buf)
-    }
-}
-
-
-data class FfiEnvelope(
-    var `contentTopic`: kotlin.String,
-    var `timestampNs`: kotlin.ULong,
-    var `message`: kotlin.ByteArray,
-) {
-
-    companion object
-}
-
-/**
- * @suppress
- */
-public object FfiConverterTypeFfiEnvelope : FfiConverterRustBuffer<FfiEnvelope> {
-    override fun read(buf: ByteBuffer): FfiEnvelope {
-        return FfiEnvelope(
-            FfiConverterString.read(buf),
-            FfiConverterULong.read(buf),
-            FfiConverterByteArray.read(buf),
-        )
-    }
-
-    override fun allocationSize(value: FfiEnvelope) = (
-            FfiConverterString.allocationSize(value.`contentTopic`) +
-                    FfiConverterULong.allocationSize(value.`timestampNs`) +
-                    FfiConverterByteArray.allocationSize(value.`message`)
-            )
-
-    override fun write(value: FfiEnvelope, buf: ByteBuffer) {
-        FfiConverterString.write(value.`contentTopic`, buf)
-        FfiConverterULong.write(value.`timestampNs`, buf)
-        FfiConverterByteArray.write(value.`message`, buf)
-    }
-}
-
-
-data class FfiHmacKey(
-    var `key`: kotlin.ByteArray,
-    var `epoch`: kotlin.Long,
-) {
-
-    companion object
-}
-
-/**
- * @suppress
- */
-public object FfiConverterTypeFfiHmacKey : FfiConverterRustBuffer<FfiHmacKey> {
+public object FfiConverterTypeFfiHmacKey: FfiConverterRustBuffer<FfiHmacKey> {
     override fun read(buf: ByteBuffer): FfiHmacKey {
         return FfiHmacKey(
             FfiConverterByteArray.read(buf),
@@ -10305,67 +8909,101 @@ public object FfiConverterTypeFfiHmacKey : FfiConverterRustBuffer<FfiHmacKey> {
 
     override fun allocationSize(value: FfiHmacKey) = (
             FfiConverterByteArray.allocationSize(value.`key`) +
-                    FfiConverterLong.allocationSize(value.`epoch`)
-            )
+            FfiConverterLong.allocationSize(value.`epoch`)
+    )
 
     override fun write(value: FfiHmacKey, buf: ByteBuffer) {
-        FfiConverterByteArray.write(value.`key`, buf)
-        FfiConverterLong.write(value.`epoch`, buf)
+            FfiConverterByteArray.write(value.`key`, buf)
+            FfiConverterLong.write(value.`epoch`, buf)
     }
 }
 
 
-data class FfiInboxState(
-    var `inboxId`: kotlin.String,
-    var `recoveryAddress`: kotlin.String,
-    var `installations`: List<FfiInstallation>,
-    var `accountAddresses`: List<kotlin.String>,
-) {
 
+data class FfiIdentifier (
+    var `identifier`: kotlin.String, 
+    var `identifierKind`: FfiIdentifierKind
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiInboxState : FfiConverterRustBuffer<FfiInboxState> {
+public object FfiConverterTypeFfiIdentifier: FfiConverterRustBuffer<FfiIdentifier> {
+    override fun read(buf: ByteBuffer): FfiIdentifier {
+        return FfiIdentifier(
+            FfiConverterString.read(buf),
+            FfiConverterTypeFfiIdentifierKind.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiIdentifier) = (
+            FfiConverterString.allocationSize(value.`identifier`) +
+            FfiConverterTypeFfiIdentifierKind.allocationSize(value.`identifierKind`)
+    )
+
+    override fun write(value: FfiIdentifier, buf: ByteBuffer) {
+            FfiConverterString.write(value.`identifier`, buf)
+            FfiConverterTypeFfiIdentifierKind.write(value.`identifierKind`, buf)
+    }
+}
+
+
+
+data class FfiInboxState (
+    var `inboxId`: kotlin.String, 
+    var `recoveryIdentity`: FfiIdentifier, 
+    var `installations`: List<FfiInstallation>, 
+    var `accountIdentities`: List<FfiIdentifier>
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiInboxState: FfiConverterRustBuffer<FfiInboxState> {
     override fun read(buf: ByteBuffer): FfiInboxState {
         return FfiInboxState(
             FfiConverterString.read(buf),
-            FfiConverterString.read(buf),
+            FfiConverterTypeFfiIdentifier.read(buf),
             FfiConverterSequenceTypeFfiInstallation.read(buf),
-            FfiConverterSequenceString.read(buf),
+            FfiConverterSequenceTypeFfiIdentifier.read(buf),
         )
     }
 
     override fun allocationSize(value: FfiInboxState) = (
             FfiConverterString.allocationSize(value.`inboxId`) +
-                    FfiConverterString.allocationSize(value.`recoveryAddress`) +
-                    FfiConverterSequenceTypeFfiInstallation.allocationSize(value.`installations`) +
-                    FfiConverterSequenceString.allocationSize(value.`accountAddresses`)
-            )
+            FfiConverterTypeFfiIdentifier.allocationSize(value.`recoveryIdentity`) +
+            FfiConverterSequenceTypeFfiInstallation.allocationSize(value.`installations`) +
+            FfiConverterSequenceTypeFfiIdentifier.allocationSize(value.`accountIdentities`)
+    )
 
     override fun write(value: FfiInboxState, buf: ByteBuffer) {
-        FfiConverterString.write(value.`inboxId`, buf)
-        FfiConverterString.write(value.`recoveryAddress`, buf)
-        FfiConverterSequenceTypeFfiInstallation.write(value.`installations`, buf)
-        FfiConverterSequenceString.write(value.`accountAddresses`, buf)
+            FfiConverterString.write(value.`inboxId`, buf)
+            FfiConverterTypeFfiIdentifier.write(value.`recoveryIdentity`, buf)
+            FfiConverterSequenceTypeFfiInstallation.write(value.`installations`, buf)
+            FfiConverterSequenceTypeFfiIdentifier.write(value.`accountIdentities`, buf)
     }
 }
 
 
-data class FfiInstallation(
-    var `id`: kotlin.ByteArray,
-    var `clientTimestampNs`: kotlin.ULong?,
-) {
 
+data class FfiInstallation (
+    var `id`: kotlin.ByteArray, 
+    var `clientTimestampNs`: kotlin.ULong?
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiInstallation : FfiConverterRustBuffer<FfiInstallation> {
+public object FfiConverterTypeFfiInstallation: FfiConverterRustBuffer<FfiInstallation> {
     override fun read(buf: ByteBuffer): FfiInstallation {
         return FfiInstallation(
             FfiConverterByteArray.read(buf),
@@ -10375,77 +9013,141 @@ public object FfiConverterTypeFfiInstallation : FfiConverterRustBuffer<FfiInstal
 
     override fun allocationSize(value: FfiInstallation) = (
             FfiConverterByteArray.allocationSize(value.`id`) +
-                    FfiConverterOptionalULong.allocationSize(value.`clientTimestampNs`)
-            )
+            FfiConverterOptionalULong.allocationSize(value.`clientTimestampNs`)
+    )
 
     override fun write(value: FfiInstallation, buf: ByteBuffer) {
-        FfiConverterByteArray.write(value.`id`, buf)
-        FfiConverterOptionalULong.write(value.`clientTimestampNs`, buf)
+            FfiConverterByteArray.write(value.`id`, buf)
+            FfiConverterOptionalULong.write(value.`clientTimestampNs`, buf)
     }
 }
 
 
-data class FfiListConversationsOptions(
-    var `createdAfterNs`: kotlin.Long?,
-    var `createdBeforeNs`: kotlin.Long?,
-    var `limit`: kotlin.Long?,
-    var `consentState`: FfiConsentState?,
-    var `includeDuplicateDms`: kotlin.Boolean,
-) {
 
+data class FfiKeyPackageStatus (
+    var `lifetime`: FfiLifetime?, 
+    var `validationError`: kotlin.String?
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiListConversationsOptions :
-    FfiConverterRustBuffer<FfiListConversationsOptions> {
+public object FfiConverterTypeFfiKeyPackageStatus: FfiConverterRustBuffer<FfiKeyPackageStatus> {
+    override fun read(buf: ByteBuffer): FfiKeyPackageStatus {
+        return FfiKeyPackageStatus(
+            FfiConverterOptionalTypeFfiLifetime.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiKeyPackageStatus) = (
+            FfiConverterOptionalTypeFfiLifetime.allocationSize(value.`lifetime`) +
+            FfiConverterOptionalString.allocationSize(value.`validationError`)
+    )
+
+    override fun write(value: FfiKeyPackageStatus, buf: ByteBuffer) {
+            FfiConverterOptionalTypeFfiLifetime.write(value.`lifetime`, buf)
+            FfiConverterOptionalString.write(value.`validationError`, buf)
+    }
+}
+
+
+
+data class FfiLifetime (
+    var `notBefore`: kotlin.ULong, 
+    var `notAfter`: kotlin.ULong
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiLifetime: FfiConverterRustBuffer<FfiLifetime> {
+    override fun read(buf: ByteBuffer): FfiLifetime {
+        return FfiLifetime(
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiLifetime) = (
+            FfiConverterULong.allocationSize(value.`notBefore`) +
+            FfiConverterULong.allocationSize(value.`notAfter`)
+    )
+
+    override fun write(value: FfiLifetime, buf: ByteBuffer) {
+            FfiConverterULong.write(value.`notBefore`, buf)
+            FfiConverterULong.write(value.`notAfter`, buf)
+    }
+}
+
+
+
+data class FfiListConversationsOptions (
+    var `createdAfterNs`: kotlin.Long?, 
+    var `createdBeforeNs`: kotlin.Long?, 
+    var `limit`: kotlin.Long?, 
+    var `consentStates`: List<FfiConsentState>?, 
+    var `includeDuplicateDms`: kotlin.Boolean
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiListConversationsOptions: FfiConverterRustBuffer<FfiListConversationsOptions> {
     override fun read(buf: ByteBuffer): FfiListConversationsOptions {
         return FfiListConversationsOptions(
             FfiConverterOptionalLong.read(buf),
             FfiConverterOptionalLong.read(buf),
             FfiConverterOptionalLong.read(buf),
-            FfiConverterOptionalTypeFfiConsentState.read(buf),
+            FfiConverterOptionalSequenceTypeFfiConsentState.read(buf),
             FfiConverterBoolean.read(buf),
         )
     }
 
     override fun allocationSize(value: FfiListConversationsOptions) = (
             FfiConverterOptionalLong.allocationSize(value.`createdAfterNs`) +
-                    FfiConverterOptionalLong.allocationSize(value.`createdBeforeNs`) +
-                    FfiConverterOptionalLong.allocationSize(value.`limit`) +
-                    FfiConverterOptionalTypeFfiConsentState.allocationSize(value.`consentState`) +
-                    FfiConverterBoolean.allocationSize(value.`includeDuplicateDms`)
-            )
+            FfiConverterOptionalLong.allocationSize(value.`createdBeforeNs`) +
+            FfiConverterOptionalLong.allocationSize(value.`limit`) +
+            FfiConverterOptionalSequenceTypeFfiConsentState.allocationSize(value.`consentStates`) +
+            FfiConverterBoolean.allocationSize(value.`includeDuplicateDms`)
+    )
 
     override fun write(value: FfiListConversationsOptions, buf: ByteBuffer) {
-        FfiConverterOptionalLong.write(value.`createdAfterNs`, buf)
-        FfiConverterOptionalLong.write(value.`createdBeforeNs`, buf)
-        FfiConverterOptionalLong.write(value.`limit`, buf)
-        FfiConverterOptionalTypeFfiConsentState.write(value.`consentState`, buf)
-        FfiConverterBoolean.write(value.`includeDuplicateDms`, buf)
+            FfiConverterOptionalLong.write(value.`createdAfterNs`, buf)
+            FfiConverterOptionalLong.write(value.`createdBeforeNs`, buf)
+            FfiConverterOptionalLong.write(value.`limit`, buf)
+            FfiConverterOptionalSequenceTypeFfiConsentState.write(value.`consentStates`, buf)
+            FfiConverterBoolean.write(value.`includeDuplicateDms`, buf)
     }
 }
 
 
-data class FfiListMessagesOptions(
-    var `sentBeforeNs`: kotlin.Long?,
-    var `sentAfterNs`: kotlin.Long?,
-    var `limit`: kotlin.Long?,
-    var `deliveryStatus`: FfiDeliveryStatus?,
-    var `direction`: FfiDirection?,
-    var `contentTypes`: List<FfiContentType>?,
-) {
 
+data class FfiListMessagesOptions (
+    var `sentBeforeNs`: kotlin.Long?, 
+    var `sentAfterNs`: kotlin.Long?, 
+    var `limit`: kotlin.Long?, 
+    var `deliveryStatus`: FfiDeliveryStatus?, 
+    var `direction`: FfiDirection?, 
+    var `contentTypes`: List<FfiContentType>?
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiListMessagesOptions :
-    FfiConverterRustBuffer<FfiListMessagesOptions> {
+public object FfiConverterTypeFfiListMessagesOptions: FfiConverterRustBuffer<FfiListMessagesOptions> {
     override fun read(buf: ByteBuffer): FfiListMessagesOptions {
         return FfiListMessagesOptions(
             FfiConverterOptionalLong.read(buf),
@@ -10459,41 +9161,42 @@ public object FfiConverterTypeFfiListMessagesOptions :
 
     override fun allocationSize(value: FfiListMessagesOptions) = (
             FfiConverterOptionalLong.allocationSize(value.`sentBeforeNs`) +
-                    FfiConverterOptionalLong.allocationSize(value.`sentAfterNs`) +
-                    FfiConverterOptionalLong.allocationSize(value.`limit`) +
-                    FfiConverterOptionalTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`) +
-                    FfiConverterOptionalTypeFfiDirection.allocationSize(value.`direction`) +
-                    FfiConverterOptionalSequenceTypeFfiContentType.allocationSize(value.`contentTypes`)
-            )
+            FfiConverterOptionalLong.allocationSize(value.`sentAfterNs`) +
+            FfiConverterOptionalLong.allocationSize(value.`limit`) +
+            FfiConverterOptionalTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`) +
+            FfiConverterOptionalTypeFfiDirection.allocationSize(value.`direction`) +
+            FfiConverterOptionalSequenceTypeFfiContentType.allocationSize(value.`contentTypes`)
+    )
 
     override fun write(value: FfiListMessagesOptions, buf: ByteBuffer) {
-        FfiConverterOptionalLong.write(value.`sentBeforeNs`, buf)
-        FfiConverterOptionalLong.write(value.`sentAfterNs`, buf)
-        FfiConverterOptionalLong.write(value.`limit`, buf)
-        FfiConverterOptionalTypeFfiDeliveryStatus.write(value.`deliveryStatus`, buf)
-        FfiConverterOptionalTypeFfiDirection.write(value.`direction`, buf)
-        FfiConverterOptionalSequenceTypeFfiContentType.write(value.`contentTypes`, buf)
+            FfiConverterOptionalLong.write(value.`sentBeforeNs`, buf)
+            FfiConverterOptionalLong.write(value.`sentAfterNs`, buf)
+            FfiConverterOptionalLong.write(value.`limit`, buf)
+            FfiConverterOptionalTypeFfiDeliveryStatus.write(value.`deliveryStatus`, buf)
+            FfiConverterOptionalTypeFfiDirection.write(value.`direction`, buf)
+            FfiConverterOptionalSequenceTypeFfiContentType.write(value.`contentTypes`, buf)
     }
 }
 
 
-data class FfiMessage(
-    var `id`: kotlin.ByteArray,
-    var `sentAtNs`: kotlin.Long,
-    var `convoId`: kotlin.ByteArray,
-    var `senderInboxId`: kotlin.String,
-    var `content`: kotlin.ByteArray,
-    var `kind`: FfiConversationMessageKind,
-    var `deliveryStatus`: FfiDeliveryStatus,
-) {
 
+data class FfiMessage (
+    var `id`: kotlin.ByteArray, 
+    var `sentAtNs`: kotlin.Long, 
+    var `conversationId`: kotlin.ByteArray, 
+    var `senderInboxId`: kotlin.String, 
+    var `content`: kotlin.ByteArray, 
+    var `kind`: FfiConversationMessageKind, 
+    var `deliveryStatus`: FfiDeliveryStatus
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiMessage : FfiConverterRustBuffer<FfiMessage> {
+public object FfiConverterTypeFfiMessage: FfiConverterRustBuffer<FfiMessage> {
     override fun read(buf: ByteBuffer): FfiMessage {
         return FfiMessage(
             FfiConverterByteArray.read(buf),
@@ -10508,80 +9211,185 @@ public object FfiConverterTypeFfiMessage : FfiConverterRustBuffer<FfiMessage> {
 
     override fun allocationSize(value: FfiMessage) = (
             FfiConverterByteArray.allocationSize(value.`id`) +
-                    FfiConverterLong.allocationSize(value.`sentAtNs`) +
-                    FfiConverterByteArray.allocationSize(value.`convoId`) +
-                    FfiConverterString.allocationSize(value.`senderInboxId`) +
-                    FfiConverterByteArray.allocationSize(value.`content`) +
-                    FfiConverterTypeFfiConversationMessageKind.allocationSize(value.`kind`) +
-                    FfiConverterTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`)
-            )
+            FfiConverterLong.allocationSize(value.`sentAtNs`) +
+            FfiConverterByteArray.allocationSize(value.`conversationId`) +
+            FfiConverterString.allocationSize(value.`senderInboxId`) +
+            FfiConverterByteArray.allocationSize(value.`content`) +
+            FfiConverterTypeFfiConversationMessageKind.allocationSize(value.`kind`) +
+            FfiConverterTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`)
+    )
 
     override fun write(value: FfiMessage, buf: ByteBuffer) {
-        FfiConverterByteArray.write(value.`id`, buf)
-        FfiConverterLong.write(value.`sentAtNs`, buf)
-        FfiConverterByteArray.write(value.`convoId`, buf)
-        FfiConverterString.write(value.`senderInboxId`, buf)
-        FfiConverterByteArray.write(value.`content`, buf)
-        FfiConverterTypeFfiConversationMessageKind.write(value.`kind`, buf)
-        FfiConverterTypeFfiDeliveryStatus.write(value.`deliveryStatus`, buf)
+            FfiConverterByteArray.write(value.`id`, buf)
+            FfiConverterLong.write(value.`sentAtNs`, buf)
+            FfiConverterByteArray.write(value.`conversationId`, buf)
+            FfiConverterString.write(value.`senderInboxId`, buf)
+            FfiConverterByteArray.write(value.`content`, buf)
+            FfiConverterTypeFfiConversationMessageKind.write(value.`kind`, buf)
+            FfiConverterTypeFfiDeliveryStatus.write(value.`deliveryStatus`, buf)
     }
 }
 
 
-data class FfiPagingInfo(
-    var `limit`: kotlin.UInt,
-    var `cursor`: FfiCursor?,
-    var `direction`: FfiSortDirection,
-) {
 
+/**
+ * Settings for disappearing messages in a conversation.
+ *
+ * # Fields
+ *
+ * * `from_ns` - The timestamp (in nanoseconds) from when messages should be tracked for deletion.
+ * * `in_ns` - The duration (in nanoseconds) after which tracked messages will be deleted.
+ */
+data class FfiMessageDisappearingSettings (
+    var `fromNs`: kotlin.Long, 
+    var `inNs`: kotlin.Long
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiPagingInfo : FfiConverterRustBuffer<FfiPagingInfo> {
-    override fun read(buf: ByteBuffer): FfiPagingInfo {
-        return FfiPagingInfo(
-            FfiConverterUInt.read(buf),
-            FfiConverterOptionalTypeFfiCursor.read(buf),
-            FfiConverterTypeFfiSortDirection.read(buf),
+public object FfiConverterTypeFfiMessageDisappearingSettings: FfiConverterRustBuffer<FfiMessageDisappearingSettings> {
+    override fun read(buf: ByteBuffer): FfiMessageDisappearingSettings {
+        return FfiMessageDisappearingSettings(
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
         )
     }
 
-    override fun allocationSize(value: FfiPagingInfo) = (
-            FfiConverterUInt.allocationSize(value.`limit`) +
-                    FfiConverterOptionalTypeFfiCursor.allocationSize(value.`cursor`) +
-                    FfiConverterTypeFfiSortDirection.allocationSize(value.`direction`)
-            )
+    override fun allocationSize(value: FfiMessageDisappearingSettings) = (
+            FfiConverterLong.allocationSize(value.`fromNs`) +
+            FfiConverterLong.allocationSize(value.`inNs`)
+    )
 
-    override fun write(value: FfiPagingInfo, buf: ByteBuffer) {
-        FfiConverterUInt.write(value.`limit`, buf)
-        FfiConverterOptionalTypeFfiCursor.write(value.`cursor`, buf)
-        FfiConverterTypeFfiSortDirection.write(value.`direction`, buf)
+    override fun write(value: FfiMessageDisappearingSettings, buf: ByteBuffer) {
+            FfiConverterLong.write(value.`fromNs`, buf)
+            FfiConverterLong.write(value.`inNs`, buf)
     }
 }
 
 
-data class FfiPermissionPolicySet(
-    var `addMemberPolicy`: FfiPermissionPolicy,
-    var `removeMemberPolicy`: FfiPermissionPolicy,
-    var `addAdminPolicy`: FfiPermissionPolicy,
-    var `removeAdminPolicy`: FfiPermissionPolicy,
-    var `updateGroupNamePolicy`: FfiPermissionPolicy,
-    var `updateGroupDescriptionPolicy`: FfiPermissionPolicy,
-    var `updateGroupImageUrlSquarePolicy`: FfiPermissionPolicy,
-    var `updateGroupPinnedFrameUrlPolicy`: FfiPermissionPolicy,
-) {
 
+data class FfiMessageWithReactions (
+    var `message`: FfiMessage, 
+    var `reactions`: List<FfiMessage>
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiPermissionPolicySet :
-    FfiConverterRustBuffer<FfiPermissionPolicySet> {
+public object FfiConverterTypeFfiMessageWithReactions: FfiConverterRustBuffer<FfiMessageWithReactions> {
+    override fun read(buf: ByteBuffer): FfiMessageWithReactions {
+        return FfiMessageWithReactions(
+            FfiConverterTypeFfiMessage.read(buf),
+            FfiConverterSequenceTypeFfiMessage.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiMessageWithReactions) = (
+            FfiConverterTypeFfiMessage.allocationSize(value.`message`) +
+            FfiConverterSequenceTypeFfiMessage.allocationSize(value.`reactions`)
+    )
+
+    override fun write(value: FfiMessageWithReactions, buf: ByteBuffer) {
+            FfiConverterTypeFfiMessage.write(value.`message`, buf)
+            FfiConverterSequenceTypeFfiMessage.write(value.`reactions`, buf)
+    }
+}
+
+
+
+data class FfiMultiRemoteAttachment (
+    var `attachments`: List<FfiRemoteAttachmentInfo>
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiMultiRemoteAttachment: FfiConverterRustBuffer<FfiMultiRemoteAttachment> {
+    override fun read(buf: ByteBuffer): FfiMultiRemoteAttachment {
+        return FfiMultiRemoteAttachment(
+            FfiConverterSequenceTypeFfiRemoteAttachmentInfo.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiMultiRemoteAttachment) = (
+            FfiConverterSequenceTypeFfiRemoteAttachmentInfo.allocationSize(value.`attachments`)
+    )
+
+    override fun write(value: FfiMultiRemoteAttachment, buf: ByteBuffer) {
+            FfiConverterSequenceTypeFfiRemoteAttachmentInfo.write(value.`attachments`, buf)
+    }
+}
+
+
+
+data class FfiPasskeySignature (
+    var `publicKey`: kotlin.ByteArray, 
+    var `signature`: kotlin.ByteArray, 
+    var `authenticatorData`: kotlin.ByteArray, 
+    var `clientDataJson`: kotlin.ByteArray
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiPasskeySignature: FfiConverterRustBuffer<FfiPasskeySignature> {
+    override fun read(buf: ByteBuffer): FfiPasskeySignature {
+        return FfiPasskeySignature(
+            FfiConverterByteArray.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterByteArray.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiPasskeySignature) = (
+            FfiConverterByteArray.allocationSize(value.`publicKey`) +
+            FfiConverterByteArray.allocationSize(value.`signature`) +
+            FfiConverterByteArray.allocationSize(value.`authenticatorData`) +
+            FfiConverterByteArray.allocationSize(value.`clientDataJson`)
+    )
+
+    override fun write(value: FfiPasskeySignature, buf: ByteBuffer) {
+            FfiConverterByteArray.write(value.`publicKey`, buf)
+            FfiConverterByteArray.write(value.`signature`, buf)
+            FfiConverterByteArray.write(value.`authenticatorData`, buf)
+            FfiConverterByteArray.write(value.`clientDataJson`, buf)
+    }
+}
+
+
+
+data class FfiPermissionPolicySet (
+    var `addMemberPolicy`: FfiPermissionPolicy, 
+    var `removeMemberPolicy`: FfiPermissionPolicy, 
+    var `addAdminPolicy`: FfiPermissionPolicy, 
+    var `removeAdminPolicy`: FfiPermissionPolicy, 
+    var `updateGroupNamePolicy`: FfiPermissionPolicy, 
+    var `updateGroupDescriptionPolicy`: FfiPermissionPolicy, 
+    var `updateGroupImageUrlSquarePolicy`: FfiPermissionPolicy, 
+    var `updateMessageDisappearingPolicy`: FfiPermissionPolicy
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiPermissionPolicySet: FfiConverterRustBuffer<FfiPermissionPolicySet> {
     override fun read(buf: ByteBuffer): FfiPermissionPolicySet {
         return FfiPermissionPolicySet(
             FfiConverterTypeFfiPermissionPolicy.read(buf),
@@ -10597,215 +9405,200 @@ public object FfiConverterTypeFfiPermissionPolicySet :
 
     override fun allocationSize(value: FfiPermissionPolicySet) = (
             FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`addMemberPolicy`) +
-                    FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`removeMemberPolicy`) +
-                    FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`addAdminPolicy`) +
-                    FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`removeAdminPolicy`) +
-                    FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupNamePolicy`) +
-                    FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupDescriptionPolicy`) +
-                    FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupImageUrlSquarePolicy`) +
-                    FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupPinnedFrameUrlPolicy`)
-            )
+            FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`removeMemberPolicy`) +
+            FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`addAdminPolicy`) +
+            FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`removeAdminPolicy`) +
+            FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupNamePolicy`) +
+            FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupDescriptionPolicy`) +
+            FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupImageUrlSquarePolicy`) +
+            FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateMessageDisappearingPolicy`)
+    )
 
     override fun write(value: FfiPermissionPolicySet, buf: ByteBuffer) {
-        FfiConverterTypeFfiPermissionPolicy.write(value.`addMemberPolicy`, buf)
-        FfiConverterTypeFfiPermissionPolicy.write(value.`removeMemberPolicy`, buf)
-        FfiConverterTypeFfiPermissionPolicy.write(value.`addAdminPolicy`, buf)
-        FfiConverterTypeFfiPermissionPolicy.write(value.`removeAdminPolicy`, buf)
-        FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupNamePolicy`, buf)
-        FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupDescriptionPolicy`, buf)
-        FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupImageUrlSquarePolicy`, buf)
-        FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupPinnedFrameUrlPolicy`, buf)
+            FfiConverterTypeFfiPermissionPolicy.write(value.`addMemberPolicy`, buf)
+            FfiConverterTypeFfiPermissionPolicy.write(value.`removeMemberPolicy`, buf)
+            FfiConverterTypeFfiPermissionPolicy.write(value.`addAdminPolicy`, buf)
+            FfiConverterTypeFfiPermissionPolicy.write(value.`removeAdminPolicy`, buf)
+            FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupNamePolicy`, buf)
+            FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupDescriptionPolicy`, buf)
+            FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupImageUrlSquarePolicy`, buf)
+            FfiConverterTypeFfiPermissionPolicy.write(value.`updateMessageDisappearingPolicy`, buf)
     }
 }
 
 
-data class FfiPublishRequest(
-    var `envelopes`: List<FfiEnvelope>,
-) {
 
+data class FfiReaction (
+    var `reference`: kotlin.String, 
+    var `referenceInboxId`: kotlin.String, 
+    var `action`: FfiReactionAction, 
+    var `content`: kotlin.String, 
+    var `schema`: FfiReactionSchema
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiPublishRequest : FfiConverterRustBuffer<FfiPublishRequest> {
-    override fun read(buf: ByteBuffer): FfiPublishRequest {
-        return FfiPublishRequest(
-            FfiConverterSequenceTypeFfiEnvelope.read(buf),
+public object FfiConverterTypeFfiReaction: FfiConverterRustBuffer<FfiReaction> {
+    override fun read(buf: ByteBuffer): FfiReaction {
+        return FfiReaction(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeFfiReactionAction.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterTypeFfiReactionSchema.read(buf),
         )
     }
 
-    override fun allocationSize(value: FfiPublishRequest) = (
-            FfiConverterSequenceTypeFfiEnvelope.allocationSize(value.`envelopes`)
-            )
+    override fun allocationSize(value: FfiReaction) = (
+            FfiConverterString.allocationSize(value.`reference`) +
+            FfiConverterString.allocationSize(value.`referenceInboxId`) +
+            FfiConverterTypeFfiReactionAction.allocationSize(value.`action`) +
+            FfiConverterString.allocationSize(value.`content`) +
+            FfiConverterTypeFfiReactionSchema.allocationSize(value.`schema`)
+    )
 
-    override fun write(value: FfiPublishRequest, buf: ByteBuffer) {
-        FfiConverterSequenceTypeFfiEnvelope.write(value.`envelopes`, buf)
+    override fun write(value: FfiReaction, buf: ByteBuffer) {
+            FfiConverterString.write(value.`reference`, buf)
+            FfiConverterString.write(value.`referenceInboxId`, buf)
+            FfiConverterTypeFfiReactionAction.write(value.`action`, buf)
+            FfiConverterString.write(value.`content`, buf)
+            FfiConverterTypeFfiReactionSchema.write(value.`schema`, buf)
     }
 }
 
 
-data class FfiV2BatchQueryRequest(
-    var `requests`: List<FfiV2QueryRequest>,
-) {
 
+data class FfiRemoteAttachmentInfo (
+    var `secret`: kotlin.ByteArray, 
+    var `contentDigest`: kotlin.String, 
+    var `nonce`: kotlin.ByteArray, 
+    var `scheme`: kotlin.String, 
+    var `url`: kotlin.String, 
+    var `salt`: kotlin.ByteArray, 
+    var `contentLength`: kotlin.UInt?, 
+    var `filename`: kotlin.String?
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiV2BatchQueryRequest :
-    FfiConverterRustBuffer<FfiV2BatchQueryRequest> {
-    override fun read(buf: ByteBuffer): FfiV2BatchQueryRequest {
-        return FfiV2BatchQueryRequest(
-            FfiConverterSequenceTypeFfiV2QueryRequest.read(buf),
+public object FfiConverterTypeFfiRemoteAttachmentInfo: FfiConverterRustBuffer<FfiRemoteAttachmentInfo> {
+    override fun read(buf: ByteBuffer): FfiRemoteAttachmentInfo {
+        return FfiRemoteAttachmentInfo(
+            FfiConverterByteArray.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterByteArray.read(buf),
+            FfiConverterOptionalUInt.read(buf),
+            FfiConverterOptionalString.read(buf),
         )
     }
 
-    override fun allocationSize(value: FfiV2BatchQueryRequest) = (
-            FfiConverterSequenceTypeFfiV2QueryRequest.allocationSize(value.`requests`)
-            )
+    override fun allocationSize(value: FfiRemoteAttachmentInfo) = (
+            FfiConverterByteArray.allocationSize(value.`secret`) +
+            FfiConverterString.allocationSize(value.`contentDigest`) +
+            FfiConverterByteArray.allocationSize(value.`nonce`) +
+            FfiConverterString.allocationSize(value.`scheme`) +
+            FfiConverterString.allocationSize(value.`url`) +
+            FfiConverterByteArray.allocationSize(value.`salt`) +
+            FfiConverterOptionalUInt.allocationSize(value.`contentLength`) +
+            FfiConverterOptionalString.allocationSize(value.`filename`)
+    )
 
-    override fun write(value: FfiV2BatchQueryRequest, buf: ByteBuffer) {
-        FfiConverterSequenceTypeFfiV2QueryRequest.write(value.`requests`, buf)
+    override fun write(value: FfiRemoteAttachmentInfo, buf: ByteBuffer) {
+            FfiConverterByteArray.write(value.`secret`, buf)
+            FfiConverterString.write(value.`contentDigest`, buf)
+            FfiConverterByteArray.write(value.`nonce`, buf)
+            FfiConverterString.write(value.`scheme`, buf)
+            FfiConverterString.write(value.`url`, buf)
+            FfiConverterByteArray.write(value.`salt`, buf)
+            FfiConverterOptionalUInt.write(value.`contentLength`, buf)
+            FfiConverterOptionalString.write(value.`filename`, buf)
     }
 }
 
 
-data class FfiV2BatchQueryResponse(
-    var `responses`: List<FfiV2QueryResponse>,
-) {
 
+data class FfiUpdateGroupMembershipResult (
+    var `addedMembers`: Map<kotlin.String, kotlin.ULong>, 
+    var `removedMembers`: List<kotlin.String>, 
+    var `failedInstallations`: List<kotlin.ByteArray>
+) {
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiV2BatchQueryResponse :
-    FfiConverterRustBuffer<FfiV2BatchQueryResponse> {
-    override fun read(buf: ByteBuffer): FfiV2BatchQueryResponse {
-        return FfiV2BatchQueryResponse(
-            FfiConverterSequenceTypeFfiV2QueryResponse.read(buf),
-        )
-    }
-
-    override fun allocationSize(value: FfiV2BatchQueryResponse) = (
-            FfiConverterSequenceTypeFfiV2QueryResponse.allocationSize(value.`responses`)
-            )
-
-    override fun write(value: FfiV2BatchQueryResponse, buf: ByteBuffer) {
-        FfiConverterSequenceTypeFfiV2QueryResponse.write(value.`responses`, buf)
-    }
-}
-
-
-data class FfiV2QueryRequest(
-    var `contentTopics`: List<kotlin.String>,
-    var `startTimeNs`: kotlin.ULong,
-    var `endTimeNs`: kotlin.ULong,
-    var `pagingInfo`: FfiPagingInfo?,
-) {
-
-    companion object
-}
-
-/**
- * @suppress
- */
-public object FfiConverterTypeFfiV2QueryRequest : FfiConverterRustBuffer<FfiV2QueryRequest> {
-    override fun read(buf: ByteBuffer): FfiV2QueryRequest {
-        return FfiV2QueryRequest(
+public object FfiConverterTypeFfiUpdateGroupMembershipResult: FfiConverterRustBuffer<FfiUpdateGroupMembershipResult> {
+    override fun read(buf: ByteBuffer): FfiUpdateGroupMembershipResult {
+        return FfiUpdateGroupMembershipResult(
+            FfiConverterMapStringULong.read(buf),
             FfiConverterSequenceString.read(buf),
-            FfiConverterULong.read(buf),
-            FfiConverterULong.read(buf),
-            FfiConverterOptionalTypeFfiPagingInfo.read(buf),
+            FfiConverterSequenceByteArray.read(buf),
         )
     }
 
-    override fun allocationSize(value: FfiV2QueryRequest) = (
-            FfiConverterSequenceString.allocationSize(value.`contentTopics`) +
-                    FfiConverterULong.allocationSize(value.`startTimeNs`) +
-                    FfiConverterULong.allocationSize(value.`endTimeNs`) +
-                    FfiConverterOptionalTypeFfiPagingInfo.allocationSize(value.`pagingInfo`)
-            )
+    override fun allocationSize(value: FfiUpdateGroupMembershipResult) = (
+            FfiConverterMapStringULong.allocationSize(value.`addedMembers`) +
+            FfiConverterSequenceString.allocationSize(value.`removedMembers`) +
+            FfiConverterSequenceByteArray.allocationSize(value.`failedInstallations`)
+    )
 
-    override fun write(value: FfiV2QueryRequest, buf: ByteBuffer) {
-        FfiConverterSequenceString.write(value.`contentTopics`, buf)
-        FfiConverterULong.write(value.`startTimeNs`, buf)
-        FfiConverterULong.write(value.`endTimeNs`, buf)
-        FfiConverterOptionalTypeFfiPagingInfo.write(value.`pagingInfo`, buf)
+    override fun write(value: FfiUpdateGroupMembershipResult, buf: ByteBuffer) {
+            FfiConverterMapStringULong.write(value.`addedMembers`, buf)
+            FfiConverterSequenceString.write(value.`removedMembers`, buf)
+            FfiConverterSequenceByteArray.write(value.`failedInstallations`, buf)
     }
 }
 
 
-data class FfiV2QueryResponse(
-    var `envelopes`: List<FfiEnvelope>,
-    var `pagingInfo`: FfiPagingInfo?,
-) {
 
+
+enum class FfiBackupElementSelection {
+    
+    MESSAGES,
+    CONSENT;
     companion object
 }
+
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiV2QueryResponse : FfiConverterRustBuffer<FfiV2QueryResponse> {
-    override fun read(buf: ByteBuffer): FfiV2QueryResponse {
-        return FfiV2QueryResponse(
-            FfiConverterSequenceTypeFfiEnvelope.read(buf),
-            FfiConverterOptionalTypeFfiPagingInfo.read(buf),
-        )
+public object FfiConverterTypeFfiBackupElementSelection: FfiConverterRustBuffer<FfiBackupElementSelection> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiBackupElementSelection.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
     }
 
-    override fun allocationSize(value: FfiV2QueryResponse) = (
-            FfiConverterSequenceTypeFfiEnvelope.allocationSize(value.`envelopes`) +
-                    FfiConverterOptionalTypeFfiPagingInfo.allocationSize(value.`pagingInfo`)
-            )
+    override fun allocationSize(value: FfiBackupElementSelection) = 4UL
 
-    override fun write(value: FfiV2QueryResponse, buf: ByteBuffer) {
-        FfiConverterSequenceTypeFfiEnvelope.write(value.`envelopes`, buf)
-        FfiConverterOptionalTypeFfiPagingInfo.write(value.`pagingInfo`, buf)
+    override fun write(value: FfiBackupElementSelection, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
     }
 }
 
 
-data class FfiV2SubscribeRequest(
-    var `contentTopics`: List<kotlin.String>,
-) {
 
-    companion object
-}
 
-/**
- * @suppress
- */
-public object FfiConverterTypeFfiV2SubscribeRequest :
-    FfiConverterRustBuffer<FfiV2SubscribeRequest> {
-    override fun read(buf: ByteBuffer): FfiV2SubscribeRequest {
-        return FfiV2SubscribeRequest(
-            FfiConverterSequenceString.read(buf),
-        )
-    }
-
-    override fun allocationSize(value: FfiV2SubscribeRequest) = (
-            FfiConverterSequenceString.allocationSize(value.`contentTopics`)
-            )
-
-    override fun write(value: FfiV2SubscribeRequest, buf: ByteBuffer) {
-        FfiConverterSequenceString.write(value.`contentTopics`, buf)
-    }
-}
 
 
 enum class FfiConsentEntityType {
-
+    
     CONVERSATION_ID,
-    INBOX_ID,
-    ADDRESS;
-
+    INBOX_ID;
     companion object
 }
 
@@ -10813,7 +9606,7 @@ enum class FfiConsentEntityType {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConsentEntityType : FfiConverterRustBuffer<FfiConsentEntityType> {
+public object FfiConverterTypeFfiConsentEntityType: FfiConverterRustBuffer<FfiConsentEntityType> {
     override fun read(buf: ByteBuffer) = try {
         FfiConsentEntityType.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -10828,12 +9621,15 @@ public object FfiConverterTypeFfiConsentEntityType : FfiConverterRustBuffer<FfiC
 }
 
 
-enum class FfiConsentState {
 
+
+
+
+enum class FfiConsentState {
+    
     UNKNOWN,
     ALLOWED,
     DENIED;
-
     companion object
 }
 
@@ -10841,7 +9637,7 @@ enum class FfiConsentState {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConsentState : FfiConverterRustBuffer<FfiConsentState> {
+public object FfiConverterTypeFfiConsentState: FfiConverterRustBuffer<FfiConsentState> {
     override fun read(buf: ByteBuffer) = try {
         FfiConsentState.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -10856,8 +9652,12 @@ public object FfiConverterTypeFfiConsentState : FfiConverterRustBuffer<FfiConsen
 }
 
 
-enum class FfiContentType {
 
+
+
+
+enum class FfiContentType {
+    
     UNKNOWN,
     TEXT,
     GROUP_MEMBERSHIP_CHANGE,
@@ -10868,7 +9668,6 @@ enum class FfiContentType {
     ATTACHMENT,
     REMOTE_ATTACHMENT,
     TRANSACTION_REFERENCE;
-
     companion object
 }
 
@@ -10876,7 +9675,7 @@ enum class FfiContentType {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiContentType : FfiConverterRustBuffer<FfiContentType> {
+public object FfiConverterTypeFfiContentType: FfiConverterRustBuffer<FfiContentType> {
     override fun read(buf: ByteBuffer) = try {
         FfiContentType.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -10891,11 +9690,14 @@ public object FfiConverterTypeFfiContentType : FfiConverterRustBuffer<FfiContent
 }
 
 
-enum class FfiConversationMessageKind {
 
+
+
+
+enum class FfiConversationMessageKind {
+    
     APPLICATION,
     MEMBERSHIP_CHANGE;
-
     companion object
 }
 
@@ -10903,8 +9705,7 @@ enum class FfiConversationMessageKind {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConversationMessageKind :
-    FfiConverterRustBuffer<FfiConversationMessageKind> {
+public object FfiConverterTypeFfiConversationMessageKind: FfiConverterRustBuffer<FfiConversationMessageKind> {
     override fun read(buf: ByteBuffer) = try {
         FfiConversationMessageKind.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -10919,12 +9720,15 @@ public object FfiConverterTypeFfiConversationMessageKind :
 }
 
 
-enum class FfiConversationType {
 
+
+
+
+enum class FfiConversationType {
+    
     GROUP,
     DM,
     SYNC;
-
     companion object
 }
 
@@ -10932,7 +9736,7 @@ enum class FfiConversationType {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiConversationType : FfiConverterRustBuffer<FfiConversationType> {
+public object FfiConverterTypeFfiConversationType: FfiConverterRustBuffer<FfiConversationType> {
     override fun read(buf: ByteBuffer) = try {
         FfiConversationType.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -10947,12 +9751,15 @@ public object FfiConverterTypeFfiConversationType : FfiConverterRustBuffer<FfiCo
 }
 
 
-enum class FfiDeliveryStatus {
 
+
+
+
+enum class FfiDeliveryStatus {
+    
     UNPUBLISHED,
     PUBLISHED,
     FAILED;
-
     companion object
 }
 
@@ -10960,7 +9767,7 @@ enum class FfiDeliveryStatus {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiDeliveryStatus : FfiConverterRustBuffer<FfiDeliveryStatus> {
+public object FfiConverterTypeFfiDeliveryStatus: FfiConverterRustBuffer<FfiDeliveryStatus> {
     override fun read(buf: ByteBuffer) = try {
         FfiDeliveryStatus.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -10975,11 +9782,14 @@ public object FfiConverterTypeFfiDeliveryStatus : FfiConverterRustBuffer<FfiDeli
 }
 
 
-enum class FfiDeviceSyncKind {
 
+
+
+
+enum class FfiDeviceSyncKind {
+    
     MESSAGES,
     CONSENT;
-
     companion object
 }
 
@@ -10987,7 +9797,7 @@ enum class FfiDeviceSyncKind {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiDeviceSyncKind : FfiConverterRustBuffer<FfiDeviceSyncKind> {
+public object FfiConverterTypeFfiDeviceSyncKind: FfiConverterRustBuffer<FfiDeviceSyncKind> {
     override fun read(buf: ByteBuffer) = try {
         FfiDeviceSyncKind.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -11002,11 +9812,14 @@ public object FfiConverterTypeFfiDeviceSyncKind : FfiConverterRustBuffer<FfiDevi
 }
 
 
-enum class FfiDirection {
 
+
+
+
+enum class FfiDirection {
+    
     ASCENDING,
     DESCENDING;
-
     companion object
 }
 
@@ -11014,7 +9827,7 @@ enum class FfiDirection {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiDirection : FfiConverterRustBuffer<FfiDirection> {
+public object FfiConverterTypeFfiDirection: FfiConverterRustBuffer<FfiDirection> {
     override fun read(buf: ByteBuffer) = try {
         FfiDirection.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -11029,12 +9842,15 @@ public object FfiConverterTypeFfiDirection : FfiConverterRustBuffer<FfiDirection
 }
 
 
-enum class FfiGroupPermissionsOptions {
 
-    ALL_MEMBERS,
+
+
+
+enum class FfiGroupPermissionsOptions {
+    
+    DEFAULT,
     ADMIN_ONLY,
     CUSTOM_POLICY;
-
     companion object
 }
 
@@ -11042,8 +9858,7 @@ enum class FfiGroupPermissionsOptions {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiGroupPermissionsOptions :
-    FfiConverterRustBuffer<FfiGroupPermissionsOptions> {
+public object FfiConverterTypeFfiGroupPermissionsOptions: FfiConverterRustBuffer<FfiGroupPermissionsOptions> {
     override fun read(buf: ByteBuffer) = try {
         FfiGroupPermissionsOptions.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -11058,13 +9873,14 @@ public object FfiConverterTypeFfiGroupPermissionsOptions :
 }
 
 
-enum class FfiMetadataField {
 
-    GROUP_NAME,
-    DESCRIPTION,
-    IMAGE_URL_SQUARE,
-    PINNED_FRAME_URL;
 
+
+
+enum class FfiIdentifierKind {
+    
+    ETHEREUM,
+    PASSKEY;
     companion object
 }
 
@@ -11072,7 +9888,136 @@ enum class FfiMetadataField {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiMetadataField : FfiConverterRustBuffer<FfiMetadataField> {
+public object FfiConverterTypeFfiIdentifierKind: FfiConverterRustBuffer<FfiIdentifierKind> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiIdentifierKind.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: FfiIdentifierKind) = 4UL
+
+    override fun write(value: FfiIdentifierKind, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * Enum representing log levels
+ */
+
+enum class FfiLogLevel {
+    
+    /**
+     * Error level logs only
+     */
+    ERROR,
+    /**
+     * Warning level and above
+     */
+    WARN,
+    /**
+     * Info level and above
+     */
+    INFO,
+    /**
+     * Debug level and above
+     */
+    DEBUG,
+    /**
+     * Trace level and all logs
+     */
+    TRACE;
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiLogLevel: FfiConverterRustBuffer<FfiLogLevel> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiLogLevel.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: FfiLogLevel) = 4UL
+
+    override fun write(value: FfiLogLevel, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+/**
+ * Enum representing log file rotation options
+ */
+
+enum class FfiLogRotation {
+    
+    /**
+     * Rotate log files every minute
+     */
+    MINUTELY,
+    /**
+     * Rotate log files every hour
+     */
+    HOURLY,
+    /**
+     * Rotate log files every day
+     */
+    DAILY,
+    /**
+     * Never rotate log files
+     */
+    NEVER;
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiLogRotation: FfiConverterRustBuffer<FfiLogRotation> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiLogRotation.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: FfiLogRotation) = 4UL
+
+    override fun write(value: FfiLogRotation, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+
+enum class FfiMetadataField {
+    
+    GROUP_NAME,
+    DESCRIPTION,
+    IMAGE_URL_SQUARE;
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiMetadataField: FfiConverterRustBuffer<FfiMetadataField> {
     override fun read(buf: ByteBuffer) = try {
         FfiMetadataField.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -11087,12 +10032,15 @@ public object FfiConverterTypeFfiMetadataField : FfiConverterRustBuffer<FfiMetad
 }
 
 
-enum class FfiPermissionLevel {
 
+
+
+
+enum class FfiPermissionLevel {
+    
     MEMBER,
     ADMIN,
     SUPER_ADMIN;
-
     companion object
 }
 
@@ -11100,7 +10048,7 @@ enum class FfiPermissionLevel {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiPermissionLevel : FfiConverterRustBuffer<FfiPermissionLevel> {
+public object FfiConverterTypeFfiPermissionLevel: FfiConverterRustBuffer<FfiPermissionLevel> {
     override fun read(buf: ByteBuffer) = try {
         FfiPermissionLevel.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -11115,15 +10063,18 @@ public object FfiConverterTypeFfiPermissionLevel : FfiConverterRustBuffer<FfiPer
 }
 
 
-enum class FfiPermissionPolicy {
 
+
+
+
+enum class FfiPermissionPolicy {
+    
     ALLOW,
     DENY,
     ADMIN,
     SUPER_ADMIN,
     DOES_NOT_EXIST,
     OTHER;
-
     companion object
 }
 
@@ -11131,7 +10082,7 @@ enum class FfiPermissionPolicy {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiPermissionPolicy : FfiConverterRustBuffer<FfiPermissionPolicy> {
+public object FfiConverterTypeFfiPermissionPolicy: FfiConverterRustBuffer<FfiPermissionPolicy> {
     override fun read(buf: ByteBuffer) = try {
         FfiPermissionPolicy.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -11146,14 +10097,17 @@ public object FfiConverterTypeFfiPermissionPolicy : FfiConverterRustBuffer<FfiPe
 }
 
 
-enum class FfiPermissionUpdateType {
 
+
+
+
+enum class FfiPermissionUpdateType {
+    
     ADD_MEMBER,
     REMOVE_MEMBER,
     ADD_ADMIN,
     REMOVE_ADMIN,
     UPDATE_METADATA;
-
     companion object
 }
 
@@ -11161,8 +10115,7 @@ enum class FfiPermissionUpdateType {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiPermissionUpdateType :
-    FfiConverterRustBuffer<FfiPermissionUpdateType> {
+public object FfiConverterTypeFfiPermissionUpdateType: FfiConverterRustBuffer<FfiPermissionUpdateType> {
     override fun read(buf: ByteBuffer) = try {
         FfiPermissionUpdateType.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
@@ -11177,44 +10130,46 @@ public object FfiConverterTypeFfiPermissionUpdateType :
 }
 
 
-sealed class FfiPreferenceUpdate {
 
+
+
+sealed class FfiPreferenceUpdate {
+    
     data class Hmac(
-        val `key`: kotlin.ByteArray,
-    ) : FfiPreferenceUpdate() {
+        val `key`: kotlin.ByteArray) : FfiPreferenceUpdate() {
         companion object
     }
+    
 
-
+    
     companion object
 }
 
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiPreferenceUpdate : FfiConverterRustBuffer<FfiPreferenceUpdate> {
+public object FfiConverterTypeFfiPreferenceUpdate : FfiConverterRustBuffer<FfiPreferenceUpdate>{
     override fun read(buf: ByteBuffer): FfiPreferenceUpdate {
-        return when (buf.getInt()) {
+        return when(buf.getInt()) {
             1 -> FfiPreferenceUpdate.Hmac(
                 FfiConverterByteArray.read(buf),
-            )
-
+                )
             else -> throw RuntimeException("invalid enum value, something is very wrong!!")
         }
     }
 
-    override fun allocationSize(value: FfiPreferenceUpdate) = when (value) {
+    override fun allocationSize(value: FfiPreferenceUpdate) = when(value) {
         is FfiPreferenceUpdate.Hmac -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
-                    4UL
-                            + FfiConverterByteArray.allocationSize(value.`key`)
-                    )
+                4UL
+                + FfiConverterByteArray.allocationSize(value.`key`)
+            )
         }
     }
 
     override fun write(value: FfiPreferenceUpdate, buf: ByteBuffer) {
-        when (value) {
+        when(value) {
             is FfiPreferenceUpdate.Hmac -> {
                 buf.putInt(1)
                 FfiConverterByteArray.write(value.`key`, buf)
@@ -11225,12 +10180,15 @@ public object FfiConverterTypeFfiPreferenceUpdate : FfiConverterRustBuffer<FfiPr
 }
 
 
-enum class FfiSortDirection {
 
-    UNSPECIFIED,
-    ASCENDING,
-    DESCENDING;
 
+
+
+enum class FfiReactionAction {
+    
+    UNKNOWN,
+    ADDED,
+    REMOVED;
     companion object
 }
 
@@ -11238,31 +10196,67 @@ enum class FfiSortDirection {
 /**
  * @suppress
  */
-public object FfiConverterTypeFfiSortDirection : FfiConverterRustBuffer<FfiSortDirection> {
+public object FfiConverterTypeFfiReactionAction: FfiConverterRustBuffer<FfiReactionAction> {
     override fun read(buf: ByteBuffer) = try {
-        FfiSortDirection.values()[buf.getInt() - 1]
+        FfiReactionAction.values()[buf.getInt() - 1]
     } catch (e: IndexOutOfBoundsException) {
         throw RuntimeException("invalid enum value, something is very wrong!!", e)
     }
 
-    override fun allocationSize(value: FfiSortDirection) = 4UL
+    override fun allocationSize(value: FfiReactionAction) = 4UL
 
-    override fun write(value: FfiSortDirection, buf: ByteBuffer) {
+    override fun write(value: FfiReactionAction, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
     }
 }
 
 
-sealed class FfiSubscribeException(message: String) : kotlin.Exception(message) {
 
-    class Subscribe(message: String) : FfiSubscribeException(message)
 
-    class Storage(message: String) : FfiSubscribeException(message)
 
+
+enum class FfiReactionSchema {
+    
+    UNKNOWN,
+    UNICODE,
+    SHORTCODE,
+    CUSTOM;
+    companion object
+}
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiReactionSchema: FfiConverterRustBuffer<FfiReactionSchema> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiReactionSchema.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
+
+    override fun allocationSize(value: FfiReactionSchema) = 4UL
+
+    override fun write(value: FfiReactionSchema, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
+
+
+
+
+
+
+
+sealed class FfiSubscribeException(message: String): kotlin.Exception(message) {
+        
+        class Subscribe(message: String) : FfiSubscribeException(message)
+        
+        class Storage(message: String) : FfiSubscribeException(message)
+        
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<FfiSubscribeException> {
-        override fun lift(error_buf: RustBuffer.ByValue): FfiSubscribeException =
-            FfiConverterTypeFfiSubscribeError.lift(error_buf)
+        override fun lift(error_buf: RustBuffer.ByValue): FfiSubscribeException = FfiConverterTypeFfiSubscribeError.lift(error_buf)
     }
 }
 
@@ -11271,13 +10265,13 @@ sealed class FfiSubscribeException(message: String) : kotlin.Exception(message) 
  */
 public object FfiConverterTypeFfiSubscribeError : FfiConverterRustBuffer<FfiSubscribeException> {
     override fun read(buf: ByteBuffer): FfiSubscribeException {
-
-        return when (buf.getInt()) {
+        
+            return when(buf.getInt()) {
             1 -> FfiSubscribeException.Subscribe(FfiConverterString.read(buf))
             2 -> FfiSubscribeException.Storage(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
-
+        
     }
 
     override fun allocationSize(value: FfiSubscribeException): ULong {
@@ -11285,12 +10279,11 @@ public object FfiConverterTypeFfiSubscribeError : FfiConverterRustBuffer<FfiSubs
     }
 
     override fun write(value: FfiSubscribeException, buf: ByteBuffer) {
-        when (value) {
+        when(value) {
             is FfiSubscribeException.Subscribe -> {
                 buf.putInt(1)
                 Unit
             }
-
             is FfiSubscribeException.Storage -> {
                 buf.putInt(2)
                 Unit
@@ -11301,44 +10294,92 @@ public object FfiConverterTypeFfiSubscribeError : FfiConverterRustBuffer<FfiSubs
 }
 
 
-sealed class GenericException(message: String) : kotlin.Exception(message) {
 
-    class Client(message: String) : GenericException(message)
 
-    class ClientBuilder(message: String) : GenericException(message)
+enum class FfiSyncWorkerMode {
+    
+    ENABLED,
+    DISABLED;
+    companion object
+}
 
-    class Storage(message: String) : GenericException(message)
 
-    class ApiException(message: String) : GenericException(message)
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiSyncWorkerMode: FfiConverterRustBuffer<FfiSyncWorkerMode> {
+    override fun read(buf: ByteBuffer) = try {
+        FfiSyncWorkerMode.values()[buf.getInt() - 1]
+    } catch (e: IndexOutOfBoundsException) {
+        throw RuntimeException("invalid enum value, something is very wrong!!", e)
+    }
 
-    class GroupException(message: String) : GenericException(message)
+    override fun allocationSize(value: FfiSyncWorkerMode) = 4UL
 
-    class Signature(message: String) : GenericException(message)
+    override fun write(value: FfiSyncWorkerMode, buf: ByteBuffer) {
+        buf.putInt(value.ordinal + 1)
+    }
+}
 
-    class GroupMetadata(message: String) : GenericException(message)
 
-    class GroupMutablePermissions(message: String) : GenericException(message)
 
-    class Generic(message: String) : GenericException(message)
 
-    class SignatureRequestException(message: String) : GenericException(message)
 
-    class Erc1271SignatureException(message: String) : GenericException(message)
 
-    class Verifier(message: String) : GenericException(message)
 
-    class FailedToConvertToU32(message: String) : GenericException(message)
-
-    class Association(message: String) : GenericException(message)
-
-    class DeviceSync(message: String) : GenericException(message)
-
-    class Identity(message: String) : GenericException(message)
-
+sealed class GenericException(message: String): kotlin.Exception(message) {
+        
+        class Client(message: String) : GenericException(message)
+        
+        class ClientBuilder(message: String) : GenericException(message)
+        
+        class Storage(message: String) : GenericException(message)
+        
+        class GroupException(message: String) : GenericException(message)
+        
+        class Signature(message: String) : GenericException(message)
+        
+        class GroupMetadata(message: String) : GenericException(message)
+        
+        class GroupMutablePermissions(message: String) : GenericException(message)
+        
+        class Generic(message: String) : GenericException(message)
+        
+        class SignatureRequestException(message: String) : GenericException(message)
+        
+        class Erc1271SignatureException(message: String) : GenericException(message)
+        
+        class Verifier(message: String) : GenericException(message)
+        
+        class FailedToConvertToU32(message: String) : GenericException(message)
+        
+        class Association(message: String) : GenericException(message)
+        
+        class DeviceSync(message: String) : GenericException(message)
+        
+        class Identity(message: String) : GenericException(message)
+        
+        class JoinException(message: String) : GenericException(message)
+        
+        class IoException(message: String) : GenericException(message)
+        
+        class Subscription(message: String) : GenericException(message)
+        
+        class ApiClientBuild(message: String) : GenericException(message)
+        
+        class Grpc(message: String) : GenericException(message)
+        
+        class AddressValidation(message: String) : GenericException(message)
+        
+        class LogInit(message: String) : GenericException(message)
+        
+        class ReloadLog(message: String) : GenericException(message)
+        
+        class Log(message: String) : GenericException(message)
+        
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<GenericException> {
-        override fun lift(error_buf: RustBuffer.ByValue): GenericException =
-            FfiConverterTypeGenericError.lift(error_buf)
+        override fun lift(error_buf: RustBuffer.ByValue): GenericException = FfiConverterTypeGenericError.lift(error_buf)
     }
 }
 
@@ -11347,27 +10388,35 @@ sealed class GenericException(message: String) : kotlin.Exception(message) {
  */
 public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericException> {
     override fun read(buf: ByteBuffer): GenericException {
-
-        return when (buf.getInt()) {
+        
+            return when(buf.getInt()) {
             1 -> GenericException.Client(FfiConverterString.read(buf))
             2 -> GenericException.ClientBuilder(FfiConverterString.read(buf))
             3 -> GenericException.Storage(FfiConverterString.read(buf))
-            4 -> GenericException.ApiException(FfiConverterString.read(buf))
-            5 -> GenericException.GroupException(FfiConverterString.read(buf))
-            6 -> GenericException.Signature(FfiConverterString.read(buf))
-            7 -> GenericException.GroupMetadata(FfiConverterString.read(buf))
-            8 -> GenericException.GroupMutablePermissions(FfiConverterString.read(buf))
-            9 -> GenericException.Generic(FfiConverterString.read(buf))
-            10 -> GenericException.SignatureRequestException(FfiConverterString.read(buf))
-            11 -> GenericException.Erc1271SignatureException(FfiConverterString.read(buf))
-            12 -> GenericException.Verifier(FfiConverterString.read(buf))
-            13 -> GenericException.FailedToConvertToU32(FfiConverterString.read(buf))
-            14 -> GenericException.Association(FfiConverterString.read(buf))
-            15 -> GenericException.DeviceSync(FfiConverterString.read(buf))
-            16 -> GenericException.Identity(FfiConverterString.read(buf))
+            4 -> GenericException.GroupException(FfiConverterString.read(buf))
+            5 -> GenericException.Signature(FfiConverterString.read(buf))
+            6 -> GenericException.GroupMetadata(FfiConverterString.read(buf))
+            7 -> GenericException.GroupMutablePermissions(FfiConverterString.read(buf))
+            8 -> GenericException.Generic(FfiConverterString.read(buf))
+            9 -> GenericException.SignatureRequestException(FfiConverterString.read(buf))
+            10 -> GenericException.Erc1271SignatureException(FfiConverterString.read(buf))
+            11 -> GenericException.Verifier(FfiConverterString.read(buf))
+            12 -> GenericException.FailedToConvertToU32(FfiConverterString.read(buf))
+            13 -> GenericException.Association(FfiConverterString.read(buf))
+            14 -> GenericException.DeviceSync(FfiConverterString.read(buf))
+            15 -> GenericException.Identity(FfiConverterString.read(buf))
+            16 -> GenericException.JoinException(FfiConverterString.read(buf))
+            17 -> GenericException.IoException(FfiConverterString.read(buf))
+            18 -> GenericException.Subscription(FfiConverterString.read(buf))
+            19 -> GenericException.ApiClientBuild(FfiConverterString.read(buf))
+            20 -> GenericException.Grpc(FfiConverterString.read(buf))
+            21 -> GenericException.AddressValidation(FfiConverterString.read(buf))
+            22 -> GenericException.LogInit(FfiConverterString.read(buf))
+            23 -> GenericException.ReloadLog(FfiConverterString.read(buf))
+            24 -> GenericException.Log(FfiConverterString.read(buf))
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
-
+        
     }
 
     override fun allocationSize(value: GenericException): ULong {
@@ -11375,84 +10424,101 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
     }
 
     override fun write(value: GenericException, buf: ByteBuffer) {
-        when (value) {
+        when(value) {
             is GenericException.Client -> {
                 buf.putInt(1)
                 Unit
             }
-
             is GenericException.ClientBuilder -> {
                 buf.putInt(2)
                 Unit
             }
-
             is GenericException.Storage -> {
                 buf.putInt(3)
                 Unit
             }
-
-            is GenericException.ApiException -> {
+            is GenericException.GroupException -> {
                 buf.putInt(4)
                 Unit
             }
-
-            is GenericException.GroupException -> {
+            is GenericException.Signature -> {
                 buf.putInt(5)
                 Unit
             }
-
-            is GenericException.Signature -> {
+            is GenericException.GroupMetadata -> {
                 buf.putInt(6)
                 Unit
             }
-
-            is GenericException.GroupMetadata -> {
+            is GenericException.GroupMutablePermissions -> {
                 buf.putInt(7)
                 Unit
             }
-
-            is GenericException.GroupMutablePermissions -> {
+            is GenericException.Generic -> {
                 buf.putInt(8)
                 Unit
             }
-
-            is GenericException.Generic -> {
+            is GenericException.SignatureRequestException -> {
                 buf.putInt(9)
                 Unit
             }
-
-            is GenericException.SignatureRequestException -> {
+            is GenericException.Erc1271SignatureException -> {
                 buf.putInt(10)
                 Unit
             }
-
-            is GenericException.Erc1271SignatureException -> {
+            is GenericException.Verifier -> {
                 buf.putInt(11)
                 Unit
             }
-
-            is GenericException.Verifier -> {
+            is GenericException.FailedToConvertToU32 -> {
                 buf.putInt(12)
                 Unit
             }
-
-            is GenericException.FailedToConvertToU32 -> {
+            is GenericException.Association -> {
                 buf.putInt(13)
                 Unit
             }
-
-            is GenericException.Association -> {
+            is GenericException.DeviceSync -> {
                 buf.putInt(14)
                 Unit
             }
-
-            is GenericException.DeviceSync -> {
+            is GenericException.Identity -> {
                 buf.putInt(15)
                 Unit
             }
-
-            is GenericException.Identity -> {
+            is GenericException.JoinException -> {
                 buf.putInt(16)
+                Unit
+            }
+            is GenericException.IoException -> {
+                buf.putInt(17)
+                Unit
+            }
+            is GenericException.Subscription -> {
+                buf.putInt(18)
+                Unit
+            }
+            is GenericException.ApiClientBuild -> {
+                buf.putInt(19)
+                Unit
+            }
+            is GenericException.Grpc -> {
+                buf.putInt(20)
+                Unit
+            }
+            is GenericException.AddressValidation -> {
+                buf.putInt(21)
+                Unit
+            }
+            is GenericException.LogInit -> {
+                buf.putInt(22)
+                Unit
+            }
+            is GenericException.ReloadLog -> {
+                buf.putInt(23)
+                Unit
+            }
+            is GenericException.Log -> {
+                buf.putInt(24)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -11461,15 +10527,82 @@ public object FfiConverterTypeGenericError : FfiConverterRustBuffer<GenericExcep
 }
 
 
-sealed class SigningException(message: String) : kotlin.Exception(message) {
 
-    class Generic(message: String) : SigningException(message)
 
+
+sealed class IdentityValidationException: kotlin.Exception() {
+    
+    class Generic(
+        
+        val v1: kotlin.String
+        ) : IdentityValidationException() {
+        override val message
+            get() = "v1=${ v1 }"
+    }
+    
+
+    companion object ErrorHandler : UniffiRustCallStatusErrorHandler<IdentityValidationException> {
+        override fun lift(error_buf: RustBuffer.ByValue): IdentityValidationException = FfiConverterTypeIdentityValidationError.lift(error_buf)
+    }
+
+    
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeIdentityValidationError : FfiConverterRustBuffer<IdentityValidationException> {
+    override fun read(buf: ByteBuffer): IdentityValidationException {
+        
+
+        return when(buf.getInt()) {
+            1 -> IdentityValidationException.Generic(
+                FfiConverterString.read(buf),
+                )
+            else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: IdentityValidationException): ULong {
+        return when(value) {
+            is IdentityValidationException.Generic -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.v1)
+            )
+        }
+    }
+
+    override fun write(value: IdentityValidationException, buf: ByteBuffer) {
+        when(value) {
+            is IdentityValidationException.Generic -> {
+                buf.putInt(1)
+                FfiConverterString.write(value.v1, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+
+}
+
+
+
+
+
+sealed class SigningException: kotlin.Exception() {
+    
+    class Generic(
+        ) : SigningException() {
+        override val message
+            get() = ""
+    }
+    
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<SigningException> {
-        override fun lift(error_buf: RustBuffer.ByValue): SigningException =
-            FfiConverterTypeSigningError.lift(error_buf)
+        override fun lift(error_buf: RustBuffer.ByValue): SigningException = FfiConverterTypeSigningError.lift(error_buf)
     }
+
+    
 }
 
 /**
@@ -11477,20 +10610,25 @@ sealed class SigningException(message: String) : kotlin.Exception(message) {
  */
 public object FfiConverterTypeSigningError : FfiConverterRustBuffer<SigningException> {
     override fun read(buf: ByteBuffer): SigningException {
+        
 
-        return when (buf.getInt()) {
-            1 -> SigningException.Generic(FfiConverterString.read(buf))
+        return when(buf.getInt()) {
+            1 -> SigningException.Generic()
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
-
     }
 
     override fun allocationSize(value: SigningException): ULong {
-        return 4UL
+        return when(value) {
+            is SigningException.Generic -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+            )
+        }
     }
 
     override fun write(value: SigningException, buf: ByteBuffer) {
-        when (value) {
+        when(value) {
             is SigningException.Generic -> {
                 buf.putInt(1)
                 Unit
@@ -11501,93 +10639,44 @@ public object FfiConverterTypeSigningError : FfiConverterRustBuffer<SigningExcep
 }
 
 
-public interface FfiInboxOwner {
-
-    fun `getAddress`(): kotlin.String
-
-    fun `sign`(`text`: kotlin.String): kotlin.ByteArray
-
-    companion object
-}
-
-
-// Put the implementation in an object so we don't pollute the top-level namespace
-internal object uniffiCallbackInterfaceFfiInboxOwner {
-    internal object `getAddress` : UniffiCallbackInterfaceFfiInboxOwnerMethod0 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `uniffiOutReturn`: RustBuffer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeFfiInboxOwner.handleMap.get(uniffiHandle)
-            val makeCall = { ->
-                uniffiObj.`getAddress`(
-                )
-            }
-            val writeReturn =
-                { value: kotlin.String -> uniffiOutReturn.setValue(FfiConverterString.lower(value)) }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object `sign` : UniffiCallbackInterfaceFfiInboxOwnerMethod1 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `text`: RustBuffer.ByValue,
-            `uniffiOutReturn`: RustBuffer,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeFfiInboxOwner.handleMap.get(uniffiHandle)
-            val makeCall = { ->
-                uniffiObj.`sign`(
-                    FfiConverterString.lift(`text`),
-                )
-            }
-            val writeReturn = { value: kotlin.ByteArray ->
-                uniffiOutReturn.setValue(
-                    FfiConverterByteArray.lower(value)
-                )
-            }
-            uniffiTraitInterfaceCallWithError(
-                uniffiCallStatus,
-                makeCall,
-                writeReturn,
-                { e: SigningException -> FfiConverterTypeSigningError.lower(e) }
-            )
-        }
-    }
-
-    internal object uniffiFree : UniffiCallbackInterfaceFree {
-        override fun callback(handle: Long) {
-            FfiConverterTypeFfiInboxOwner.handleMap.remove(handle)
-        }
-    }
-
-    internal var vtable = UniffiVTableCallbackInterfaceFfiInboxOwner.UniffiByValue(
-        `getAddress`,
-        `sign`,
-        uniffiFree,
-    )
-
-    // Registers the foreign callback with the Rust side.
-    // This method is generated for each callback interface.
-    internal fun register(lib: UniffiLib) {
-        lib.uniffi_xmtpv3_fn_init_callback_vtable_ffiinboxowner(vtable)
-    }
-}
-
-/**
- * The ffiConverter which transforms the Callbacks in to handles to pass to Rust.
- *
- * @suppress
- */
-public object FfiConverterTypeFfiInboxOwner : FfiConverterCallbackInterface<FfiInboxOwner>()
 
 
 /**
  * @suppress
  */
-public object FfiConverterOptionalULong : FfiConverterRustBuffer<kotlin.ULong?> {
+public object FfiConverterOptionalUInt: FfiConverterRustBuffer<kotlin.UInt?> {
+    override fun read(buf: ByteBuffer): kotlin.UInt? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterUInt.read(buf)
+    }
+
+    override fun allocationSize(value: kotlin.UInt?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterUInt.allocationSize(value)
+        }
+    }
+
+    override fun write(value: kotlin.UInt?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterUInt.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalULong: FfiConverterRustBuffer<kotlin.ULong?> {
     override fun read(buf: ByteBuffer): kotlin.ULong? {
         if (buf.get().toInt() == 0) {
             return null
@@ -11614,10 +10703,12 @@ public object FfiConverterOptionalULong : FfiConverterRustBuffer<kotlin.ULong?> 
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalLong : FfiConverterRustBuffer<kotlin.Long?> {
+public object FfiConverterOptionalLong: FfiConverterRustBuffer<kotlin.Long?> {
     override fun read(buf: ByteBuffer): kotlin.Long? {
         if (buf.get().toInt() == 0) {
             return null
@@ -11644,10 +10735,12 @@ public object FfiConverterOptionalLong : FfiConverterRustBuffer<kotlin.Long?> {
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalString : FfiConverterRustBuffer<kotlin.String?> {
+public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?> {
     override fun read(buf: ByteBuffer): kotlin.String? {
         if (buf.get().toInt() == 0) {
             return null
@@ -11674,10 +10767,12 @@ public object FfiConverterOptionalString : FfiConverterRustBuffer<kotlin.String?
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalByteArray : FfiConverterRustBuffer<kotlin.ByteArray?> {
+public object FfiConverterOptionalByteArray: FfiConverterRustBuffer<kotlin.ByteArray?> {
     override fun read(buf: ByteBuffer): kotlin.ByteArray? {
         if (buf.get().toInt() == 0) {
             return null
@@ -11704,11 +10799,12 @@ public object FfiConverterOptionalByteArray : FfiConverterRustBuffer<kotlin.Byte
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalTypeFfiSignatureRequest :
-    FfiConverterRustBuffer<FfiSignatureRequest?> {
+public object FfiConverterOptionalTypeFfiSignatureRequest: FfiConverterRustBuffer<FfiSignatureRequest?> {
     override fun read(buf: ByteBuffer): FfiSignatureRequest? {
         if (buf.get().toInt() == 0) {
             return null
@@ -11735,40 +10831,44 @@ public object FfiConverterOptionalTypeFfiSignatureRequest :
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalTypeFfiCursor : FfiConverterRustBuffer<FfiCursor?> {
-    override fun read(buf: ByteBuffer): FfiCursor? {
+public object FfiConverterOptionalTypeFfiLifetime: FfiConverterRustBuffer<FfiLifetime?> {
+    override fun read(buf: ByteBuffer): FfiLifetime? {
         if (buf.get().toInt() == 0) {
             return null
         }
-        return FfiConverterTypeFfiCursor.read(buf)
+        return FfiConverterTypeFfiLifetime.read(buf)
     }
 
-    override fun allocationSize(value: FfiCursor?): ULong {
+    override fun allocationSize(value: FfiLifetime?): ULong {
         if (value == null) {
             return 1UL
         } else {
-            return 1UL + FfiConverterTypeFfiCursor.allocationSize(value)
+            return 1UL + FfiConverterTypeFfiLifetime.allocationSize(value)
         }
     }
 
-    override fun write(value: FfiCursor?, buf: ByteBuffer) {
+    override fun write(value: FfiLifetime?, buf: ByteBuffer) {
         if (value == null) {
             buf.put(0)
         } else {
             buf.put(1)
-            FfiConverterTypeFfiCursor.write(value, buf)
+            FfiConverterTypeFfiLifetime.write(value, buf)
         }
     }
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalTypeFfiMessage : FfiConverterRustBuffer<FfiMessage?> {
+public object FfiConverterOptionalTypeFfiMessage: FfiConverterRustBuffer<FfiMessage?> {
     override fun read(buf: ByteBuffer): FfiMessage? {
         if (buf.get().toInt() == 0) {
             return null
@@ -11795,41 +10895,44 @@ public object FfiConverterOptionalTypeFfiMessage : FfiConverterRustBuffer<FfiMes
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalTypeFfiPagingInfo : FfiConverterRustBuffer<FfiPagingInfo?> {
-    override fun read(buf: ByteBuffer): FfiPagingInfo? {
+public object FfiConverterOptionalTypeFfiMessageDisappearingSettings: FfiConverterRustBuffer<FfiMessageDisappearingSettings?> {
+    override fun read(buf: ByteBuffer): FfiMessageDisappearingSettings? {
         if (buf.get().toInt() == 0) {
             return null
         }
-        return FfiConverterTypeFfiPagingInfo.read(buf)
+        return FfiConverterTypeFfiMessageDisappearingSettings.read(buf)
     }
 
-    override fun allocationSize(value: FfiPagingInfo?): ULong {
+    override fun allocationSize(value: FfiMessageDisappearingSettings?): ULong {
         if (value == null) {
             return 1UL
         } else {
-            return 1UL + FfiConverterTypeFfiPagingInfo.allocationSize(value)
+            return 1UL + FfiConverterTypeFfiMessageDisappearingSettings.allocationSize(value)
         }
     }
 
-    override fun write(value: FfiPagingInfo?, buf: ByteBuffer) {
+    override fun write(value: FfiMessageDisappearingSettings?, buf: ByteBuffer) {
         if (value == null) {
             buf.put(0)
         } else {
             buf.put(1)
-            FfiConverterTypeFfiPagingInfo.write(value, buf)
+            FfiConverterTypeFfiMessageDisappearingSettings.write(value, buf)
         }
     }
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalTypeFfiPermissionPolicySet :
-    FfiConverterRustBuffer<FfiPermissionPolicySet?> {
+public object FfiConverterOptionalTypeFfiPermissionPolicySet: FfiConverterRustBuffer<FfiPermissionPolicySet?> {
     override fun read(buf: ByteBuffer): FfiPermissionPolicySet? {
         if (buf.get().toInt() == 0) {
             return null
@@ -11856,41 +10959,12 @@ public object FfiConverterOptionalTypeFfiPermissionPolicySet :
 }
 
 
-/**
- * @suppress
- */
-public object FfiConverterOptionalTypeFfiConsentState : FfiConverterRustBuffer<FfiConsentState?> {
-    override fun read(buf: ByteBuffer): FfiConsentState? {
-        if (buf.get().toInt() == 0) {
-            return null
-        }
-        return FfiConverterTypeFfiConsentState.read(buf)
-    }
-
-    override fun allocationSize(value: FfiConsentState?): ULong {
-        if (value == null) {
-            return 1UL
-        } else {
-            return 1UL + FfiConverterTypeFfiConsentState.allocationSize(value)
-        }
-    }
-
-    override fun write(value: FfiConsentState?, buf: ByteBuffer) {
-        if (value == null) {
-            buf.put(0)
-        } else {
-            buf.put(1)
-            FfiConverterTypeFfiConsentState.write(value, buf)
-        }
-    }
-}
 
 
 /**
  * @suppress
  */
-public object FfiConverterOptionalTypeFfiConversationType :
-    FfiConverterRustBuffer<FfiConversationType?> {
+public object FfiConverterOptionalTypeFfiConversationType: FfiConverterRustBuffer<FfiConversationType?> {
     override fun read(buf: ByteBuffer): FfiConversationType? {
         if (buf.get().toInt() == 0) {
             return null
@@ -11917,11 +10991,12 @@ public object FfiConverterOptionalTypeFfiConversationType :
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalTypeFfiDeliveryStatus :
-    FfiConverterRustBuffer<FfiDeliveryStatus?> {
+public object FfiConverterOptionalTypeFfiDeliveryStatus: FfiConverterRustBuffer<FfiDeliveryStatus?> {
     override fun read(buf: ByteBuffer): FfiDeliveryStatus? {
         if (buf.get().toInt() == 0) {
             return null
@@ -11948,10 +11023,12 @@ public object FfiConverterOptionalTypeFfiDeliveryStatus :
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalTypeFfiDirection : FfiConverterRustBuffer<FfiDirection?> {
+public object FfiConverterOptionalTypeFfiDirection: FfiConverterRustBuffer<FfiDirection?> {
     override fun read(buf: ByteBuffer): FfiDirection? {
         if (buf.get().toInt() == 0) {
             return null
@@ -11978,11 +11055,12 @@ public object FfiConverterOptionalTypeFfiDirection : FfiConverterRustBuffer<FfiD
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalTypeFfiGroupPermissionsOptions :
-    FfiConverterRustBuffer<FfiGroupPermissionsOptions?> {
+public object FfiConverterOptionalTypeFfiGroupPermissionsOptions: FfiConverterRustBuffer<FfiGroupPermissionsOptions?> {
     override fun read(buf: ByteBuffer): FfiGroupPermissionsOptions? {
         if (buf.get().toInt() == 0) {
             return null
@@ -12009,10 +11087,12 @@ public object FfiConverterOptionalTypeFfiGroupPermissionsOptions :
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalTypeFfiMetadataField : FfiConverterRustBuffer<FfiMetadataField?> {
+public object FfiConverterOptionalTypeFfiMetadataField: FfiConverterRustBuffer<FfiMetadataField?> {
     override fun read(buf: ByteBuffer): FfiMetadataField? {
         if (buf.get().toInt() == 0) {
             return null
@@ -12039,11 +11119,76 @@ public object FfiConverterOptionalTypeFfiMetadataField : FfiConverterRustBuffer<
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterOptionalSequenceTypeFfiContentType :
-    FfiConverterRustBuffer<List<FfiContentType>?> {
+public object FfiConverterOptionalTypeFfiSyncWorkerMode: FfiConverterRustBuffer<FfiSyncWorkerMode?> {
+    override fun read(buf: ByteBuffer): FfiSyncWorkerMode? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeFfiSyncWorkerMode.read(buf)
+    }
+
+    override fun allocationSize(value: FfiSyncWorkerMode?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeFfiSyncWorkerMode.allocationSize(value)
+        }
+    }
+
+    override fun write(value: FfiSyncWorkerMode?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeFfiSyncWorkerMode.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalSequenceTypeFfiConsentState: FfiConverterRustBuffer<List<FfiConsentState>?> {
+    override fun read(buf: ByteBuffer): List<FfiConsentState>? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterSequenceTypeFfiConsentState.read(buf)
+    }
+
+    override fun allocationSize(value: List<FfiConsentState>?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterSequenceTypeFfiConsentState.allocationSize(value)
+        }
+    }
+
+    override fun write(value: List<FfiConsentState>?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterSequenceTypeFfiConsentState.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalSequenceTypeFfiContentType: FfiConverterRustBuffer<List<FfiContentType>?> {
     override fun read(buf: ByteBuffer): List<FfiContentType>? {
         if (buf.get().toInt() == 0) {
             return null
@@ -12070,10 +11215,12 @@ public object FfiConverterOptionalSequenceTypeFfiContentType :
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceString : FfiConverterRustBuffer<List<kotlin.String>> {
+public object FfiConverterSequenceString: FfiConverterRustBuffer<List<kotlin.String>> {
     override fun read(buf: ByteBuffer): List<kotlin.String> {
         val len = buf.getInt()
         return List<kotlin.String>(len) {
@@ -12096,10 +11243,12 @@ public object FfiConverterSequenceString : FfiConverterRustBuffer<List<kotlin.St
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceByteArray : FfiConverterRustBuffer<List<kotlin.ByteArray>> {
+public object FfiConverterSequenceByteArray: FfiConverterRustBuffer<List<kotlin.ByteArray>> {
     override fun read(buf: ByteBuffer): List<kotlin.ByteArray> {
         val len = buf.getInt()
         return List<kotlin.ByteArray>(len) {
@@ -12122,11 +11271,12 @@ public object FfiConverterSequenceByteArray : FfiConverterRustBuffer<List<kotlin
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiConversationListItem :
-    FfiConverterRustBuffer<List<FfiConversationListItem>> {
+public object FfiConverterSequenceTypeFfiConversationListItem: FfiConverterRustBuffer<List<FfiConversationListItem>> {
     override fun read(buf: ByteBuffer): List<FfiConversationListItem> {
         val len = buf.getInt()
         return List<FfiConversationListItem>(len) {
@@ -12136,8 +11286,7 @@ public object FfiConverterSequenceTypeFfiConversationListItem :
 
     override fun allocationSize(value: List<FfiConversationListItem>): ULong {
         val sizeForLength = 4UL
-        val sizeForItems =
-            value.map { FfiConverterTypeFfiConversationListItem.allocationSize(it) }.sum()
+        val sizeForItems = value.map { FfiConverterTypeFfiConversationListItem.allocationSize(it) }.sum()
         return sizeForLength + sizeForItems
     }
 
@@ -12150,10 +11299,12 @@ public object FfiConverterSequenceTypeFfiConversationListItem :
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiConsent : FfiConverterRustBuffer<List<FfiConsent>> {
+public object FfiConverterSequenceTypeFfiConsent: FfiConverterRustBuffer<List<FfiConsent>> {
     override fun read(buf: ByteBuffer): List<FfiConsent> {
         val len = buf.getInt()
         return List<FfiConsent>(len) {
@@ -12176,11 +11327,12 @@ public object FfiConverterSequenceTypeFfiConsent : FfiConverterRustBuffer<List<F
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiConversationMember :
-    FfiConverterRustBuffer<List<FfiConversationMember>> {
+public object FfiConverterSequenceTypeFfiConversationMember: FfiConverterRustBuffer<List<FfiConversationMember>> {
     override fun read(buf: ByteBuffer): List<FfiConversationMember> {
         val len = buf.getInt()
         return List<FfiConversationMember>(len) {
@@ -12190,8 +11342,7 @@ public object FfiConverterSequenceTypeFfiConversationMember :
 
     override fun allocationSize(value: List<FfiConversationMember>): ULong {
         val sizeForLength = 4UL
-        val sizeForItems =
-            value.map { FfiConverterTypeFfiConversationMember.allocationSize(it) }.sum()
+        val sizeForItems = value.map { FfiConverterTypeFfiConversationMember.allocationSize(it) }.sum()
         return sizeForLength + sizeForItems
     }
 
@@ -12204,36 +11355,12 @@ public object FfiConverterSequenceTypeFfiConversationMember :
 }
 
 
-/**
- * @suppress
- */
-public object FfiConverterSequenceTypeFfiEnvelope : FfiConverterRustBuffer<List<FfiEnvelope>> {
-    override fun read(buf: ByteBuffer): List<FfiEnvelope> {
-        val len = buf.getInt()
-        return List<FfiEnvelope>(len) {
-            FfiConverterTypeFfiEnvelope.read(buf)
-        }
-    }
-
-    override fun allocationSize(value: List<FfiEnvelope>): ULong {
-        val sizeForLength = 4UL
-        val sizeForItems = value.map { FfiConverterTypeFfiEnvelope.allocationSize(it) }.sum()
-        return sizeForLength + sizeForItems
-    }
-
-    override fun write(value: List<FfiEnvelope>, buf: ByteBuffer) {
-        buf.putInt(value.size)
-        value.iterator().forEach {
-            FfiConverterTypeFfiEnvelope.write(it, buf)
-        }
-    }
-}
 
 
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiHmacKey : FfiConverterRustBuffer<List<FfiHmacKey>> {
+public object FfiConverterSequenceTypeFfiHmacKey: FfiConverterRustBuffer<List<FfiHmacKey>> {
     override fun read(buf: ByteBuffer): List<FfiHmacKey> {
         val len = buf.getInt()
         return List<FfiHmacKey>(len) {
@@ -12256,10 +11383,40 @@ public object FfiConverterSequenceTypeFfiHmacKey : FfiConverterRustBuffer<List<F
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiInboxState : FfiConverterRustBuffer<List<FfiInboxState>> {
+public object FfiConverterSequenceTypeFfiIdentifier: FfiConverterRustBuffer<List<FfiIdentifier>> {
+    override fun read(buf: ByteBuffer): List<FfiIdentifier> {
+        val len = buf.getInt()
+        return List<FfiIdentifier>(len) {
+            FfiConverterTypeFfiIdentifier.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<FfiIdentifier>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeFfiIdentifier.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<FfiIdentifier>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeFfiIdentifier.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeFfiInboxState: FfiConverterRustBuffer<List<FfiInboxState>> {
     override fun read(buf: ByteBuffer): List<FfiInboxState> {
         val len = buf.getInt()
         return List<FfiInboxState>(len) {
@@ -12282,11 +11439,12 @@ public object FfiConverterSequenceTypeFfiInboxState : FfiConverterRustBuffer<Lis
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiInstallation :
-    FfiConverterRustBuffer<List<FfiInstallation>> {
+public object FfiConverterSequenceTypeFfiInstallation: FfiConverterRustBuffer<List<FfiInstallation>> {
     override fun read(buf: ByteBuffer): List<FfiInstallation> {
         val len = buf.getInt()
         return List<FfiInstallation>(len) {
@@ -12309,10 +11467,12 @@ public object FfiConverterSequenceTypeFfiInstallation :
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiMessage : FfiConverterRustBuffer<List<FfiMessage>> {
+public object FfiConverterSequenceTypeFfiMessage: FfiConverterRustBuffer<List<FfiMessage>> {
     override fun read(buf: ByteBuffer): List<FfiMessage> {
         val len = buf.getInt()
         return List<FfiMessage>(len) {
@@ -12335,65 +11495,124 @@ public object FfiConverterSequenceTypeFfiMessage : FfiConverterRustBuffer<List<F
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiV2QueryRequest :
-    FfiConverterRustBuffer<List<FfiV2QueryRequest>> {
-    override fun read(buf: ByteBuffer): List<FfiV2QueryRequest> {
+public object FfiConverterSequenceTypeFfiMessageWithReactions: FfiConverterRustBuffer<List<FfiMessageWithReactions>> {
+    override fun read(buf: ByteBuffer): List<FfiMessageWithReactions> {
         val len = buf.getInt()
-        return List<FfiV2QueryRequest>(len) {
-            FfiConverterTypeFfiV2QueryRequest.read(buf)
+        return List<FfiMessageWithReactions>(len) {
+            FfiConverterTypeFfiMessageWithReactions.read(buf)
         }
     }
 
-    override fun allocationSize(value: List<FfiV2QueryRequest>): ULong {
+    override fun allocationSize(value: List<FfiMessageWithReactions>): ULong {
         val sizeForLength = 4UL
-        val sizeForItems = value.map { FfiConverterTypeFfiV2QueryRequest.allocationSize(it) }.sum()
+        val sizeForItems = value.map { FfiConverterTypeFfiMessageWithReactions.allocationSize(it) }.sum()
         return sizeForLength + sizeForItems
     }
 
-    override fun write(value: List<FfiV2QueryRequest>, buf: ByteBuffer) {
+    override fun write(value: List<FfiMessageWithReactions>, buf: ByteBuffer) {
         buf.putInt(value.size)
         value.iterator().forEach {
-            FfiConverterTypeFfiV2QueryRequest.write(it, buf)
+            FfiConverterTypeFfiMessageWithReactions.write(it, buf)
         }
     }
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiV2QueryResponse :
-    FfiConverterRustBuffer<List<FfiV2QueryResponse>> {
-    override fun read(buf: ByteBuffer): List<FfiV2QueryResponse> {
+public object FfiConverterSequenceTypeFfiRemoteAttachmentInfo: FfiConverterRustBuffer<List<FfiRemoteAttachmentInfo>> {
+    override fun read(buf: ByteBuffer): List<FfiRemoteAttachmentInfo> {
         val len = buf.getInt()
-        return List<FfiV2QueryResponse>(len) {
-            FfiConverterTypeFfiV2QueryResponse.read(buf)
+        return List<FfiRemoteAttachmentInfo>(len) {
+            FfiConverterTypeFfiRemoteAttachmentInfo.read(buf)
         }
     }
 
-    override fun allocationSize(value: List<FfiV2QueryResponse>): ULong {
+    override fun allocationSize(value: List<FfiRemoteAttachmentInfo>): ULong {
         val sizeForLength = 4UL
-        val sizeForItems = value.map { FfiConverterTypeFfiV2QueryResponse.allocationSize(it) }.sum()
+        val sizeForItems = value.map { FfiConverterTypeFfiRemoteAttachmentInfo.allocationSize(it) }.sum()
         return sizeForLength + sizeForItems
     }
 
-    override fun write(value: List<FfiV2QueryResponse>, buf: ByteBuffer) {
+    override fun write(value: List<FfiRemoteAttachmentInfo>, buf: ByteBuffer) {
         buf.putInt(value.size)
         value.iterator().forEach {
-            FfiConverterTypeFfiV2QueryResponse.write(it, buf)
+            FfiConverterTypeFfiRemoteAttachmentInfo.write(it, buf)
         }
     }
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiContentType :
-    FfiConverterRustBuffer<List<FfiContentType>> {
+public object FfiConverterSequenceTypeFfiBackupElementSelection: FfiConverterRustBuffer<List<FfiBackupElementSelection>> {
+    override fun read(buf: ByteBuffer): List<FfiBackupElementSelection> {
+        val len = buf.getInt()
+        return List<FfiBackupElementSelection>(len) {
+            FfiConverterTypeFfiBackupElementSelection.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<FfiBackupElementSelection>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeFfiBackupElementSelection.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<FfiBackupElementSelection>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeFfiBackupElementSelection.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeFfiConsentState: FfiConverterRustBuffer<List<FfiConsentState>> {
+    override fun read(buf: ByteBuffer): List<FfiConsentState> {
+        val len = buf.getInt()
+        return List<FfiConsentState>(len) {
+            FfiConverterTypeFfiConsentState.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<FfiConsentState>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeFfiConsentState.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<FfiConsentState>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeFfiConsentState.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeFfiContentType: FfiConverterRustBuffer<List<FfiContentType>> {
     override fun read(buf: ByteBuffer): List<FfiContentType> {
         val len = buf.getInt()
         return List<FfiContentType>(len) {
@@ -12416,11 +11635,12 @@ public object FfiConverterSequenceTypeFfiContentType :
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterSequenceTypeFfiPreferenceUpdate :
-    FfiConverterRustBuffer<List<FfiPreferenceUpdate>> {
+public object FfiConverterSequenceTypeFfiPreferenceUpdate: FfiConverterRustBuffer<List<FfiPreferenceUpdate>> {
     override fun read(buf: ByteBuffer): List<FfiPreferenceUpdate> {
         val len = buf.getInt()
         return List<FfiPreferenceUpdate>(len) {
@@ -12430,8 +11650,7 @@ public object FfiConverterSequenceTypeFfiPreferenceUpdate :
 
     override fun allocationSize(value: List<FfiPreferenceUpdate>): ULong {
         val sizeForLength = 4UL
-        val sizeForItems =
-            value.map { FfiConverterTypeFfiPreferenceUpdate.allocationSize(it) }.sum()
+        val sizeForItems = value.map { FfiConverterTypeFfiPreferenceUpdate.allocationSize(it) }.sum()
         return sizeForLength + sizeForItems
     }
 
@@ -12444,49 +11663,90 @@ public object FfiConverterSequenceTypeFfiPreferenceUpdate :
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterMapStringBoolean :
-    FfiConverterRustBuffer<Map<kotlin.String, kotlin.Boolean>> {
-    override fun read(buf: ByteBuffer): Map<kotlin.String, kotlin.Boolean> {
+public object FfiConverterMapStringULong: FfiConverterRustBuffer<Map<kotlin.String, kotlin.ULong>> {
+    override fun read(buf: ByteBuffer): Map<kotlin.String, kotlin.ULong> {
         val len = buf.getInt()
-        return buildMap<kotlin.String, kotlin.Boolean>(len) {
+        return buildMap<kotlin.String, kotlin.ULong>(len) {
             repeat(len) {
                 val k = FfiConverterString.read(buf)
-                val v = FfiConverterBoolean.read(buf)
+                val v = FfiConverterULong.read(buf)
                 this[k] = v
             }
         }
     }
 
-    override fun allocationSize(value: Map<kotlin.String, kotlin.Boolean>): ULong {
+    override fun allocationSize(value: Map<kotlin.String, kotlin.ULong>): ULong {
         val spaceForMapSize = 4UL
         val spaceForChildren = value.map { (k, v) ->
             FfiConverterString.allocationSize(k) +
-                    FfiConverterBoolean.allocationSize(v)
+            FfiConverterULong.allocationSize(v)
         }.sum()
         return spaceForMapSize + spaceForChildren
     }
 
-    override fun write(value: Map<kotlin.String, kotlin.Boolean>, buf: ByteBuffer) {
+    override fun write(value: Map<kotlin.String, kotlin.ULong>, buf: ByteBuffer) {
         buf.putInt(value.size)
         // The parens on `(k, v)` here ensure we're calling the right method,
         // which is important for compatibility with older android devices.
         // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
         value.iterator().forEach { (k, v) ->
             FfiConverterString.write(k, buf)
-            FfiConverterBoolean.write(v, buf)
+            FfiConverterULong.write(v, buf)
         }
     }
 }
 
 
+
+
 /**
  * @suppress
  */
-public object FfiConverterMapByteArraySequenceTypeFfiHmacKey :
-    FfiConverterRustBuffer<Map<kotlin.ByteArray, List<FfiHmacKey>>> {
+public object FfiConverterMapByteArrayTypeFfiKeyPackageStatus: FfiConverterRustBuffer<Map<kotlin.ByteArray, FfiKeyPackageStatus>> {
+    override fun read(buf: ByteBuffer): Map<kotlin.ByteArray, FfiKeyPackageStatus> {
+        val len = buf.getInt()
+        return buildMap<kotlin.ByteArray, FfiKeyPackageStatus>(len) {
+            repeat(len) {
+                val k = FfiConverterByteArray.read(buf)
+                val v = FfiConverterTypeFfiKeyPackageStatus.read(buf)
+                this[k] = v
+            }
+        }
+    }
+
+    override fun allocationSize(value: Map<kotlin.ByteArray, FfiKeyPackageStatus>): ULong {
+        val spaceForMapSize = 4UL
+        val spaceForChildren = value.map { (k, v) ->
+            FfiConverterByteArray.allocationSize(k) +
+            FfiConverterTypeFfiKeyPackageStatus.allocationSize(v)
+        }.sum()
+        return spaceForMapSize + spaceForChildren
+    }
+
+    override fun write(value: Map<kotlin.ByteArray, FfiKeyPackageStatus>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        // The parens on `(k, v)` here ensure we're calling the right method,
+        // which is important for compatibility with older android devices.
+        // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
+        value.iterator().forEach { (k, v) ->
+            FfiConverterByteArray.write(k, buf)
+            FfiConverterTypeFfiKeyPackageStatus.write(v, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterMapByteArraySequenceTypeFfiHmacKey: FfiConverterRustBuffer<Map<kotlin.ByteArray, List<FfiHmacKey>>> {
     override fun read(buf: ByteBuffer): Map<kotlin.ByteArray, List<FfiHmacKey>> {
         val len = buf.getInt()
         return buildMap<kotlin.ByteArray, List<FfiHmacKey>>(len) {
@@ -12502,7 +11762,7 @@ public object FfiConverterMapByteArraySequenceTypeFfiHmacKey :
         val spaceForMapSize = 4UL
         val spaceForChildren = value.map { (k, v) ->
             FfiConverterByteArray.allocationSize(k) +
-                    FfiConverterSequenceTypeFfiHmacKey.allocationSize(v)
+            FfiConverterSequenceTypeFfiHmacKey.allocationSize(v)
         }.sum()
         return spaceForMapSize + spaceForChildren
     }
@@ -12520,357 +11780,218 @@ public object FfiConverterMapByteArraySequenceTypeFfiHmacKey :
 }
 
 
-@Throws(GenericException::class)
-@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-suspend fun `connectToBackend`(`host`: kotlin.String, `isSecure`: kotlin.Boolean): XmtpApiClient {
-    return uniffiRustCallAsync(
-        UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_connect_to_backend(
-            FfiConverterString.lower(`host`),
-            FfiConverterBoolean.lower(`isSecure`),
-        ),
-        { future, callback, continuation ->
-            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                future,
-                callback,
-                continuation
-            )
-        },
-        { future, continuation ->
-            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                future,
-                continuation
-            )
-        },
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterMapTypeFfiIdentifierBoolean: FfiConverterRustBuffer<Map<FfiIdentifier, kotlin.Boolean>> {
+    override fun read(buf: ByteBuffer): Map<FfiIdentifier, kotlin.Boolean> {
+        val len = buf.getInt()
+        return buildMap<FfiIdentifier, kotlin.Boolean>(len) {
+            repeat(len) {
+                val k = FfiConverterTypeFfiIdentifier.read(buf)
+                val v = FfiConverterBoolean.read(buf)
+                this[k] = v
+            }
+        }
+    }
+
+    override fun allocationSize(value: Map<FfiIdentifier, kotlin.Boolean>): ULong {
+        val spaceForMapSize = 4UL
+        val spaceForChildren = value.map { (k, v) ->
+            FfiConverterTypeFfiIdentifier.allocationSize(k) +
+            FfiConverterBoolean.allocationSize(v)
+        }.sum()
+        return spaceForMapSize + spaceForChildren
+    }
+
+    override fun write(value: Map<FfiIdentifier, kotlin.Boolean>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        // The parens on `(k, v)` here ensure we're calling the right method,
+        // which is important for compatibility with older android devices.
+        // Ref https://blog.danlew.net/2017/03/16/kotlin-puzzler-whose-line-is-it-anyways/
+        value.iterator().forEach { (k, v) ->
+            FfiConverterTypeFfiIdentifier.write(k, buf)
+            FfiConverterBoolean.write(v, buf)
+        }
+    }
+}
+
+
+
+
+
+
+
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+     suspend fun `connectToBackend`(`host`: kotlin.String, `isSecure`: kotlin.Boolean) : XmtpApiClient {
+        return uniffiRustCallAsync(
+        UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_connect_to_backend(FfiConverterString.lower(`host`),FfiConverterBoolean.lower(`isSecure`),),
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
         { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
         // lift function
         { FfiConverterTypeXmtpApiClient.lift(it) },
         // Error FFI converter
         GenericException.ErrorHandler,
     )
-}
+    }
 
-/**
- * It returns a new client of the specified `inbox_id`.
- * Note that the `inbox_id` must be either brand new or already associated with the `account_address`.
- * i.e. `inbox_id` cannot be associated with another account address.
- *
- * Prior to calling this function, it's suggested to form `inbox_id`, `account_address`, and `nonce` like below.
- *
- * ```text
- * inbox_id = get_inbox_id_for_address(account_address)
- * nonce = 0
- *
- * // if inbox_id is not associated, we will create new one.
- * if !inbox_id {
- * if !legacy_key { nonce = random_u64() }
- * inbox_id = generate_inbox_id(account_address, nonce)
- * } // Otherwise, we will just use the inbox and ignore the nonce.
- * db_path = $inbox_id-$env
- *
- * xmtp.create_client(account_address, nonce, inbox_id, Option<legacy_signed_private_key_proto>)
- * ```
- */
-@Throws(GenericException::class)
-@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-suspend fun `createClient`(
-    `api`: XmtpApiClient,
-    `db`: kotlin.String?,
-    `encryptionKey`: kotlin.ByteArray?,
-    `inboxId`: kotlin.String,
-    `accountAddress`: kotlin.String,
-    `nonce`: kotlin.ULong,
-    `legacySignedPrivateKeyProto`: kotlin.ByteArray?,
-    `historySyncUrl`: kotlin.String?,
-): FfiXmtpClient {
-    return uniffiRustCallAsync(
-        UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_create_client(
-            FfiConverterTypeXmtpApiClient.lower(
-                `api`
-            ),
-            FfiConverterOptionalString.lower(`db`),
-            FfiConverterOptionalByteArray.lower(`encryptionKey`),
-            FfiConverterString.lower(`inboxId`),
-            FfiConverterString.lower(`accountAddress`),
-            FfiConverterULong.lower(`nonce`),
-            FfiConverterOptionalByteArray.lower(`legacySignedPrivateKeyProto`),
-            FfiConverterOptionalString.lower(`historySyncUrl`),
-        ),
-        { future, callback, continuation ->
-            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                future,
-                callback,
-                continuation
-            )
-        },
-        { future, continuation ->
-            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                future,
-                continuation
-            )
-        },
+        /**
+         * It returns a new client of the specified `inbox_id`.
+         * Note that the `inbox_id` must be either brand new or already associated with the `account_identifier`.
+         * i.e. `inbox_id` cannot be associated with another account address.
+         *
+         * Prior to calling this function, it's suggested to form `inbox_id`, `account_identifier`, and `nonce` like below.
+         *
+         * ```text
+         * inbox_id = get_inbox_id_for_address(account_identifier)
+         * nonce = 0
+         *
+         * // if inbox_id is not associated, we will create new one.
+         * if !inbox_id {
+         * if !legacy_key { nonce = random_u64() }
+         * inbox_id = generate_inbox_id(account_identifier, nonce)
+         * } // Otherwise, we will just use the inbox and ignore the nonce.
+         * db_path = $inbox_id-$env
+         *
+         * xmtp.create_client(account_identifier, nonce, inbox_id, Option<legacy_signed_private_key_proto>)
+         * ```
+         */
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+     suspend fun `createClient`(`api`: XmtpApiClient, `db`: kotlin.String?, `encryptionKey`: kotlin.ByteArray?, `inboxId`: kotlin.String, `accountIdentifier`: FfiIdentifier, `nonce`: kotlin.ULong, `legacySignedPrivateKeyProto`: kotlin.ByteArray?, `historySyncUrl`: kotlin.String?, `syncWorkerMode`: FfiSyncWorkerMode?) : FfiXmtpClient {
+        return uniffiRustCallAsync(
+        UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_create_client(FfiConverterTypeXmtpApiClient.lower(`api`),FfiConverterOptionalString.lower(`db`),FfiConverterOptionalByteArray.lower(`encryptionKey`),FfiConverterString.lower(`inboxId`),FfiConverterTypeFfiIdentifier.lower(`accountIdentifier`),FfiConverterULong.lower(`nonce`),FfiConverterOptionalByteArray.lower(`legacySignedPrivateKeyProto`),FfiConverterOptionalString.lower(`historySyncUrl`),FfiConverterOptionalTypeFfiSyncWorkerMode.lower(`syncWorkerMode`),),
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(future, continuation) },
         { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
         // lift function
         { FfiConverterTypeFfiXmtpClient.lift(it) },
         // Error FFI converter
         GenericException.ErrorHandler,
     )
-}
+    }
 
-@Throws(GenericException::class)
-@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-suspend fun `createV2Client`(`host`: kotlin.String, `isSecure`: kotlin.Boolean): FfiV2ApiClient {
-    return uniffiRustCallAsync(
-        UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_create_v2_client(
-            FfiConverterString.lower(`host`),
-            FfiConverterBoolean.lower(`isSecure`),
-        ),
-        { future, callback, continuation ->
-            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_pointer(
-                future,
-                callback,
-                continuation
-            )
-        },
-        { future, continuation ->
-            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_pointer(
-                future,
-                continuation
-            )
-        },
-        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_pointer(future) },
-        // lift function
-        { FfiConverterTypeFfiV2ApiClient.lift(it) },
-        // Error FFI converter
-        GenericException.ErrorHandler,
+    @Throws(GenericException::class) fun `decodeMultiRemoteAttachment`(`bytes`: kotlin.ByteArray): FfiMultiRemoteAttachment {
+            return FfiConverterTypeFfiMultiRemoteAttachment.lift(
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_decode_multi_remote_attachment(
+        FfiConverterByteArray.lower(`bytes`),_status)
+}
     )
-}
+    }
+    
 
-@Throws(GenericException::class)
-fun `diffieHellmanK256`(
-    `privateKeyBytes`: kotlin.ByteArray,
-    `publicKeyBytes`: kotlin.ByteArray,
-): kotlin.ByteArray {
-    return FfiConverterByteArray.lift(
-        uniffiRustCallWithError(GenericException) { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_diffie_hellman_k256(
-                FfiConverterByteArray.lower(`privateKeyBytes`),
-                FfiConverterByteArray.lower(`publicKeyBytes`),
-                _status
-            )
-        }
+    @Throws(GenericException::class) fun `decodeReaction`(`bytes`: kotlin.ByteArray): FfiReaction {
+            return FfiConverterTypeFfiReaction.lift(
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_decode_reaction(
+        FfiConverterByteArray.lower(`bytes`),_status)
+}
     )
+    }
+    
+
+    @Throws(GenericException::class) fun `encodeMultiRemoteAttachment`(`ffiMultiRemoteAttachment`: FfiMultiRemoteAttachment): kotlin.ByteArray {
+            return FfiConverterByteArray.lift(
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_encode_multi_remote_attachment(
+        FfiConverterTypeFfiMultiRemoteAttachment.lower(`ffiMultiRemoteAttachment`),_status)
 }
-
-
-@Throws(GenericException::class)
-fun `generateInboxId`(`accountAddress`: kotlin.String, `nonce`: kotlin.ULong): kotlin.String {
-    return FfiConverterString.lift(
-        uniffiRustCallWithError(GenericException) { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_generate_inbox_id(
-                FfiConverterString.lower(`accountAddress`),
-                FfiConverterULong.lower(`nonce`),
-                _status
-            )
-        }
     )
+    }
+    
+
+    @Throws(GenericException::class) fun `encodeReaction`(`reaction`: FfiReaction): kotlin.ByteArray {
+            return FfiConverterByteArray.lift(
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_encode_reaction(
+        FfiConverterTypeFfiReaction.lower(`reaction`),_status)
 }
-
-
-@Throws(GenericException::class)
-fun `generatePrivatePreferencesTopicIdentifier`(`privateKey`: kotlin.ByteArray): kotlin.String {
-    return FfiConverterString.lift(
-        uniffiRustCallWithError(GenericException) { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_generate_private_preferences_topic_identifier(
-                FfiConverterByteArray.lower(`privateKey`), _status
-            )
-        }
     )
+    }
+    
+
+        /**
+         * turns on logging to a file on-disk in the directory specified.
+         * files will be prefixed with 'libxmtp.log' and suffixed with the timestamp,
+         * i.e "libxmtp.log.2025-04-02"
+         * A maximum of 'max_files' log files are kept.
+         */
+    @Throws(GenericException::class) fun `enterDebugWriter`(`directory`: kotlin.String, `logLevel`: FfiLogLevel, `rotation`: FfiLogRotation, `maxFiles`: kotlin.UInt)
+        = 
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_enter_debug_writer(
+        FfiConverterString.lower(`directory`),FfiConverterTypeFfiLogLevel.lower(`logLevel`),FfiConverterTypeFfiLogRotation.lower(`rotation`),FfiConverterUInt.lower(`maxFiles`),_status)
 }
+    
+    
 
+        /**
+         * turns on logging to a file on-disk with a specified log level.
+         * files will be prefixed with 'libxmtp.log' and suffixed with the timestamp,
+         * i.e "libxmtp.log.2025-04-02"
+         * A maximum of 'max_files' log files are kept.
+         */
+    @Throws(GenericException::class) fun `enterDebugWriterWithLevel`(`directory`: kotlin.String, `rotation`: FfiLogRotation, `maxFiles`: kotlin.UInt, `logLevel`: FfiLogLevel)
+        = 
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_enter_debug_writer_with_level(
+        FfiConverterString.lower(`directory`),FfiConverterTypeFfiLogRotation.lower(`rotation`),FfiConverterUInt.lower(`maxFiles`),FfiConverterTypeFfiLogLevel.lower(`logLevel`),_status)
+}
+    
+    
 
-@Throws(GenericException::class)
-@Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-suspend fun `getInboxIdForAddress`(
-    `api`: XmtpApiClient,
-    `accountAddress`: kotlin.String,
-): kotlin.String? {
-    return uniffiRustCallAsync(
-        UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_get_inbox_id_for_address(
-            FfiConverterTypeXmtpApiClient.lower(`api`),
-            FfiConverterString.lower(`accountAddress`),
-        ),
-        { future, callback, continuation ->
-            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(
-                future,
-                callback,
-                continuation
-            )
-        },
-        { future, continuation ->
-            UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(
-                future,
-                continuation
-            )
-        },
+        /**
+         * Flush loglines from libxmtp log writer to the file, ensuring logs are written.
+         * This should be called before the program exits, to ensure all the logs in memory have been
+         * written. this ends the writer thread.
+         */
+    @Throws(GenericException::class) fun `exitDebugWriter`()
+        = 
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_exit_debug_writer(
+        _status)
+}
+    
+    
+
+    @Throws(GenericException::class) fun `generateInboxId`(`accountIdentifier`: FfiIdentifier, `nonce`: kotlin.ULong): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_generate_inbox_id(
+        FfiConverterTypeFfiIdentifier.lower(`accountIdentifier`),FfiConverterULong.lower(`nonce`),_status)
+}
+    )
+    }
+    
+
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+     suspend fun `getInboxIdForIdentifier`(`api`: XmtpApiClient, `accountIdentifier`: FfiIdentifier) : kotlin.String? {
+        return uniffiRustCallAsync(
+        UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_get_inbox_id_for_identifier(FfiConverterTypeXmtpApiClient.lower(`api`),FfiConverterTypeFfiIdentifier.lower(`accountIdentifier`),),
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
         { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterOptionalString.lift(it) },
         // Error FFI converter
         GenericException.ErrorHandler,
     )
+    }
+ fun `getVersionInfo`(): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_get_version_info(
+        _status)
 }
-
-fun `getVersionInfo`(): kotlin.String {
-    return FfiConverterString.lift(
-        uniffiRustCall() { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_get_version_info(
-                _status
-            )
-        }
     )
-}
-
-fun `keccak256`(`input`: kotlin.ByteArray): kotlin.ByteArray {
-    return FfiConverterByteArray.lift(
-        uniffiRustCall() { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_keccak256(
-                FfiConverterByteArray.lower(`input`), _status
-            )
-        }
-    )
-}
-
-
-@Throws(GenericException::class)
-fun `publicKeyFromPrivateKeyK256`(`privateKeyBytes`: kotlin.ByteArray): kotlin.ByteArray {
-    return FfiConverterByteArray.lift(
-        uniffiRustCallWithError(GenericException) { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_public_key_from_private_key_k256(
-                FfiConverterByteArray.lower(`privateKeyBytes`), _status
-            )
-        }
-    )
-}
-
-
-@Throws(GenericException::class)
-fun `recoverAddress`(
-    `signatureBytes`: kotlin.ByteArray,
-    `predigestMessage`: kotlin.String,
-): kotlin.String {
-    return FfiConverterString.lift(
-        uniffiRustCallWithError(GenericException) { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_recover_address(
-                FfiConverterByteArray.lower(`signatureBytes`),
-                FfiConverterString.lower(`predigestMessage`),
-                _status
-            )
-        }
-    )
-}
-
-
-@Throws(GenericException::class)
-fun `recoverPublicKeyK256Keccak256`(
-    `message`: kotlin.ByteArray,
-    `signature`: kotlin.ByteArray,
-): kotlin.ByteArray {
-    return FfiConverterByteArray.lift(
-        uniffiRustCallWithError(GenericException) { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_recover_public_key_k256_keccak256(
-                FfiConverterByteArray.lower(`message`),
-                FfiConverterByteArray.lower(`signature`),
-                _status
-            )
-        }
-    )
-}
-
-
-@Throws(GenericException::class)
-fun `recoverPublicKeyK256Sha256`(
-    `message`: kotlin.ByteArray,
-    `signature`: kotlin.ByteArray,
-): kotlin.ByteArray {
-    return FfiConverterByteArray.lift(
-        uniffiRustCallWithError(GenericException) { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_recover_public_key_k256_sha256(
-                FfiConverterByteArray.lower(`message`),
-                FfiConverterByteArray.lower(`signature`),
-                _status
-            )
-        }
-    )
-}
-
-fun `sha256`(`input`: kotlin.ByteArray): kotlin.ByteArray {
-    return FfiConverterByteArray.lift(
-        uniffiRustCall() { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_sha256(
-                FfiConverterByteArray.lower(`input`), _status
-            )
-        }
-    )
-}
-
-
-@Throws(GenericException::class)
-fun `userPreferencesDecrypt`(
-    `publicKey`: kotlin.ByteArray,
-    `privateKey`: kotlin.ByteArray,
-    `message`: kotlin.ByteArray,
-): kotlin.ByteArray {
-    return FfiConverterByteArray.lift(
-        uniffiRustCallWithError(GenericException) { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_user_preferences_decrypt(
-                FfiConverterByteArray.lower(`publicKey`),
-                FfiConverterByteArray.lower(`privateKey`),
-                FfiConverterByteArray.lower(`message`),
-                _status
-            )
-        }
-    )
-}
-
-
-@Throws(GenericException::class)
-fun `userPreferencesEncrypt`(
-    `publicKey`: kotlin.ByteArray,
-    `privateKey`: kotlin.ByteArray,
-    `message`: kotlin.ByteArray,
-): kotlin.ByteArray {
-    return FfiConverterByteArray.lift(
-        uniffiRustCallWithError(GenericException) { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_user_preferences_encrypt(
-                FfiConverterByteArray.lower(`publicKey`),
-                FfiConverterByteArray.lower(`privateKey`),
-                FfiConverterByteArray.lower(`message`),
-                _status
-            )
-        }
-    )
-}
-
-
-@Throws(GenericException::class)
-fun `verifyK256Sha256`(
-    `signedBy`: kotlin.ByteArray,
-    `message`: kotlin.ByteArray,
-    `signature`: kotlin.ByteArray,
-    `recoveryId`: kotlin.UByte,
-): kotlin.Boolean {
-    return FfiConverterBoolean.lift(
-        uniffiRustCallWithError(GenericException) { _status ->
-            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_verify_k256_sha256(
-                FfiConverterByteArray.lower(`signedBy`),
-                FfiConverterByteArray.lower(`message`),
-                FfiConverterByteArray.lower(`signature`),
-                FfiConverterUByte.lower(`recoveryId`),
-                _status
-            )
-        }
-    )
-}
+    }
     
 
 

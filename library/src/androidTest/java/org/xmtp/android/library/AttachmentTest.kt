@@ -9,7 +9,6 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.Attachment
 import org.xmtp.android.library.codecs.AttachmentCodec
 import org.xmtp.android.library.codecs.ContentTypeAttachment
-import org.xmtp.android.library.messages.walletAddress
 
 @RunWith(AndroidJUnit4::class)
 class AttachmentTest {
@@ -26,7 +25,7 @@ class AttachmentTest {
         val fixtures = fixtures()
         val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.boClient.inboxId)
         }
 
         runBlocking {
@@ -36,8 +35,8 @@ class AttachmentTest {
             )
         }
         val messages = runBlocking { aliceConversation.messages() }
-        assertEquals(messages.size, 1)
-        if (messages.size == 1) {
+        assertEquals(messages.size, 2)
+        if (messages.size == 2) {
             val content: Attachment? = messages[0].content()
             assertEquals("test.txt", content?.filename)
             assertEquals("text/plain", content?.mimeType)

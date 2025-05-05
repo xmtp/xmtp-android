@@ -9,7 +9,6 @@ import org.xmtp.android.library.codecs.ContentTypeReply
 import org.xmtp.android.library.codecs.ContentTypeText
 import org.xmtp.android.library.codecs.Reply
 import org.xmtp.android.library.codecs.ReplyCodec
-import org.xmtp.android.library.messages.walletAddress
 
 @RunWith(AndroidJUnit4::class)
 class ReplyTest {
@@ -21,7 +20,7 @@ class ReplyTest {
         val fixtures = fixtures()
         val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.bo.walletAddress)
+            aliceClient.conversations.newConversation(fixtures.boClient.inboxId)
         }
 
         runBlocking { aliceConversation.send(text = "hey alice 2 bob") }
@@ -41,8 +40,8 @@ class ReplyTest {
             )
         }
         val messages = runBlocking { aliceConversation.messages() }
-        assertEquals(messages.size, 2)
-        if (messages.size == 2) {
+        assertEquals(messages.size, 3)
+        if (messages.size == 3) {
             val content: Reply? = messages.first().content()
             assertEquals("Hello", content?.content)
             assertEquals(messageToReact.id, content?.reference)

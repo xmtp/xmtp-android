@@ -21,7 +21,7 @@ import org.xmtp.android.example.conversation.ConversationDetailActivity
 import org.xmtp.android.example.extension.truncatedAddress
 import org.xmtp.android.example.utils.KeyUtil
 import org.xmtp.android.library.codecs.GroupUpdated
-import org.xmtp.android.library.messages.Topic
+import org.xmtp.android.library.Topic
 
 class PushNotificationsService : FirebaseMessagingService() {
 
@@ -83,7 +83,7 @@ class PushNotificationsService : FirebaseMessagingService() {
                 .setContentIntent(pendingIntent)
         } else {
             val conversation =
-                runBlocking { ClientManager.client.findConversationByTopic(topic) }
+                runBlocking { ClientManager.client.conversations.findConversationByTopic(topic) }
             if (conversation == null) {
                 Log.e(TAG, topic)
                 Log.e(TAG, "No keys or conversation persisted")

@@ -8,8 +8,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
-import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.messages.Topic
+import org.xmtp.android.library.libxmtp.DecodedMessage
+import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.proto.keystore.api.v1.Keystore
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
 import uniffi.xmtpv3.FfiConversation
@@ -17,13 +18,16 @@ import uniffi.xmtpv3.FfiConversationCallback
 import uniffi.xmtpv3.FfiConversationListItem
 import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiConversations
+import uniffi.xmtpv3.FfiCreateDmOptions
 import uniffi.xmtpv3.FfiCreateGroupOptions
 import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiMessageDisappearingSettings
 import uniffi.xmtpv3.FfiPermissionPolicySet
 import uniffi.xmtpv3.FfiSubscribeException
+import uniffi.xmtpv3.FfiXmtpClient
 import java.util.Date
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
@@ -31,12 +35,73 @@ import kotlin.time.DurationUnit
 data class Conversations(
     var client: Client,
     private val ffiConversations: FfiConversations,
+    private val ffiClient: FfiXmtpClient,
 ) {
 
-    enum class ConversationType {
+    enum class ConversationFilterType {
         ALL,
         GROUPS,
         DMS;
+    }
+
+    fun findGroup(groupId: String): Group? {
+        return try {
+            Group(client, ffiClient.conversation(groupId.hexToByteArray()))
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun findConversation(conversationId: String): Conversation? {
+        return try {
+            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
+            when (conversation.conversationType()) {
+                FfiConversationType.GROUP -> Conversation.Group(Group(client, conversation))
+                FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
+                else -> null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun findConversationByTopic(topic: String): Conversation? {
+        val regex = """/xmtp/mls/1/g-(.*?)/proto""".toRegex()
+        val matchResult = regex.find(topic)
+        val conversationId = matchResult?.groupValues?.get(1) ?: ""
+        return try {
+            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
+            when (conversation.conversationType()) {
+                FfiConversationType.GROUP -> Conversation.Group(Group(client, conversation))
+                FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
+                else -> null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun findDmByInboxId(inboxId: InboxId): Dm? {
+        return try {
+            Dm(client, ffiClient.dmConversation(inboxId))
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun findDmByIdentity(publicIdentity: PublicIdentity): Dm? {
+        val inboxId =
+            client.inboxIdFromIdentity(publicIdentity)
+                ?: throw XMTPException("No inboxId present")
+        return findDmByInboxId(inboxId)
+    }
+
+    fun findMessage(messageId: String): DecodedMessage? {
+        return try {
+            DecodedMessage.create(ffiClient.message(messageId.hexToByteArray()))
+        } catch (e: Exception) {
+            null
+        }
     }
 
     suspend fun fromWelcome(envelopeBytes: ByteArray): Conversation {
@@ -47,75 +112,146 @@ data class Conversations(
         }
     }
 
-    suspend fun newGroup(
-        accountAddresses: List<String>,
+    suspend fun newGroupWithIdentities(
+        identities: List<PublicIdentity>,
         permissions: GroupPermissionPreconfiguration = GroupPermissionPreconfiguration.ALL_MEMBERS,
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        groupPinnedFrameUrl: String = "",
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Group {
-        return newGroupInternal(
-            accountAddresses,
+        return newGroupInternalWithIdentities(
+            identities,
             GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(permissions),
             groupName,
             groupImageUrlSquare,
             groupDescription,
-            groupPinnedFrameUrl,
-            null
+            null,
+            disappearingMessageSettings?.let {
+                FfiMessageDisappearingSettings(
+                    it.disappearStartingAtNs,
+                    it.retentionDurationInNs
+                )
+            },
         )
     }
 
-    suspend fun newGroupCustomPermissions(
-        accountAddresses: List<String>,
+    suspend fun newGroupCustomPermissionsWithIdentities(
+        identities: List<PublicIdentity>,
         permissionPolicySet: PermissionPolicySet,
         groupName: String = "",
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
-        groupPinnedFrameUrl: String = "",
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Group {
-        return newGroupInternal(
-            accountAddresses,
+        return newGroupInternalWithIdentities(
+            identities,
             FfiGroupPermissionsOptions.CUSTOM_POLICY,
             groupName,
             groupImageUrlSquare,
             groupDescription,
-            groupPinnedFrameUrl,
-            PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet)
+            PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet),
+            disappearingMessageSettings?.let {
+                FfiMessageDisappearingSettings(
+                    it.disappearStartingAtNs,
+                    it.retentionDurationInNs
+                )
+            }
         )
     }
 
-    private suspend fun newGroupInternal(
-        accountAddresses: List<String>,
+    private suspend fun newGroupInternalWithIdentities(
+        identities: List<PublicIdentity>,
         permissions: FfiGroupPermissionsOptions,
         groupName: String,
         groupImageUrlSquare: String,
         groupDescription: String,
-        groupPinnedFrameUrl: String,
         permissionsPolicySet: FfiPermissionPolicySet?,
+        messageDisappearingSettings: FfiMessageDisappearingSettings?,
     ): Group {
-        if (accountAddresses.size == 1 &&
-            accountAddresses.first().lowercase() == client.address.lowercase()
-        ) {
-            throw XMTPException("Recipient is sender")
-        }
-        val falseAddresses =
-            if (accountAddresses.isNotEmpty()) client.canMessage(accountAddresses)
-                .filter { !it.value }.map { it.key } else emptyList()
-        if (falseAddresses.isNotEmpty()) {
-            throw XMTPException("${falseAddresses.joinToString()} not on network")
-        }
-
         val group =
             ffiConversations.createGroup(
-                accountAddresses,
+                identities.map { it.ffiPrivate },
                 opts = FfiCreateGroupOptions(
                     permissions = permissions,
                     groupName = groupName,
                     groupImageUrlSquare = groupImageUrlSquare,
                     groupDescription = groupDescription,
-                    groupPinnedFrameUrl = groupPinnedFrameUrl,
-                    customPermissionPolicySet = permissionsPolicySet
+                    customPermissionPolicySet = permissionsPolicySet,
+                    messageDisappearingSettings = messageDisappearingSettings
+                )
+            )
+        return Group(client, group)
+    }
+
+    suspend fun newGroup(
+        inboxIds: List<InboxId>,
+        permissions: GroupPermissionPreconfiguration = GroupPermissionPreconfiguration.ALL_MEMBERS,
+        groupName: String = "",
+        groupImageUrlSquare: String = "",
+        groupDescription: String = "",
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
+    ): Group {
+        return newGroupInternal(
+            inboxIds,
+            GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(permissions),
+            groupName,
+            groupImageUrlSquare,
+            groupDescription,
+            null,
+            disappearingMessageSettings?.let {
+                FfiMessageDisappearingSettings(
+                    it.disappearStartingAtNs,
+                    it.retentionDurationInNs
+                )
+            }
+        )
+    }
+
+    suspend fun newGroupCustomPermissions(
+        inboxIds: List<InboxId>,
+        permissionPolicySet: PermissionPolicySet,
+        groupName: String = "",
+        groupImageUrlSquare: String = "",
+        groupDescription: String = "",
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
+    ): Group {
+        return newGroupInternal(
+            inboxIds,
+            FfiGroupPermissionsOptions.CUSTOM_POLICY,
+            groupName,
+            groupImageUrlSquare,
+            groupDescription,
+            PermissionPolicySet.toFfiPermissionPolicySet(permissionPolicySet),
+            disappearingMessageSettings?.let {
+                FfiMessageDisappearingSettings(
+                    it.disappearStartingAtNs,
+                    it.retentionDurationInNs
+                )
+            }
+        )
+    }
+
+    private suspend fun newGroupInternal(
+        inboxIds: List<InboxId>,
+        permissions: FfiGroupPermissionsOptions,
+        groupName: String,
+        groupImageUrlSquare: String,
+        groupDescription: String,
+        permissionsPolicySet: FfiPermissionPolicySet?,
+        messageDisappearingSettings: FfiMessageDisappearingSettings?,
+    ): Group {
+        validateInboxIds(inboxIds)
+        val group =
+            ffiConversations.createGroupWithInboxIds(
+                inboxIds,
+                opts = FfiCreateGroupOptions(
+                    permissions = permissions,
+                    groupName = groupName,
+                    groupImageUrlSquare = groupImageUrlSquare,
+                    groupDescription = groupDescription,
+                    customPermissionPolicySet = permissionsPolicySet,
+                    messageDisappearingSettings = messageDisappearingSettings
                 )
             )
         return Group(client, group)
@@ -127,48 +263,88 @@ data class Conversations(
     }
 
     // Sync all new and existing conversations data from the network
-    suspend fun syncAllConversations(consentState: ConsentState? = null): UInt {
+    suspend fun syncAllConversations(consentStates: List<ConsentState>? = null): UInt {
         return ffiConversations.syncAllConversations(
-            consentState?.let {
-                ConsentState.toFfiConsentState(it)
+            consentStates?.let { states ->
+                states.map { ConsentState.toFfiConsentState(it) }
             }
         )
     }
 
-    suspend fun newConversation(peerAddress: String): Conversation {
-        val dm = findOrCreateDm(peerAddress)
+    suspend fun newConversationWithIdentity(
+        peerPublicIdentity: PublicIdentity,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
+    ): Conversation {
+        val dm = findOrCreateDmWithIdentity(peerPublicIdentity, disappearingMessageSettings)
         return Conversation.Dm(dm)
     }
 
-    suspend fun findOrCreateDm(peerAddress: String): Dm {
-        if (peerAddress.lowercase() == client.address.lowercase()) {
+    suspend fun findOrCreateDmWithIdentity(
+        peerPublicIdentity: PublicIdentity,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
+    ): Dm {
+        if (peerPublicIdentity.identifier in client.inboxState(false).identities.map { it.identifier }) {
             throw XMTPException("Recipient is sender")
         }
-        val falseAddresses =
-            client.canMessage(listOf(peerAddress)).filter { !it.value }.map { it.key }
-        if (falseAddresses.isNotEmpty()) {
-            throw XMTPException("${falseAddresses.joinToString()} not on network")
-        }
-        var dm = client.findDmByAddress(peerAddress)
-        if (dm == null) {
-            val dmConversation = ffiConversations.createDm(peerAddress.lowercase())
-            dm = Dm(client, dmConversation)
-        }
-        return dm
+
+        val dmConversation = ffiConversations.findOrCreateDm(
+            peerPublicIdentity.ffiPrivate,
+            opts = FfiCreateDmOptions(
+                disappearingMessageSettings?.let {
+                    FfiMessageDisappearingSettings(
+                        it.disappearStartingAtNs,
+                        it.retentionDurationInNs
+                    )
+                }
+            )
+        )
+        return Dm(client, dmConversation)
     }
 
-    suspend fun listGroups(
+    suspend fun newConversation(
+        peerInboxId: InboxId,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
+    ): Conversation {
+        val dm = findOrCreateDm(peerInboxId, disappearingMessageSettings)
+        return Conversation.Dm(dm)
+    }
+
+    suspend fun findOrCreateDm(
+        peerInboxId: InboxId,
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
+    ): Dm {
+        validateInboxId(peerInboxId)
+        if (peerInboxId == client.inboxId) {
+            throw XMTPException("Recipient is sender")
+        }
+        val dmConversation = ffiConversations.findOrCreateDmByInboxId(
+            peerInboxId,
+            opts = FfiCreateDmOptions(
+                disappearingMessageSettings?.let {
+                    FfiMessageDisappearingSettings(
+                        it.disappearStartingAtNs,
+                        it.retentionDurationInNs
+                    )
+                }
+            )
+        )
+        return Dm(client, dmConversation)
+    }
+
+    fun listGroups(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        consentState: ConsentState? = null,
+        consentStates: List<ConsentState>? = null,
     ): List<Group> {
         val ffiGroups = ffiConversations.listGroups(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) },
+                consentStates?.let { states ->
+                    states.map { ConsentState.toFfiConsentState(it) }
+                },
                 false
             )
         )
@@ -178,18 +354,20 @@ data class Conversations(
         }
     }
 
-    suspend fun listDms(
+    fun listDms(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        consentState: ConsentState? = null,
+        consentStates: List<ConsentState>? = null,
     ): List<Dm> {
         val ffiDms = ffiConversations.listDms(
             opts = FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) },
+                consentStates?.let { states ->
+                    states.map { ConsentState.toFfiConsentState(it) }
+                },
                 false
             )
         )
@@ -203,14 +381,16 @@ data class Conversations(
         after: Date? = null,
         before: Date? = null,
         limit: Int? = null,
-        consentState: ConsentState? = null,
+        consentStates: List<ConsentState>? = null,
     ): List<Conversation> {
         val ffiConversation = ffiConversations.list(
             FfiListConversationsOptions(
                 after?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 before?.time?.nanoseconds?.toLong(DurationUnit.NANOSECONDS),
                 limit?.toLong(),
-                consentState?.let { ConsentState.toFfiConsentState(it) },
+                consentStates?.let { states ->
+                    states.map { ConsentState.toFfiConsentState(it) }
+                },
                 false
             )
         )
@@ -220,12 +400,19 @@ data class Conversations(
 
     private suspend fun FfiConversationListItem.toConversation(): Conversation {
         return when (conversation().conversationType()) {
-            FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation(), lastMessage()))
+            FfiConversationType.DM -> Conversation.Dm(
+                Dm(
+                    client,
+                    conversation(),
+                    lastMessage()
+                )
+            )
+
             else -> Conversation.Group(Group(client, conversation(), lastMessage()))
         }
     }
 
-    fun stream(type: ConversationType = ConversationType.ALL): Flow<Conversation> =
+    fun stream(type: ConversationFilterType = ConversationFilterType.ALL): Flow<Conversation> =
         callbackFlow {
             val conversationCallback = object : FfiConversationCallback {
                 override fun onConversation(conversation: FfiConversation) {
@@ -251,19 +438,19 @@ data class Conversations(
             }
 
             val stream = when (type) {
-                ConversationType.ALL -> ffiConversations.stream(conversationCallback)
-                ConversationType.GROUPS -> ffiConversations.streamGroups(conversationCallback)
-                ConversationType.DMS -> ffiConversations.streamDms(conversationCallback)
+                ConversationFilterType.ALL -> ffiConversations.stream(conversationCallback)
+                ConversationFilterType.GROUPS -> ffiConversations.streamGroups(conversationCallback)
+                ConversationFilterType.DMS -> ffiConversations.streamDms(conversationCallback)
             }
 
             awaitClose { stream.end() }
         }
 
-    fun streamAllMessages(type: ConversationType = ConversationType.ALL): Flow<Message> =
+    fun streamAllMessages(type: ConversationFilterType = ConversationFilterType.ALL): Flow<DecodedMessage> =
         callbackFlow {
             val messageCallback = object : FfiMessageCallback {
                 override fun onMessage(message: FfiMessage) {
-                    val decodedMessage = Message.create(message)
+                    val decodedMessage = DecodedMessage.create(message)
                     decodedMessage?.let { trySend(it) }
                 }
 
@@ -273,9 +460,9 @@ data class Conversations(
             }
 
             val stream = when (type) {
-                ConversationType.ALL -> ffiConversations.streamAllMessages(messageCallback)
-                ConversationType.GROUPS -> ffiConversations.streamAllGroupMessages(messageCallback)
-                ConversationType.DMS -> ffiConversations.streamAllDmMessages(messageCallback)
+                ConversationFilterType.ALL -> ffiConversations.streamAllMessages(messageCallback)
+                ConversationFilterType.GROUPS -> ffiConversations.streamAllGroupMessages(messageCallback)
+                ConversationFilterType.DMS -> ffiConversations.streamAllDmMessages(messageCallback)
             }
 
             awaitClose { stream.end() }

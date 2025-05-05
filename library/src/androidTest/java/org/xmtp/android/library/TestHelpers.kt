@@ -13,43 +13,12 @@ import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.utils.Numeric
 import org.xmtp.android.library.artifact.CoinbaseSmartWallet
 import org.xmtp.android.library.artifact.CoinbaseSmartWalletFactory
+import org.xmtp.android.library.libxmtp.IdentityKind
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.Signature
-import org.xmtp.android.library.messages.ethHash
-import org.xmtp.android.library.messages.walletAddress
 import java.math.BigInteger
 import java.security.SecureRandom
-
-class FakeWallet : SigningKey {
-    private var privateKey: PrivateKey
-    private var privateKeyBuilder: PrivateKeyBuilder
-
-    constructor(key: PrivateKey, builder: PrivateKeyBuilder) {
-        privateKey = key
-        privateKeyBuilder = builder
-    }
-
-    companion object {
-        fun generate(): FakeWallet {
-            val key = PrivateKeyBuilder()
-            return FakeWallet(key.getPrivateKey(), key)
-        }
-    }
-
-    override suspend fun sign(data: ByteArray): Signature {
-        val signature = privateKeyBuilder.sign(data)
-        return signature
-    }
-
-    override suspend fun sign(message: String): Signature {
-        val signature = privateKeyBuilder.sign(message)
-        return signature
-    }
-
-    override val address: String
-        get() = privateKey.walletAddress
-}
 
 const val ANVIL_TEST_PRIVATE_KEY_1 =
     "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
@@ -64,11 +33,11 @@ class FakeSCWWallet : SigningKey {
     private var contractDeployerCredentials: Credentials? = null
     var walletAddress: String = ""
 
-    override val address: String
-        get() = walletAddress
+    override val publicIdentity: PublicIdentity
+        get() = PublicIdentity(IdentityKind.ETHEREUM, walletAddress)
 
-    override val type: WalletType
-        get() = WalletType.SCW
+    override val type: SignerType
+        get() = SignerType.SCW
 
     override var chainId: Long? = 31337L
 
@@ -81,14 +50,14 @@ class FakeSCWWallet : SigningKey {
         }
     }
 
-    override suspend fun signSCW(message: String): ByteArray {
+    override suspend fun sign(message: String): SignedData {
         val smartWallet = CoinbaseSmartWallet.load(
             walletAddress,
             web3j,
             contractDeployerCredentials,
             DefaultGasProvider()
         )
-        val digest = Signature.newBuilder().build().ethHash(message)
+        val digest = KeyUtil.ethHash(message)
         val replaySafeHash = smartWallet.replaySafeHash(digest).send()
 
         val signature =
@@ -101,7 +70,7 @@ class FakeSCWWallet : SigningKey {
         val encoded = FunctionEncoder.encodeConstructor(tokens)
         val encodedBytes = Numeric.hexStringToByteArray(encoded)
 
-        return encodedBytes
+        return SignedData(encodedBytes)
     }
 
     private fun createSmartContractWallet() {
@@ -142,7 +111,12 @@ class FakeSCWWallet : SigningKey {
     }
 }
 
-class Fixtures(api: ClientOptions.Api = ClientOptions.Api(XMTPEnvironment.LOCAL, isSecure = false)) {
+class Fixtures(
+    api: ClientOptions.Api = ClientOptions.Api(
+        XMTPEnvironment.LOCAL,
+        isSecure = false
+    ),
+) {
     val key = SecureRandom().generateSeed(32)
     val context = InstrumentationRegistry.getInstrumentation().targetContext
     val clientOptions = ClientOptions(
@@ -153,19 +127,34 @@ class Fixtures(api: ClientOptions.Api = ClientOptions.Api(XMTPEnvironment.LOCAL,
     val alixAccount = PrivateKeyBuilder()
     val boAccount = PrivateKeyBuilder()
     val caroAccount = PrivateKeyBuilder()
+    val davonAccount = PrivateKeyBuilder()
+    val eriAccount = PrivateKeyBuilder()
 
     var alix: PrivateKey = alixAccount.getPrivateKey()
     var alixClient: Client =
-        runBlocking { Client().create(account = alixAccount, options = clientOptions) }
+        runBlocking { Client.create(account = alixAccount, options = clientOptions) }
 
     var bo: PrivateKey = boAccount.getPrivateKey()
     var boClient: Client =
-        runBlocking { Client().create(account = boAccount, options = clientOptions) }
+        runBlocking { Client.create(account = boAccount, options = clientOptions) }
 
     var caro: PrivateKey = caroAccount.getPrivateKey()
     var caroClient: Client =
-        runBlocking { Client().create(account = caroAccount, options = clientOptions) }
+        runBlocking { Client.create(account = caroAccount, options = clientOptions) }
+
+    var davon: PrivateKey = davonAccount.getPrivateKey()
+    var davonClient: Client =
+        runBlocking { Client.create(account = davonAccount, options = clientOptions) }
+
+    var eri: PrivateKey = eriAccount.getPrivateKey()
+    var eriClient: Client =
+        runBlocking { Client.create(account = eriAccount, options = clientOptions) }
 }
 
-fun fixtures(api: ClientOptions.Api = ClientOptions.Api(XMTPEnvironment.LOCAL, isSecure = false)): Fixtures =
+fun fixtures(
+    api: ClientOptions.Api = ClientOptions.Api(
+        XMTPEnvironment.LOCAL,
+        isSecure = false
+    ),
+): Fixtures =
     Fixtures(api)

@@ -20,8 +20,8 @@ import org.xmtp.android.example.extension.flowWhileShared
 import org.xmtp.android.example.extension.stateFlow
 import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
 import org.xmtp.android.library.Conversation
-import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.messages.Topic
+import org.xmtp.android.library.libxmtp.DecodedMessage
+import org.xmtp.android.library.Topic
 import org.xmtp.android.library.push.Service
 
 class MainViewModel : ViewModel() {
@@ -83,7 +83,7 @@ class MainViewModel : ViewModel() {
                 listItems.add(
                     MainListItem.Footer(
                         id = "footer",
-                        ClientManager.client.address,
+                        ClientManager.client.inboxId,
                         ClientManager.client.environment.name
                     )
                 )
@@ -95,7 +95,7 @@ class MainViewModel : ViewModel() {
     }
 
     @WorkerThread
-    private fun fetchMostRecentMessage(conversation: Conversation): Message? {
+    private fun fetchMostRecentMessage(conversation: Conversation): DecodedMessage? {
         return runBlocking { conversation.lastMessage() }
     }
 
@@ -135,7 +135,7 @@ class MainViewModel : ViewModel() {
         data class ConversationItem(
             override val id: String,
             val conversation: Conversation,
-            val mostRecentMessage: Message?,
+            val mostRecentMessage: DecodedMessage?,
         ) : MainListItem(id, ITEM_TYPE_CONVERSATION)
 
         data class Footer(

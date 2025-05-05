@@ -9,9 +9,11 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.libxmtp.GroupPermissionPreconfiguration
+import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PermissionLevel
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
+import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
@@ -50,7 +52,7 @@ class GroupPermissionsTest {
 
     @Test
     fun testGroupCreatedWithCorrectAdminList() {
-        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
+        val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
         runBlocking { alixClient.conversations.sync() }
         val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
 
@@ -77,8 +79,8 @@ class GroupPermissionsTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 ),
                 GroupPermissionPreconfiguration.ADMIN_ONLY
             )
@@ -107,7 +109,7 @@ class GroupPermissionsTest {
         assert(boGroup.name == "")
         val exception = assertThrows(XMTPException::class.java) {
             runBlocking {
-                alixGroup.updateGroupName("Alix group name")
+                alixGroup.updateName("Alix group name")
             }
         }
         assertEquals(exception.message, "Permission denied: Unable to update group name")
@@ -140,7 +142,7 @@ class GroupPermissionsTest {
         runBlocking {
             boGroup.sync()
             alixGroup.sync()
-            alixGroup.updateGroupName("Alix group name")
+            alixGroup.updateName("Alix group name")
             alixGroup.sync()
             boGroup.sync()
         }
@@ -168,7 +170,7 @@ class GroupPermissionsTest {
         // Verify that alix can NOT  update group name
         val exception2 = assertThrows(XMTPException::class.java) {
             runBlocking {
-                alixGroup.updateGroupName("Alix group name 2")
+                alixGroup.updateName("Alix group name 2")
             }
         }
         assertEquals(exception.message, "Permission denied: Unable to update group name")
@@ -179,8 +181,8 @@ class GroupPermissionsTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 ),
                 GroupPermissionPreconfiguration.ADMIN_ONLY
             )
@@ -228,8 +230,8 @@ class GroupPermissionsTest {
         val group = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 ),
                 GroupPermissionPreconfiguration.ADMIN_ONLY
             )
@@ -285,8 +287,8 @@ class GroupPermissionsTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 ),
                 GroupPermissionPreconfiguration.ALL_MEMBERS
             )
@@ -311,7 +313,7 @@ class GroupPermissionsTest {
         runBlocking {
             boGroup.sync()
             alixGroup.sync()
-            alixGroup.updateGroupName("Alix group name")
+            alixGroup.updateName("Alix group name")
             alixGroup.sync()
             boGroup.sync()
         }
@@ -324,8 +326,8 @@ class GroupPermissionsTest {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
                 listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
+                    alixClient.inboxId,
+                    caroClient.inboxId
                 ),
                 GroupPermissionPreconfiguration.ADMIN_ONLY
             )
@@ -337,7 +339,7 @@ class GroupPermissionsTest {
         assert(boGroup.name == "")
         val exception = assertThrows(XMTPException::class.java) {
             runBlocking {
-                alixGroup.updateGroupDescription("new group description")
+                alixGroup.updateDescription("new group description")
             }
         }
         assertEquals(exception.message, "Permission denied: Unable to update group description")
@@ -352,7 +354,7 @@ class GroupPermissionsTest {
 
         // Update group name permissions so Alix can update
         runBlocking {
-            boGroup.updateGroupDescriptionPermission(PermissionOption.Allow)
+            boGroup.updateDescriptionPermission(PermissionOption.Allow)
             boGroup.sync()
             alixGroup.sync()
         }
@@ -363,64 +365,12 @@ class GroupPermissionsTest {
 
         // Verify that alix can now update group name
         runBlocking {
-            alixGroup.updateGroupDescription("Alix group description")
+            alixGroup.updateDescription("Alix group description")
             alixGroup.sync()
             boGroup.sync()
         }
         assert(boGroup.description == "Alix group description")
         assert(alixGroup.description == "Alix group description")
-    }
-
-    @Test
-    fun testCanUpdatePinnedFrameUrl() {
-        val boGroup = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(
-                    alix.walletAddress,
-                    caro.walletAddress
-                ),
-                GroupPermissionPreconfiguration.ADMIN_ONLY
-            )
-        }
-        runBlocking { alixClient.conversations.sync() }
-        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
-
-        // Verify that alix can NOT update pinned frame
-        assert(boGroup.pinnedFrameUrl == "")
-        val exception = assertThrows(XMTPException::class.java) {
-            runBlocking {
-                alixGroup.updateGroupPinnedFrameUrl("new pinned frame url")
-            }
-        }
-        assertEquals(exception.message, "Permission denied: Unable to update pinned frame")
-        runBlocking {
-            alixGroup.sync()
-            boGroup.sync()
-        }
-        assertEquals(
-            boGroup.permissionPolicySet().updateGroupPinnedFrameUrlPolicy,
-            PermissionOption.Admin
-        )
-
-        // Update group name permissions so Alix can update
-        runBlocking {
-            boGroup.updateGroupPinnedFrameUrlPermission(PermissionOption.Allow)
-            boGroup.sync()
-            alixGroup.sync()
-        }
-        assertEquals(
-            boGroup.permissionPolicySet().updateGroupPinnedFrameUrlPolicy,
-            PermissionOption.Allow
-        )
-
-        // Verify that alix can now update group name
-        runBlocking {
-            alixGroup.updateGroupPinnedFrameUrl("new pinned frame url 2")
-            alixGroup.sync()
-            boGroup.sync()
-        }
-        assert(boGroup.pinnedFrameUrl == "new pinned frame url 2")
-        assert(alixGroup.pinnedFrameUrl == "new pinned frame url 2")
     }
 
     @Test
@@ -433,11 +383,11 @@ class GroupPermissionsTest {
             updateGroupNamePolicy = PermissionOption.Admin,
             updateGroupDescriptionPolicy = PermissionOption.Allow,
             updateGroupImagePolicy = PermissionOption.Admin,
-            updateGroupPinnedFrameUrlPolicy = PermissionOption.Deny,
+            updateMessageDisappearingPolicy = PermissionOption.Admin,
         )
         val boGroup = runBlocking {
             boClient.conversations.newGroupCustomPermissions(
-                accountAddresses = listOf(alix.walletAddress, caro.walletAddress),
+                inboxIds = listOf(alixClient.inboxId, caroClient.inboxId),
                 permissionPolicySet = permissionPolicySet,
             )
         }
@@ -453,7 +403,6 @@ class GroupPermissionsTest {
         assert(alixPermissionSet.updateGroupNamePolicy == PermissionOption.Admin)
         assert(alixPermissionSet.updateGroupDescriptionPolicy == PermissionOption.Allow)
         assert(alixPermissionSet.updateGroupImagePolicy == PermissionOption.Admin)
-        assert(alixPermissionSet.updateGroupPinnedFrameUrlPolicy == PermissionOption.Deny)
     }
 
     @Test
@@ -467,13 +416,13 @@ class GroupPermissionsTest {
             updateGroupNamePolicy = PermissionOption.Admin,
             updateGroupDescriptionPolicy = PermissionOption.Allow,
             updateGroupImagePolicy = PermissionOption.Admin,
-            updateGroupPinnedFrameUrlPolicy = PermissionOption.Deny,
+            updateMessageDisappearingPolicy = PermissionOption.Admin,
         )
 
         assertThrows(GenericException.GroupMutablePermissions::class.java) {
             val boGroup = runBlocking {
                 boClient.conversations.newGroupCustomPermissions(
-                    accountAddresses = listOf(alix.walletAddress, caro.walletAddress),
+                    inboxIds = listOf(alixClient.inboxId, caroClient.inboxId),
                     permissionPolicySet = permissionPolicySetInvalid,
                 )
             }
@@ -487,7 +436,7 @@ class GroupPermissionsTest {
             updateGroupNamePolicy = PermissionOption.Admin,
             updateGroupDescriptionPolicy = PermissionOption.Allow,
             updateGroupImagePolicy = PermissionOption.Admin,
-            updateGroupPinnedFrameUrlPolicy = PermissionOption.Deny,
+            updateMessageDisappearingPolicy = PermissionOption.Allow,
         )
 
         // Valid custom policy works as expected
@@ -496,11 +445,46 @@ class GroupPermissionsTest {
 
         val boGroup = runBlocking {
             boClient.conversations.newGroupCustomPermissions(
-                accountAddresses = listOf(alix.walletAddress, caro.walletAddress),
+                inboxIds = listOf(alixClient.inboxId, caroClient.inboxId),
                 permissionPolicySet = permissionPolicySetValid,
             )
         }
         runBlocking { alixClient.conversations.sync() }
         assert(runBlocking { alixClient.conversations.listGroups() }.size == 1)
+    }
+
+    @Test
+    fun canCreateGroupWithInboxIdCustomPermissions() {
+        val permissionPolicySet = PermissionPolicySet(
+            addMemberPolicy = PermissionOption.Admin,
+            removeMemberPolicy = PermissionOption.Deny,
+            addAdminPolicy = PermissionOption.Admin,
+            removeAdminPolicy = PermissionOption.SuperAdmin,
+            updateGroupNamePolicy = PermissionOption.Admin,
+            updateGroupDescriptionPolicy = PermissionOption.Allow,
+            updateGroupImagePolicy = PermissionOption.Admin,
+            updateMessageDisappearingPolicy = PermissionOption.Admin,
+        )
+        val boGroup = runBlocking {
+            boClient.conversations.newGroupCustomPermissionsWithIdentities(
+                identities = listOf(
+                    PublicIdentity(IdentityKind.ETHEREUM, alix.walletAddress),
+                    PublicIdentity(IdentityKind.ETHEREUM, caro.walletAddress)
+                ),
+                permissionPolicySet = permissionPolicySet,
+            )
+        }
+        runBlocking { alixClient.conversations.sync() }
+        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
+
+        // Verify permission look correct
+        val alixPermissionSet = alixGroup.permissionPolicySet()
+        assert(alixPermissionSet.addMemberPolicy == PermissionOption.Admin)
+        assert(alixPermissionSet.removeMemberPolicy == PermissionOption.Deny)
+        assert(alixPermissionSet.addAdminPolicy == PermissionOption.Admin)
+        assert(alixPermissionSet.removeAdminPolicy == PermissionOption.SuperAdmin)
+        assert(alixPermissionSet.updateGroupNamePolicy == PermissionOption.Admin)
+        assert(alixPermissionSet.updateGroupDescriptionPolicy == PermissionOption.Allow)
+        assert(alixPermissionSet.updateGroupImagePolicy == PermissionOption.Admin)
     }
 }

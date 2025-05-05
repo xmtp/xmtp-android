@@ -8,10 +8,10 @@ import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.libxmtp.Member
-import org.xmtp.android.library.libxmtp.Message
-import org.xmtp.android.library.libxmtp.Message.MessageDeliveryStatus
-import org.xmtp.android.library.libxmtp.Message.SortDirection
-import org.xmtp.android.library.messages.Topic
+import org.xmtp.android.library.libxmtp.DecodedMessage
+import org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection
+import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
 import uniffi.xmtpv3.FfiDeliveryStatus
@@ -19,10 +19,15 @@ import uniffi.xmtpv3.FfiDirection
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
+import uniffi.xmtpv3.FfiMessageDisappearingSettings
 import uniffi.xmtpv3.FfiSubscribeException
 import java.util.Date
 
-class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private val ffiLastMessage: FfiMessage? = null) {
+class Dm(
+    val client: Client,
+    private val libXMTPGroup: FfiConversation,
+    private val ffiLastMessage: FfiMessage? = null,
+) {
     val id: String
         get() = libXMTPGroup.id().toHex()
 
@@ -32,8 +37,20 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
     val createdAt: Date
         get() = Date(libXMTPGroup.createdAtNs() / 1_000_000)
 
-    val peerInboxId: String
+    val peerInboxId: InboxId
         get() = libXMTPGroup.dmPeerInboxId()
+
+    val disappearingMessageSettings: DisappearingMessageSettings?
+        get() = runCatching {
+            libXMTPGroup.takeIf { isDisappearingMessagesEnabled }
+                ?.let { group ->
+                    group.conversationMessageDisappearingSettings()
+                        ?.let { DisappearingMessageSettings.createFromFfi(it) }
+                }
+        }.getOrNull()
+
+    val isDisappearingMessagesEnabled: Boolean
+        get() = libXMTPGroup.isConversationMessageDisappearingEnabled()
 
     private suspend fun metadata(): FfiConversationMetadata {
         return libXMTPGroup.groupMetadata()
@@ -49,9 +66,6 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
     }
 
     suspend fun send(encodedContent: EncodedContent): String {
-        if (consentState() == ConsentState.UNKNOWN) {
-            updateConsentState(ConsentState.ALLOWED)
-        }
         val messageId = libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
         return messageId.toHex()
     }
@@ -81,16 +95,10 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
     }
 
     fun prepareMessage(encodedContent: EncodedContent): String {
-        if (consentState() == ConsentState.UNKNOWN) {
-            updateConsentState(ConsentState.ALLOWED)
-        }
         return libXMTPGroup.sendOptimistic(encodedContent.toByteArray()).toHex()
     }
 
     fun <T> prepareMessage(content: T, options: SendOptions? = null): String {
-        if (consentState() == ConsentState.UNKNOWN) {
-            updateConsentState(ConsentState.ALLOWED)
-        }
         val encodeContent = encodeContent(content = content, options = options)
         return libXMTPGroup.sendOptimistic(encodeContent.toByteArray()).toHex()
     }
@@ -103,9 +111,9 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
         libXMTPGroup.sync()
     }
 
-    suspend fun lastMessage(): Message? {
+    suspend fun lastMessage(): DecodedMessage? {
         return if (ffiLastMessage != null) {
-            Message.create(ffiLastMessage)
+            DecodedMessage.create(ffiLastMessage)
         } else {
             messages(limit = 1).firstOrNull()
         }
@@ -117,7 +125,7 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
         afterNs: Long? = null,
         direction: SortDirection = SortDirection.DESCENDING,
         deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
-    ): List<Message> {
+    ): List<DecodedMessage> {
         return libXMTPGroup.findMessages(
             opts = FfiListMessagesOptions(
                 sentBeforeNs = beforeNs,
@@ -136,16 +144,47 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
                 contentTypes = null
             )
         ).mapNotNull {
-            Message.create(it)
+            DecodedMessage.create(it)
         }
     }
 
-    suspend fun processMessage(messageBytes: ByteArray): Message? {
-        val message = libXMTPGroup.processStreamedConversationMessage(messageBytes)
-        return Message.create(message)
+    suspend fun messagesWithReactions(
+        limit: Int? = null,
+        beforeNs: Long? = null,
+        afterNs: Long? = null,
+        direction: SortDirection = SortDirection.DESCENDING,
+        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
+    ): List<DecodedMessage> {
+        val ffiMessageWithReactions = libXMTPGroup.findMessagesWithReactions(
+            opts = FfiListMessagesOptions(
+                sentBeforeNs = beforeNs,
+                sentAfterNs = afterNs,
+                limit = limit?.toLong(),
+                deliveryStatus = when (deliveryStatus) {
+                    MessageDeliveryStatus.PUBLISHED -> FfiDeliveryStatus.PUBLISHED
+                    MessageDeliveryStatus.UNPUBLISHED -> FfiDeliveryStatus.UNPUBLISHED
+                    MessageDeliveryStatus.FAILED -> FfiDeliveryStatus.FAILED
+                    else -> null
+                },
+                when (direction) {
+                    SortDirection.ASCENDING -> FfiDirection.ASCENDING
+                    else -> FfiDirection.DESCENDING
+                },
+                contentTypes = null
+            )
+        )
+
+        return ffiMessageWithReactions.mapNotNull { ffiMessageWithReaction ->
+            DecodedMessage.create(ffiMessageWithReaction)
+        }
     }
 
-    suspend fun creatorInboxId(): String {
+    suspend fun processMessage(messageBytes: ByteArray): DecodedMessage? {
+        val message = libXMTPGroup.processStreamedConversationMessage(messageBytes)
+        return DecodedMessage.create(message)
+    }
+
+    suspend fun creatorInboxId(): InboxId {
         return metadata().creatorInboxId()
     }
 
@@ -157,22 +196,64 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
         return libXMTPGroup.listMembers().map { Member(it) }
     }
 
-    fun streamMessages(): Flow<Message> = callbackFlow {
+    fun streamMessages(): Flow<DecodedMessage> = callbackFlow {
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
-                val decodedMessage = Message.create(message)
-                decodedMessage?.let {
-                    trySend(it)
+                try {
+                    val decodedMessage = DecodedMessage.create(message)
+                    if (decodedMessage != null) {
+                        trySend(decodedMessage)
+                    } else {
+                        Log.w(
+                            "XMTP Dm stream",
+                            "Failed to decode message: id=${message.id.toHex()}, " +
+                                "convoId=${message.conversationId.toHex()}, " +
+                                "senderInboxId=${message.senderInboxId}"
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e(
+                        "XMTP Dm stream",
+                        "Error decoding message: id=${message.id.toHex()}, " +
+                            "convoId=${message.conversationId.toHex()}, " +
+                            "senderInboxId=${message.senderInboxId}",
+                        e
+                    )
                 }
             }
 
             override fun onError(error: FfiSubscribeException) {
-                Log.e("XMTP Dm stream", error.message.toString())
+                Log.e("XMTP Dm stream", "Stream error: ${error.message}", error)
             }
         }
 
         val stream = libXMTPGroup.stream(messageCallback)
         awaitClose { stream.end() }
+    }
+
+    suspend fun clearDisappearingMessageSettings() {
+        try {
+            libXMTPGroup.removeConversationMessageDisappearingSettings()
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to clear group message expiration", e)
+        }
+    }
+
+    suspend fun updateDisappearingMessageSettings(disappearingMessageSettings: DisappearingMessageSettings?) {
+        try {
+            if (disappearingMessageSettings == null) {
+                clearDisappearingMessageSettings()
+            } else {
+                libXMTPGroup.updateConversationMessageDisappearingSettings(
+                    FfiMessageDisappearingSettings(
+                        disappearingMessageSettings.disappearStartingAtNs,
+                        disappearingMessageSettings.retentionDurationInNs
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            throw XMTPException("Permission denied: Unable to update group message expiration", e)
+        }
     }
 
     fun updateConsentState(state: ConsentState) {
@@ -182,5 +263,10 @@ class Dm(val client: Client, private val libXMTPGroup: FfiConversation, private 
 
     fun consentState(): ConsentState {
         return ConsentState.fromFfiConsentState(libXMTPGroup.consentState())
+    }
+
+    // Returns null if dm is not paused, otherwise the min version required to unpause this dm
+    fun pausedForVersion(): String? {
+        return libXMTPGroup.pausedForVersion()
     }
 }

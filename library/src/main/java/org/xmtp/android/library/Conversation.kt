@@ -3,7 +3,8 @@ package org.xmtp.android.library
 import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
-import org.xmtp.android.library.libxmtp.Message
+import org.xmtp.android.library.libxmtp.DecodedMessage
+import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import java.util.Date
 
 sealed class Conversation {
@@ -44,7 +45,23 @@ sealed class Conversation {
             }
         }
 
-    suspend fun lastMessage(): Message? {
+    val disappearingMessageSettings: DisappearingMessageSettings?
+        get() {
+            return when (this) {
+                is Group -> group.disappearingMessageSettings
+                is Dm -> dm.disappearingMessageSettings
+            }
+        }
+
+    val isDisappearingMessagesEnabled: Boolean
+        get() {
+            return when (this) {
+                is Group -> group.isDisappearingMessagesEnabled
+                is Dm -> dm.isDisappearingMessagesEnabled
+            }
+        }
+
+    suspend fun lastMessage(): DecodedMessage? {
         return when (this) {
             is Group -> group.lastMessage()
             is Dm -> dm.lastMessage()
@@ -55,6 +72,20 @@ sealed class Conversation {
         return when (this) {
             is Group -> group.members()
             is Dm -> dm.members()
+        }
+    }
+
+    suspend fun clearDisappearingMessageSettings() {
+        return when (this) {
+            is Group -> group.clearDisappearingMessageSettings()
+            is Dm -> dm.clearDisappearingMessageSettings()
+        }
+    }
+
+    suspend fun updateDisappearingMessageSettings(disappearingMessageSettings: DisappearingMessageSettings?) {
+        return when (this) {
+            is Group -> group.updateDisappearingMessageSettings(disappearingMessageSettings)
+            is Dm -> dm.updateDisappearingMessageSettings(disappearingMessageSettings)
         }
     }
 
@@ -118,16 +149,36 @@ sealed class Conversation {
         limit: Int? = null,
         beforeNs: Long? = null,
         afterNs: Long? = null,
-        direction: Message.SortDirection = Message.SortDirection.DESCENDING,
-        deliveryStatus: Message.MessageDeliveryStatus = Message.MessageDeliveryStatus.ALL,
-    ): List<Message> {
+        direction: DecodedMessage.SortDirection = DecodedMessage.SortDirection.DESCENDING,
+        deliveryStatus: DecodedMessage.MessageDeliveryStatus = DecodedMessage.MessageDeliveryStatus.ALL,
+    ): List<DecodedMessage> {
         return when (this) {
             is Group -> group.messages(limit, beforeNs, afterNs, direction, deliveryStatus)
             is Dm -> dm.messages(limit, beforeNs, afterNs, direction, deliveryStatus)
         }
     }
 
-    suspend fun processMessage(messageBytes: ByteArray): Message? {
+    suspend fun messagesWithReactions(
+        limit: Int? = null,
+        beforeNs: Long? = null,
+        afterNs: Long? = null,
+        direction: DecodedMessage.SortDirection = DecodedMessage.SortDirection.DESCENDING,
+        deliveryStatus: DecodedMessage.MessageDeliveryStatus = DecodedMessage.MessageDeliveryStatus.ALL,
+    ): List<DecodedMessage> {
+        return when (this) {
+            is Group -> group.messagesWithReactions(
+                limit,
+                beforeNs,
+                afterNs,
+                direction,
+                deliveryStatus
+            )
+
+            is Dm -> dm.messagesWithReactions(limit, beforeNs, afterNs, direction, deliveryStatus)
+        }
+    }
+
+    suspend fun processMessage(messageBytes: ByteArray): DecodedMessage? {
         return when (this) {
             is Group -> group.processMessage(messageBytes)
             is Dm -> dm.processMessage(messageBytes)
@@ -141,6 +192,14 @@ sealed class Conversation {
         }
     }
 
+    // Returns null if conversation is not paused, otherwise the min version required to unpause this conversation
+    fun pausedForVersion(): String? {
+        return when (this) {
+            is Group -> group.pausedForVersion()
+            is Dm -> dm.pausedForVersion()
+        }
+    }
+
     val client: Client
         get() {
             return when (this) {
@@ -149,7 +208,7 @@ sealed class Conversation {
             }
         }
 
-    fun streamMessages(): Flow<Message> {
+    fun streamMessages(): Flow<DecodedMessage> {
         return when (this) {
             is Group -> group.streamMessages()
             is Dm -> dm.streamMessages()

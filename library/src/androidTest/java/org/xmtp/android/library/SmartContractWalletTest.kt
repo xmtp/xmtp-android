@@ -9,15 +9,17 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.BeforeClass
+import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.libxmtp.Message
+import org.junit.runners.MethodSorters
+import org.xmtp.android.library.libxmtp.DecodedMessage
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
-import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.GenericException
 
 @RunWith(AndroidJUnit4::class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class SmartContractWalletTest {
     companion object {
         private lateinit var davonSCW: FakeSCWWallet
@@ -49,7 +51,7 @@ class SmartContractWalletTest {
             boEOAWallet = PrivateKeyBuilder()
             boEOA = boEOAWallet.getPrivateKey()
             boEOAClient = runBlocking {
-                Client().create(
+                Client.create(
                     account = boEOAWallet,
                     options = options
                 )
@@ -58,7 +60,7 @@ class SmartContractWalletTest {
             // SCW
             davonSCW = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_1)
             davonSCWClient = runBlocking {
-                Client().create(
+                Client.create(
                     account = davonSCW,
                     options = options
                 )
@@ -67,7 +69,7 @@ class SmartContractWalletTest {
             // SCW
             eriSCW = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_2)
             eriSCWClient = runBlocking {
-                Client().create(
+                Client.create(
                     account = eriSCW,
                     options = options
                 )
@@ -76,80 +78,52 @@ class SmartContractWalletTest {
     }
 
     @Test
-    fun testCanBuildASCW() {
+    fun test1_CanBuildASCW() {
         val davonSCWClient2 = runBlocking {
-            Client().build(
-                address = davonSCW.address,
+            Client.build(
+                publicIdentity = davonSCW.publicIdentity,
                 options = options
             )
         }
 
         assertEquals(davonSCWClient.inboxId, davonSCWClient2.inboxId)
-    }
-
-    @Test
-    fun testAddAndRemovingAccounts() {
-        val davonEOA = PrivateKeyBuilder()
-        val davonSCW2 = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_3)
-
-        runBlocking { davonSCWClient.addAccount(davonEOA) }
-        runBlocking { davonSCWClient.addAccount(davonSCW2) }
-
-        var state = runBlocking { davonSCWClient.inboxState(true) }
-        assertEquals(state.installations.size, 1)
-        assertEquals(state.addresses.size, 3)
-        assertEquals(state.recoveryAddress, davonSCWClient.address.lowercase())
         assertEquals(
-            state.addresses.sorted(),
-            listOf(
-                davonEOA.address.lowercase(),
-                davonSCW2.address.lowercase(),
-                davonSCWClient.address.lowercase()
-            ).sorted()
+            davonSCWClient2.inboxId,
+            runBlocking { davonSCWClient.inboxIdFromIdentity(davonSCW.publicIdentity) }
         )
 
-        runBlocking { davonSCWClient.removeAccount(davonSCW, davonSCW2.address) }
-        state = runBlocking { davonSCWClient.inboxState(true) }
-        assertEquals(state.addresses.size, 2)
-        assertEquals(state.recoveryAddress, davonSCWClient.address.lowercase())
-        assertEquals(
-            state.addresses.sorted(),
-            listOf(
-                davonEOA.address.lowercase(),
-                davonSCWClient.address.lowercase()
-            ).sorted()
-        )
-        assertEquals(state.installations.size, 1)
+        runBlocking {
+            davonSCWClient.canMessage(listOf(boEOAWallet.publicIdentity))[boEOAWallet.publicIdentity.identifier]?.let {
+                assert(
+                    it
+                )
+            }
+        }
 
-        // Cannot remove the recovery address
-        Assert.assertThrows(
-            "Client error: Unknown Signer",
-            GenericException::class.java
-        ) {
-            runBlocking {
-                davonSCWClient.removeAccount(
-                    davonEOA,
-                    davonSCWClient.address
+        runBlocking {
+            boEOAClient.canMessage(listOf(davonSCW.publicIdentity))[davonSCW.publicIdentity.identifier]?.let {
+                assert(
+                    it
                 )
             }
         }
     }
 
     @Test
-    fun testsCanCreateGroup() {
+    fun test2_CanCreateGroup() {
         val group1 = runBlocking {
             boEOAClient.conversations.newGroup(
                 listOf(
-                    davonSCW.walletAddress,
-                    eriSCW.walletAddress
+                    davonSCWClient.inboxId,
+                    eriSCWClient.inboxId
                 )
             )
         }
         val group2 = runBlocking {
             davonSCWClient.conversations.newGroup(
                 listOf(
-                    boEOA.walletAddress,
-                    eriSCW.walletAddress
+                    boEOAClient.inboxId,
+                    eriSCWClient.inboxId
                 )
             )
         }
@@ -159,18 +133,22 @@ class SmartContractWalletTest {
             listOf(davonSCWClient.inboxId, boEOAClient.inboxId, eriSCWClient.inboxId).sorted()
         )
         assertEquals(
-            runBlocking { group2.members().map { it.addresses.first() }.sorted() },
-            listOf(davonSCWClient.address, boEOAClient.address, eriSCWClient.address).sorted()
+            runBlocking { group2.members().map { it.identities.first().identifier }.sorted() },
+            listOf(
+                davonSCW.publicIdentity.identifier,
+                boEOAWallet.publicIdentity.identifier,
+                eriSCW.publicIdentity.identifier
+            ).sorted()
         )
     }
 
     @Test
-    fun testsCanSendMessages() {
+    fun test3_CanSendMessages() {
         val boGroup = runBlocking {
             boEOAClient.conversations.newGroup(
                 listOf(
-                    davonSCW.walletAddress,
-                    eriSCW.walletAddress
+                    davonSCWClient.inboxId,
+                    eriSCWClient.inboxId
                 )
             )
         }
@@ -181,19 +159,19 @@ class SmartContractWalletTest {
         assertEquals(runBlocking { boGroup.messages() }.first().id, messageId)
         assertEquals(
             runBlocking { boGroup.messages() }.first().deliveryStatus,
-            Message.MessageDeliveryStatus.PUBLISHED
+            DecodedMessage.MessageDeliveryStatus.PUBLISHED
         )
         assertEquals(runBlocking { boGroup.messages() }.size, 3)
 
         runBlocking { davonSCWClient.conversations.sync() }
-        val davonGroup = runBlocking { davonSCWClient.conversations.listGroups().last() }
+        val davonGroup = runBlocking { davonSCWClient.conversations.findGroup(boGroup.id)!! }
         runBlocking { davonGroup.sync() }
         assertEquals(runBlocking { davonGroup.messages() }.size, 2)
         assertEquals(runBlocking { davonGroup.messages() }.first().body, "gm")
         runBlocking { davonGroup.send("from davon") }
 
         runBlocking { eriSCWClient.conversations.sync() }
-        val eriGroup = runBlocking { davonSCWClient.findGroup(davonGroup.id) }
+        val eriGroup = runBlocking { davonSCWClient.conversations.findGroup(davonGroup.id) }
         runBlocking { eriGroup?.sync() }
         assertEquals(runBlocking { eriGroup?.messages() }?.size, 3)
         assertEquals(runBlocking { eriGroup?.messages() }?.first()?.body, "from davon")
@@ -201,13 +179,13 @@ class SmartContractWalletTest {
     }
 
     @Test
-    fun testGroupConsent() {
+    fun test4_GroupConsent() {
         runBlocking {
             val davonGroup = runBlocking {
                 davonSCWClient.conversations.newGroup(
                     listOf(
-                        boEOA.walletAddress,
-                        eriSCW.walletAddress
+                        boEOAClient.inboxId,
+                        eriSCWClient.inboxId
                     )
                 )
             }
@@ -242,13 +220,13 @@ class SmartContractWalletTest {
     }
 
     @Test
-    fun testCanAllowAndDenyInboxId() {
+    fun test5_CanAllowAndDenyInboxId() {
         runBlocking {
             val davonGroup = runBlocking {
                 davonSCWClient.conversations.newGroup(
                     listOf(
-                        boEOA.walletAddress,
-                        eriSCW.walletAddress
+                        boEOAClient.inboxId,
+                        eriSCWClient.inboxId
                     )
                 )
             }
@@ -289,52 +267,32 @@ class SmartContractWalletTest {
                 davonSCWClient.preferences.inboxIdState(boEOAClient.inboxId),
                 ConsentState.DENIED
             )
-
-            davonSCWClient.preferences.setConsentState(
-                listOf(
-                    ConsentRecord(
-                        eriSCWClient.address,
-                        EntryType.ADDRESS,
-                        ConsentState.ALLOWED
-                    )
-                )
-            )
-            alixMember = davonGroup.members().firstOrNull { it.inboxId == eriSCWClient.inboxId }
-            assertEquals(alixMember!!.consentState, ConsentState.ALLOWED)
-            assertEquals(
-                davonSCWClient.preferences.inboxIdState(eriSCWClient.inboxId),
-                ConsentState.ALLOWED
-            )
-            assertEquals(
-                davonSCWClient.preferences.addressState(eriSCWClient.address),
-                ConsentState.ALLOWED
-            )
         }
     }
 
     @Test
-    fun testCanStreamAllMessages() {
+    fun test6_CanStreamAllMessages() {
         val group1 = runBlocking {
             davonSCWClient.conversations.newGroup(
                 listOf(
-                    boEOA.walletAddress,
-                    eriSCW.walletAddress
+                    boEOAClient.inboxId,
+                    eriSCWClient.inboxId
                 )
             )
         }
         val group2 = runBlocking {
             boEOAClient.conversations.newGroup(
                 listOf(
-                    davonSCW.walletAddress,
-                    eriSCW.walletAddress
+                    davonSCWClient.inboxId,
+                    eriSCWClient.inboxId
                 )
             )
         }
-        val dm1 = runBlocking { davonSCWClient.conversations.findOrCreateDm(eriSCW.walletAddress) }
-        val dm2 = runBlocking { boEOAClient.conversations.findOrCreateDm(davonSCW.walletAddress) }
+        val dm1 = runBlocking { davonSCWClient.conversations.findOrCreateDm(eriSCWClient.inboxId) }
+        val dm2 = runBlocking { boEOAClient.conversations.findOrCreateDm(davonSCWClient.inboxId) }
         runBlocking { davonSCWClient.conversations.sync() }
 
-        val allMessages = mutableListOf<Message>()
+        val allMessages = mutableListOf<DecodedMessage>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -358,7 +316,8 @@ class SmartContractWalletTest {
     }
 
     @Test
-    fun testCanStreamConversations() {
+    fun test7_CanStreamConversations() {
+        val fixtures = fixtures()
         val allMessages = mutableListOf<String>()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
@@ -373,14 +332,62 @@ class SmartContractWalletTest {
         Thread.sleep(1000)
 
         runBlocking {
-            eriSCWClient.conversations.newGroup(listOf(boEOA.walletAddress, davonSCW.walletAddress))
-            boEOAClient.conversations.newGroup(listOf(eriSCW.walletAddress, davonSCW.walletAddress))
-            eriSCWClient.conversations.findOrCreateDm(davonSCW.walletAddress)
-            boEOAClient.conversations.findOrCreateDm(davonSCW.walletAddress)
+            eriSCWClient.conversations.newGroup(listOf(boEOAClient.inboxId, davonSCWClient.inboxId))
+            boEOAClient.conversations.newGroup(listOf(eriSCWClient.inboxId, davonSCWClient.inboxId))
+            davonSCWClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
+            fixtures.caroClient.conversations.findOrCreateDm(davonSCWClient.inboxId)
         }
 
         Thread.sleep(1000)
         assertEquals(4, allMessages.size)
         job.cancel()
+    }
+
+    @Test
+    fun test8_AddAndRemovingAccounts() {
+        val davonEOA = PrivateKeyBuilder()
+        val davonSCW2 = FakeSCWWallet.generate(ANVIL_TEST_PRIVATE_KEY_3)
+
+        runBlocking { davonSCWClient.addAccount(davonEOA) }
+        runBlocking { davonSCWClient.addAccount(davonSCW2) }
+
+        var state = runBlocking { davonSCWClient.inboxState(true) }
+        assertEquals(state.installations.size, 1)
+        assertEquals(state.identities.size, 3)
+        assertEquals(state.recoveryPublicIdentity.identifier, davonSCW.publicIdentity.identifier)
+        assertEquals(
+            state.identities.map { it.identifier }.sorted(),
+            listOf(
+                davonEOA.publicIdentity.identifier,
+                davonSCW2.publicIdentity.identifier,
+                davonSCW.publicIdentity.identifier
+            ).sorted()
+        )
+
+        runBlocking { davonSCWClient.removeAccount(davonSCW, davonSCW2.publicIdentity) }
+        state = runBlocking { davonSCWClient.inboxState(true) }
+        assertEquals(state.identities.size, 2)
+        assertEquals(state.recoveryPublicIdentity.identifier, davonSCW.publicIdentity.identifier)
+        assertEquals(
+            state.identities.map { it.identifier }.sorted(),
+            listOf(
+                davonEOA.publicIdentity.identifier,
+                davonSCW.publicIdentity.identifier
+            ).sorted()
+        )
+        assertEquals(state.installations.size, 1)
+
+        // Cannot remove the recovery address
+        Assert.assertThrows(
+            "Client error: Unknown Signer",
+            GenericException::class.java
+        ) {
+            runBlocking {
+                davonSCWClient.removeAccount(
+                    davonEOA,
+                    davonSCW.publicIdentity
+                )
+            }
+        }
     }
 }
