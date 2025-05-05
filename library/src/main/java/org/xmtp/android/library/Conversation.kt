@@ -1,10 +1,12 @@
 package org.xmtp.android.library
 
+import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.flow.Flow
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.libxmtp.Member
 import org.xmtp.android.library.libxmtp.DecodedMessage
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
+import org.xmtp.proto.keystore.api.v1.Keystore
 import java.util.Date
 
 sealed class Conversation {
@@ -212,6 +214,13 @@ sealed class Conversation {
         return when (this) {
             is Group -> group.streamMessages()
             is Dm -> dm.streamMessages()
+        }
+    }
+
+    fun getHmacKeys(): Keystore.GetConversationHmacKeysResponse {
+        return when (this) {
+            is Group -> group.getHmacKeys()
+            is Dm -> dm.getHmacKeys()
         }
     }
 }

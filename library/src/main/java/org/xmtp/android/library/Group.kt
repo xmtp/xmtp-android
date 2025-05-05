@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import android.util.Log
+import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -16,6 +17,7 @@ import org.xmtp.android.library.libxmtp.GroupMembershipResult
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
+import org.xmtp.proto.keystore.api.v1.Keystore
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
 import uniffi.xmtpv3.FfiDeliveryStatus
@@ -467,5 +469,22 @@ class Group(
 
         val stream = libXMTPGroup.stream(messageCallback)
         awaitClose { stream.end() }
+    }
+
+    fun getHmacKeys(): Keystore.GetConversationHmacKeysResponse {
+        val hmacKeysResponse = Keystore.GetConversationHmacKeysResponse.newBuilder()
+        val conversations = libXMTPGroup.getHmacKeys()
+        conversations.iterator().forEach {
+            val hmacKeys = Keystore.GetConversationHmacKeysResponse.HmacKeys.newBuilder()
+            val hmacKeyData = Keystore.GetConversationHmacKeysResponse.HmacKeyData.newBuilder()
+            hmacKeyData.hmacKey = it.key.toByteString()
+            hmacKeyData.thirtyDayPeriodsSinceEpoch = it.epoch.toInt()
+            hmacKeys.addValues(hmacKeyData)
+            hmacKeysResponse.putHmacKeys(
+                Topic.groupMessage(libXMTPGroup.id().toHex()).description,
+                hmacKeys.build()
+            )
+        }
+        return hmacKeysResponse.build()
     }
 }

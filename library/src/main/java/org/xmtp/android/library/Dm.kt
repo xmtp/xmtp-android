@@ -1,6 +1,7 @@
 package org.xmtp.android.library
 
 import android.util.Log
+import com.google.protobuf.kotlin.toByteString
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -12,6 +13,7 @@ import org.xmtp.android.library.libxmtp.DecodedMessage
 import org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
+import org.xmtp.proto.keystore.api.v1.Keystore
 import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
 import uniffi.xmtpv3.FfiDeliveryStatus
@@ -207,16 +209,16 @@ class Dm(
                         Log.w(
                             "XMTP Dm stream",
                             "Failed to decode message: id=${message.id.toHex()}, " +
-                                "convoId=${message.conversationId.toHex()}, " +
-                                "senderInboxId=${message.senderInboxId}"
+                                    "convoId=${message.conversationId.toHex()}, " +
+                                    "senderInboxId=${message.senderInboxId}"
                         )
                     }
                 } catch (e: Exception) {
                     Log.e(
                         "XMTP Dm stream",
                         "Error decoding message: id=${message.id.toHex()}, " +
-                            "convoId=${message.conversationId.toHex()}, " +
-                            "senderInboxId=${message.senderInboxId}",
+                                "convoId=${message.conversationId.toHex()}, " +
+                                "senderInboxId=${message.senderInboxId}",
                         e
                     )
                 }
@@ -268,5 +270,22 @@ class Dm(
     // Returns null if dm is not paused, otherwise the min version required to unpause this dm
     fun pausedForVersion(): String? {
         return libXMTPGroup.pausedForVersion()
+    }
+
+    fun getHmacKeys(): Keystore.GetConversationHmacKeysResponse {
+        val hmacKeysResponse = Keystore.GetConversationHmacKeysResponse.newBuilder()
+        val conversations = libXMTPGroup.getHmacKeys()
+        conversations.iterator().forEach {
+            val hmacKeys = Keystore.GetConversationHmacKeysResponse.HmacKeys.newBuilder()
+            val hmacKeyData = Keystore.GetConversationHmacKeysResponse.HmacKeyData.newBuilder()
+            hmacKeyData.hmacKey = it.key.toByteString()
+            hmacKeyData.thirtyDayPeriodsSinceEpoch = it.epoch.toInt()
+            hmacKeys.addValues(hmacKeyData)
+            hmacKeysResponse.putHmacKeys(
+                Topic.groupMessage(libXMTPGroup.id().toHex()).description,
+                hmacKeys.build()
+            )
+        }
+        return hmacKeysResponse.build()
     }
 }
