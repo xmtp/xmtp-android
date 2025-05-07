@@ -223,6 +223,43 @@ class ConversationsTest {
     }
 
     @Test
+    fun testCanStreamAllMessagesFilterConsent() {
+        val group =
+            runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
+        val conversation =
+            runBlocking { boClient.conversations.findOrCreateDm(caroClient.inboxId) }
+        val blockedGroup =
+            runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
+        val blockedConversation =
+            runBlocking { boClient.conversations.findOrCreateDm(alixClient.inboxId) }
+        blockedGroup.updateConsentState(ConsentState.DENIED)
+        blockedConversation.updateConsentState(ConsentState.DENIED)
+        runBlocking { boClient.conversations.sync() }
+
+        val allMessages = mutableListOf<DecodedMessage>()
+
+        val job = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                boClient.conversations.streamAllMessages(consentStates = listOf(ConsentState.ALLOWED))
+                    .collect { message ->
+                        allMessages.add(message)
+                    }
+            } catch (e: Exception) {
+            }
+        }
+        Thread.sleep(1000)
+        runBlocking {
+            group.send("hi")
+            conversation.send("hi")
+            blockedGroup.send("hi")
+            blockedConversation.send("hi")
+        }
+        Thread.sleep(1000)
+        assertEquals(2, allMessages.size)
+        job.cancel()
+    }
+
+    @Test
     fun testCanStreamGroupsAndConversations() {
         val allMessages = mutableListOf<String>()
 
