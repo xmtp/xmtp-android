@@ -193,7 +193,7 @@ class HistorySyncTest {
         }
 
         Thread.sleep(2000)
-        assertEquals(1, preferences) // I still think this should be 2
+        assertEquals(1, preferences)
         job.cancel()
     }
 
