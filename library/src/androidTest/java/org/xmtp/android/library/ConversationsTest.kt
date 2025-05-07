@@ -56,6 +56,23 @@ class ConversationsTest {
     }
 
     @Test
+    fun testCanCreateOptimisticGroup() {
+        val optimisticGroup = boClient.conversations.newGroupOptimistic(groupName = "Testing")
+        assertEquals(optimisticGroup.name, "Testing")
+        optimisticGroup.prepareMessage("testing")
+        assertEquals(runBlocking { optimisticGroup.messages() }.size, 1)
+
+        runBlocking {
+            optimisticGroup.addMembers(listOf(alixClient.inboxId))
+            optimisticGroup.sync()
+            optimisticGroup.publishMessages()
+            assertEquals(optimisticGroup.messages().size, 2)
+            assertEquals(optimisticGroup.members().size, 2)
+            assertEquals(optimisticGroup.name, "Testing")
+        }
+    }
+
+    @Test
     fun testsCanFindConversationByTopic() {
         val group =
             runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }

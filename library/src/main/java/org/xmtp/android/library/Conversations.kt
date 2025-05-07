@@ -257,6 +257,31 @@ data class Conversations(
         return Group(client, group)
     }
 
+    fun newGroupOptimistic(
+        permissions: GroupPermissionPreconfiguration = GroupPermissionPreconfiguration.ALL_MEMBERS,
+        groupName: String = "",
+        groupImageUrlSquare: String = "",
+        groupDescription: String = "",
+        disappearingMessageSettings: DisappearingMessageSettings? = null,
+    ): Group {
+        val group = ffiConversations.createGroupOptimistic(opts = FfiCreateGroupOptions(
+            permissions = GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(
+                permissions
+            ),
+            groupName = groupName,
+            groupImageUrlSquare = groupImageUrlSquare,
+            groupDescription = groupDescription,
+            customPermissionPolicySet = null,
+            messageDisappearingSettings = disappearingMessageSettings?.let {
+                FfiMessageDisappearingSettings(
+                    it.disappearStartingAtNs,
+                    it.retentionDurationInNs
+                )
+            }
+        ))
+        return Group(client, group)
+    }
+
     // Sync from the network the latest list of conversations
     suspend fun sync() {
         ffiConversations.sync()
@@ -460,9 +485,12 @@ data class Conversations(
             }
 
             val stream = when (type) {
-                ConversationFilterType.ALL -> ffiConversations.streamAllMessages(messageCallback)
-                ConversationFilterType.GROUPS -> ffiConversations.streamAllGroupMessages(messageCallback)
-                ConversationFilterType.DMS -> ffiConversations.streamAllDmMessages(messageCallback)
+                ConversationFilterType.ALL -> ffiConversations.streamAllMessages(messageCallback, null)
+                ConversationFilterType.GROUPS -> ffiConversations.streamAllGroupMessages(
+                    messageCallback, null
+                )
+
+                ConversationFilterType.DMS -> ffiConversations.streamAllDmMessages(messageCallback, null)
             }
 
             awaitClose { stream.end() }

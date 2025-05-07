@@ -172,8 +172,8 @@ class Client(
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
-                historySyncUrl = null,
-                syncWorkerMode = null
+                deviceSyncServerUrl = null,
+                deviceSyncMode = null
             )
 
             return useClient(ffiClient)
@@ -302,8 +302,8 @@ class Client(
                 inboxId = inboxId,
                 nonce = 0.toULong(),
                 legacySignedPrivateKeyProto = null,
-                historySyncUrl = options.historySyncUrl,
-                syncWorkerMode = FfiSyncWorkerMode.ENABLED
+                deviceSyncServerUrl = options.historySyncUrl,
+                deviceSyncMode = FfiSyncWorkerMode.ENABLED
             )
 
             return Pair(ffiClient, dbPath)
