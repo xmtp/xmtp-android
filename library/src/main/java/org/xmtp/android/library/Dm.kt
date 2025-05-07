@@ -23,6 +23,7 @@ import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiMessageDisappearingSettings
 import uniffi.xmtpv3.FfiSubscribeException
+import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.ConversationDebugInfo
 import java.util.Date
 
 class Dm(
@@ -290,5 +291,9 @@ class Dm(
         val topicIds = duplicates.map { it.id().toHex() }.toMutableList()
         topicIds.add(id)
         return topicIds.map { Topic.groupMessage(it).description }
+    }
+
+    suspend fun getDebugInformation(): ConversationDebugInfo {
+        return ConversationDebugInfo(libXMTPGroup.conversationDebugInfo())
     }
 }

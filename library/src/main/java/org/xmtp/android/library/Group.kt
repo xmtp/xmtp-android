@@ -30,6 +30,7 @@ import uniffi.xmtpv3.FfiMessageDisappearingSettings
 import uniffi.xmtpv3.FfiMetadataField
 import uniffi.xmtpv3.FfiPermissionUpdateType
 import uniffi.xmtpv3.FfiSubscribeException
+import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.ConversationDebugInfo
 
 import java.util.Date
 
@@ -486,5 +487,9 @@ class Group(
 
     fun getPushTopics(): List<String> {
         return listOf(topic)
+    }
+
+    suspend fun getDebugInformation(): ConversationDebugInfo {
+        return ConversationDebugInfo(libXMTPGroup.conversationDebugInfo())
     }
 }
