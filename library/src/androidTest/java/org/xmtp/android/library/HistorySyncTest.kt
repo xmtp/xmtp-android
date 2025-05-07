@@ -107,9 +107,7 @@ class HistorySyncTest {
         val job1 = CoroutineScope(Dispatchers.IO).launch {
             try {
                 alixClient.conversations.streamAllMessages()
-                    .collect { _ ->
-
-                    }
+                    .collect { }
             } catch (e: Exception) {
             }
         }

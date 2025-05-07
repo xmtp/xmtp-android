@@ -10,5 +10,4 @@ class ConversationDebugInfo(private val ffiConversationDebugInfo: FfiConversatio
 
     val forkDetails: String
         get() = ffiConversationDebugInfo.forkDetails
-
 }

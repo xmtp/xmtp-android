@@ -348,7 +348,6 @@ class ConversationsTest {
         val dmHmacKeys = dm1.getHmacKeys()
         val dmTopics = runBlocking { dm1.getPushTopics() }
 
-
         assertEquals(allTopics.size, 3)
         assertEquals(conversations.size, 2)
 
