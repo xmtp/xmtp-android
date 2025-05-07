@@ -285,7 +285,7 @@ class ConversationsTest {
             )
         }
         val dm1 = runBlocking { eriClient.conversations.newConversation(boClient.inboxId) }
-
+        val group = runBlocking { boClient.conversations.newGroup(listOf(eriClient.inboxId)) }
         val eriClient2 = runBlocking {
             Client.create(
                 account = eriWallet,
@@ -301,19 +301,31 @@ class ConversationsTest {
 
         runBlocking {
             boClient.conversations.syncAllConversations()
+            eriClient2.conversations.syncAllConversations()
+            eriClient.conversations.syncAllConversations()
         }
 
-        val topics = boClient.conversations.allPushTopics()
-        val conversations = runBlocking { boClient.conversations.list() }
-        val hmacKeys = boClient.conversations.getHmacKeys()
+        val allTopics = eriClient.conversations.allPushTopics()
+        val conversations = runBlocking { eriClient.conversations.list() }
+        val allHmacKeys = eriClient.conversations.getHmacKeys()
+        val dmHmacKeys = dm1.getHmacKeys()
+        val dmTopics = runBlocking { dm1.getPushTopics() }
 
-        assertEquals(topics.size, 2)
-        assertEquals(conversations.size, 1)
-        assertEquals(conversations.first().id, dm1.id)
 
-        val hmacTopics = hmacKeys.hmacKeysMap.keys
-        topics.forEach { topic ->
+        assertEquals(allTopics.size, 3)
+        assertEquals(conversations.size, 2)
+
+        val hmacTopics = allHmacKeys.hmacKeysMap.keys
+        allTopics.forEach { topic ->
             assertTrue(hmacTopics.contains(topic))
+        }
+
+        assertEquals(dmTopics.size, 2)
+        assertTrue(allTopics.containsAll(dmTopics))
+
+        val dmHmacTopics = dmHmacKeys.hmacKeysMap.keys
+        dmTopics.forEach { topic ->
+            assertTrue(dmHmacTopics.contains(topic))
         }
     }
 
