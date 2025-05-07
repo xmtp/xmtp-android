@@ -264,21 +264,23 @@ data class Conversations(
         groupDescription: String = "",
         disappearingMessageSettings: DisappearingMessageSettings? = null,
     ): Group {
-        val group = ffiConversations.createGroupOptimistic(opts = FfiCreateGroupOptions(
-            permissions = GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(
-                permissions
-            ),
-            groupName = groupName,
-            groupImageUrlSquare = groupImageUrlSquare,
-            groupDescription = groupDescription,
-            customPermissionPolicySet = null,
-            messageDisappearingSettings = disappearingMessageSettings?.let {
-                FfiMessageDisappearingSettings(
-                    it.disappearStartingAtNs,
-                    it.retentionDurationInNs
-                )
-            }
-        ))
+        val group = ffiConversations.createGroupOptimistic(
+            opts = FfiCreateGroupOptions(
+                permissions = GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(
+                    permissions
+                ),
+                groupName = groupName,
+                groupImageUrlSquare = groupImageUrlSquare,
+                groupDescription = groupDescription,
+                customPermissionPolicySet = null,
+                messageDisappearingSettings = disappearingMessageSettings?.let {
+                    FfiMessageDisappearingSettings(
+                        it.disappearStartingAtNs,
+                        it.retentionDurationInNs
+                    )
+                }
+            )
+        )
         return Group(client, group)
     }
 
