@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-Version: 7793772b
-Branch: rygine/create-group-optimistic
-Date: 2025-05-07 00:33:31 +0000
-||||||| 1e4cd724
-Version: 4ba3b55a
-Branch: main
-Date: 2025-04-21 18:59:39 +0000
-=======
-Version: 00299521
-Branch: main
-Date: 2025-05-07 04:32:30 +0000
->>>>>>> dd2257dcfd529ae1ec030f871eb37bd3ca64189a
+Version: 9ce24d15
+Branch: release/v1.2
+Date: 2025-05-07 17:45:18 +0000

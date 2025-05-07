@@ -1147,7 +1147,6 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
 
 
 
-<<<<<<< HEAD
 
 
 
@@ -1160,19 +1159,6 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
 
 
 
-||||||| 1e4cd724
-=======
-
-
-
-
-
-
-
-
-
-
->>>>>>> dd2257dcfd529ae1ec030f871eb37bd3ca64189a
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is 
 // rather `InterfaceTooLargeException`, caused by too many methods 
@@ -2073,7 +2059,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_created_at_ns() != 17973.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_dm_peer_inbox_id() != 59526.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_dm_peer_inbox_id() != 2178.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_find_duplicate_dms() != 15813.toShort()) {
@@ -3242,7 +3228,7 @@ public interface FfiConversationInterface {
     
     fun `createdAtNs`(): kotlin.Long
     
-    fun `dmPeerInboxId`(): kotlin.String
+    fun `dmPeerInboxId`(): kotlin.String?
     
     suspend fun `findDuplicateDms`(): List<FfiConversation>
     
@@ -3597,11 +3583,10 @@ open class FfiConversation: Disposable, AutoCloseable, FfiConversationInterface
     }
     
 
-    
-    @Throws(GenericException::class)override fun `dmPeerInboxId`(): kotlin.String {
-            return FfiConverterString.lift(
+    override fun `dmPeerInboxId`(): kotlin.String? {
+            return FfiConverterOptionalString.lift(
     callWithPointer {
-    uniffiRustCallWithError(GenericException) { _status ->
+    uniffiRustCall() { _status ->
     UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_dm_peer_inbox_id(
         it, _status)
 }
