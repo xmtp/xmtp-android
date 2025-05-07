@@ -18,7 +18,6 @@ import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
 import uniffi.xmtpv3.FfiDeliveryStatus
 import uniffi.xmtpv3.FfiDirection
-import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
@@ -209,17 +208,13 @@ class Dm(
                     } else {
                         Log.w(
                             "XMTP Dm stream",
-                            "Failed to decode message: id=${message.id.toHex()}, " +
-                                    "convoId=${message.conversationId.toHex()}, " +
-                                    "senderInboxId=${message.senderInboxId}"
+                            "Failed to decode message: id=${message.id.toHex()}, " + "conversationId=${message.conversationId.toHex()}, " + "senderInboxId=${message.senderInboxId}"
                         )
                     }
                 } catch (e: Exception) {
                     Log.e(
                         "XMTP Dm stream",
-                        "Error decoding message: id=${message.id.toHex()}, " +
-                                "convoId=${message.conversationId.toHex()}, " +
-                                "senderInboxId=${message.senderInboxId}",
+                        "Error decoding message: id=${message.id.toHex()}, " + "conversationId=${message.conversationId.toHex()}, " + "senderInboxId=${message.senderInboxId}",
                         e
                     )
                 }
