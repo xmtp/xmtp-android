@@ -1147,6 +1147,7 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
 
 
 
+<<<<<<< HEAD
 
 
 
@@ -1159,6 +1160,19 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
 
 
 
+||||||| 1e4cd724
+=======
+
+
+
+
+
+
+
+
+
+
+>>>>>>> dd2257dcfd529ae1ec030f871eb37bd3ca64189a
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is 
 // rather `InterfaceTooLargeException`, caused by too many methods 
