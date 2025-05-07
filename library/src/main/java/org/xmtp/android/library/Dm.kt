@@ -18,6 +18,7 @@ import uniffi.xmtpv3.FfiConversation
 import uniffi.xmtpv3.FfiConversationMetadata
 import uniffi.xmtpv3.FfiDeliveryStatus
 import uniffi.xmtpv3.FfiDirection
+import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
@@ -287,5 +288,12 @@ class Dm(
             )
         }
         return hmacKeysResponse.build()
+    }
+
+    suspend fun getPushTopics(): List<String> {
+        val duplicates = libXMTPGroup.findDuplicateDms()
+        val topicIds = duplicates.map { it.id().toHex() }.toMutableList()
+        topicIds.add(id)
+        return topicIds.map { Topic.groupMessage(it).description }
     }
 }

@@ -487,4 +487,8 @@ class Group(
         }
         return hmacKeysResponse.build()
     }
+
+    fun getPushTopics(): List<String> {
+        return listOf(topic)
+    }
 }

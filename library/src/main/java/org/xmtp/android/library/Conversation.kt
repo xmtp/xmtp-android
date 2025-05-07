@@ -223,4 +223,11 @@ sealed class Conversation {
             is Dm -> dm.getHmacKeys()
         }
     }
+
+    suspend fun getPushTopics(): List<String> {
+        return when (this) {
+            is Group -> group.getPushTopics()
+            is Dm -> dm.getPushTopics()
+        }
+    }
 }
