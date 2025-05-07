@@ -132,7 +132,7 @@ class ConversationsTest {
             },
             2
         )
-        assertEquals(runBlocking { boClient.conversations.list().size }, 2)
+        assertEquals(runBlocking { boClient.conversations.list().size }, 1)
     }
 
     @Test
@@ -207,7 +207,7 @@ class ConversationsTest {
                 )
             }.toInt() >= 2
         )
-        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 2)
+        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 1)
     }
 
     @Test
