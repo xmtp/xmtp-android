@@ -1646,8 +1646,7 @@ $dokka.location:uniffi.xmtpv3/FfiPreferenceCallbackImpl/uniffiClonePointer/#/Poi
 $dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-preference-update/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate.Hmac.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-preference-update/-hmac/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate.Hmac///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-preference-update/-hmac/index.html
-$dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate.Hmac/Hmac/#kotlin.ByteArray#kotlin.Long/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-preference-update/-hmac/-hmac.html
-$dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate.Hmac/cycledAtNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-preference-update/-hmac/cycled-at-ns.html
+$dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate.Hmac/Hmac/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-preference-update/-hmac/-hmac.html
 $dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate.Hmac/key/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-preference-update/-hmac/key.html
 $dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-preference-update/index.html
 $dokka.location:uniffi.xmtpv3/FfiReaction.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-reaction/-companion/index.html
