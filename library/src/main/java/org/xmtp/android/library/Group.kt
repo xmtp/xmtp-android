@@ -9,6 +9,7 @@ import org.xmtp.android.library.codecs.ContentCodec
 import org.xmtp.android.library.codecs.EncodedContent
 import org.xmtp.android.library.codecs.compress
 import org.xmtp.android.library.libxmtp.Member
+import org.xmtp.android.library.libxmtp.ConversationDebugInfo
 import org.xmtp.android.library.libxmtp.DecodedMessage
 import org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus
 import org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection
@@ -30,7 +31,6 @@ import uniffi.xmtpv3.FfiMessageDisappearingSettings
 import uniffi.xmtpv3.FfiMetadataField
 import uniffi.xmtpv3.FfiPermissionUpdateType
 import uniffi.xmtpv3.FfiSubscribeException
-import uniffi.xmtpv3.org.xmtp.android.library.libxmtp.ConversationDebugInfo
 
 import java.util.Date
 
