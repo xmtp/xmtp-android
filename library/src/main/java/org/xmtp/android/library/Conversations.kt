@@ -460,9 +460,9 @@ data class Conversations(
             }
 
             val stream = when (type) {
-                ConversationFilterType.ALL -> ffiConversations.streamAllMessages(messageCallback)
-                ConversationFilterType.GROUPS -> ffiConversations.streamAllGroupMessages(messageCallback)
-                ConversationFilterType.DMS -> ffiConversations.streamAllDmMessages(messageCallback)
+                ConversationFilterType.ALL -> ffiConversations.streamAllMessages(messageCallback, null)
+                ConversationFilterType.GROUPS -> ffiConversations.streamAllGroupMessages(messageCallback, null)
+                ConversationFilterType.DMS -> ffiConversations.streamAllDmMessages(messageCallback, null)
             }
 
             awaitClose { stream.end() }
