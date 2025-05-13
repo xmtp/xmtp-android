@@ -473,12 +473,14 @@ class Group(
         val conversations = libXMTPGroup.getHmacKeys()
         conversations.iterator().forEach {
             val hmacKeys = Keystore.GetConversationHmacKeysResponse.HmacKeys.newBuilder()
-            val hmacKeyData = Keystore.GetConversationHmacKeysResponse.HmacKeyData.newBuilder()
-            hmacKeyData.hmacKey = it.key.toByteString()
-            hmacKeyData.thirtyDayPeriodsSinceEpoch = it.epoch.toInt()
-            hmacKeys.addValues(hmacKeyData)
+            it.value.forEach { key ->
+                val hmacKeyData = Keystore.GetConversationHmacKeysResponse.HmacKeyData.newBuilder()
+                hmacKeyData.hmacKey = key.key.toByteString()
+                hmacKeyData.thirtyDayPeriodsSinceEpoch = key.epoch.toInt()
+                hmacKeys.addValues(hmacKeyData)
+            }
             hmacKeysResponse.putHmacKeys(
-                Topic.groupMessage(libXMTPGroup.id().toHex()).description,
+                Topic.groupMessage(it.key.toHex()).description,
                 hmacKeys.build()
             )
         }
