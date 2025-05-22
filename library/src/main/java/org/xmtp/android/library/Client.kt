@@ -63,6 +63,8 @@ class Client(
         ffiConversations = libXMTPClient.conversations(),
         ffiClient = libXMTPClient
     )
+    val networkDebugInfo: NetworkDebugInfo =
+        NetworkDebugInfo(ffiClient = libXMTPClient)
     val libXMTPVersion: String = getVersionInfo()
     private val ffiClient: FfiXmtpClient = libXMTPClient
 
@@ -326,7 +328,6 @@ class Client(
                 deviceSyncServerUrl = options.historySyncUrl,
                 deviceSyncMode = FfiSyncWorkerMode.ENABLED
             )
-
             return Pair(ffiClient, dbPath)
         }
 

@@ -1157,6 +1157,12 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
 
 
 
+
+
+
+
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is 
 // rather `InterfaceTooLargeException`, caused by too many methods 
@@ -1389,6 +1395,12 @@ fun uniffi_xmtpv3_checksum_method_ffisyncworker_wait(
 fun uniffi_xmtpv3_checksum_method_ffixmtpclient_add_identity(
 ): Short
 fun uniffi_xmtpv3_checksum_method_ffixmtpclient_addresses_from_inbox_id(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_api_aggregate_statistics(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_api_identity_statistics(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_api_statistics(
 ): Short
 fun uniffi_xmtpv3_checksum_method_ffixmtpclient_apply_signature_request(
 ): Short
@@ -1764,6 +1776,12 @@ fun uniffi_xmtpv3_fn_method_ffixmtpclient_add_identity(`ptr`: Pointer,`newIdenti
 ): Long
 fun uniffi_xmtpv3_fn_method_ffixmtpclient_addresses_from_inbox_id(`ptr`: Pointer,`refreshFromNetwork`: Byte,`inboxIds`: RustBuffer.ByValue,
 ): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_api_aggregate_statistics(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_api_identity_statistics(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_api_statistics(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): RustBuffer.ByValue
 fun uniffi_xmtpv3_fn_method_ffixmtpclient_apply_signature_request(`ptr`: Pointer,`signatureRequest`: Pointer,
 ): Long
 fun uniffi_xmtpv3_fn_method_ffixmtpclient_archive_metadata(`ptr`: Pointer,`path`: RustBuffer.ByValue,`key`: RustBuffer.ByValue,
@@ -2065,7 +2083,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_find_messages_with_reactions() != 33179.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_get_hmac_keys() != 4665.toShort()) {
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_get_hmac_keys() != 35284.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_group_description() != 53570.toShort()) {
@@ -2303,6 +2321,15 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_addresses_from_inbox_id() != 29264.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_api_aggregate_statistics() != 18475.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_api_identity_statistics() != 47055.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_api_statistics() != 31059.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_apply_signature_request() != 32172.toShort()) {
@@ -3227,7 +3254,7 @@ public interface FfiConversationInterface {
     
     suspend fun `findMessagesWithReactions`(`opts`: FfiListMessagesOptions): List<FfiMessageWithReactions>
     
-    fun `getHmacKeys`(): List<FfiHmacKey>
+    fun `getHmacKeys`(): Map<kotlin.ByteArray, List<FfiHmacKey>>
     
     fun `groupDescription`(): kotlin.String
     
@@ -3650,8 +3677,8 @@ open class FfiConversation: Disposable, AutoCloseable, FfiConversationInterface
     }
 
     
-    @Throws(GenericException::class)override fun `getHmacKeys`(): List<FfiHmacKey> {
-            return FfiConverterSequenceTypeFfiHmacKey.lift(
+    @Throws(GenericException::class)override fun `getHmacKeys`(): Map<kotlin.ByteArray, List<FfiHmacKey>> {
+            return FfiConverterMapByteArraySequenceTypeFfiHmacKey.lift(
     callWithPointer {
     uniffiRustCallWithError(GenericException) { _status ->
     UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_get_hmac_keys(
@@ -7920,6 +7947,12 @@ public interface FfiXmtpClientInterface {
      */
     suspend fun `addressesFromInboxId`(`refreshFromNetwork`: kotlin.Boolean, `inboxIds`: List<kotlin.String>): List<FfiInboxState>
     
+    fun `apiAggregateStatistics`(): kotlin.String
+    
+    fun `apiIdentityStatistics`(): FfiIdentityStats
+    
+    fun `apiStatistics`(): FfiApiStats
+    
     suspend fun `applySignatureRequest`(`signatureRequest`: FfiSignatureRequest)
     
     /**
@@ -8156,6 +8189,42 @@ open class FfiXmtpClient: Disposable, AutoCloseable, FfiXmtpClientInterface
         GenericException.ErrorHandler,
     )
     }
+
+    override fun `apiAggregateStatistics`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_api_aggregate_statistics(
+        it, _status)
+}
+    }
+    )
+    }
+    
+
+    override fun `apiIdentityStatistics`(): FfiIdentityStats {
+            return FfiConverterTypeFfiIdentityStats.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_api_identity_statistics(
+        it, _status)
+}
+    }
+    )
+    }
+    
+
+    override fun `apiStatistics`(): FfiApiStats {
+            return FfiConverterTypeFfiApiStats.lift(
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_api_statistics(
+        it, _status)
+}
+    }
+    )
+    }
+    
 
     
     @Throws(GenericException::class)
@@ -9000,6 +9069,62 @@ public object FfiConverterTypeXmtpApiClient: FfiConverter<XmtpApiClient, Pointer
 
 
 
+data class FfiApiStats (
+    var `uploadKeyPackage`: kotlin.ULong, 
+    var `fetchKeyPackage`: kotlin.ULong, 
+    var `sendGroupMessages`: kotlin.ULong, 
+    var `sendWelcomeMessages`: kotlin.ULong, 
+    var `queryGroupMessages`: kotlin.ULong, 
+    var `queryWelcomeMessages`: kotlin.ULong, 
+    var `subscribeMessages`: kotlin.ULong, 
+    var `subscribeWelcomes`: kotlin.ULong
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiApiStats: FfiConverterRustBuffer<FfiApiStats> {
+    override fun read(buf: ByteBuffer): FfiApiStats {
+        return FfiApiStats(
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiApiStats) = (
+            FfiConverterULong.allocationSize(value.`uploadKeyPackage`) +
+            FfiConverterULong.allocationSize(value.`fetchKeyPackage`) +
+            FfiConverterULong.allocationSize(value.`sendGroupMessages`) +
+            FfiConverterULong.allocationSize(value.`sendWelcomeMessages`) +
+            FfiConverterULong.allocationSize(value.`queryGroupMessages`) +
+            FfiConverterULong.allocationSize(value.`queryWelcomeMessages`) +
+            FfiConverterULong.allocationSize(value.`subscribeMessages`) +
+            FfiConverterULong.allocationSize(value.`subscribeWelcomes`)
+    )
+
+    override fun write(value: FfiApiStats, buf: ByteBuffer) {
+            FfiConverterULong.write(value.`uploadKeyPackage`, buf)
+            FfiConverterULong.write(value.`fetchKeyPackage`, buf)
+            FfiConverterULong.write(value.`sendGroupMessages`, buf)
+            FfiConverterULong.write(value.`sendWelcomeMessages`, buf)
+            FfiConverterULong.write(value.`queryGroupMessages`, buf)
+            FfiConverterULong.write(value.`queryWelcomeMessages`, buf)
+            FfiConverterULong.write(value.`subscribeMessages`, buf)
+            FfiConverterULong.write(value.`subscribeWelcomes`, buf)
+    }
+}
+
+
+
 data class FfiArchiveOptions (
     var `startNs`: kotlin.Long?, 
     var `endNs`: kotlin.Long?, 
@@ -9331,6 +9456,46 @@ public object FfiConverterTypeFfiIdentifier: FfiConverterRustBuffer<FfiIdentifie
     override fun write(value: FfiIdentifier, buf: ByteBuffer) {
             FfiConverterString.write(value.`identifier`, buf)
             FfiConverterTypeFfiIdentifierKind.write(value.`identifierKind`, buf)
+    }
+}
+
+
+
+data class FfiIdentityStats (
+    var `publishIdentityUpdate`: kotlin.ULong, 
+    var `getIdentityUpdatesV2`: kotlin.ULong, 
+    var `getInboxIds`: kotlin.ULong, 
+    var `verifySmartContractWalletSignature`: kotlin.ULong
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiIdentityStats: FfiConverterRustBuffer<FfiIdentityStats> {
+    override fun read(buf: ByteBuffer): FfiIdentityStats {
+        return FfiIdentityStats(
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+            FfiConverterULong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiIdentityStats) = (
+            FfiConverterULong.allocationSize(value.`publishIdentityUpdate`) +
+            FfiConverterULong.allocationSize(value.`getIdentityUpdatesV2`) +
+            FfiConverterULong.allocationSize(value.`getInboxIds`) +
+            FfiConverterULong.allocationSize(value.`verifySmartContractWalletSignature`)
+    )
+
+    override fun write(value: FfiIdentityStats, buf: ByteBuffer) {
+            FfiConverterULong.write(value.`publishIdentityUpdate`, buf)
+            FfiConverterULong.write(value.`getIdentityUpdatesV2`, buf)
+            FfiConverterULong.write(value.`getInboxIds`, buf)
+            FfiConverterULong.write(value.`verifySmartContractWalletSignature`, buf)
     }
 }
 
