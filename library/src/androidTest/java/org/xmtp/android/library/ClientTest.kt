@@ -1004,7 +1004,6 @@ class ClientTest {
         assertEquals(0, apiStats1.subscribeMessages)
         assertEquals(0, apiStats1.subscribeWelcomes)
 
-
         val identityStats1 = alix.XMTPDebugInformation.identityStatistics
         assertEquals(1, identityStats1.publishIdentityUpdate)
         assertEquals(3, identityStats1.getIdentityUpdatesV2)
@@ -1029,7 +1028,6 @@ class ClientTest {
         assertEquals(1, apiStats2.queryWelcomeMessages)
         assertEquals(1, apiStats2.subscribeMessages)
         assertEquals(1, apiStats2.subscribeWelcomes)
-
 
         val identityStats2 = alix.XMTPDebugInformation.identityStatistics
         assertEquals(1, identityStats2.publishIdentityUpdate)
