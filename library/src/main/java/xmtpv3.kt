@@ -9736,7 +9736,8 @@ data class FfiMessage (
     var `senderInboxId`: kotlin.String, 
     var `content`: kotlin.ByteArray, 
     var `kind`: FfiConversationMessageKind, 
-    var `deliveryStatus`: FfiDeliveryStatus
+    var `deliveryStatus`: FfiDeliveryStatus, 
+    var `sequenceId`: kotlin.ULong?
 ) {
     
     companion object
@@ -9755,6 +9756,7 @@ public object FfiConverterTypeFfiMessage: FfiConverterRustBuffer<FfiMessage> {
             FfiConverterByteArray.read(buf),
             FfiConverterTypeFfiConversationMessageKind.read(buf),
             FfiConverterTypeFfiDeliveryStatus.read(buf),
+            FfiConverterOptionalULong.read(buf),
         )
     }
 
@@ -9765,7 +9767,8 @@ public object FfiConverterTypeFfiMessage: FfiConverterRustBuffer<FfiMessage> {
             FfiConverterString.allocationSize(value.`senderInboxId`) +
             FfiConverterByteArray.allocationSize(value.`content`) +
             FfiConverterTypeFfiConversationMessageKind.allocationSize(value.`kind`) +
-            FfiConverterTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`)
+            FfiConverterTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`) +
+            FfiConverterOptionalULong.allocationSize(value.`sequenceId`)
     )
 
     override fun write(value: FfiMessage, buf: ByteBuffer) {
@@ -9776,6 +9779,7 @@ public object FfiConverterTypeFfiMessage: FfiConverterRustBuffer<FfiMessage> {
             FfiConverterByteArray.write(value.`content`, buf)
             FfiConverterTypeFfiConversationMessageKind.write(value.`kind`, buf)
             FfiConverterTypeFfiDeliveryStatus.write(value.`deliveryStatus`, buf)
+            FfiConverterOptionalULong.write(value.`sequenceId`, buf)
     }
 }
 

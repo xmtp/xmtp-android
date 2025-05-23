@@ -7,7 +7,6 @@ class ConversationDebugInfo(private val ffiConversationDebugInfo: FfiConversatio
         get() = ffiConversationDebugInfo.epoch.toLong()
     val maybeForked: Boolean
         get() = ffiConversationDebugInfo.maybeForked
-
     val forkDetails: String
         get() = ffiConversationDebugInfo.forkDetails
 }

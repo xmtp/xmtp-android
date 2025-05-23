@@ -5,7 +5,7 @@ import uniffi.xmtpv3.FfiIdentityStats
 import uniffi.xmtpv3.FfiXmtpClient
 
 class NetworkDebugInfo(
-    private val ffiClient: FfiXmtpClient
+    private val ffiClient: FfiXmtpClient,
 ) {
     val apiStatistics: ApiStats
         get() = ApiStats(ffiClient.apiStatistics())
@@ -16,7 +16,7 @@ class NetworkDebugInfo(
 }
 
 class ApiStats(
-    private val apiStats: FfiApiStats
+    private val apiStats: FfiApiStats,
 ) {
     val uploadKeyPackage: Long
         get() = apiStats.uploadKeyPackage.toLong()
@@ -37,7 +37,7 @@ class ApiStats(
 }
 
 class IdentityStats(
-    private val identityStats: FfiIdentityStats
+    private val identityStats: FfiIdentityStats,
 ) {
     val publishIdentityUpdate: Long
         get() = identityStats.publishIdentityUpdate.toLong()
