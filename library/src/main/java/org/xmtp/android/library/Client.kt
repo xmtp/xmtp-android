@@ -33,11 +33,7 @@ data class ClientOptions(
     val preAuthenticateToInboxCallback: PreEventCallback? = null,
     val appContext: Context,
     val dbEncryptionKey: ByteArray,
-    val historySyncUrl: String? = when (api.env) {
-        XMTPEnvironment.PRODUCTION -> "https://message-history.production.ephemera.network/"
-        XMTPEnvironment.LOCAL -> "http://0.0.0.0:5558"
-        else -> "https://message-history.dev.ephemera.network/"
-    },
+    val historySyncUrl: String? = api.env.getHistorySyncUrl(),
     val dbDirectory: String? = null,
 ) {
     data class Api(
@@ -63,8 +59,8 @@ class Client(
         ffiConversations = libXMTPClient.conversations(),
         ffiClient = libXMTPClient
     )
-    val networkDebugInfo: NetworkDebugInfo =
-        NetworkDebugInfo(ffiClient = libXMTPClient)
+    val XMTPDebugInformation: XMTPDebugInformation =
+        XMTPDebugInformation(ffiClient = libXMTPClient, this)
     val libXMTPVersion: String = getVersionInfo()
     private val ffiClient: FfiXmtpClient = libXMTPClient
 
