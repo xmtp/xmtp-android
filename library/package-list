@@ -791,11 +791,11 @@ $dokka.location:org.xmtp.android.library/Client.Companion/keyPackageStatusesForI
 $dokka.location:org.xmtp.android.library/Client.Companion/register/#org.xmtp.android.library.codecs.ContentCodec[*]/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/register.html
 $dokka.location:org.xmtp.android.library/Client///PointingToDeclaration/library/org.xmtp.android.library/-client/index.html
 $dokka.location:org.xmtp.android.library/Client/Client/#uniffi.xmtpv3.FfiXmtpClient#kotlin.String#kotlin.String#kotlin.String#org.xmtp.android.library.XMTPEnvironment#org.xmtp.android.library.libxmtp.PublicIdentity/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
-$dokka.location:org.xmtp.android.library/Client/XMTPDebugInformation/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-x-m-t-p-debug-information.html
 $dokka.location:org.xmtp.android.library/Client/addAccount/#org.xmtp.android.library.SigningKey#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client/add-account.html
 $dokka.location:org.xmtp.android.library/Client/canMessage/#kotlin.collections.List[org.xmtp.android.library.libxmtp.PublicIdentity]/PointingToDeclaration/library/org.xmtp.android.library/-client/can-message.html
 $dokka.location:org.xmtp.android.library/Client/conversations/#/PointingToDeclaration/library/org.xmtp.android.library/-client/conversations.html
 $dokka.location:org.xmtp.android.library/Client/dbPath/#/PointingToDeclaration/library/org.xmtp.android.library/-client/db-path.html
+$dokka.location:org.xmtp.android.library/Client/debugInformation/#/PointingToDeclaration/library/org.xmtp.android.library/-client/debug-information.html
 $dokka.location:org.xmtp.android.library/Client/deleteLocalDatabase/#/PointingToDeclaration/library/org.xmtp.android.library/-client/delete-local-database.html
 $dokka.location:org.xmtp.android.library/Client/dropLocalDatabaseConnection/#/PointingToDeclaration/library/org.xmtp.android.library/-client/drop-local-database-connection.html
 $dokka.location:org.xmtp.android.library/Client/environment/#/PointingToDeclaration/library/org.xmtp.android.library/-client/environment.html
