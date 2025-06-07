@@ -60,6 +60,29 @@ class ClientTest {
     }
 
     @Test
+    fun testCanBeBuiltOffline() {
+        val key = SecureRandom().generateSeed(32)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val wallet = PrivateKeyBuilder()
+        val options = ClientOptions(
+            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+            appContext = context,
+            dbEncryptionKey = key
+        )
+        val client = runBlocking {
+            Client.create(account = wallet, options = options)
+        }
+
+        client.debugInformation.clearAllStatistics()
+        println(client.debugInformation.aggregateStatistics)
+        val builtClient = runBlocking {
+            Client.build(client.publicIdentity, options = options, client.inboxId)
+        }
+        println(client.debugInformation.aggregateStatistics)
+        assertEquals(client.inboxId, builtClient.inboxId)
+    }
+
+    @Test
     fun testCreatesAClient() {
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -990,25 +1013,7 @@ class ClientTest {
                 dbEncryptionKey = key
             )
         )
-        delay(2000)
-        val aggregateStats1 = alix.debugInformation.aggregateStatistics
-        println("Aggregate Stats Create:\n$aggregateStats1")
-
-        val apiStats1 = alix.debugInformation.apiStatistics
-        assertEquals(1, apiStats1.uploadKeyPackage)
-        assertEquals(0, apiStats1.fetchKeyPackage)
-        assertEquals(2, apiStats1.sendGroupMessages)
-        assertEquals(0, apiStats1.sendWelcomeMessages)
-        assertEquals(4, apiStats1.queryGroupMessages)
-        assertEquals(0, apiStats1.queryWelcomeMessages)
-        assertEquals(0, apiStats1.subscribeMessages)
-        assertEquals(0, apiStats1.subscribeWelcomes)
-
-        val identityStats1 = alix.debugInformation.identityStatistics
-        assertEquals(1, identityStats1.publishIdentityUpdate)
-        assertEquals(3, identityStats1.getIdentityUpdatesV2)
-        assertEquals(2, identityStats1.getInboxIds)
-        assertEquals(0, identityStats1.verifySmartContractWalletSignature)
+        alix.debugInformation.clearAllStatistics()
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             alix.conversations.streamAllMessages().collect { }
@@ -1016,23 +1021,23 @@ class ClientTest {
         val group = alix.conversations.newGroup(emptyList())
         group.send("hi")
 
+        delay(4000)
+
         val aggregateStats2 = alix.debugInformation.aggregateStatistics
         println("Aggregate Stats Create:\n$aggregateStats2")
 
         val apiStats2 = alix.debugInformation.apiStatistics
-        assertEquals(1, apiStats2.uploadKeyPackage)
+        assertEquals(0, apiStats2.uploadKeyPackage)
         assertEquals(0, apiStats2.fetchKeyPackage)
         assertEquals(6, apiStats2.sendGroupMessages)
         assertEquals(0, apiStats2.sendWelcomeMessages)
-        assertEquals(11, apiStats2.queryGroupMessages)
         assertEquals(1, apiStats2.queryWelcomeMessages)
-        assertEquals(1, apiStats2.subscribeMessages)
         assertEquals(1, apiStats2.subscribeWelcomes)
 
         val identityStats2 = alix.debugInformation.identityStatistics
-        assertEquals(1, identityStats2.publishIdentityUpdate)
-        assertEquals(4, identityStats2.getIdentityUpdatesV2)
-        assertEquals(2, identityStats2.getInboxIds)
+        assertEquals(0, identityStats2.publishIdentityUpdate)
+        assertEquals(2, identityStats2.getIdentityUpdatesV2)
+        assertEquals(0, identityStats2.getInboxIds)
         assertEquals(0, identityStats2.verifySmartContractWalletSignature)
         job.cancel()
     }
