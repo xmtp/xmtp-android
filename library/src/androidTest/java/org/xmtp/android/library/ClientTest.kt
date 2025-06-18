@@ -61,6 +61,7 @@ class ClientTest {
 
     @Test
     fun testCanBeBuiltOffline() {
+        val fixtures = fixtures()
         val key = SecureRandom().generateSeed(32)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val wallet = PrivateKeyBuilder()
@@ -80,6 +81,19 @@ class ClientTest {
         }
         println(client.debugInformation.aggregateStatistics)
         assertEquals(client.inboxId, builtClient.inboxId)
+
+        val convos = runBlocking {
+            val group = builtClient.conversations.newGroup(listOf(fixtures.alixClient.inboxId))
+            group.send("howdy")
+            val alixDm = fixtures.alixClient.conversations.newConversation(builtClient.inboxId)
+            alixDm.send("howdy")
+            val boGroup = fixtures.boClient.conversations.newGroupWithIdentities(listOf(builtClient.publicIdentity))
+            boGroup.send("howdy")
+            builtClient.conversations.syncAllConversations()
+            builtClient.conversations.list()
+        }
+
+        assertEquals(convos.size, 3)
     }
 
     @Test
