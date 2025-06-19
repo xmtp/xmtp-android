@@ -1111,6 +1111,7 @@ $dokka.location:org.xmtp.android.library/XMTPDebugInformation///PointingToDeclar
 $dokka.location:org.xmtp.android.library/XMTPDebugInformation/XMTPDebugInformation/#uniffi.xmtpv3.FfiXmtpClient#org.xmtp.android.library.Client/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-debug-information/-x-m-t-p-debug-information.html
 $dokka.location:org.xmtp.android.library/XMTPDebugInformation/aggregateStatistics/#/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-debug-information/aggregate-statistics.html
 $dokka.location:org.xmtp.android.library/XMTPDebugInformation/apiStatistics/#/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-debug-information/api-statistics.html
+$dokka.location:org.xmtp.android.library/XMTPDebugInformation/clearAllStatistics/#/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-debug-information/clear-all-statistics.html
 $dokka.location:org.xmtp.android.library/XMTPDebugInformation/identityStatistics/#/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-debug-information/identity-statistics.html
 $dokka.location:org.xmtp.android.library/XMTPDebugInformation/uploadDebugInformation/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-debug-information/upload-debug-information.html
 $dokka.location:org.xmtp.android.library/XMTPEnvironment.Companion///PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-environment/-companion/index.html
@@ -1131,7 +1132,7 @@ $dokka.location:org.xmtp.android.library/XMTPException///PointingToDeclaration/
 $dokka.location:org.xmtp.android.library/XMTPException/XMTPException/#kotlin.String#java.lang.Exception?/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/-x-m-t-p-exception.html
 $dokka.location:uniffi.xmtpv3////PointingToDeclaration/library/uniffi.xmtpv3/index.html
 $dokka.location:uniffi.xmtpv3//connectToBackend/#kotlin.String#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtpv3/connect-to-backend.html
-$dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.XmtpApiClient#kotlin.String?#kotlin.ByteArray?#kotlin.String#uniffi.xmtpv3.FfiIdentifier#kotlin.ULong#kotlin.ByteArray?#kotlin.String?#uniffi.xmtpv3.FfiSyncWorkerMode?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
+$dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.XmtpApiClient#kotlin.String?#kotlin.ByteArray?#kotlin.String#uniffi.xmtpv3.FfiIdentifier#kotlin.ULong#kotlin.ByteArray?#kotlin.String?#uniffi.xmtpv3.FfiSyncWorkerMode?#kotlin.Boolean?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
 $dokka.location:uniffi.xmtpv3//decodeMultiRemoteAttachment/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-multi-remote-attachment.html
 $dokka.location:uniffi.xmtpv3//decodeReaction/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-reaction.html
 $dokka.location:uniffi.xmtpv3//encodeMultiRemoteAttachment/#uniffi.xmtpv3.FfiMultiRemoteAttachment/PointingToDeclaration/library/uniffi.xmtpv3/encode-multi-remote-attachment.html
@@ -1822,6 +1823,7 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClient/applySignatureRequest/#uniffi.xmtpv3
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/archiveMetadata/#kotlin.String#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/archive-metadata.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/canMessage/#kotlin.collections.List[uniffi.xmtpv3.FfiIdentifier]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/can-message.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/changeRecoveryIdentifier/#uniffi.xmtpv3.FfiIdentifier/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/change-recovery-identifier.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClient/clearAllStatistics/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/clear-all-statistics.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/close/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/close.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/conversation/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/conversation.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClient/conversations/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client/conversations.html
@@ -1863,6 +1865,7 @@ $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/applySignatureRequest/#unif
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/archiveMetadata/#kotlin.String#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/archive-metadata.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/canMessage/#kotlin.collections.List[uniffi.xmtpv3.FfiIdentifier]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/can-message.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/changeRecoveryIdentifier/#uniffi.xmtpv3.FfiIdentifier/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/change-recovery-identifier.html
+$dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/clearAllStatistics/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/clear-all-statistics.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/conversation/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/conversation.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/conversations/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/conversations.html
 $dokka.location:uniffi.xmtpv3/FfiXmtpClientInterface/createArchive/#kotlin.String#uniffi.xmtpv3.FfiArchiveOptions#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-xmtp-client-interface/create-archive.html
