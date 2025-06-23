@@ -789,6 +789,7 @@ $dokka.location:org.xmtp.android.library/Client.Companion/getXMTPLogFilePaths/#a
 $dokka.location:org.xmtp.android.library/Client.Companion/inboxStatesForInboxIds/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.ClientOptions.Api/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/inbox-states-for-inbox-ids.html
 $dokka.location:org.xmtp.android.library/Client.Companion/keyPackageStatusesForInstallationIds/#kotlin.collections.List[kotlin.String]#org.xmtp.android.library.ClientOptions.Api/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/key-package-statuses-for-installation-ids.html
 $dokka.location:org.xmtp.android.library/Client.Companion/register/#org.xmtp.android.library.codecs.ContentCodec[*]/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/register.html
+$dokka.location:org.xmtp.android.library/Client.Companion/revokeInstallations/#org.xmtp.android.library.ClientOptions.Api#org.xmtp.android.library.SigningKey#kotlin.String#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/revoke-installations.html
 $dokka.location:org.xmtp.android.library/Client///PointingToDeclaration/library/org.xmtp.android.library/-client/index.html
 $dokka.location:org.xmtp.android.library/Client/Client/#uniffi.xmtpv3.FfiXmtpClient#kotlin.String#kotlin.String#kotlin.String#org.xmtp.android.library.XMTPEnvironment#org.xmtp.android.library.libxmtp.PublicIdentity/PointingToDeclaration/library/org.xmtp.android.library/-client/-client.html
 $dokka.location:org.xmtp.android.library/Client/addAccount/#org.xmtp.android.library.SigningKey#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client/add-account.html
@@ -1131,6 +1132,7 @@ $dokka.location:org.xmtp.android.library/XMTPEnvironment/withValue/#kotlin.Strin
 $dokka.location:org.xmtp.android.library/XMTPException///PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/index.html
 $dokka.location:org.xmtp.android.library/XMTPException/XMTPException/#kotlin.String#java.lang.Exception?/PointingToDeclaration/library/org.xmtp.android.library/-x-m-t-p-exception/-x-m-t-p-exception.html
 $dokka.location:uniffi.xmtpv3////PointingToDeclaration/library/uniffi.xmtpv3/index.html
+$dokka.location:uniffi.xmtpv3//applySignatureRequest/#uniffi.xmtpv3.XmtpApiClient#uniffi.xmtpv3.FfiSignatureRequest/PointingToDeclaration/library/uniffi.xmtpv3/apply-signature-request.html
 $dokka.location:uniffi.xmtpv3//connectToBackend/#kotlin.String#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtpv3/connect-to-backend.html
 $dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.XmtpApiClient#kotlin.String?#kotlin.ByteArray?#kotlin.String#uniffi.xmtpv3.FfiIdentifier#kotlin.ULong#kotlin.ByteArray?#kotlin.String?#uniffi.xmtpv3.FfiSyncWorkerMode?#kotlin.Boolean?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
 $dokka.location:uniffi.xmtpv3//decodeMultiRemoteAttachment/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-multi-remote-attachment.html
@@ -1143,6 +1145,7 @@ $dokka.location:uniffi.xmtpv3//exitDebugWriter/#/PointingToDeclaration/library/
 $dokka.location:uniffi.xmtpv3//generateInboxId/#uniffi.xmtpv3.FfiIdentifier#kotlin.ULong/PointingToDeclaration/library/uniffi.xmtpv3/generate-inbox-id.html
 $dokka.location:uniffi.xmtpv3//getInboxIdForIdentifier/#uniffi.xmtpv3.XmtpApiClient#uniffi.xmtpv3.FfiIdentifier/PointingToDeclaration/library/uniffi.xmtpv3/get-inbox-id-for-identifier.html
 $dokka.location:uniffi.xmtpv3//getVersionInfo/#/PointingToDeclaration/library/uniffi.xmtpv3/get-version-info.html
+$dokka.location:uniffi.xmtpv3//revokeInstallations/#uniffi.xmtpv3.XmtpApiClient#uniffi.xmtpv3.FfiIdentifier#kotlin.String#kotlin.collections.List[kotlin.ByteArray]/PointingToDeclaration/library/uniffi.xmtpv3/revoke-installations.html
 $dokka.location:uniffi.xmtpv3/Disposable.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-disposable/-companion/index.html
 $dokka.location:uniffi.xmtpv3/Disposable.Companion/destroy/#kotlin.Array[kotlin.Any?]/PointingToDeclaration/library/uniffi.xmtpv3/-disposable/-companion/destroy.html
 $dokka.location:uniffi.xmtpv3/Disposable///PointingToDeclaration/library/uniffi.xmtpv3/-disposable/index.html
