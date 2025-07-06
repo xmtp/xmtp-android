@@ -9322,7 +9322,9 @@ public object FfiConverterTypeFfiConsent: FfiConverterRustBuffer<FfiConsent> {
 data class FfiConversationDebugInfo (
     var `epoch`: kotlin.ULong, 
     var `maybeForked`: kotlin.Boolean, 
-    var `forkDetails`: kotlin.String
+    var `forkDetails`: kotlin.String, 
+    var `localCommitLog`: kotlin.String, 
+    var `cursor`: kotlin.Long
 ) {
     
     companion object
@@ -9337,19 +9339,25 @@ public object FfiConverterTypeFfiConversationDebugInfo: FfiConverterRustBuffer<F
             FfiConverterULong.read(buf),
             FfiConverterBoolean.read(buf),
             FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
         )
     }
 
     override fun allocationSize(value: FfiConversationDebugInfo) = (
             FfiConverterULong.allocationSize(value.`epoch`) +
             FfiConverterBoolean.allocationSize(value.`maybeForked`) +
-            FfiConverterString.allocationSize(value.`forkDetails`)
+            FfiConverterString.allocationSize(value.`forkDetails`) +
+            FfiConverterString.allocationSize(value.`localCommitLog`) +
+            FfiConverterLong.allocationSize(value.`cursor`)
     )
 
     override fun write(value: FfiConversationDebugInfo, buf: ByteBuffer) {
             FfiConverterULong.write(value.`epoch`, buf)
             FfiConverterBoolean.write(value.`maybeForked`, buf)
             FfiConverterString.write(value.`forkDetails`, buf)
+            FfiConverterString.write(value.`localCommitLog`, buf)
+            FfiConverterLong.write(value.`cursor`, buf)
     }
 }
 
