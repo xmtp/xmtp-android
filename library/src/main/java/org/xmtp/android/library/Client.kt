@@ -25,6 +25,7 @@ import uniffi.xmtpv3.generateInboxId
 import uniffi.xmtpv3.getInboxIdForIdentifier
 import uniffi.xmtpv3.getVersionInfo
 import uniffi.xmtpv3.applySignatureRequest
+import uniffi.xmtpv3.isConnected
 import uniffi.xmtpv3.revokeInstallations
 
 import java.io.File
@@ -136,17 +137,36 @@ class Client(
         suspend fun connectToApiBackend(api: ClientOptions.Api): XmtpApiClient {
             val cacheKey = api.env.getUrl()
             return cacheLock.withLock {
-                apiClientCache.getOrPut(cacheKey) {
-                    connectToBackend(api.env.getUrl(), api.isSecure)
+                val cached = apiClientCache[cacheKey]
+
+                Log.d("LOPI", "here is the cached ${cached != null}")
+                val stillConnected = cached?.let { isConnected(it) } ?: false
+
+                if (stillConnected) {
+                    Log.d("LOPI", "isConnected(cached): true")
+                    return@withLock cached!!
+                } else {
+                    Log.d("LOPI", "isConnected(cached): false, removing and recreating")
+                    apiClientCache.remove(cacheKey) // ← remove stale client
                 }
+
+                // Create a fresh client
+                val newClient = connectToBackend(api.env.getUrl(), api.isSecure)
+
+                Log.d("LOPI", "CHECKING ${isConnected(newClient)}")
+
+                apiClientCache[cacheKey] = newClient
+                return@withLock newClient
             }
         }
+
 
         suspend fun getOrCreateInboxId(
             api: ClientOptions.Api,
             publicIdentity: PublicIdentity,
         ): InboxId {
             val rootIdentity = publicIdentity.ffiPrivate
+            Log.d("LOPI", "this is throwing it?")
             var inboxId = getInboxIdForIdentifier(
                 api = connectToApiBackend(api),
                 accountIdentifier = rootIdentity
@@ -219,6 +239,7 @@ class Client(
                 deviceSyncServerUrl = null,
                 deviceSyncMode = null,
                 allowOffline = false,
+                disableEvents = false,
             )
 
             return useClient(ffiClient)
@@ -322,6 +343,7 @@ class Client(
             return try {
                 initializeV3Client(account.publicIdentity, options, account)
             } catch (e: Exception) {
+                Log.d("LOPI", "Inside CREATE")
                 throw XMTPException("Error creating V3 client: ${e.message}", e)
             }
         }
@@ -340,6 +362,7 @@ class Client(
                     buildOffline = inboxId != null
                 )
             } catch (e: Exception) {
+                Log.d("LOPI", "Inside BUILD")
                 throw XMTPException("Error creating V3 client: ${e.message}", e)
             }
         }
@@ -373,7 +396,8 @@ class Client(
                 deviceSyncServerUrl = options.historySyncUrl,
                 deviceSyncMode = FfiSyncWorkerMode.ENABLED,
                 allowOffline = buildOffline,
-            )
+                disableEvents = false,
+                )
             return Pair(ffiClient, dbPath)
         }
 

@@ -1,6 +1,7 @@
 package org.xmtp.android.example
 
 import android.content.Context
+import android.util.Log
 import androidx.annotation.UiThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -57,6 +58,7 @@ object ClientManager {
                         clientOptions(appContext, address)
                     )
                 Client.register(codec = GroupUpdatedCodec())
+                Log.d("EIGEN", "HELP")
                 _clientState.value = ClientState.Ready
             } catch (e: Exception) {
                 _clientState.value = ClientState.Error(e.localizedMessage.orEmpty())
