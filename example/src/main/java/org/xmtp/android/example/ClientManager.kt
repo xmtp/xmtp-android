@@ -58,7 +58,6 @@ object ClientManager {
                         clientOptions(appContext, address)
                     )
                 Client.register(codec = GroupUpdatedCodec())
-                Log.d("EIGEN", "HELP")
                 _clientState.value = ClientState.Ready
             } catch (e: Exception) {
                 _clientState.value = ClientState.Error(e.localizedMessage.orEmpty())

@@ -27,6 +27,8 @@ import uniffi.xmtpv3.getVersionInfo
 import uniffi.xmtpv3.applySignatureRequest
 import uniffi.xmtpv3.isConnected
 import uniffi.xmtpv3.revokeInstallations
+import uniffi.xmtpv3.inboxStateFromInboxIds
+
 
 import java.io.File
 
@@ -139,34 +141,22 @@ class Client(
             return cacheLock.withLock {
                 val cached = apiClientCache[cacheKey]
 
-                Log.d("LOPI", "here is the cached ${cached != null}")
-                val stillConnected = cached?.let { isConnected(it) } ?: false
-
-                if (stillConnected) {
-                    Log.d("LOPI", "isConnected(cached): true")
-                    return@withLock cached!!
-                } else {
-                    Log.d("LOPI", "isConnected(cached): false, removing and recreating")
-                    apiClientCache.remove(cacheKey) // ← remove stale client
+                if (cached != null && isConnected(cached)) {
+                    return cached
                 }
 
-                // Create a fresh client
+                // If not cached or not connected, create a fresh client
                 val newClient = connectToBackend(api.env.getUrl(), api.isSecure)
-
-                Log.d("LOPI", "CHECKING ${isConnected(newClient)}")
-
                 apiClientCache[cacheKey] = newClient
                 return@withLock newClient
             }
         }
-
 
         suspend fun getOrCreateInboxId(
             api: ClientOptions.Api,
             publicIdentity: PublicIdentity,
         ): InboxId {
             val rootIdentity = publicIdentity.ffiPrivate
-            Log.d("LOPI", "this is throwing it?")
             var inboxId = getInboxIdForIdentifier(
                 api = connectToApiBackend(api),
                 accountIdentifier = rootIdentity
@@ -249,10 +239,8 @@ class Client(
             inboxIds: List<InboxId>,
             api: ClientOptions.Api,
         ): List<InboxState> {
-            return withFfiClient(api) { ffiClient ->
-                ffiClient.addressesFromInboxId(true, inboxIds)
-                    .map { InboxState(it) }
-            }
+            val apiClient = connectToApiBackend(api)
+            return inboxStateFromInboxIds(apiClient, inboxIds).map { InboxState(it) }
         }
 
         suspend fun keyPackageStatusesForInstallationIds(
@@ -343,7 +331,6 @@ class Client(
             return try {
                 initializeV3Client(account.publicIdentity, options, account)
             } catch (e: Exception) {
-                Log.d("LOPI", "Inside CREATE")
                 throw XMTPException("Error creating V3 client: ${e.message}", e)
             }
         }
@@ -362,7 +349,6 @@ class Client(
                     buildOffline = inboxId != null
                 )
             } catch (e: Exception) {
-                Log.d("LOPI", "Inside BUILD")
                 throw XMTPException("Error creating V3 client: ${e.message}", e)
             }
         }
