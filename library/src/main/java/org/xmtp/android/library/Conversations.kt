@@ -440,7 +440,8 @@ data class Conversations(
     }
 
     fun stream(
-        type: ConversationFilterType = ConversationFilterType.ALL, onClose: (() -> Unit)? = null,
+        type: ConversationFilterType = ConversationFilterType.ALL,
+        onClose: (() -> Unit)? = null,
     ): Flow<Conversation> =
         callbackFlow {
             val conversationCallback = object : FfiConversationCallback {
