@@ -28,8 +28,6 @@ import uniffi.xmtpv3.applySignatureRequest
 import uniffi.xmtpv3.isConnected
 import uniffi.xmtpv3.revokeInstallations
 import uniffi.xmtpv3.inboxStateFromInboxIds
-
-
 import java.io.File
 
 typealias PreEventCallback = suspend () -> Unit
@@ -229,7 +227,6 @@ class Client(
                 deviceSyncServerUrl = null,
                 deviceSyncMode = null,
                 allowOffline = false,
-                disableEvents = false,
             )
 
             return useClient(ffiClient)
@@ -382,8 +379,7 @@ class Client(
                 deviceSyncServerUrl = options.historySyncUrl,
                 deviceSyncMode = FfiSyncWorkerMode.ENABLED,
                 allowOffline = buildOffline,
-                disableEvents = false,
-                )
+            )
             return Pair(ffiClient, dbPath)
         }
 
