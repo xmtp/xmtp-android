@@ -1,7 +1,6 @@
 package org.xmtp.android.example
 
 import android.content.Context
-import android.util.Log
 import androidx.annotation.UiThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -15,7 +14,6 @@ import org.xmtp.android.library.XMTPEnvironment
 import org.xmtp.android.library.codecs.GroupUpdatedCodec
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PublicIdentity
-import org.xmtp.android.library.messages.walletAddress
 import java.security.SecureRandom
 
 object ClientManager {
