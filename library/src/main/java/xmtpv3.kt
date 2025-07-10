@@ -667,11 +667,17 @@ internal interface UniffiCallbackInterfaceFfiConsentCallbackMethod0 : com.sun.jn
 internal interface UniffiCallbackInterfaceFfiConsentCallbackMethod1 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
+internal interface UniffiCallbackInterfaceFfiConsentCallbackMethod2 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
 internal interface UniffiCallbackInterfaceFfiConversationCallbackMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`conversation`: Pointer,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
 internal interface UniffiCallbackInterfaceFfiConversationCallbackMethod1 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceFfiConversationCallbackMethod2 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
 internal interface UniffiCallbackInterfaceFfiInboxOwnerMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
@@ -685,46 +691,58 @@ internal interface UniffiCallbackInterfaceFfiMessageCallbackMethod0 : com.sun.jn
 internal interface UniffiCallbackInterfaceFfiMessageCallbackMethod1 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
+internal interface UniffiCallbackInterfaceFfiMessageCallbackMethod2 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
 internal interface UniffiCallbackInterfaceFfiPreferenceCallbackMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`preference`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
 internal interface UniffiCallbackInterfaceFfiPreferenceCallbackMethod1 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`error`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
-@Structure.FieldOrder("onConsentUpdate", "onError", "uniffiFree")
+internal interface UniffiCallbackInterfaceFfiPreferenceCallbackMethod2 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+@Structure.FieldOrder("onConsentUpdate", "onError", "onClose", "uniffiFree")
 internal open class UniffiVTableCallbackInterfaceFfiConsentCallback(
     @JvmField internal var `onConsentUpdate`: UniffiCallbackInterfaceFfiConsentCallbackMethod0? = null,
     @JvmField internal var `onError`: UniffiCallbackInterfaceFfiConsentCallbackMethod1? = null,
+    @JvmField internal var `onClose`: UniffiCallbackInterfaceFfiConsentCallbackMethod2? = null,
     @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
 ) : Structure() {
     class UniffiByValue(
         `onConsentUpdate`: UniffiCallbackInterfaceFfiConsentCallbackMethod0? = null,
         `onError`: UniffiCallbackInterfaceFfiConsentCallbackMethod1? = null,
+        `onClose`: UniffiCallbackInterfaceFfiConsentCallbackMethod2? = null,
         `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ): UniffiVTableCallbackInterfaceFfiConsentCallback(`onConsentUpdate`,`onError`,`uniffiFree`,), Structure.ByValue
+    ): UniffiVTableCallbackInterfaceFfiConsentCallback(`onConsentUpdate`,`onError`,`onClose`,`uniffiFree`,), Structure.ByValue
 
    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiConsentCallback) {
         `onConsentUpdate` = other.`onConsentUpdate`
         `onError` = other.`onError`
+        `onClose` = other.`onClose`
         `uniffiFree` = other.`uniffiFree`
     }
 
 }
-@Structure.FieldOrder("onConversation", "onError", "uniffiFree")
+@Structure.FieldOrder("onConversation", "onError", "onClose", "uniffiFree")
 internal open class UniffiVTableCallbackInterfaceFfiConversationCallback(
     @JvmField internal var `onConversation`: UniffiCallbackInterfaceFfiConversationCallbackMethod0? = null,
     @JvmField internal var `onError`: UniffiCallbackInterfaceFfiConversationCallbackMethod1? = null,
+    @JvmField internal var `onClose`: UniffiCallbackInterfaceFfiConversationCallbackMethod2? = null,
     @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
 ) : Structure() {
     class UniffiByValue(
         `onConversation`: UniffiCallbackInterfaceFfiConversationCallbackMethod0? = null,
         `onError`: UniffiCallbackInterfaceFfiConversationCallbackMethod1? = null,
+        `onClose`: UniffiCallbackInterfaceFfiConversationCallbackMethod2? = null,
         `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ): UniffiVTableCallbackInterfaceFfiConversationCallback(`onConversation`,`onError`,`uniffiFree`,), Structure.ByValue
+    ): UniffiVTableCallbackInterfaceFfiConversationCallback(`onConversation`,`onError`,`onClose`,`uniffiFree`,), Structure.ByValue
 
    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiConversationCallback) {
         `onConversation` = other.`onConversation`
         `onError` = other.`onError`
+        `onClose` = other.`onClose`
         `uniffiFree` = other.`uniffiFree`
     }
 
@@ -748,44 +766,62 @@ internal open class UniffiVTableCallbackInterfaceFfiInboxOwner(
     }
 
 }
-@Structure.FieldOrder("onMessage", "onError", "uniffiFree")
+@Structure.FieldOrder("onMessage", "onError", "onClose", "uniffiFree")
 internal open class UniffiVTableCallbackInterfaceFfiMessageCallback(
     @JvmField internal var `onMessage`: UniffiCallbackInterfaceFfiMessageCallbackMethod0? = null,
     @JvmField internal var `onError`: UniffiCallbackInterfaceFfiMessageCallbackMethod1? = null,
+    @JvmField internal var `onClose`: UniffiCallbackInterfaceFfiMessageCallbackMethod2? = null,
     @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
 ) : Structure() {
     class UniffiByValue(
         `onMessage`: UniffiCallbackInterfaceFfiMessageCallbackMethod0? = null,
         `onError`: UniffiCallbackInterfaceFfiMessageCallbackMethod1? = null,
+        `onClose`: UniffiCallbackInterfaceFfiMessageCallbackMethod2? = null,
         `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ): UniffiVTableCallbackInterfaceFfiMessageCallback(`onMessage`,`onError`,`uniffiFree`,), Structure.ByValue
+    ): UniffiVTableCallbackInterfaceFfiMessageCallback(`onMessage`,`onError`,`onClose`,`uniffiFree`,), Structure.ByValue
 
    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiMessageCallback) {
         `onMessage` = other.`onMessage`
         `onError` = other.`onError`
+        `onClose` = other.`onClose`
         `uniffiFree` = other.`uniffiFree`
     }
 
 }
-@Structure.FieldOrder("onPreferenceUpdate", "onError", "uniffiFree")
+@Structure.FieldOrder("onPreferenceUpdate", "onError", "onClose", "uniffiFree")
 internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
     @JvmField internal var `onPreferenceUpdate`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod0? = null,
     @JvmField internal var `onError`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod1? = null,
+    @JvmField internal var `onClose`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod2? = null,
     @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
 ) : Structure() {
     class UniffiByValue(
         `onPreferenceUpdate`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod0? = null,
         `onError`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod1? = null,
+        `onClose`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod2? = null,
         `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ): UniffiVTableCallbackInterfaceFfiPreferenceCallback(`onPreferenceUpdate`,`onError`,`uniffiFree`,), Structure.ByValue
+    ): UniffiVTableCallbackInterfaceFfiPreferenceCallback(`onPreferenceUpdate`,`onError`,`onClose`,`uniffiFree`,), Structure.ByValue
 
    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceFfiPreferenceCallback) {
         `onPreferenceUpdate` = other.`onPreferenceUpdate`
         `onError` = other.`onError`
+        `onClose` = other.`onClose`
         `uniffiFree` = other.`uniffiFree`
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1212,11 +1248,17 @@ fun uniffi_xmtpv3_checksum_func_get_inbox_id_for_identifier(
 ): Short
 fun uniffi_xmtpv3_checksum_func_get_version_info(
 ): Short
+fun uniffi_xmtpv3_checksum_func_inbox_state_from_inbox_ids(
+): Short
+fun uniffi_xmtpv3_checksum_func_is_connected(
+): Short
 fun uniffi_xmtpv3_checksum_func_revoke_installations(
 ): Short
 fun uniffi_xmtpv3_checksum_method_fficonsentcallback_on_consent_update(
 ): Short
 fun uniffi_xmtpv3_checksum_method_fficonsentcallback_on_error(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonsentcallback_on_close(
 ): Short
 fun uniffi_xmtpv3_checksum_method_fficonversation_add_admin(
 ): Short
@@ -1316,6 +1358,8 @@ fun uniffi_xmtpv3_checksum_method_fficonversationcallback_on_conversation(
 ): Short
 fun uniffi_xmtpv3_checksum_method_fficonversationcallback_on_error(
 ): Short
+fun uniffi_xmtpv3_checksum_method_fficonversationcallback_on_close(
+): Short
 fun uniffi_xmtpv3_checksum_method_fficonversationlistitem_conversation(
 ): Short
 fun uniffi_xmtpv3_checksum_method_fficonversationlistitem_last_message(
@@ -1378,9 +1422,13 @@ fun uniffi_xmtpv3_checksum_method_ffimessagecallback_on_message(
 ): Short
 fun uniffi_xmtpv3_checksum_method_ffimessagecallback_on_error(
 ): Short
+fun uniffi_xmtpv3_checksum_method_ffimessagecallback_on_close(
+): Short
 fun uniffi_xmtpv3_checksum_method_ffipreferencecallback_on_preference_update(
 ): Short
 fun uniffi_xmtpv3_checksum_method_ffipreferencecallback_on_error(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffipreferencecallback_on_close(
 ): Short
 fun uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_ecdsa_signature(
 ): Short
@@ -1542,6 +1590,8 @@ fun uniffi_xmtpv3_fn_method_fficonsentcallback_on_consent_update(`ptr`: Pointer,
 ): Unit
 fun uniffi_xmtpv3_fn_method_fficonsentcallback_on_error(`ptr`: Pointer,`error`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
 ): Unit
+fun uniffi_xmtpv3_fn_method_fficonsentcallback_on_close(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
 fun uniffi_xmtpv3_fn_clone_fficonversation(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
 ): Pointer
 fun uniffi_xmtpv3_fn_free_fficonversation(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
@@ -1650,6 +1700,8 @@ fun uniffi_xmtpv3_fn_method_fficonversationcallback_on_conversation(`ptr`: Point
 ): Unit
 fun uniffi_xmtpv3_fn_method_fficonversationcallback_on_error(`ptr`: Pointer,`error`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
 ): Unit
+fun uniffi_xmtpv3_fn_method_fficonversationcallback_on_close(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
 fun uniffi_xmtpv3_fn_clone_fficonversationlistitem(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
 ): Pointer
 fun uniffi_xmtpv3_fn_free_fficonversationlistitem(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
@@ -1740,6 +1792,8 @@ fun uniffi_xmtpv3_fn_method_ffimessagecallback_on_message(`ptr`: Pointer,`messag
 ): Unit
 fun uniffi_xmtpv3_fn_method_ffimessagecallback_on_error(`ptr`: Pointer,`error`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
 ): Unit
+fun uniffi_xmtpv3_fn_method_ffimessagecallback_on_close(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
 fun uniffi_xmtpv3_fn_clone_ffipreferencecallback(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
 ): Pointer
 fun uniffi_xmtpv3_fn_free_ffipreferencecallback(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
@@ -1749,6 +1803,8 @@ fun uniffi_xmtpv3_fn_init_callback_vtable_ffipreferencecallback(`vtable`: Uniffi
 fun uniffi_xmtpv3_fn_method_ffipreferencecallback_on_preference_update(`ptr`: Pointer,`preference`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
 ): Unit
 fun uniffi_xmtpv3_fn_method_ffipreferencecallback_on_error(`ptr`: Pointer,`error`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Unit
+fun uniffi_xmtpv3_fn_method_ffipreferencecallback_on_close(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
 ): Unit
 fun uniffi_xmtpv3_fn_clone_ffisignaturerequest(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
 ): Pointer
@@ -1892,6 +1948,10 @@ fun uniffi_xmtpv3_fn_func_get_inbox_id_for_identifier(`api`: Pointer,`accountIde
 ): Long
 fun uniffi_xmtpv3_fn_func_get_version_info(uniffi_out_err: UniffiRustCallStatus, 
 ): RustBuffer.ByValue
+fun uniffi_xmtpv3_fn_func_inbox_state_from_inbox_ids(`api`: Pointer,`inboxIds`: RustBuffer.ByValue,
+): Long
+fun uniffi_xmtpv3_fn_func_is_connected(`api`: Pointer,
+): Long
 fun uniffi_xmtpv3_fn_func_revoke_installations(`api`: Pointer,`recoveryIdentifier`: RustBuffer.ByValue,`inboxId`: RustBuffer.ByValue,`installationIds`: RustBuffer.ByValue,
 ): Long
 fun ffi_xmtpv3_rustbuffer_alloc(`size`: Long,uniffi_out_err: UniffiRustCallStatus, 
@@ -2059,6 +2119,12 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_func_get_version_info() != 29277.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_func_inbox_state_from_inbox_ids() != 55434.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_func_is_connected() != 17295.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_func_revoke_installations() != 23629.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2066,6 +2132,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonsentcallback_on_error() != 5882.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonsentcallback_on_close() != 18566.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_add_admin() != 52417.toShort()) {
@@ -2215,6 +2284,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_fficonversationcallback_on_error() != 461.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversationcallback_on_close() != 26905.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversationlistitem_conversation() != 20525.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -2308,10 +2380,16 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffimessagecallback_on_error() != 32204.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_ffimessagecallback_on_close() != 9150.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_ffipreferencecallback_on_preference_update() != 19900.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffipreferencecallback_on_error() != 41454.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffipreferencecallback_on_close() != 48198.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffisignaturerequest_add_ecdsa_signature() != 8706.toShort()) {
@@ -2968,6 +3046,8 @@ public interface FfiConsentCallback {
     
     fun `onError`(`error`: FfiSubscribeException)
     
+    fun `onClose`()
+    
     companion object
 }
 
@@ -3075,6 +3155,17 @@ open class FfiConsentCallbackImpl: Disposable, AutoCloseable, FfiConsentCallback
     
     
 
+    override fun `onClose`()
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonsentcallback_on_close(
+        it, _status)
+}
+    }
+    
+    
+
     
 
     
@@ -3110,6 +3201,17 @@ internal object uniffiCallbackInterfaceFfiConsentCallback {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
+    internal object `onClose`: UniffiCallbackInterfaceFfiConsentCallbackMethod2 {
+        override fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeFfiConsentCallback.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onClose`(
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
 
     internal object uniffiFree: UniffiCallbackInterfaceFree {
         override fun callback(handle: Long) {
@@ -3120,6 +3222,7 @@ internal object uniffiCallbackInterfaceFfiConsentCallback {
     internal var vtable = UniffiVTableCallbackInterfaceFfiConsentCallback.UniffiByValue(
         `onConsentUpdate`,
         `onError`,
+        `onClose`,
         uniffiFree,
     )
 
@@ -4428,6 +4531,8 @@ public interface FfiConversationCallback {
     
     fun `onError`(`error`: FfiSubscribeException)
     
+    fun `onClose`()
+    
     companion object
 }
 
@@ -4535,6 +4640,17 @@ open class FfiConversationCallbackImpl: Disposable, AutoCloseable, FfiConversati
     
     
 
+    override fun `onClose`()
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversationcallback_on_close(
+        it, _status)
+}
+    }
+    
+    
+
     
 
     
@@ -4570,6 +4686,17 @@ internal object uniffiCallbackInterfaceFfiConversationCallback {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
+    internal object `onClose`: UniffiCallbackInterfaceFfiConversationCallbackMethod2 {
+        override fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeFfiConversationCallback.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onClose`(
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
 
     internal object uniffiFree: UniffiCallbackInterfaceFree {
         override fun callback(handle: Long) {
@@ -4580,6 +4707,7 @@ internal object uniffiCallbackInterfaceFfiConversationCallback {
     internal var vtable = UniffiVTableCallbackInterfaceFfiConversationCallback.UniffiByValue(
         `onConversation`,
         `onError`,
+        `onClose`,
         uniffiFree,
     )
 
@@ -6458,6 +6586,8 @@ public interface FfiMessageCallback {
     
     fun `onError`(`error`: FfiSubscribeException)
     
+    fun `onClose`()
+    
     companion object
 }
 
@@ -6565,6 +6695,17 @@ open class FfiMessageCallbackImpl: Disposable, AutoCloseable, FfiMessageCallback
     
     
 
+    override fun `onClose`()
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffimessagecallback_on_close(
+        it, _status)
+}
+    }
+    
+    
+
     
 
     
@@ -6600,6 +6741,17 @@ internal object uniffiCallbackInterfaceFfiMessageCallback {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
+    internal object `onClose`: UniffiCallbackInterfaceFfiMessageCallbackMethod2 {
+        override fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeFfiMessageCallback.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onClose`(
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
 
     internal object uniffiFree: UniffiCallbackInterfaceFree {
         override fun callback(handle: Long) {
@@ -6610,6 +6762,7 @@ internal object uniffiCallbackInterfaceFfiMessageCallback {
     internal var vtable = UniffiVTableCallbackInterfaceFfiMessageCallback.UniffiByValue(
         `onMessage`,
         `onError`,
+        `onClose`,
         uniffiFree,
     )
 
@@ -6754,6 +6907,8 @@ public interface FfiPreferenceCallback {
     
     fun `onError`(`error`: FfiSubscribeException)
     
+    fun `onClose`()
+    
     companion object
 }
 
@@ -6861,6 +7016,17 @@ open class FfiPreferenceCallbackImpl: Disposable, AutoCloseable, FfiPreferenceCa
     
     
 
+    override fun `onClose`()
+        = 
+    callWithPointer {
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffipreferencecallback_on_close(
+        it, _status)
+}
+    }
+    
+    
+
     
 
     
@@ -6896,6 +7062,17 @@ internal object uniffiCallbackInterfaceFfiPreferenceCallback {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
+    internal object `onClose`: UniffiCallbackInterfaceFfiPreferenceCallbackMethod2 {
+        override fun callback(`uniffiHandle`: Long,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeFfiPreferenceCallback.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onClose`(
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
 
     internal object uniffiFree: UniffiCallbackInterfaceFree {
         override fun callback(handle: Long) {
@@ -6906,6 +7083,7 @@ internal object uniffiCallbackInterfaceFfiPreferenceCallback {
     internal var vtable = UniffiVTableCallbackInterfaceFfiPreferenceCallback.UniffiByValue(
         `onPreferenceUpdate`,
         `onError`,
+        `onClose`,
         uniffiFree,
     )
 
@@ -12730,6 +12908,38 @@ public object FfiConverterMapTypeFfiIdentifierBoolean: FfiConverterRustBuffer<Ma
     )
     }
     
+
+        /**
+         * * Static Get the inbox state for each `inbox_id`.
+         */
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+     suspend fun `inboxStateFromInboxIds`(`api`: XmtpApiClient, `inboxIds`: List<kotlin.String>) : List<FfiInboxState> {
+        return uniffiRustCallAsync(
+        UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_inbox_state_from_inbox_ids(FfiConverterTypeXmtpApiClient.lower(`api`),FfiConverterSequenceString.lower(`inboxIds`),),
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_rust_buffer(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_rust_buffer(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_rust_buffer(future) },
+        // lift function
+        { FfiConverterSequenceTypeFfiInboxState.lift(it) },
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
+    }
+
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+     suspend fun `isConnected`(`api`: XmtpApiClient) : kotlin.Boolean {
+        return uniffiRustCallAsync(
+        UniffiLib.INSTANCE.uniffi_xmtpv3_fn_func_is_connected(FfiConverterTypeXmtpApiClient.lower(`api`),),
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_i8(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_i8(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_i8(future) },
+        // lift function
+        { FfiConverterBoolean.lift(it) },
+        // Error FFI converter
+        UniffiNullRustCallStatusErrorHandler,
+    )
+    }
 
         /**
          * * Static revoke a list of installations
