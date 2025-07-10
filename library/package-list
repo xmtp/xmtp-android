@@ -1147,6 +1147,8 @@ $dokka.location:uniffi.xmtpv3//exitDebugWriter/#/PointingToDeclaration/library/
 $dokka.location:uniffi.xmtpv3//generateInboxId/#uniffi.xmtpv3.FfiIdentifier#kotlin.ULong/PointingToDeclaration/library/uniffi.xmtpv3/generate-inbox-id.html
 $dokka.location:uniffi.xmtpv3//getInboxIdForIdentifier/#uniffi.xmtpv3.XmtpApiClient#uniffi.xmtpv3.FfiIdentifier/PointingToDeclaration/library/uniffi.xmtpv3/get-inbox-id-for-identifier.html
 $dokka.location:uniffi.xmtpv3//getVersionInfo/#/PointingToDeclaration/library/uniffi.xmtpv3/get-version-info.html
+$dokka.location:uniffi.xmtpv3//inboxStateFromInboxIds/#uniffi.xmtpv3.XmtpApiClient#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/uniffi.xmtpv3/inbox-state-from-inbox-ids.html
+$dokka.location:uniffi.xmtpv3//isConnected/#uniffi.xmtpv3.XmtpApiClient/PointingToDeclaration/library/uniffi.xmtpv3/is-connected.html
 $dokka.location:uniffi.xmtpv3//revokeInstallations/#uniffi.xmtpv3.XmtpApiClient#uniffi.xmtpv3.FfiIdentifier#kotlin.String#kotlin.collections.List[kotlin.ByteArray]/PointingToDeclaration/library/uniffi.xmtpv3/revoke-installations.html
 $dokka.location:uniffi.xmtpv3/Disposable.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-disposable/-companion/index.html
 $dokka.location:uniffi.xmtpv3/Disposable.Companion/destroy/#kotlin.Array[kotlin.Any?]/PointingToDeclaration/library/uniffi.xmtpv3/-disposable/-companion/destroy.html
