@@ -1331,8 +1331,14 @@ class ClientTest {
 
         runBlocking {
             alixClient2.importArchive(allPath, encryptionKey)
-            alixClient2.conversations.syncAllConversations()
             alixClient.conversations.syncAllConversations()
+            delay(2000)
+            alixClient2.conversations.syncAllConversations()
+            delay(2000)
+            alixClient.preferences.sync()
+            delay(2000)
+            alixClient2.preferences.sync()
+            delay(2000)
             boGroup.send("hey")
             fixtures.boClient.conversations.syncAllConversations()
             Thread.sleep(2000)
@@ -1342,7 +1348,7 @@ class ClientTest {
         assertEquals(1, convosList.size)
         runBlocking {
             convosList.first().sync()
-            assertEquals(runBlocking { convosList.first().messages() }.size, 2)
+            assertEquals(runBlocking { convosList.first().messages() }.size, 3)
             assertEquals(convosList.first().consentState(), ConsentState.ALLOWED)
         }
     }
