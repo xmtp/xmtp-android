@@ -238,7 +238,7 @@ class Client(
 
             val ffiClient = createClient(
                 api = connectToApiBackend(api),
-                syncApi = connectToSyncApiBackend(api),
+                syncApi = connectToApiBackend(api),
                 db = null,
                 encryptionKey = null,
                 accountIdentifier = publicIdentity.ffiPrivate,
