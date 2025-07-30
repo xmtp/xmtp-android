@@ -781,6 +781,7 @@ $dokka.location:org.xmtp.android.library/Client.Companion/canMessage/#kotlin.col
 $dokka.location:org.xmtp.android.library/Client.Companion/clearXMTPLogs/#android.content.Context/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/clear-x-m-t-p-logs.html
 $dokka.location:org.xmtp.android.library/Client.Companion/codecRegistry/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/codec-registry.html
 $dokka.location:org.xmtp.android.library/Client.Companion/connectToApiBackend/#org.xmtp.android.library.ClientOptions.Api/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/connect-to-api-backend.html
+$dokka.location:org.xmtp.android.library/Client.Companion/connectToSyncApiBackend/#org.xmtp.android.library.ClientOptions.Api/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/connect-to-sync-api-backend.html
 $dokka.location:org.xmtp.android.library/Client.Companion/create/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.ClientOptions/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/create.html
 $dokka.location:org.xmtp.android.library/Client.Companion/deactivatePersistentLibXMTPLogWriter/#/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/deactivate-persistent-lib-x-m-t-p-log-writer.html
 $dokka.location:org.xmtp.android.library/Client.Companion/ffiApplySignatureRequest/#org.xmtp.android.library.ClientOptions.Api#org.xmtp.android.library.libxmtp.SignatureRequest/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/ffi-apply-signature-request.html
@@ -829,11 +830,13 @@ $dokka.location:org.xmtp.android.library/ClientOptions.Api/Api/#org.xmtp.android
 $dokka.location:org.xmtp.android.library/ClientOptions.Api/env/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/env.html
 $dokka.location:org.xmtp.android.library/ClientOptions.Api/isSecure/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/is-secure.html
 $dokka.location:org.xmtp.android.library/ClientOptions///PointingToDeclaration/library/org.xmtp.android.library/-client-options/index.html
-$dokka.location:org.xmtp.android.library/ClientOptions/ClientOptions/#org.xmtp.android.library.ClientOptions.Api#kotlin.coroutines.SuspendFunction0[kotlin.Unit]?#android.content.Context#kotlin.ByteArray#kotlin.String?#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-client-options.html
+$dokka.location:org.xmtp.android.library/ClientOptions/ClientOptions/#org.xmtp.android.library.ClientOptions.Api#kotlin.coroutines.SuspendFunction0[kotlin.Unit]?#android.content.Context#kotlin.ByteArray#kotlin.String?#kotlin.String?#kotlin.Boolean#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-client-options.html
 $dokka.location:org.xmtp.android.library/ClientOptions/api/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/api.html
 $dokka.location:org.xmtp.android.library/ClientOptions/appContext/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/app-context.html
 $dokka.location:org.xmtp.android.library/ClientOptions/dbDirectory/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/db-directory.html
 $dokka.location:org.xmtp.android.library/ClientOptions/dbEncryptionKey/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/db-encryption-key.html
+$dokka.location:org.xmtp.android.library/ClientOptions/debugEventsEnabled/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/debug-events-enabled.html
+$dokka.location:org.xmtp.android.library/ClientOptions/deviceSyncEnabled/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/device-sync-enabled.html
 $dokka.location:org.xmtp.android.library/ClientOptions/historySyncUrl/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/history-sync-url.html
 $dokka.location:org.xmtp.android.library/ClientOptions/preAuthenticateToInboxCallback/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/pre-authenticate-to-inbox-callback.html
 $dokka.location:org.xmtp.android.library/CodecRegistry///PointingToDeclaration/library/org.xmtp.android.library/-codec-registry/index.html
@@ -1136,7 +1139,7 @@ $dokka.location:org.xmtp.android.library/XMTPException/XMTPException/#kotlin.Str
 $dokka.location:uniffi.xmtpv3////PointingToDeclaration/library/uniffi.xmtpv3/index.html
 $dokka.location:uniffi.xmtpv3//applySignatureRequest/#uniffi.xmtpv3.XmtpApiClient#uniffi.xmtpv3.FfiSignatureRequest/PointingToDeclaration/library/uniffi.xmtpv3/apply-signature-request.html
 $dokka.location:uniffi.xmtpv3//connectToBackend/#kotlin.String#kotlin.Boolean/PointingToDeclaration/library/uniffi.xmtpv3/connect-to-backend.html
-$dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.XmtpApiClient#kotlin.String?#kotlin.ByteArray?#kotlin.String#uniffi.xmtpv3.FfiIdentifier#kotlin.ULong#kotlin.ByteArray?#kotlin.String?#uniffi.xmtpv3.FfiSyncWorkerMode?#kotlin.Boolean?#kotlin.Boolean?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
+$dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.XmtpApiClient#uniffi.xmtpv3.XmtpApiClient#kotlin.String?#kotlin.ByteArray?#kotlin.String#uniffi.xmtpv3.FfiIdentifier#kotlin.ULong#kotlin.ByteArray?#kotlin.String?#uniffi.xmtpv3.FfiSyncWorkerMode?#kotlin.Boolean?#kotlin.Boolean?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
 $dokka.location:uniffi.xmtpv3//decodeMultiRemoteAttachment/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-multi-remote-attachment.html
 $dokka.location:uniffi.xmtpv3//decodeReaction/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-reaction.html
 $dokka.location:uniffi.xmtpv3//encodeMultiRemoteAttachment/#uniffi.xmtpv3.FfiMultiRemoteAttachment/PointingToDeclaration/library/uniffi.xmtpv3/encode-multi-remote-attachment.html
