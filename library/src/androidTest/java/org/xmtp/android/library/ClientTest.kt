@@ -16,6 +16,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.Client.Companion.ffiApplySignatureRequest
 import org.xmtp.android.library.Client.Companion.ffiRevokeInstallations
+import org.xmtp.android.library.libxmtp.ArchiveElement
+import org.xmtp.android.library.libxmtp.ArchiveOptions
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -1262,5 +1264,80 @@ class ClientTest {
 
         inboxState = alix.inboxState(true)
         assertEquals(2, inboxState.installations.size)
+    }
+
+    @Test
+    fun testClientBackups() = runBlocking {
+        val fixtures = fixtures()
+        val key = SecureRandom().generateSeed(32)
+        val encryptionKey = SecureRandom().generateSeed(32)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val alixWallet = PrivateKeyBuilder()
+
+        val alixClient = runBlocking {
+            Client.create(
+                account = alixWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    appContext = context,
+                    dbEncryptionKey = key
+                )
+            )
+        }
+
+        val directoryFile = File(context.filesDir.absolutePath, "testing_all")
+        val consentFile = File(context.filesDir.absolutePath, "testing_consent")
+
+        directoryFile.mkdir()
+        consentFile.mkdir()
+
+        val allPath = directoryFile.absolutePath + "/testAll.zstd"
+        val consentPath = consentFile.absolutePath + "/testConsent.zstd"
+
+            val group = alixClient.conversations.newGroup(listOf(fixtures.boClient.inboxId))
+            group.send("hi")
+            alixClient.conversations.syncAllConversations()
+            fixtures.boClient.conversations.syncAllConversations()
+        val boGroup = fixtures.boClient.conversations.findGroup(group.id)!!
+
+        val alixClient2 = runBlocking {
+            Client.create(
+                account = alixWallet,
+                options = ClientOptions(
+                    ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+                    appContext = context,
+                    dbEncryptionKey = key,
+                    dbDirectory = context.filesDir.absolutePath.toString()
+                )
+            )
+        }
+
+        runBlocking { alixClient.createArchive(allPath, encryptionKey) }
+        runBlocking {
+            alixClient.createArchive(
+                consentPath,
+                encryptionKey,
+                opts = ArchiveOptions(archiveElements = listOf(ArchiveElement.CONSENT))
+            )
+        }
+
+        val metadataAll = runBlocking { alixClient.archiveMetadata(allPath, encryptionKey) }
+        val metadataConsent = runBlocking { alixClient.archiveMetadata(consentPath, encryptionKey) }
+
+        assertEquals(metadataAll.elements.size, 2)
+        assertEquals(metadataConsent.elements, listOf(ArchiveElement.CONSENT))
+
+        runBlocking {
+            alixClient2.importArchive(allPath, encryptionKey)
+            alixClient2.conversations.syncAllConversations()
+//            boGroup.send("hey")
+//            fixtures.boClient.conversations.syncAllConversations()
+//            Thread.sleep(2000)
+//            alixClient2.conversations.syncAllConversations()
+        }
+        val convosList = runBlocking { alixClient2.conversations.list() }
+        assertEquals(1, convosList.size)
+        assertEquals(runBlocking { convosList.first().messages() }.size, 2)
+        assertEquals(convosList.first().consentState(), ConsentState.ALLOWED)
     }
 }
