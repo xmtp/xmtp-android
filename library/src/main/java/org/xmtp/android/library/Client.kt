@@ -148,7 +148,7 @@ class Client(
                 }
 
                 // If not cached or not connected, create a fresh client
-                val newClient = connectToBackend(api.env.getUrl(), api.isSecure)
+                val newClient = connectToBackend(api.env.getUrl(), api.isSecure, null)
                 apiClientCache[cacheKey] = newClient
                 return@withLock newClient
             }
@@ -164,7 +164,7 @@ class Client(
                 }
 
                 // If not cached or not connected, create a fresh client
-                val newClient = connectToBackend(api.env.getUrl(), api.isSecure)
+                val newClient = connectToBackend(api.env.getUrl(), api.isSecure, null)
                 syncApiClientCache[cacheKey] = newClient
                 return@withLock newClient
             }
