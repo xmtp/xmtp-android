@@ -16,8 +16,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.Client.Companion.ffiApplySignatureRequest
 import org.xmtp.android.library.Client.Companion.ffiRevokeInstallations
-import org.xmtp.android.library.libxmtp.ArchiveElement
-import org.xmtp.android.library.libxmtp.ArchiveOptions
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKeyBuilder
