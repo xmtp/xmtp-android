@@ -107,7 +107,7 @@ class ClientTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fakeWallet = PrivateKeyBuilder()
         val options = ClientOptions(
-            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
+            ClientOptions.Api(XMTPEnvironment.LOCAL, false, "Testing/0.0.0"),
             appContext = context,
             dbEncryptionKey = key
         )
