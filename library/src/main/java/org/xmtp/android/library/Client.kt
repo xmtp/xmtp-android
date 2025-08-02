@@ -45,6 +45,7 @@ data class ClientOptions(
     data class Api(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
         val isSecure: Boolean = true,
+        val appVersion: String? = null
     )
 }
 
@@ -148,7 +149,7 @@ class Client(
                 }
 
                 // If not cached or not connected, create a fresh client
-                val newClient = connectToBackend(api.env.getUrl(), api.isSecure, null)
+                val newClient = connectToBackend(api.env.getUrl(), api.isSecure, api.appVersion)
                 apiClientCache[cacheKey] = newClient
                 return@withLock newClient
             }
