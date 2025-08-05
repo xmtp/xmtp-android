@@ -550,7 +550,7 @@ class ClientTest {
 //        runBlocking {
 //            Client.connectToApiBackend(
 //                ClientOptions.Api(
-//                    XMTPEnvironment.PRODUCTION,
+//                    XMTPEnvironment.DEV,
 //                    true
 //                )
 //            )
@@ -558,14 +558,14 @@ class ClientTest {
 //        val inboxState = runBlocking {
 //            Client.inboxStatesForInboxIds(
 //                listOf("f87420435131ea1b911ad66fbe4b626b107f81955da023d049f8aef6636b8e1b"),
-//                ClientOptions.Api(XMTPEnvironment.PRODUCTION, true)
+//                ClientOptions.Api(XMTPEnvironment.DEV, true)
 //            ).first()
 //        }
 //        val installationIds = inboxState.installations.map { it.installationId }
 //        val keyPackageStatus = runBlocking {
 //            Client.keyPackageStatusesForInstallationIds(
 //                installationIds,
-//                ClientOptions.Api(XMTPEnvironment.PRODUCTION, true)
+//                ClientOptions.Api(XMTPEnvironment.DEV, true)
 //            )
 //        }
 //        for (installationId: String in keyPackageStatus.keys) {
