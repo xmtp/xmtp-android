@@ -3,7 +3,7 @@ package org.xmtp.android.library.libxmtp
 import uniffi.xmtpv3.FfiConversationDebugInfo
 
 class ConversationDebugInfo(private val ffiConversationDebugInfo: FfiConversationDebugInfo) {
-    
+
     enum class CommitLogForkStatus {
         FORKED,
         NOT_FORKED,

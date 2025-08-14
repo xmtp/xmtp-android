@@ -126,7 +126,7 @@ class ConversationsTest {
             when (conversation.commitLogForkStatus()) {
                 ConversationDebugInfo.CommitLogForkStatus.FORKED -> numForkStatusForked += 1
                 ConversationDebugInfo.CommitLogForkStatus.NOT_FORKED -> numForkStatusNotForked += 1
-                ConversationDebugInfo.CommitLogForkStatus.UNKNOWN -> numForkStatusUnknown +=1
+                ConversationDebugInfo.CommitLogForkStatus.UNKNOWN -> numForkStatusUnknown += 1
             }
         }
         // Right now worker runs every 5 minutes so we'd need to wait that long to verify not forked
