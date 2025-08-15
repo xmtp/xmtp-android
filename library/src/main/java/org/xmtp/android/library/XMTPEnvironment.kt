@@ -31,7 +31,7 @@ enum class XMTPEnvironment(val rawValue: String) {
         return when (this) {
             DEV -> "https://${getValue()}:443"
             PRODUCTION -> "https://${getValue()}:443"
-            LOCAL -> "http://${getValue()}:5556"
+            LOCAL -> "http://${getValue()}:4446"
         }
     }
 

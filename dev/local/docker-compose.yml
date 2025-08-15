@@ -11,11 +11,12 @@ services:
       - --mls-store.db-connection-string=postgres://postgres:xmtp@mlsdb:5432/postgres?sslmode=disable
       - --mls-validation.grpc-address=validation:50051
       - --api.enable-mls
+      - --api.grpc-port=4446
       - --wait-for-db=30s
       - --api.authn.enable
     ports:
       - 5555:5555
-      - 5556:5556
+      - 4446:4446
     depends_on:
       - db
 
