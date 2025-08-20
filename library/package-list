@@ -227,6 +227,7 @@ $dokka.location:org.xmtp.android.library.libxmtp/ConversationDebugInfo/epoch/#/P
 $dokka.location:org.xmtp.android.library.libxmtp/ConversationDebugInfo/forkDetails/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-conversation-debug-info/fork-details.html
 $dokka.location:org.xmtp.android.library.libxmtp/ConversationDebugInfo/localCommitLog/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-conversation-debug-info/local-commit-log.html
 $dokka.location:org.xmtp.android.library.libxmtp/ConversationDebugInfo/maybeForked/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-conversation-debug-info/maybe-forked.html
+$dokka.location:org.xmtp.android.library.libxmtp/ConversationDebugInfo/remoteCommitLog/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-conversation-debug-info/remote-commit-log.html
 $dokka.location:org.xmtp.android.library.libxmtp/DecodedMessage.Companion///PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-decoded-message/-companion/index.html
 $dokka.location:org.xmtp.android.library.libxmtp/DecodedMessage.Companion/create/#uniffi.xmtpv3.FfiMessage/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-decoded-message/-companion/create.html
 $dokka.location:org.xmtp.android.library.libxmtp/DecodedMessage.Companion/create/#uniffi.xmtpv3.FfiMessageWithReactions/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-decoded-message/-companion/create.html
@@ -1369,13 +1370,14 @@ $dokka.location:uniffi.xmtpv3/FfiConversationCallbackImpl/onError/#uniffi.xmtpv3
 $dokka.location:uniffi.xmtpv3/FfiConversationCallbackImpl/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-callback-impl/uniffi-clone-pointer.html
 $dokka.location:uniffi.xmtpv3/FfiConversationDebugInfo.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-debug-info/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiConversationDebugInfo///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-debug-info/index.html
-$dokka.location:uniffi.xmtpv3/FfiConversationDebugInfo/FfiConversationDebugInfo/#kotlin.ULong#kotlin.Boolean#kotlin.String#kotlin.Boolean?#kotlin.String#kotlin.Long/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-debug-info/-ffi-conversation-debug-info.html
+$dokka.location:uniffi.xmtpv3/FfiConversationDebugInfo/FfiConversationDebugInfo/#kotlin.ULong#kotlin.Boolean#kotlin.String#kotlin.Boolean?#kotlin.String#kotlin.String#kotlin.Long/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-debug-info/-ffi-conversation-debug-info.html
 $dokka.location:uniffi.xmtpv3/FfiConversationDebugInfo/cursor/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-debug-info/cursor.html
 $dokka.location:uniffi.xmtpv3/FfiConversationDebugInfo/epoch/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-debug-info/epoch.html
 $dokka.location:uniffi.xmtpv3/FfiConversationDebugInfo/forkDetails/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-debug-info/fork-details.html
 $dokka.location:uniffi.xmtpv3/FfiConversationDebugInfo/isCommitLogForked/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-debug-info/is-commit-log-forked.html
 $dokka.location:uniffi.xmtpv3/FfiConversationDebugInfo/localCommitLog/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-debug-info/local-commit-log.html
 $dokka.location:uniffi.xmtpv3/FfiConversationDebugInfo/maybeForked/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-debug-info/maybe-forked.html
+$dokka.location:uniffi.xmtpv3/FfiConversationDebugInfo/remoteCommitLog/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-debug-info/remote-commit-log.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/index.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/addAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/add-admin.html
