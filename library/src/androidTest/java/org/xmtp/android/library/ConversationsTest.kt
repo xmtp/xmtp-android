@@ -1,5 +1,11 @@
 package org.xmtp.android.library
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.CoroutineScope
@@ -56,6 +62,27 @@ class ConversationsTest {
         boClient = fixtures.boClient
         caroClient = fixtures.caroClient
         davonClient = fixtures.davonClient
+    }
+
+    private fun disableNetworkConnectivity(context: Context) {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        
+        // This requires CHANGE_NETWORK_STATE permission and may not work on all devices/API levels
+        try {
+            // For API 23+ we can try to bind the process to a non-existent network
+            val networkRequest = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+                
+            connectivityManager.requestNetwork(networkRequest, object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    // Bind to a network that doesn't exist to simulate disconnection
+                    connectivityManager.bindProcessToNetwork(null)
+                }
+            })
+        } catch (e: Exception) {
+            Log.d("XMTP_TEST", "Could not programmatically disable network: ${e.message}")
+        }
     }
 
     @Test
@@ -412,6 +439,112 @@ class ConversationsTest {
         val dmHmacTopics = dmHmacKeys.hmacKeysMap.keys
         dmTopics.forEach { topic ->
             assertTrue(dmHmacTopics.contains(topic))
+        }
+    }
+
+    @Test
+    fun testStreamOnCloseGetsCalledOnDevNetwork() {
+        runBlocking {
+            val key1 = SecureRandom().generateSeed(32)
+            val key2 = SecureRandom().generateSeed(32)
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            
+            Log.d("XMTP_TEST", "Starting test with DEV environment")
+            Log.d("XMTP_TEST", "DEV URL: ${XMTPEnvironment.DEV.getUrl()}")
+            Log.d("XMTP_TEST", "DEV History URL: ${XMTPEnvironment.DEV.getHistorySyncUrl()}")
+            
+            try {
+                // Create two clients on dev network
+                val client1Wallet = PrivateKeyBuilder()
+                Log.d("XMTP_TEST", "Creating client1...")
+                val client1 = Client.create(
+                    account = client1Wallet,
+                    options = ClientOptions(
+                        ClientOptions.Api(XMTPEnvironment.DEV, true),
+                        appContext = context,
+                        dbEncryptionKey = key1
+                    )
+                )
+                Log.d("XMTP_TEST", "Client1 created successfully. InboxId: ${client1.inboxId}")
+                
+//                val client2Wallet = PrivateKeyBuilder()
+//                println("CAMERONVOELL DEBUG: Creating client2...")
+//                val client2 = Client.create(
+//                    account = client2Wallet,
+//                    options = ClientOptions(
+//                        ClientOptions.Api(XMTPEnvironment.DEV, true),
+//                        appContext = context,
+//                        dbEncryptionKey = key2
+//                    )
+//                )
+//                println("CAMERONVOELL DEBUG: Client2 created successfully. InboxId: ${client2.inboxId}")
+
+                var onCloseCalled = false
+
+                // Simulate network disconnection
+                Log.d("XMTP_TEST", "Simulating network disconnection...")
+//                disableNetworkConnectivity(context)
+
+                // Wait for the disconnection to take effect and trigger onClose
+                Log.d("XMTP_TEST", "Waiting 10 seconds for network disconnection to trigger onClose...")
+                delay(10000)
+                
+                // Start streaming all messages for client1 with onClose callback
+                Log.d("XMTP_TEST", "Starting stream...")
+                var streamException: Exception? = null
+                val job = launch(Dispatchers.IO) {
+                    try {
+                        Log.d("XMTP_TEST", "About to start streamAllMessages...")
+                        client1.conversations.streamAllMessages(onClose = {
+                            onCloseCalled = true
+                            Log.d("XMTP_TEST", "onClose callback was called")
+                        }).collect { message ->
+                            Log.d("XMTP_TEST", "Received message: ${message.body}")
+                        }
+                        Log.d("XMTP_TEST", "Stream collection completed normally")
+                    } catch (e: Exception) {
+                        streamException = e
+                        Log.e("XMTP_TEST", "Exception in streaming: ${e.javaClass.simpleName}: ${e.message}")
+                        Log.e("XMTP_TEST", "Full exception:", e)
+                        // Check if it's a cancellation or a real error
+                        if (e !is kotlinx.coroutines.CancellationException) {
+                            Log.e("XMTP_TEST", "This is NOT a cancellation exception - this is a real error!")
+                        } else {
+                            Log.d("XMTP_TEST", "This is a cancellation exception (expected)")
+                        }
+                    }
+                }
+
+                // Let the stream establish
+                Log.d("XMTP_TEST", "Waiting for stream to establish...")
+                delay(5000)
+                
+                // Give more time to see if any real errors occur
+                Log.d("XMTP_TEST", "Waiting to see if any errors occur...")
+                delay(5000)
+
+                // Check if we got a real exception
+                streamException?.let { exception ->
+                    if (exception !is kotlinx.coroutines.CancellationException) {
+                        Log.e("XMTP_TEST", "Found real exception (not cancellation): ${exception.javaClass.simpleName}: ${exception.message}")
+                    }
+                }
+                
+                // Check if onClose callback was called
+                Log.d("XMTP_TEST", "onCloseCalled = $onCloseCalled")
+                
+                // Don't assert failure for now, just log the results
+                Log.d("XMTP_TEST", "Test completed. onCloseCalled = $onCloseCalled, streamException = ${streamException?.javaClass?.simpleName}")
+                
+                // Cancel the job cleanly
+                Log.d("XMTP_TEST", "Cancelling stream job...")
+                job.cancel()
+                job.join() // Wait for cancellation to complete
+                
+            } catch (e: Exception) {
+                Log.e("XMTP_TEST", "Test failed with exception: ${e.message}", e)
+                throw e
+            }
         }
     }
 

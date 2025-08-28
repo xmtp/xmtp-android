@@ -502,7 +502,8 @@ data class Conversations(
                 }
 
                 override fun onError(error: FfiSubscribeException) {
-                    Log.e("XMTP all message stream", error.message.toString())
+                    Log.e("XMTP_STREAM_ERROR", "Stream error occurred: ${error.message}")
+                    Log.e("XMTP_STREAM_ERROR", "Error details: ${error}")
                 }
 
                 override fun onClose() {

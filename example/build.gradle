@@ -13,7 +13,7 @@ plugins {
 
 android {
     namespace 'org.xmtp.android.example'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "org.xmtp.android.example"
@@ -67,6 +67,7 @@ dependencies {
     implementation(platform("com.walletconnect:android-bom:1.19.1"))
     implementation("com.walletconnect:android-core")
     implementation("com.walletconnect:walletconnect-modal")
+    implementation 'androidx.lifecycle:lifecycle-process:2.8.6'
 
     //Navigation Component
     def nav_version = "2.7.6"
