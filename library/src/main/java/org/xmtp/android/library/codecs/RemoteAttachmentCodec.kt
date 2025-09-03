@@ -3,6 +3,7 @@ package org.xmtp.android.library.codecs
 import com.google.protobuf.ByteString
 import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
+import org.checkerframework.checker.units.qual.Length
 import org.web3j.crypto.Hash
 import org.web3j.utils.Numeric
 import org.xmtp.android.library.Crypto
@@ -112,7 +113,7 @@ data class RemoteAttachment(
             )
         }
 
-        fun from(url: URL, encryptedEncodedContent: EncryptedEncodedContent): RemoteAttachment {
+        fun from(url: URL, encryptedEncodedContent: EncryptedEncodedContent, filename: String, contentLength: Int): RemoteAttachment {
             if (URI(url.toString()).scheme != "https") {
                 throw XMTPException("scheme must be https://")
             }
@@ -124,6 +125,8 @@ data class RemoteAttachment(
                 salt = encryptedEncodedContent.salt,
                 nonce = encryptedEncodedContent.nonce,
                 scheme = URI(url.toString()).scheme,
+                filename = filename,
+                contentLength = contentLength,
             )
         }
     }
@@ -149,19 +152,27 @@ class HTTPFetcher : Fetcher {
 data class RemoteAttachmentCodec(override var contentType: ContentTypeId = ContentTypeRemoteAttachment) :
     ContentCodec<RemoteAttachment> {
     override fun encode(content: RemoteAttachment): EncodedContent {
-        return EncodedContent.newBuilder().also {
+        return EncodedContent.newBuilder().also { it ->
             it.type = ContentTypeRemoteAttachment
-            it.putAllParameters(
-                mapOf(
-                    "contentDigest" to content.contentDigest,
-                    "secret" to content.secret.toByteArray().toHex(),
-                    "salt" to content.salt.toByteArray().toHex(),
-                    "nonce" to content.nonce.toByteArray().toHex(),
-                    "scheme" to content.scheme,
-                    "contentLength" to content.contentLength.toString(),
-                    "filename" to content.filename,
-                ),
+            val parametersMap = mutableMapOf(
+                "contentDigest" to content.contentDigest,
+                "secret" to content.secret.toByteArray().toHex(),
+                "salt" to content.salt.toByteArray().toHex(),
+                "nonce" to content.nonce.toByteArray().toHex(),
+                "scheme" to content.scheme,
             )
+
+            content.contentLength?.let { contentLength ->
+                parametersMap["contentLength"] = contentLength.toString()
+            } ?: throw XMTPException("missing contentLength")
+
+            content.filename?.let { fileName ->
+                parametersMap["filename"] = fileName
+            } ?: throw XMTPException("missing filename")
+
+
+            it.putAllParameters(parametersMap)
+
             it.content = content.url.toString().toByteStringUtf8()
         }.build()
     }

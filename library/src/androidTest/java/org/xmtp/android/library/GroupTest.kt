@@ -441,6 +441,84 @@ class GroupTest {
     }
 
     @Test
+    fun testIsActiveAndMemberListAfterRemovalAndRestart() {
+        val group = runBlocking {
+            boClient.conversations.newGroup(
+                listOf(
+                    alixClient.inboxId,
+                    caroClient.inboxId
+                )
+            )
+        }
+
+        // Initial sync and verification
+        runBlocking { caroClient.conversations.sync() }
+        val caroGroup = runBlocking { caroClient.conversations.listGroups().first() }
+        runBlocking { caroGroup.sync() }
+
+        // Verify initial state - both groups are active
+        assert(caroGroup.isActive())
+        assert(group.isActive())
+
+        // Verify caro is in the member list
+        val initialMembers = runBlocking { caroGroup.members() }
+        val caroInInitialMembers = initialMembers.any { it.inboxId == caroClient.inboxId }
+        assert(caroInInitialMembers) { "Caro should be in initial member list" }
+
+        // Remove caro from the group
+        runBlocking {
+            group.removeMembers(listOf(caroClient.inboxId))
+            caroGroup.sync()
+            group.sync()
+        }
+
+        // Verify isActive returns false for removed member
+        assert(group.isActive()) { "Group should still be active for creator" }
+        assert(!caroGroup.isActive()) { "Caro's group should be inactive after removal" }
+
+        // Verify caro is no longer in the member list
+        val membersAfterRemoval = runBlocking { caroGroup.members() }
+        val caroInMembersAfterRemoval = membersAfterRemoval.any { it.inboxId == caroClient.inboxId }
+        assert(!caroInMembersAfterRemoval) { "Caro should not be in member list after removal" }
+
+        // Simulate app restart by creating a new client instance for caro
+        val caroClientRestarted = runBlocking {
+            Client.create(
+                account = caroWallet,
+                options = ClientOptions(
+                    api = ClientOptions.Api(env = XMTPEnvironment.LOCAL),
+                    appContext = fixtures.clientOptions.appContext,
+                    dbEncryptionKey = fixtures.clientOptions.dbEncryptionKey
+                )
+            )
+        }
+
+        // Sync conversations after "restart"
+        runBlocking { caroClientRestarted.conversations.sync() }
+        val caroGroupAfterRestart = runBlocking {
+            caroClientRestarted.conversations.listGroups().firstOrNull { it.id == group.id }
+        }
+
+        // Verify that after restart, the group is found and isActive still returns false
+        assertNotNull(caroGroupAfterRestart)
+//        runBlocking { caroGroupAfterRestart!!.sync() }
+        assert(!caroGroupAfterRestart!!.isActive()) { "Group should still be inactive after restart" }
+
+        // Verify member list is still correct after restart
+        val membersAfterRestart = runBlocking { caroGroupAfterRestart.members() }
+        val caroInMembersAfterRestart = membersAfterRestart.any { it.inboxId == caroClient.inboxId }
+        assert(!caroInMembersAfterRestart) { "Caro should still not be in member list after restart" }
+
+        // Verify the group has the expected number of members (bo and alix only)
+        assertEquals(2, membersAfterRestart.size)
+
+        // Verify specific members are present
+        val expectedInboxIds = setOf(boClient.inboxId, alixClient.inboxId)
+        val actualInboxIds = membersAfterRestart.map { it.inboxId }.toSet()
+        assertEquals(expectedInboxIds, actualInboxIds)
+    }
+
+    @Test
     fun testAddedByAddress() {
         runBlocking {
             alixClient.conversations.newGroup(
