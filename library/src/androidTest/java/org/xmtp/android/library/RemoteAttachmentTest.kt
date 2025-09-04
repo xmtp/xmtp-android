@@ -71,8 +71,6 @@ class RemoteAttachmentTest {
         val remoteAttachment = RemoteAttachment.Companion.from(
             url = URL("https://abcdefg"),
             encryptedEncodedContent = encodedEncryptedContent,
-            filename = attachment.filename,
-            contentLength = attachment.data.size()
         )
 
         remoteAttachment.contentLength = attachment.data.size()
@@ -130,8 +128,6 @@ class RemoteAttachmentTest {
             RemoteAttachment.Companion.from(
                 url = URL("http://abcdefg"),
                 encryptedEncodedContent = encodedEncryptedContent,
-                filename = attachment.filename,
-                contentLength = attachment.data.size()
             )
         }
     }
@@ -157,8 +153,6 @@ class RemoteAttachmentTest {
         val remoteAttachment = RemoteAttachment.Companion.from(
             url = URL("https://abcdefg"),
             encryptedEncodedContent = encodedEncryptedContent,
-            filename = attachment.filename,
-            contentLength = attachment.data.size()
         )
 
         val aliceClient = fixtures.alixClient

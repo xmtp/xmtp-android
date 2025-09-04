@@ -3,7 +3,6 @@ package org.xmtp.android.library.codecs
 import com.google.protobuf.ByteString
 import com.google.protobuf.kotlin.toByteString
 import com.google.protobuf.kotlin.toByteStringUtf8
-import org.checkerframework.checker.units.qual.Length
 import org.web3j.crypto.Hash
 import org.web3j.utils.Numeric
 import org.xmtp.android.library.Crypto
@@ -113,7 +112,7 @@ data class RemoteAttachment(
             )
         }
 
-        fun from(url: URL, encryptedEncodedContent: EncryptedEncodedContent, filename: String, contentLength: Int): RemoteAttachment {
+        fun from(url: URL, encryptedEncodedContent: EncryptedEncodedContent): RemoteAttachment {
             if (URI(url.toString()).scheme != "https") {
                 throw XMTPException("scheme must be https://")
             }
@@ -125,8 +124,6 @@ data class RemoteAttachment(
                 salt = encryptedEncodedContent.salt,
                 nonce = encryptedEncodedContent.nonce,
                 scheme = URI(url.toString()).scheme,
-                filename = filename,
-                contentLength = contentLength,
             )
         }
     }
@@ -162,14 +159,13 @@ data class RemoteAttachmentCodec(override var contentType: ContentTypeId = Conte
                 "scheme" to content.scheme,
             )
 
-            content.contentLength?.let { contentLength ->
-                parametersMap["contentLength"] = contentLength.toString()
-            } ?: throw XMTPException("missing contentLength")
+            content.contentLength?.let {
+                parametersMap["contentLength"] = it.toString()
+            }
 
-            content.filename?.let { fileName ->
-                parametersMap["filename"] = fileName
-            } ?: throw XMTPException("missing filename")
-
+            content.filename?.let {
+                parametersMap["filename"] = it
+            }
 
             it.putAllParameters(parametersMap)
 
@@ -184,9 +180,8 @@ data class RemoteAttachmentCodec(override var contentType: ContentTypeId = Conte
         val salt = content.parametersMap["salt"] ?: throw XMTPException("missing salt")
         val nonce = content.parametersMap["nonce"] ?: throw XMTPException("missing nonce")
         val scheme = content.parametersMap["scheme"] ?: throw XMTPException("missing scheme")
-        val contentLength =
-            content.parametersMap["contentLength"] ?: throw XMTPException("missing contentLength")
-        val filename = content.parametersMap["filename"] ?: throw XMTPException("missing filename")
+        val contentLength = content.parametersMap["contentLength"]?.toIntOrNull()
+        val filename = content.parametersMap["filename"]
         val encodedContent = content.content ?: throw XMTPException("missing content")
 
         return RemoteAttachment(
@@ -196,7 +191,7 @@ data class RemoteAttachmentCodec(override var contentType: ContentTypeId = Conte
             salt = Numeric.hexStringToByteArray(salt).toByteString(),
             nonce = Numeric.hexStringToByteArray(nonce).toByteString(),
             scheme = scheme,
-            contentLength = contentLength.toInt(),
+            contentLength = contentLength,
             filename = filename,
         )
     }
