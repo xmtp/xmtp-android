@@ -76,7 +76,6 @@ class RemoteAttachmentTest {
         remoteAttachment.contentLength = attachment.data.size()
         remoteAttachment.filename = attachment.filename
 
-
         val aliceClient = fixtures.alixClient
         val aliceConversation = runBlocking {
             aliceClient.conversations.newConversation(fixtures.boClient.inboxId)
