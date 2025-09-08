@@ -250,6 +250,7 @@ class Dm(
     }
 
     fun streamMessages(onClose: (() -> Unit)? = null): Flow<DecodedMessage> = callbackFlow {
+        Log.i("APP", "Starting streamMessages")
         val messageCallback = object : FfiMessageCallback {
             override fun onMessage(message: FfiMessage) {
                 try {
@@ -276,6 +277,7 @@ class Dm(
             }
 
             override fun onClose() {
+                Log.i("APP", "onClose called")
                 onClose?.invoke()
                 close()
             }

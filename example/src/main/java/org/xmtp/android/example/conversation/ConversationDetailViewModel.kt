@@ -1,5 +1,6 @@
 package org.xmtp.android.example.conversation
 
+import android.util.Log
 import androidx.annotation.UiThread
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -39,6 +41,8 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
 
     private var conversation: Conversation? = null
 
+    private val streamRestartTrigger = MutableStateFlow(0)
+
     @UiThread
     fun fetchMessages() {
         when (val uiState = uiState.value) {
@@ -49,12 +53,11 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
             val listItems = mutableListOf<MessageListItem>()
             try {
                 if (conversation == null) {
-                    conversation = ClientManager.client.conversations.findConversationByTopic(conversationTopic!!)
+                    conversation =
+                        ClientManager.client.conversations.findConversationByTopic(conversationTopic!!)
                 }
                 conversation?.let {
-                    if (conversation is Conversation.Group) {
-                        (conversation as Conversation.Group).group.sync()
-                    }
+//                    it.sync()
                     listItems.addAll(
                         it.messages().map { message ->
                             MessageListItem.Message(message.id, message)
@@ -71,27 +74,44 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
     @OptIn(ExperimentalCoroutinesApi::class)
     val streamMessages: StateFlow<MessageListItem?> =
         stateFlow(viewModelScope, null) { subscriptionCount ->
-            if (conversation == null) {
-                conversation =
-                    runBlocking {
-                        ClientManager.client.conversations.findConversationByTopic(conversationTopic!!)
+            Log.i("APP", "Starting state flow")
+            streamRestartTrigger
+                .flatMapLatest {
+                    try {
+                        // Refresh conversation reference on each restart
+                        conversation = runBlocking {
+                            ClientManager.client.conversations.findConversationByTopic(
+                                conversationTopic!!
+                            )
+                        }
+
+                        if (conversation != null) {
+                            conversation!!.streamMessages(
+                                onClose = {
+                                    Log.i("APP", "Stream closed, restarting stream...")
+                                    // Trigger stream restart when connection closes
+                                    viewModelScope.launch {
+                                        streamRestartTrigger.value += 1
+                                    }
+                                }
+                            )
+                                .distinctUntilChanged()
+                                .mapLatest { message ->
+                                    MessageListItem.Message(message.id, message)
+                                }
+                        } else {
+                            emptyFlow<MessageListItem>()
+                        }
+                    } catch (e: Exception) {
+                        emptyFlow<MessageListItem>()
                     }
-            }
-            if (conversation != null) {
-                conversation!!.streamMessages()
-                    .flowWhileShared(
-                        subscriptionCount,
-                        SharingStarted.WhileSubscribed(1000L)
-                    )
-                    .flowOn(Dispatchers.IO)
-                    .distinctUntilChanged()
-                    .mapLatest { message ->
-                        MessageListItem.Message(message.id, message)
-                    }
-                    .catch { emptyFlow<MessageListItem>() }
-            } else {
-                emptyFlow()
-            }
+                }
+                .flowWhileShared(
+                    subscriptionCount,
+                    SharingStarted.WhileSubscribed(1000L)
+                )
+                .flowOn(Dispatchers.IO)
+                .catch { emptyFlow<MessageListItem>() }
         }
 
     @UiThread
@@ -125,7 +145,10 @@ class ConversationDetailViewModel(private val savedStateHandle: SavedStateHandle
             const val ITEM_TYPE_MESSAGE = 1
         }
 
-        data class Message(override val id: String, val message: org.xmtp.android.library.libxmtp.DecodedMessage) :
+        data class Message(
+            override val id: String,
+            val message: org.xmtp.android.library.libxmtp.DecodedMessage
+        ) :
             MessageListItem(id, ITEM_TYPE_MESSAGE)
     }
 }
