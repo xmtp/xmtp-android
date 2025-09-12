@@ -962,6 +962,7 @@ $dokka.location:org.xmtp.android.library/Conversation/createdAt/#/PointingToDecl
 $dokka.location:org.xmtp.android.library/Conversation/disappearingMessageSettings/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/disappearing-message-settings.html
 $dokka.location:org.xmtp.android.library/Conversation/getDebugInformation/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/get-debug-information.html
 $dokka.location:org.xmtp.android.library/Conversation/getHmacKeys/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/get-hmac-keys.html
+$dokka.location:org.xmtp.android.library/Conversation/getLastReadTimes/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/get-last-read-times.html
 $dokka.location:org.xmtp.android.library/Conversation/getPushTopics/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/get-push-topics.html
 $dokka.location:org.xmtp.android.library/Conversation/id/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/id.html
 $dokka.location:org.xmtp.android.library/Conversation/isActive/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/is-active.html
@@ -1039,6 +1040,7 @@ $dokka.location:org.xmtp.android.library/Dm/disappearingMessageSettings/#/Pointi
 $dokka.location:org.xmtp.android.library/Dm/encodeContent/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-dm/encode-content.html
 $dokka.location:org.xmtp.android.library/Dm/getDebugInformation/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/get-debug-information.html
 $dokka.location:org.xmtp.android.library/Dm/getHmacKeys/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/get-hmac-keys.html
+$dokka.location:org.xmtp.android.library/Dm/getLastReadTimes/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/get-last-read-times.html
 $dokka.location:org.xmtp.android.library/Dm/getPushTopics/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/get-push-topics.html
 $dokka.location:org.xmtp.android.library/Dm/id/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/id.html
 $dokka.location:org.xmtp.android.library/Dm/isActive/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/is-active.html
@@ -1096,6 +1098,7 @@ $dokka.location:org.xmtp.android.library/Group/disappearingMessageSettings/#/Poi
 $dokka.location:org.xmtp.android.library/Group/encodeContent/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-group/encode-content.html
 $dokka.location:org.xmtp.android.library/Group/getDebugInformation/#/PointingToDeclaration/library/org.xmtp.android.library/-group/get-debug-information.html
 $dokka.location:org.xmtp.android.library/Group/getHmacKeys/#/PointingToDeclaration/library/org.xmtp.android.library/-group/get-hmac-keys.html
+$dokka.location:org.xmtp.android.library/Group/getLastReadTimes/#/PointingToDeclaration/library/org.xmtp.android.library/-group/get-last-read-times.html
 $dokka.location:org.xmtp.android.library/Group/getPushTopics/#/PointingToDeclaration/library/org.xmtp.android.library/-group/get-push-topics.html
 $dokka.location:org.xmtp.android.library/Group/id/#/PointingToDeclaration/library/org.xmtp.android.library/-group/id.html
 $dokka.location:org.xmtp.android.library/Group/imageUrl/#/PointingToDeclaration/library/org.xmtp.android.library/-group/image-url.html
@@ -1370,6 +1373,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversation/findMessages/#uniffi.xmtpv3.FfiLis
 $dokka.location:uniffi.xmtpv3/FfiConversation/findMessagesV2/#uniffi.xmtpv3.FfiListMessagesOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/find-messages-v2.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/findMessagesWithReactions/#uniffi.xmtpv3.FfiListMessagesOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/find-messages-with-reactions.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/getHmacKeys/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/get-hmac-keys.html
+$dokka.location:uniffi.xmtpv3/FfiConversation/getLastReadTimes/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/get-last-read-times.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/groupDescription/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/group-description.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/groupImageUrlSquare/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/group-image-url-square.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/groupMetadata/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/group-metadata.html
@@ -1446,6 +1450,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversationInterface/findMessages/#uniffi.xmtp
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/findMessagesV2/#uniffi.xmtpv3.FfiListMessagesOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/find-messages-v2.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/findMessagesWithReactions/#uniffi.xmtpv3.FfiListMessagesOptions/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/find-messages-with-reactions.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/getHmacKeys/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/get-hmac-keys.html
+$dokka.location:uniffi.xmtpv3/FfiConversationInterface/getLastReadTimes/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/get-last-read-times.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/groupDescription/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/group-description.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/groupImageUrlSquare/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/group-image-url-square.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/groupMetadata/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/group-metadata.html
