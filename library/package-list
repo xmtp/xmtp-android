@@ -15,6 +15,7 @@ $dokka.location:org.xmtp.android.library.codecs//compress/org.xmtp.proto.message
 $dokka.location:org.xmtp.android.library.codecs//decoded/org.xmtp.proto.message.contents.Content.EncodedContent#/PointingToDeclaration/library/org.xmtp.android.library.codecs/decoded.html
 $dokka.location:org.xmtp.android.library.codecs//decompressContent/org.xmtp.proto.message.contents.Content.EncodedContent#/PointingToDeclaration/library/org.xmtp.android.library.codecs/decompress-content.html
 $dokka.location:org.xmtp.android.library.codecs//description/org.xmtp.proto.message.contents.Content.ContentTypeId#/PointingToDeclaration/library/org.xmtp.android.library.codecs/description.html
+$dokka.location:org.xmtp.android.library.codecs//encodedContentFromFfi/#uniffi.xmtpv3.FfiEncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/encoded-content-from-ffi.html
 $dokka.location:org.xmtp.android.library.codecs//getReactionAction/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.codecs/get-reaction-action.html
 $dokka.location:org.xmtp.android.library.codecs//getReactionSchema/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.codecs/get-reaction-schema.html
 $dokka.location:org.xmtp.android.library.codecs//id/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/id.html
