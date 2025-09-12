@@ -118,7 +118,7 @@ class Group(
             }
             return encoded
         } catch (e: Exception) {
-            throw XMTPException("Codec type is not registered")
+            throw XMTPException("Failed to encode content: ${e.message}", e)
         }
     }
 

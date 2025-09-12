@@ -152,19 +152,26 @@ class HTTPFetcher : Fetcher {
 data class RemoteAttachmentCodec(override var contentType: ContentTypeId = ContentTypeRemoteAttachment) :
     ContentCodec<RemoteAttachment> {
     override fun encode(content: RemoteAttachment): EncodedContent {
-        return EncodedContent.newBuilder().also {
+        return EncodedContent.newBuilder().also { it ->
             it.type = ContentTypeRemoteAttachment
-            it.putAllParameters(
-                mapOf(
-                    "contentDigest" to content.contentDigest,
-                    "secret" to content.secret.toByteArray().toHex(),
-                    "salt" to content.salt.toByteArray().toHex(),
-                    "nonce" to content.nonce.toByteArray().toHex(),
-                    "scheme" to content.scheme,
-                    "contentLength" to content.contentLength.toString(),
-                    "filename" to content.filename,
-                ),
+            val parametersMap = mutableMapOf(
+                "contentDigest" to content.contentDigest,
+                "secret" to content.secret.toByteArray().toHex(),
+                "salt" to content.salt.toByteArray().toHex(),
+                "nonce" to content.nonce.toByteArray().toHex(),
+                "scheme" to content.scheme,
             )
+
+            content.contentLength?.let {
+                parametersMap["contentLength"] = it.toString()
+            }
+
+            content.filename?.let {
+                parametersMap["filename"] = it
+            }
+
+            it.putAllParameters(parametersMap)
+
             it.content = content.url.toString().toByteStringUtf8()
         }.build()
     }
@@ -176,9 +183,8 @@ data class RemoteAttachmentCodec(override var contentType: ContentTypeId = Conte
         val salt = content.parametersMap["salt"] ?: throw XMTPException("missing salt")
         val nonce = content.parametersMap["nonce"] ?: throw XMTPException("missing nonce")
         val scheme = content.parametersMap["scheme"] ?: throw XMTPException("missing scheme")
-        val contentLength =
-            content.parametersMap["contentLength"] ?: throw XMTPException("missing contentLength")
-        val filename = content.parametersMap["filename"] ?: throw XMTPException("missing filename")
+        val contentLength = content.parametersMap["contentLength"]?.toIntOrNull()
+        val filename = content.parametersMap["filename"]
         val encodedContent = content.content ?: throw XMTPException("missing content")
 
         return RemoteAttachment(
@@ -188,7 +194,7 @@ data class RemoteAttachmentCodec(override var contentType: ContentTypeId = Conte
             salt = Numeric.hexStringToByteArray(salt).toByteString(),
             nonce = Numeric.hexStringToByteArray(nonce).toByteString(),
             scheme = scheme,
-            contentLength = contentLength.toInt(),
+            contentLength = contentLength,
             filename = filename,
         )
     }
