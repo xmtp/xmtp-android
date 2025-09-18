@@ -962,6 +962,7 @@ $dokka.location:org.xmtp.android.library/Conversation/consentState/#/PointingToD
 $dokka.location:org.xmtp.android.library/Conversation/createdAt/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/created-at.html
 $dokka.location:org.xmtp.android.library/Conversation/createdAtNs/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/created-at-ns.html
 $dokka.location:org.xmtp.android.library/Conversation/disappearingMessageSettings/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/disappearing-message-settings.html
+$dokka.location:org.xmtp.android.library/Conversation/enrichedMessages/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-conversation/enriched-messages.html
 $dokka.location:org.xmtp.android.library/Conversation/getDebugInformation/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/get-debug-information.html
 $dokka.location:org.xmtp.android.library/Conversation/getHmacKeys/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/get-hmac-keys.html
 $dokka.location:org.xmtp.android.library/Conversation/getLastReadTimes/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/get-last-read-times.html
@@ -973,7 +974,6 @@ $dokka.location:org.xmtp.android.library/Conversation/lastActivityNs/#/PointingT
 $dokka.location:org.xmtp.android.library/Conversation/lastMessage/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/last-message.html
 $dokka.location:org.xmtp.android.library/Conversation/members/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/members.html
 $dokka.location:org.xmtp.android.library/Conversation/messages/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-conversation/messages.html
-$dokka.location:org.xmtp.android.library/Conversation/messagesV2/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-conversation/messages-v2.html
 $dokka.location:org.xmtp.android.library/Conversation/messagesWithReactions/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-conversation/messages-with-reactions.html
 $dokka.location:org.xmtp.android.library/Conversation/pausedForVersion/#/PointingToDeclaration/library/org.xmtp.android.library/-conversation/paused-for-version.html
 $dokka.location:org.xmtp.android.library/Conversation/prepareMessage/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-conversation/prepare-message.html
@@ -1008,9 +1008,9 @@ $dokka.location:org.xmtp.android.library/Conversations/findConversation/#kotlin.
 $dokka.location:org.xmtp.android.library/Conversations/findConversationByTopic/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversations/find-conversation-by-topic.html
 $dokka.location:org.xmtp.android.library/Conversations/findDmByIdentity/#org.xmtp.android.library.libxmtp.PublicIdentity/PointingToDeclaration/library/org.xmtp.android.library/-conversations/find-dm-by-identity.html
 $dokka.location:org.xmtp.android.library/Conversations/findDmByInboxId/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversations/find-dm-by-inbox-id.html
+$dokka.location:org.xmtp.android.library/Conversations/findEnrichedMessage/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversations/find-enriched-message.html
 $dokka.location:org.xmtp.android.library/Conversations/findGroup/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversations/find-group.html
 $dokka.location:org.xmtp.android.library/Conversations/findMessage/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversations/find-message.html
-$dokka.location:org.xmtp.android.library/Conversations/findMessageV2/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-conversations/find-message-v2.html
 $dokka.location:org.xmtp.android.library/Conversations/findOrCreateDm/#kotlin.String#org.xmtp.android.library.libxmtp.DisappearingMessageSettings?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/find-or-create-dm.html
 $dokka.location:org.xmtp.android.library/Conversations/findOrCreateDmWithIdentity/#org.xmtp.android.library.libxmtp.PublicIdentity#org.xmtp.android.library.libxmtp.DisappearingMessageSettings?/PointingToDeclaration/library/org.xmtp.android.library/-conversations/find-or-create-dm-with-identity.html
 $dokka.location:org.xmtp.android.library/Conversations/fromWelcome/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-conversations/from-welcome.html
@@ -1048,6 +1048,7 @@ $dokka.location:org.xmtp.android.library/Dm/createdAtNs/#/PointingToDeclaration/
 $dokka.location:org.xmtp.android.library/Dm/creatorInboxId/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/creator-inbox-id.html
 $dokka.location:org.xmtp.android.library/Dm/disappearingMessageSettings/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/disappearing-message-settings.html
 $dokka.location:org.xmtp.android.library/Dm/encodeContent/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-dm/encode-content.html
+$dokka.location:org.xmtp.android.library/Dm/enrichedMessages/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-dm/enriched-messages.html
 $dokka.location:org.xmtp.android.library/Dm/equals/#kotlin.Any?/PointingToDeclaration/library/org.xmtp.android.library/-dm/equals.html
 $dokka.location:org.xmtp.android.library/Dm/getDebugInformation/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/get-debug-information.html
 $dokka.location:org.xmtp.android.library/Dm/getHmacKeys/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/get-hmac-keys.html
@@ -1062,7 +1063,6 @@ $dokka.location:org.xmtp.android.library/Dm/lastActivityNs/#/PointingToDeclarati
 $dokka.location:org.xmtp.android.library/Dm/lastMessage/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/last-message.html
 $dokka.location:org.xmtp.android.library/Dm/members/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/members.html
 $dokka.location:org.xmtp.android.library/Dm/messages/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-dm/messages.html
-$dokka.location:org.xmtp.android.library/Dm/messagesV2/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-dm/messages-v2.html
 $dokka.location:org.xmtp.android.library/Dm/messagesWithReactions/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-dm/messages-with-reactions.html
 $dokka.location:org.xmtp.android.library/Dm/pausedForVersion/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/paused-for-version.html
 $dokka.location:org.xmtp.android.library/Dm/peerInboxId/#/PointingToDeclaration/library/org.xmtp.android.library/-dm/peer-inbox-id.html
@@ -1110,6 +1110,7 @@ $dokka.location:org.xmtp.android.library/Group/creatorInboxId/#/PointingToDeclar
 $dokka.location:org.xmtp.android.library/Group/description/#/PointingToDeclaration/library/org.xmtp.android.library/-group/description.html
 $dokka.location:org.xmtp.android.library/Group/disappearingMessageSettings/#/PointingToDeclaration/library/org.xmtp.android.library/-group/disappearing-message-settings.html
 $dokka.location:org.xmtp.android.library/Group/encodeContent/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-group/encode-content.html
+$dokka.location:org.xmtp.android.library/Group/enrichedMessages/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-group/enriched-messages.html
 $dokka.location:org.xmtp.android.library/Group/equals/#kotlin.Any?/PointingToDeclaration/library/org.xmtp.android.library/-group/equals.html
 $dokka.location:org.xmtp.android.library/Group/getDebugInformation/#/PointingToDeclaration/library/org.xmtp.android.library/-group/get-debug-information.html
 $dokka.location:org.xmtp.android.library/Group/getHmacKeys/#/PointingToDeclaration/library/org.xmtp.android.library/-group/get-hmac-keys.html
@@ -1129,12 +1130,12 @@ $dokka.location:org.xmtp.android.library/Group/listAdmins/#/PointingToDeclaratio
 $dokka.location:org.xmtp.android.library/Group/listSuperAdmins/#/PointingToDeclaration/library/org.xmtp.android.library/-group/list-super-admins.html
 $dokka.location:org.xmtp.android.library/Group/members/#/PointingToDeclaration/library/org.xmtp.android.library/-group/members.html
 $dokka.location:org.xmtp.android.library/Group/messages/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-group/messages.html
-$dokka.location:org.xmtp.android.library/Group/messagesV2/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-group/messages-v2.html
 $dokka.location:org.xmtp.android.library/Group/messagesWithReactions/#kotlin.Int?#kotlin.Long?#kotlin.Long?#org.xmtp.android.library.libxmtp.DecodedMessage.SortDirection#org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus/PointingToDeclaration/library/org.xmtp.android.library/-group/messages-with-reactions.html
 $dokka.location:org.xmtp.android.library/Group/name/#/PointingToDeclaration/library/org.xmtp.android.library/-group/name.html
 $dokka.location:org.xmtp.android.library/Group/pausedForVersion/#/PointingToDeclaration/library/org.xmtp.android.library/-group/paused-for-version.html
 $dokka.location:org.xmtp.android.library/Group/peerInboxIds/#/PointingToDeclaration/library/org.xmtp.android.library/-group/peer-inbox-ids.html
 $dokka.location:org.xmtp.android.library/Group/permissionPolicySet/#/PointingToDeclaration/library/org.xmtp.android.library/-group/permission-policy-set.html
+$dokka.location:org.xmtp.android.library/Group/permissions/#/PointingToDeclaration/library/org.xmtp.android.library/-group/permissions.html
 $dokka.location:org.xmtp.android.library/Group/prepareMessage/#TypeParam(bounds=[kotlin.Any?])#org.xmtp.android.library.SendOptions?/PointingToDeclaration/library/org.xmtp.android.library/-group/prepare-message.html
 $dokka.location:org.xmtp.android.library/Group/prepareMessage/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library/-group/prepare-message.html
 $dokka.location:org.xmtp.android.library/Group/processMessage/#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-group/process-message.html
