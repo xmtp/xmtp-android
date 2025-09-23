@@ -1,7 +1,6 @@
 package org.xmtp.android.library
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -14,37 +13,20 @@ import org.xmtp.android.library.libxmtp.PermissionLevel
 import org.xmtp.android.library.libxmtp.PermissionOption
 import org.xmtp.android.library.libxmtp.PermissionPolicySet
 import org.xmtp.android.library.libxmtp.PublicIdentity
-import org.xmtp.android.library.messages.PrivateKey
-import org.xmtp.android.library.messages.PrivateKeyBuilder
 import org.xmtp.android.library.messages.walletAddress
 import uniffi.xmtpv3.GenericException
-import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
-class GroupPermissionsTest {
-    private lateinit var alixWallet: PrivateKeyBuilder
-    private lateinit var boWallet: PrivateKeyBuilder
-    private lateinit var alix: PrivateKey
+class GroupPermissionsTest : BaseInstrumentedTest() {
+    private lateinit var fixtures: TestFixtures
     private lateinit var alixClient: Client
-    private lateinit var bo: PrivateKey
     private lateinit var boClient: Client
-    private lateinit var caroWallet: PrivateKeyBuilder
-    private lateinit var caro: PrivateKey
     private lateinit var caroClient: Client
-    private lateinit var fixtures: Fixtures
 
     @Before
-    fun setUp() {
-        val key = SecureRandom().generateSeed(32)
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        fixtures = fixtures()
-        alixWallet = fixtures.alixAccount
-        alix = fixtures.alix
-        boWallet = fixtures.boAccount
-        bo = fixtures.bo
-        caroWallet = fixtures.caroAccount
-        caro = fixtures.caro
-
+    override fun setUp() {
+        super.setUp()
+        fixtures = runBlocking { createFixtures() }
         alixClient = fixtures.alixClient
         boClient = fixtures.boClient
         caroClient = fixtures.caroClient
@@ -62,12 +44,8 @@ class GroupPermissionsTest {
         assert(!alixGroup.isAdmin(alixClient.inboxId))
         assert(!alixGroup.isSuperAdmin(alixClient.inboxId))
 
-        val adminList = runBlocking {
-            boGroup.listAdmins()
-        }
-        val superAdminList = runBlocking {
-            boGroup.listSuperAdmins()
-        }
+        val adminList = runBlocking { boGroup.listAdmins() }
+        val superAdminList = runBlocking { boGroup.listSuperAdmins() }
         assert(adminList.isEmpty())
         assert(!adminList.contains(boClient.inboxId))
         assert(superAdminList.size == 1)
@@ -78,10 +56,7 @@ class GroupPermissionsTest {
     fun testGroupCanUpdateAdminList() = runBlocking {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
-                listOf(
-                    alixClient.inboxId,
-                    caroClient.inboxId
-                ),
+                listOf(alixClient.inboxId, caroClient.inboxId),
                 GroupPermissionPreconfiguration.ADMIN_ONLY
             )
         }
@@ -94,44 +69,36 @@ class GroupPermissionsTest {
         assert(!alixGroup.isAdmin(alixClient.inboxId))
         assert(!alixGroup.isSuperAdmin(alixClient.inboxId))
 
-        var adminList = runBlocking {
-            boGroup.listAdmins()
-        }
-        var superAdminList = runBlocking {
-            boGroup.listSuperAdmins()
-        }
+        var adminList = runBlocking { boGroup.listAdmins() }
+        var superAdminList = runBlocking { boGroup.listSuperAdmins() }
         assert(adminList.size == 0)
         assert(!adminList.contains(boClient.inboxId))
         assert(superAdminList.size == 1)
         assert(superAdminList.contains(boClient.inboxId))
 
         // Verify that alix can NOT  update group name
-        assert(boGroup.name == "")
-        val exception = assertThrows(XMTPException::class.java) {
-            runBlocking {
-                alixGroup.updateName("Alix group name")
+        assert(boGroup.name() == "")
+        val exception =
+            assertThrows(XMTPException::class.java) {
+                runBlocking { alixGroup.updateName("Alix group name") }
             }
-        }
         assertEquals(exception.message, "Permission denied: Unable to update group name")
         runBlocking {
             alixGroup.sync()
             boGroup.sync()
         }
-        assert(boGroup.name == "")
-        assert(alixGroup.name == "")
+        assert(boGroup.name() == "")
 
+        // Verify that bo can commit after invalid permissions commit
         runBlocking {
+            boGroup.updateName("Bo group name")
             boGroup.addAdmin(alixClient.inboxId)
             boGroup.sync()
             alixGroup.sync()
         }
 
-        adminList = runBlocking {
-            boGroup.listAdmins()
-        }
-        superAdminList = runBlocking {
-            boGroup.listSuperAdmins()
-        }
+        adminList = runBlocking { boGroup.listAdmins() }
+        superAdminList = runBlocking { boGroup.listSuperAdmins() }
 
         assert(alixGroup.isAdmin(alixClient.inboxId))
         assert(adminList.size == 1)
@@ -146,8 +113,8 @@ class GroupPermissionsTest {
             alixGroup.sync()
             boGroup.sync()
         }
-        assert(boGroup.name == "Alix group name")
-        assert(alixGroup.name == "Alix group name")
+        assert(boGroup.name() == "Alix group name")
+        assert(alixGroup.name() == "Alix group name")
 
         runBlocking {
             boGroup.removeAdmin(alixClient.inboxId)
@@ -155,12 +122,8 @@ class GroupPermissionsTest {
             alixGroup.sync()
         }
 
-        adminList = runBlocking {
-            boGroup.listAdmins()
-        }
-        superAdminList = runBlocking {
-            boGroup.listSuperAdmins()
-        }
+        adminList = runBlocking { boGroup.listAdmins() }
+        superAdminList = runBlocking { boGroup.listSuperAdmins() }
 
         assert(!alixGroup.isAdmin(alixClient.inboxId))
         assert(adminList.size == 0)
@@ -168,22 +131,18 @@ class GroupPermissionsTest {
         assert(superAdminList.size == 1)
 
         // Verify that alix can NOT  update group name
-        val exception2 = assertThrows(XMTPException::class.java) {
-            runBlocking {
-                alixGroup.updateName("Alix group name 2")
+        val exception2 =
+            assertThrows(XMTPException::class.java) {
+                runBlocking { alixGroup.updateName("Alix group name 2") }
             }
-        }
-        assertEquals(exception.message, "Permission denied: Unable to update group name")
+        assertEquals(exception2.message, "Permission denied: Unable to update group name")
     }
 
     @Test
     fun testGroupCanUpdateSuperAdminList() = runBlocking {
         val boGroup = runBlocking {
             boClient.conversations.newGroup(
-                listOf(
-                    alixClient.inboxId,
-                    caroClient.inboxId
-                ),
+                listOf(alixClient.inboxId, caroClient.inboxId),
                 GroupPermissionPreconfiguration.ADMIN_ONLY
             )
         }
@@ -194,11 +153,10 @@ class GroupPermissionsTest {
         assert(!alixGroup.isSuperAdmin(alixClient.inboxId))
 
         // Attempt to remove bo as a super admin by alix should fail since she is not a super admin
-        val exception = assertThrows(XMTPException::class.java) {
-            runBlocking {
-                alixGroup.removeSuperAdmin(boClient.inboxId)
+        val exception =
+            assertThrows(XMTPException::class.java) {
+                runBlocking { alixGroup.removeSuperAdmin(boClient.inboxId) }
             }
-        }
         assertEquals(exception.message, "Permission denied: Unable to remove super admin")
 
         // Make alix a super admin
@@ -208,18 +166,15 @@ class GroupPermissionsTest {
             alixGroup.sync()
         }
 
-        assert(alixGroup.isSuperAdmin(alixClient.inboxId))
-
         // Now alix should be able to remove bo as a super admin
         runBlocking {
             alixGroup.removeSuperAdmin(boClient.inboxId)
+            boGroup.sync()
             alixGroup.sync()
             boGroup.sync()
         }
 
-        val superAdminList = runBlocking {
-            boGroup.listSuperAdmins()
-        }
+        val superAdminList = runBlocking { boGroup.listSuperAdmins() }
 
         assert(!superAdminList.contains(boClient.inboxId))
         assert(superAdminList.contains(alixClient.inboxId))
@@ -229,10 +184,7 @@ class GroupPermissionsTest {
     fun testGroupMembersAndPermissionLevel() {
         val group = runBlocking {
             boClient.conversations.newGroup(
-                listOf(
-                    alixClient.inboxId,
-                    caroClient.inboxId
-                ),
+                listOf(alixClient.inboxId, caroClient.inboxId),
                 GroupPermissionPreconfiguration.ADMIN_ONLY
             )
         }
@@ -283,108 +235,89 @@ class GroupPermissionsTest {
     }
 
     @Test
-    fun testCanCommitAfterInvalidPermissionsCommit() {
-        val boGroup = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(
-                    alixClient.inboxId,
-                    caroClient.inboxId
-                ),
-                GroupPermissionPreconfiguration.ALL_MEMBERS
-            )
-        }
-        runBlocking { alixClient.conversations.sync() }
-        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
+    fun testCanCommitAfterInvalidPermissionsCommit() = runBlocking {
+        val boGroup = boClient.conversations.newGroup(
+            listOf(alixClient.inboxId, caroClient.inboxId),
+            GroupPermissionPreconfiguration.ALL_MEMBERS
+        )
+        alixClient.conversations.sync()
+        val alixGroup = alixClient.conversations.listGroups().first()
 
         // Verify that alix can NOT  add an admin
-        assert(boGroup.name == "")
-        val exception = assertThrows(XMTPException::class.java) {
-            runBlocking {
-                alixGroup.addAdmin(alixClient.inboxId)
+        assert(boGroup.name() == "")
+        val exception =
+            assertThrows(XMTPException::class.java) {
+                runBlocking { alixGroup.addAdmin(alixClient.inboxId) }
             }
-        }
         assertEquals(exception.message, "Permission denied: Unable to add admin")
-        runBlocking {
-            alixGroup.sync()
-            boGroup.sync()
-        }
+        alixGroup.sync()
+        boGroup.sync()
 
         // Verify that alix can update group name
-        runBlocking {
-            boGroup.sync()
-            alixGroup.sync()
-            alixGroup.updateName("Alix group name")
-            alixGroup.sync()
-            boGroup.sync()
-        }
-        assert(boGroup.name == "Alix group name")
-        assert(alixGroup.name == "Alix group name")
+        boGroup.sync()
+        alixGroup.sync()
+        alixGroup.updateName("Alix group name")
+        alixGroup.sync()
+        boGroup.sync()
+        assert(boGroup.name() == "Alix group name")
+        assert(alixGroup.name() == "Alix group name")
     }
 
     @Test
     fun testCanUpdatePermissions() = runBlocking {
-        val boGroup = runBlocking {
-            boClient.conversations.newGroup(
-                listOf(
-                    alixClient.inboxId,
-                    caroClient.inboxId
-                ),
-                GroupPermissionPreconfiguration.ADMIN_ONLY
-            )
-        }
-        runBlocking { alixClient.conversations.sync() }
-        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
+        val boGroup = boClient.conversations.newGroup(
+            listOf(alixClient.inboxId, caroClient.inboxId),
+            GroupPermissionPreconfiguration.ADMIN_ONLY
+        )
+        alixClient.conversations.sync()
+        val alixGroup = alixClient.conversations.listGroups().first()
 
         // Verify that alix can NOT update group name
-        assert(boGroup.name == "")
-        val exception = assertThrows(XMTPException::class.java) {
-            runBlocking {
-                alixGroup.updateDescription("new group description")
+        assert(boGroup.name() == "")
+        val exception =
+            assertThrows(XMTPException::class.java) {
+                runBlocking { alixGroup.updateDescription("new group description") }
             }
-        }
         assertEquals(exception.message, "Permission denied: Unable to update group description")
-        runBlocking {
-            alixGroup.sync()
-            boGroup.sync()
-        }
+
+        alixGroup.sync()
+        boGroup.sync()
         assertEquals(
             boGroup.permissionPolicySet().updateGroupDescriptionPolicy,
             PermissionOption.Admin
         )
 
         // Update group name permissions so Alix can update
-        runBlocking {
-            boGroup.updateDescriptionPermission(PermissionOption.Allow)
-            boGroup.sync()
-            alixGroup.sync()
-        }
+        boGroup.updateDescriptionPermission(PermissionOption.Allow)
+        boGroup.sync()
+        alixGroup.sync()
+
         assertEquals(
             boGroup.permissionPolicySet().updateGroupDescriptionPolicy,
             PermissionOption.Allow
         )
 
         // Verify that alix can now update group name
-        runBlocking {
-            alixGroup.updateDescription("Alix group description")
-            alixGroup.sync()
-            boGroup.sync()
-        }
-        assert(boGroup.description == "Alix group description")
-        assert(alixGroup.description == "Alix group description")
+        alixGroup.updateDescription("Alix group description")
+        alixGroup.sync()
+        boGroup.sync()
+        assert(boGroup.description() == "Alix group description")
+        assert(alixGroup.description() == "Alix group description")
     }
 
     @Test
     fun canCreateGroupWithCustomPermissions() = runBlocking {
-        val permissionPolicySet = PermissionPolicySet(
-            addMemberPolicy = PermissionOption.Admin,
-            removeMemberPolicy = PermissionOption.Deny,
-            addAdminPolicy = PermissionOption.Admin,
-            removeAdminPolicy = PermissionOption.SuperAdmin,
-            updateGroupNamePolicy = PermissionOption.Admin,
-            updateGroupDescriptionPolicy = PermissionOption.Allow,
-            updateGroupImagePolicy = PermissionOption.Admin,
-            updateMessageDisappearingPolicy = PermissionOption.Admin,
-        )
+        val permissionPolicySet =
+            PermissionPolicySet(
+                addMemberPolicy = PermissionOption.Admin,
+                removeMemberPolicy = PermissionOption.Deny,
+                addAdminPolicy = PermissionOption.Admin,
+                removeAdminPolicy = PermissionOption.SuperAdmin,
+                updateGroupNamePolicy = PermissionOption.Admin,
+                updateGroupDescriptionPolicy = PermissionOption.Allow,
+                updateGroupImagePolicy = PermissionOption.Admin,
+                updateMessageDisappearingPolicy = PermissionOption.Admin,
+            )
         val boGroup = runBlocking {
             boClient.conversations.newGroupCustomPermissions(
                 inboxIds = listOf(alixClient.inboxId, caroClient.inboxId),
@@ -408,16 +341,17 @@ class GroupPermissionsTest {
     @Test
     fun createGroupWithInvalidCustomPermissionsFails() {
         // Add/Remove Admin can not be allow
-        val permissionPolicySetInvalid = PermissionPolicySet(
-            addMemberPolicy = PermissionOption.Admin,
-            removeMemberPolicy = PermissionOption.Deny,
-            addAdminPolicy = PermissionOption.Admin,
-            removeAdminPolicy = PermissionOption.Allow,
-            updateGroupNamePolicy = PermissionOption.Admin,
-            updateGroupDescriptionPolicy = PermissionOption.Allow,
-            updateGroupImagePolicy = PermissionOption.Admin,
-            updateMessageDisappearingPolicy = PermissionOption.Admin,
-        )
+        val permissionPolicySetInvalid =
+            PermissionPolicySet(
+                addMemberPolicy = PermissionOption.Admin,
+                removeMemberPolicy = PermissionOption.Deny,
+                addAdminPolicy = PermissionOption.Admin,
+                removeAdminPolicy = PermissionOption.Allow,
+                updateGroupNamePolicy = PermissionOption.Admin,
+                updateGroupDescriptionPolicy = PermissionOption.Allow,
+                updateGroupImagePolicy = PermissionOption.Admin,
+                updateMessageDisappearingPolicy = PermissionOption.Admin,
+            )
 
         assertThrows(GenericException.GroupMutablePermissions::class.java) {
             val boGroup = runBlocking {
@@ -428,16 +362,17 @@ class GroupPermissionsTest {
             }
         }
 
-        val permissionPolicySetValid = PermissionPolicySet(
-            addMemberPolicy = PermissionOption.Admin,
-            removeMemberPolicy = PermissionOption.Deny,
-            addAdminPolicy = PermissionOption.Admin,
-            removeAdminPolicy = PermissionOption.SuperAdmin,
-            updateGroupNamePolicy = PermissionOption.Admin,
-            updateGroupDescriptionPolicy = PermissionOption.Allow,
-            updateGroupImagePolicy = PermissionOption.Admin,
-            updateMessageDisappearingPolicy = PermissionOption.Allow,
-        )
+        val permissionPolicySetValid =
+            PermissionPolicySet(
+                addMemberPolicy = PermissionOption.Admin,
+                removeMemberPolicy = PermissionOption.Deny,
+                addAdminPolicy = PermissionOption.Admin,
+                removeAdminPolicy = PermissionOption.SuperAdmin,
+                updateGroupNamePolicy = PermissionOption.Admin,
+                updateGroupDescriptionPolicy = PermissionOption.Allow,
+                updateGroupImagePolicy = PermissionOption.Admin,
+                updateMessageDisappearingPolicy = PermissionOption.Allow,
+            )
 
         // Valid custom policy works as expected
         runBlocking { alixClient.conversations.sync() }
@@ -455,22 +390,30 @@ class GroupPermissionsTest {
 
     @Test
     fun canCreateGroupWithInboxIdCustomPermissions() = runBlocking {
-        val permissionPolicySet = PermissionPolicySet(
-            addMemberPolicy = PermissionOption.Admin,
-            removeMemberPolicy = PermissionOption.Deny,
-            addAdminPolicy = PermissionOption.Admin,
-            removeAdminPolicy = PermissionOption.SuperAdmin,
-            updateGroupNamePolicy = PermissionOption.Admin,
-            updateGroupDescriptionPolicy = PermissionOption.Allow,
-            updateGroupImagePolicy = PermissionOption.Admin,
-            updateMessageDisappearingPolicy = PermissionOption.Admin,
-        )
+        val permissionPolicySet =
+            PermissionPolicySet(
+                addMemberPolicy = PermissionOption.Admin,
+                removeMemberPolicy = PermissionOption.Deny,
+                addAdminPolicy = PermissionOption.Admin,
+                removeAdminPolicy = PermissionOption.SuperAdmin,
+                updateGroupNamePolicy = PermissionOption.Admin,
+                updateGroupDescriptionPolicy = PermissionOption.Allow,
+                updateGroupImagePolicy = PermissionOption.Admin,
+                updateMessageDisappearingPolicy = PermissionOption.Admin,
+            )
         val boGroup = runBlocking {
             boClient.conversations.newGroupCustomPermissionsWithIdentities(
-                identities = listOf(
-                    PublicIdentity(IdentityKind.ETHEREUM, alix.walletAddress),
-                    PublicIdentity(IdentityKind.ETHEREUM, caro.walletAddress)
-                ),
+                identities =
+                    listOf(
+                        PublicIdentity(
+                            IdentityKind.ETHEREUM,
+                            fixtures.alix.walletAddress
+                        ),
+                        PublicIdentity(
+                            IdentityKind.ETHEREUM,
+                            fixtures.caro.walletAddress
+                        )
+                    ),
                 permissionPolicySet = permissionPolicySet,
             )
         }

@@ -35,28 +35,16 @@ import org.xmtp.proto.mls.message.contents.TranscriptMessages
 import uniffi.xmtpv3.GenericException
 
 @RunWith(AndroidJUnit4::class)
-class GroupTest {
-    private lateinit var alixWallet: PrivateKeyBuilder
-    private lateinit var boWallet: PrivateKeyBuilder
-    private lateinit var alix: PrivateKey
+class GroupTest : BaseInstrumentedTest() {
+    private lateinit var fixtures: TestFixtures
     private lateinit var alixClient: Client
-    private lateinit var bo: PrivateKey
     private lateinit var boClient: Client
-    private lateinit var caroWallet: PrivateKeyBuilder
-    private lateinit var caro: PrivateKey
     private lateinit var caroClient: Client
-    private lateinit var fixtures: Fixtures
 
     @Before
-    fun setUp() {
-        fixtures = fixtures()
-        alixWallet = fixtures.alixAccount
-        alix = fixtures.alix
-        boWallet = fixtures.boAccount
-        bo = fixtures.bo
-        caroWallet = fixtures.caroAccount
-        caro = fixtures.caro
-
+    override fun setUp() {
+        super.setUp()
+        fixtures = runBlocking { createFixtures() }
         alixClient = fixtures.alixClient
         boClient = fixtures.boClient
         caroClient = fixtures.caroClient
@@ -65,18 +53,18 @@ class GroupTest {
     @Test
     fun testCanCreateAGroupWithDefaultPermissions() {
         val boGroup = runBlocking {
-            boClient.conversations.newGroup(listOf(alixClient.inboxId))
+            fixtures.boClient.conversations.newGroup(listOf(fixtures.alixClient.inboxId))
         }
         runBlocking {
-            alixClient.conversations.sync()
+            fixtures.alixClient.conversations.sync()
             boGroup.sync()
         }
-        val alixGroup = runBlocking { alixClient.conversations.listGroups().first() }
+        val alixGroup = runBlocking { fixtures.alixClient.conversations.listGroups().first() }
         assert(boGroup.id.isNotEmpty())
         assert(alixGroup.id.isNotEmpty())
 
         runBlocking {
-            alixGroup.addMembers(listOf(caroClient.inboxId))
+            alixGroup.addMembers(listOf(fixtures.caroClient.inboxId))
             boGroup.sync()
         }
         assertEquals(runBlocking { alixGroup.members().size }, 3)
@@ -85,7 +73,7 @@ class GroupTest {
         // All members also defaults remove to admin only now.
         assertThrows(XMTPException::class.java) {
             runBlocking {
-                alixGroup.removeMembers(listOf(caroClient.inboxId))
+                alixGroup.removeMembers(listOf(fixtures.caroClient.inboxId))
                 boGroup.sync()
             }
         }
@@ -189,7 +177,7 @@ class GroupTest {
                 listOf(
                     PublicIdentity(
                         IdentityKind.ETHEREUM,
-                        alix.walletAddress
+                        fixtures.alix.walletAddress
                     )
                 )
             )
@@ -303,14 +291,14 @@ class GroupTest {
     @Test
     fun testCannotStartGroupOrAddMembersWithAddressWhenExpectingInboxId() {
         assertThrows("Invalid inboxId", XMTPException::class.java) {
-            runBlocking { boClient.conversations.newGroup(listOf(alix.walletAddress)) }
+            runBlocking { boClient.conversations.newGroup(listOf(fixtures.alix.walletAddress)) }
         }
         val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
         assertThrows("Invalid inboxId", XMTPException::class.java) {
-            runBlocking { group.addMembers(listOf(caro.walletAddress)) }
+            runBlocking { group.addMembers(listOf(fixtures.caro.walletAddress)) }
         }
         assertThrows("Invalid inboxId", XMTPException::class.java) {
-            runBlocking { group.removeMembers(listOf(alix.walletAddress)) }
+            runBlocking { group.removeMembers(listOf(fixtures.alix.walletAddress)) }
         }
     }
 
@@ -374,7 +362,7 @@ class GroupTest {
                 listOf(
                     PublicIdentity(
                         IdentityKind.ETHEREUM,
-                        caro.walletAddress
+                        fixtures.caro.walletAddress
                     )
                 )
             )
@@ -405,7 +393,7 @@ class GroupTest {
                 listOf(
                     PublicIdentity(
                         IdentityKind.ETHEREUM,
-                        caro.walletAddress
+                        fixtures.caro.walletAddress
                     )
                 )
             )

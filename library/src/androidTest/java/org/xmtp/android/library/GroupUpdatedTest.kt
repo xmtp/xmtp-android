@@ -1,7 +1,5 @@
 package org.xmtp.android.library
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -11,51 +9,28 @@ import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.ContentTypeGroupUpdated
 import org.xmtp.android.library.codecs.GroupUpdated
 import org.xmtp.android.library.codecs.GroupUpdatedCodec
-import org.xmtp.android.library.messages.PrivateKey
-import org.xmtp.android.library.messages.PrivateKeyBuilder
-import java.security.SecureRandom
 
 @RunWith(AndroidJUnit4::class)
-class GroupUpdatedTest {
-    lateinit var alixWallet: PrivateKeyBuilder
-    lateinit var boWallet: PrivateKeyBuilder
-    lateinit var alix: PrivateKey
-    lateinit var alixClient: Client
-    lateinit var bo: PrivateKey
-    lateinit var boClient: Client
-    lateinit var caroWallet: PrivateKeyBuilder
-    lateinit var caro: PrivateKey
-    lateinit var caroClient: Client
-    lateinit var fixtures: Fixtures
-    val context = ApplicationProvider.getApplicationContext<Context>()
+class GroupUpdatedTest : BaseInstrumentedTest() {
+    private lateinit var fixtures: TestFixtures
+    private lateinit var alixClient: Client
+    private lateinit var boClient: Client
+    private lateinit var caroClient: Client
 
     @Before
-    fun setUp() {
-        val key = SecureRandom().generateSeed(32)
-        fixtures = fixtures()
-        alixWallet = fixtures.alixAccount
-        alix = fixtures.alix
-        boWallet = fixtures.boAccount
-        bo = fixtures.bo
-        caroWallet = fixtures.caroAccount
-        caro = fixtures.caro
-
+    override fun setUp() {
+        super.setUp()
+        fixtures = runBlocking { createFixtures() }
         alixClient = fixtures.alixClient
         boClient = fixtures.boClient
         caroClient = fixtures.caroClient
+        Client.register(codec = GroupUpdatedCodec())
     }
 
     @Test
     fun testCanAddMembers() {
-        Client.register(codec = GroupUpdatedCodec())
-
         val group = runBlocking {
-            alixClient.conversations.newGroup(
-                listOf(
-                    boClient.inboxId,
-                    caroClient.inboxId
-                )
-            )
+            alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
         }
         val messages = runBlocking { group.messages() }
         assertEquals(messages.size, 1)
@@ -69,15 +44,8 @@ class GroupUpdatedTest {
 
     @Test
     fun testCanRemoveMembers() {
-        Client.register(codec = GroupUpdatedCodec())
-
         val group = runBlocking {
-            alixClient.conversations.newGroup(
-                listOf(
-                    boClient.inboxId,
-                    caroClient.inboxId
-                )
-            )
+            alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
         }
         val messages = runBlocking { group.messages() }
         assertEquals(messages.size, 1)
@@ -97,17 +65,10 @@ class GroupUpdatedTest {
 
     @Test
     fun testRemovesInvalidMessageKind() {
-        Client.register(codec = GroupUpdatedCodec())
-
         val membershipChange = GroupUpdated.newBuilder().build()
 
         val group = runBlocking {
-            alixClient.conversations.newGroup(
-                listOf(
-                    boClient.inboxId,
-                    caroClient.inboxId
-                )
-            )
+            alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
         }
         val messages = runBlocking { group.messages() }
         assertEquals(messages.size, 1)
@@ -125,12 +86,7 @@ class GroupUpdatedTest {
 
     @Test
     fun testIfNotRegisteredReturnsFallback() = runBlocking {
-        val group = alixClient.conversations.newGroup(
-            listOf(
-                boClient.inboxId,
-                caroClient.inboxId
-            )
-        )
+        val group = alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
         val messages = group.messages()
         assertEquals(messages.size, 1)
         assert(messages.first().fallback.isBlank())
@@ -138,14 +94,9 @@ class GroupUpdatedTest {
 
     @Test
     fun testCanUpdateGroupName() {
-        Client.register(codec = GroupUpdatedCodec())
-
         val group = runBlocking {
             alixClient.conversations.newGroup(
-                listOf(
-                    boClient.inboxId,
-                    caroClient.inboxId
-                ),
+                listOf(boClient.inboxId, caroClient.inboxId),
                 groupName = "Start Name"
             )
         }
@@ -157,14 +108,8 @@ class GroupUpdatedTest {
             assertEquals(messages.size, 2)
 
             val content: GroupUpdated? = messages.first().content()
-            assertEquals(
-                "Start Name",
-                content?.metadataFieldChangesList?.first()?.oldValue
-            )
-            assertEquals(
-                "Group Name",
-                content?.metadataFieldChangesList?.first()?.newValue
-            )
+            assertEquals("Start Name", content?.metadataFieldChangesList?.first()?.oldValue)
+            assertEquals("Group Name", content?.metadataFieldChangesList?.first()?.newValue)
         }
         runBlocking {
             assertEquals(group.getDebugInformation().epoch, 2)
