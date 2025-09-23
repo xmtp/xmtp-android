@@ -1273,6 +1273,8 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is 
 // rather `InterfaceTooLargeException`, caused by too many methods 
@@ -1607,6 +1609,8 @@ fun uniffi_xmtpv3_checksum_method_ffixmtpclient_conversations(
 fun uniffi_xmtpv3_checksum_method_ffixmtpclient_create_archive(
 ): Short
 fun uniffi_xmtpv3_checksum_method_ffixmtpclient_db_reconnect(
+): Short
+fun uniffi_xmtpv3_checksum_method_ffixmtpclient_delete_message(
 ): Short
 fun uniffi_xmtpv3_checksum_method_ffixmtpclient_dm_conversation(
 ): Short
@@ -2040,6 +2044,8 @@ fun uniffi_xmtpv3_fn_method_ffixmtpclient_create_archive(`ptr`: Pointer,`path`: 
 ): Long
 fun uniffi_xmtpv3_fn_method_ffixmtpclient_db_reconnect(`ptr`: Pointer,
 ): Long
+fun uniffi_xmtpv3_fn_method_ffixmtpclient_delete_message(`ptr`: Pointer,`messageId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+): Int
 fun uniffi_xmtpv3_fn_method_ffixmtpclient_dm_conversation(`ptr`: Pointer,`targetInboxId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
 ): Pointer
 fun uniffi_xmtpv3_fn_method_ffixmtpclient_find_inbox_id(`ptr`: Pointer,`identifier`: RustBuffer.ByValue,
@@ -2756,6 +2762,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_db_reconnect() != 6707.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_delete_message() != 34289.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_ffixmtpclient_dm_conversation() != 23917.toShort()) {
@@ -8980,6 +8989,8 @@ public interface FfiXmtpClientInterface {
     
     suspend fun `dbReconnect`()
     
+    fun `deleteMessage`(`messageId`: kotlin.ByteArray): kotlin.UInt
+    
     fun `dmConversation`(`targetInboxId`: kotlin.String): FfiConversation
     
     suspend fun `findInboxId`(`identifier`: FfiIdentifier): kotlin.String?
@@ -9408,6 +9419,19 @@ open class FfiXmtpClient: Disposable, AutoCloseable, FfiXmtpClientInterface
         GenericException.ErrorHandler,
     )
     }
+
+    
+    @Throws(GenericException::class)override fun `deleteMessage`(`messageId`: kotlin.ByteArray): kotlin.UInt {
+            return FfiConverterUInt.lift(
+    callWithPointer {
+    uniffiRustCallWithError(GenericException) { _status ->
+    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffixmtpclient_delete_message(
+        it, FfiConverterByteArray.lower(`messageId`),_status)
+}
+    }
+    )
+    }
+    
 
     
     @Throws(GenericException::class)override fun `dmConversation`(`targetInboxId`: kotlin.String): FfiConversation {
