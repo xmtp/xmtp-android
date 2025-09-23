@@ -10,16 +10,25 @@ import org.xmtp.android.library.codecs.ReadReceipt
 import org.xmtp.android.library.codecs.ReadReceiptCodec
 
 @RunWith(AndroidJUnit4::class)
-class ReadReceiptTest {
+class ReadReceiptTest : BaseInstrumentedTest() {
+    private lateinit var fixtures: TestFixtures
+    private lateinit var alixClient: Client
+    private lateinit var boClient: Client
+
+    @org.junit.Before
+    override fun setUp() {
+        super.setUp()
+        fixtures = runBlocking { createFixtures() }
+        alixClient = fixtures.alixClient
+        boClient = fixtures.boClient
+    }
 
     @Test
     fun testCanUseReadReceiptCodec() {
         Client.register(codec = ReadReceiptCodec())
 
-        val fixtures = fixtures()
-        val alixClient = fixtures.alixClient
         val alixConversation = runBlocking {
-            alixClient.conversations.newConversation(fixtures.boClient.inboxId)
+            alixClient.conversations.newConversation(boClient.inboxId)
         }
 
         runBlocking { alixConversation.send(text = "hey alice 2 bob") }

@@ -30,8 +30,6 @@ services:
     platform: linux/amd64
     entrypoint: ["anvil", "--host", "0.0.0.0"]
     working_dir: /anvil
-    ports:
-      - 8545:8545
 
   history-server:
     image: ghcr.io/xmtp/message-history-server:main
