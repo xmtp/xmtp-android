@@ -13,11 +13,14 @@ import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.utils.Numeric
 import org.xmtp.android.library.artifact.CoinbaseSmartWallet
 import org.xmtp.android.library.artifact.CoinbaseSmartWalletFactory
+import org.xmtp.android.library.codecs.Fetcher
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.messages.PrivateKey
 import org.xmtp.android.library.messages.PrivateKeyBuilder
+import java.io.File
 import java.math.BigInteger
+import java.net.URL
 import java.security.SecureRandom
 
 const val ANVIL_TEST_PRIVATE_KEY_1 =
@@ -108,6 +111,12 @@ class FakeSCWWallet : SigningKey {
         } else {
             throw Exception("Transaction failed: ${transactionReceipt.status}")
         }
+    }
+}
+
+class TestFetcher(val filesDir: File) : Fetcher {
+    override fun fetch(url: URL): ByteArray {
+        return File(filesDir, url.toString().replace("https://", "")).readBytes()
     }
 }
 
