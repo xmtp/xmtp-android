@@ -4,15 +4,15 @@ Thank you for considering contributing to this repo. Community contributions lik
 
 ## ❔ Questions
 
-Have a question about how to build with XMTP? Ask your question and learn with the community in the [Q&A discussion forum](https://github.com/orgs/xmtp/discussions/categories/q-a).
+Have a question about how to build with XMTP? Ask your question and learn with the community in [XMTP Community Forums](https://community.xmtp.org/).
 
 ## 🐞 Bugs
 
-Report bugs as [GitHub Issues](https://github.com/xmtp/xmtp-android/issues/new?assignees=&labels=bug&template=bug_report.yml&title=Bug%3A+). Please confirm that there isn't an existing open issue about the bug and include detailed steps to reproduce the bug.
+Report a bug using [GitHub Issues](https://github.com/xmtp/xmtp-android/issues).
 
 ## ✨ Feature requests
 
-Submit feature requests as [GitHub Issues](https://github.com/xmtp/xmtp-android/issues/new?assignees=&labels=enhancement&template=feature_request.yml&title=Feature+request%3A+). Please confirm that there isn't an existing open issue requesting the feature. Describe the use cases this feature unlocks so the issue can be investigated and prioritized.
+Request a feature using [GitHub Issues](https://github.com/xmtp/xmtp-android/issues).
 
 ## 🔀 Pull requests
 
