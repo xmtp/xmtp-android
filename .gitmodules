@@ -1,4 +1,0 @@
-[submodule "libxmtp"]
-	path = libxmtp
-	url = https://github.com/xmtp/libxmtp.git
-	branch = 09-23-refactor_docker_compose_files

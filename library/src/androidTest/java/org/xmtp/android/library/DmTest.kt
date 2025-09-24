@@ -61,12 +61,14 @@ class DmTest : BaseInstrumentedTest() {
 
     @Test
     fun testCanSuccessfullyThreadDms() {
-        val convoBo = runBlocking {
-            fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
-        }
-        val convoAlix = runBlocking {
-            fixtures.alixClient.conversations.findOrCreateDm(fixtures.boClient.inboxId)
-        }
+        val convoBo =
+            runBlocking {
+                fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
+            }
+        val convoAlix =
+            runBlocking {
+                fixtures.alixClient.conversations.findOrCreateDm(fixtures.boClient.inboxId)
+            }
 
         runBlocking {
             assertEquals(1, convoBo.messages().size) // memberAdd
@@ -81,25 +83,41 @@ class DmTest : BaseInstrumentedTest() {
             assertEquals(1, convoAlix.messages().size) // memberAdd
         }
 
-        val sameConvoBo = runBlocking {
-            fixtures.alixClient.conversations.findOrCreateDm(fixtures.boClient.inboxId)
-        }
-        val sameConvoAlix = runBlocking {
-            fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
-        }
-        val topicBoSame = runBlocking {
-            boClient.conversations.findConversationByTopic(convoBo.topic)!!
-        }
-        val topicAlixSame = runBlocking {
-            alixClient.conversations.findConversationByTopic(convoAlix.topic)!!
-        }
+        val sameConvoBo =
+            runBlocking {
+                fixtures.alixClient.conversations.findOrCreateDm(fixtures.boClient.inboxId)
+            }
+        val sameConvoAlix =
+            runBlocking {
+                fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
+            }
+        val topicBoSame =
+            runBlocking {
+                boClient.conversations.findConversationByTopic(convoBo.topic)!!
+            }
+        val topicAlixSame =
+            runBlocking {
+                alixClient.conversations.findConversationByTopic(convoAlix.topic)!!
+            }
         runBlocking {
             assertEquals(convoAlix.id, sameConvoBo.id)
             assertEquals(convoAlix.id, sameConvoAlix.id)
             assertEquals(convoAlix.id, topicBoSame.id)
             assertEquals(convoAlix.id, topicAlixSame.id)
-            assertEquals(alixClient.conversations.listDms().first().id, convoAlix.id)
-            assertEquals(boClient.conversations.listDms().first().id, convoAlix.id)
+            assertEquals(
+                alixClient.conversations
+                    .listDms()
+                    .first()
+                    .id,
+                convoAlix.id,
+            )
+            assertEquals(
+                boClient.conversations
+                    .listDms()
+                    .first()
+                    .id,
+                convoAlix.id,
+            )
         }
 
         runBlocking {
@@ -112,11 +130,11 @@ class DmTest : BaseInstrumentedTest() {
         runBlocking {
             assertEquals(
                 3,
-                sameConvoBo.messages().size
+                sameConvoBo.messages().size,
             ) // memberAdd Bo hey Alix hey Bo hey2 Alix hey2
             assertEquals(
                 3,
-                sameConvoAlix.messages().size
+                sameConvoAlix.messages().size,
             ) // memberAdd Bo hey Alix hey Bo hey2 Alix hey2
         }
     }
@@ -126,12 +144,12 @@ class DmTest : BaseInstrumentedTest() {
         runBlocking {
             val convo1 =
                 fixtures.boClient.conversations.findOrCreateDmWithIdentity(
-                    PublicIdentity(IdentityKind.ETHEREUM, fixtures.alix.walletAddress)
+                    PublicIdentity(IdentityKind.ETHEREUM, fixtures.alix.walletAddress),
                 )
             fixtures.alixClient.conversations.sync()
             val sameConvo1 =
                 fixtures.alixClient.conversations.findOrCreateDmWithIdentity(
-                    PublicIdentity(IdentityKind.ETHEREUM, fixtures.bo.walletAddress)
+                    PublicIdentity(IdentityKind.ETHEREUM, fixtures.bo.walletAddress),
                 )
             assertEquals(convo1.id, sameConvo1.id)
         }
@@ -156,11 +174,11 @@ class DmTest : BaseInstrumentedTest() {
 
             val caroDm =
                 fixtures.boClient.conversations.findDmByIdentity(
-                    PublicIdentity(IdentityKind.ETHEREUM, fixtures.caro.walletAddress)
+                    PublicIdentity(IdentityKind.ETHEREUM, fixtures.caro.walletAddress),
                 )
             val alixDm =
                 fixtures.boClient.conversations.findDmByIdentity(
-                    PublicIdentity(IdentityKind.ETHEREUM, fixtures.alix.walletAddress)
+                    PublicIdentity(IdentityKind.ETHEREUM, fixtures.alix.walletAddress),
                 )
             assertNull(alixDm)
             assertEquals(caroDm?.id, dm.id)
@@ -169,19 +187,26 @@ class DmTest : BaseInstrumentedTest() {
 
     @Test
     fun testCanListDmMembers() {
-        val dm = runBlocking {
-            fixtures.boClient.conversations.findOrCreateDm(
-                fixtures.alixClient.inboxId,
-            )
-        }
+        val dm =
+            runBlocking {
+                fixtures.boClient.conversations.findOrCreateDm(
+                    fixtures.alixClient.inboxId,
+                )
+            }
         assertEquals(
             runBlocking { dm.members().map { it.inboxId }.sorted() },
-            listOf(fixtures.alixClient.inboxId, fixtures.boClient.inboxId).sorted()
+            listOf(fixtures.alixClient.inboxId, fixtures.boClient.inboxId).sorted(),
         )
 
         assertEquals(
-            runBlocking { Conversation.Dm(dm).members().map { it.inboxId }.sorted() },
-            listOf(fixtures.alixClient.inboxId, fixtures.boClient.inboxId).sorted()
+            runBlocking {
+                Conversation
+                    .Dm(dm)
+                    .members()
+                    .map { it.inboxId }
+                    .sorted()
+            },
+            listOf(fixtures.alixClient.inboxId, fixtures.boClient.inboxId).sorted(),
         )
 
         assertEquals(
@@ -198,7 +223,7 @@ class DmTest : BaseInstrumentedTest() {
         assertThrows(GenericException::class.java) {
             runBlocking {
                 fixtures.boClient.conversations.findOrCreateDmWithIdentity(
-                    PublicIdentity(IdentityKind.ETHEREUM, chux.walletAddress)
+                    PublicIdentity(IdentityKind.ETHEREUM, chux.walletAddress),
                 )
             }
         }
@@ -236,62 +261,80 @@ class DmTest : BaseInstrumentedTest() {
         runBlocking {
             fixtures.boClient.conversations.newGroup(listOf(fixtures.caroClient.inboxId))
         }
-        val dm = runBlocking {
-            fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
-        }
-        assertEquals(runBlocking { fixtures.boClient.conversations.listDms().size }, 2)
+        val dm =
+            runBlocking {
+                fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
+            }
         assertEquals(
             runBlocking {
-                fixtures.boClient.conversations.listDms(
-                    consentStates = listOf(ConsentState.ALLOWED)
-                )
+                fixtures.boClient.conversations
+                    .listDms()
                     .size
             },
-            2
+            2,
+        )
+        assertEquals(
+            runBlocking {
+                fixtures.boClient.conversations
+                    .listDms(
+                        consentStates = listOf(ConsentState.ALLOWED),
+                    ).size
+            },
+            2,
         )
         runBlocking { dm.updateConsentState(ConsentState.DENIED) }
         assertEquals(
             runBlocking {
-                fixtures.boClient.conversations.listDms(
-                    consentStates = listOf(ConsentState.ALLOWED)
-                )
-                    .size
+                fixtures.boClient.conversations
+                    .listDms(
+                        consentStates = listOf(ConsentState.ALLOWED),
+                    ).size
             },
-            1
+            1,
         )
         assertEquals(
             runBlocking {
-                fixtures.boClient.conversations.listDms(
-                    consentStates = listOf(ConsentState.DENIED)
-                )
-                    .size
+                fixtures.boClient.conversations
+                    .listDms(
+                        consentStates = listOf(ConsentState.DENIED),
+                    ).size
             },
-            1
+            1,
         )
         assertEquals(
             runBlocking {
-                fixtures.boClient.conversations.listDms(
-                    consentStates =
-                        listOf(ConsentState.ALLOWED, ConsentState.DENIED)
-                )
+                fixtures.boClient.conversations
+                    .listDms(
+                        consentStates =
+                            listOf(ConsentState.ALLOWED, ConsentState.DENIED),
+                    ).size
+            },
+            2,
+        )
+        assertEquals(
+            runBlocking {
+                fixtures.boClient.conversations
+                    .listDms()
                     .size
             },
-            2
+            1,
         )
-        assertEquals(runBlocking { fixtures.boClient.conversations.listDms().size }, 1)
     }
 
     @Test
     fun testCanListDmsOrder() {
-        val dm1 = runBlocking {
-            fixtures.boClient.conversations.findOrCreateDm(fixtures.caroClient.inboxId)
-        }
-        val dm2 = runBlocking {
-            fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
-        }
-        val group = runBlocking {
-            fixtures.boClient.conversations.newGroup(listOf(fixtures.caroClient.inboxId))
-        }
+        val dm1 =
+            runBlocking {
+                fixtures.boClient.conversations.findOrCreateDm(fixtures.caroClient.inboxId)
+            }
+        val dm2 =
+            runBlocking {
+                fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
+            }
+        val group =
+            runBlocking {
+                fixtures.boClient.conversations.newGroup(listOf(fixtures.caroClient.inboxId))
+            }
         runBlocking { dm2.send("Howdy") }
         runBlocking { group.send("Howdy") }
         runBlocking { fixtures.boClient.conversations.syncAllConversations() }
@@ -302,9 +345,10 @@ class DmTest : BaseInstrumentedTest() {
 
     @Test
     fun testCanSendMessageToDm() {
-        val dm = runBlocking {
-            fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
-        }
+        val dm =
+            runBlocking {
+                fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
+            }
         runBlocking { dm.send("howdy") }
         val messageId = runBlocking { dm.send("gm") }
         runBlocking { dm.sync() }
@@ -312,7 +356,7 @@ class DmTest : BaseInstrumentedTest() {
         assertEquals(runBlocking { dm.messages() }.first().id, messageId)
         assertEquals(
             runBlocking { dm.messages() }.first().deliveryStatus,
-            MessageDeliveryStatus.PUBLISHED
+            MessageDeliveryStatus.PUBLISHED,
         )
         assertEquals(runBlocking { dm.messages() }.size, 3)
 
@@ -334,27 +378,32 @@ class DmTest : BaseInstrumentedTest() {
         assertEquals(runBlocking { dm.messages() }.size, 3)
         assertEquals(
             runBlocking { dm.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED) }.size,
-            3
+            3,
         )
         runBlocking { dm.sync() }
         assertEquals(runBlocking { dm.messages() }.size, 3)
         assertEquals(
             runBlocking { dm.messages(deliveryStatus = MessageDeliveryStatus.UNPUBLISHED) }
                 .size,
-            0
+            0,
         )
         assertEquals(
             runBlocking { dm.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED) }.size,
-            3
+            3,
         )
 
         runBlocking { fixtures.alixClient.conversations.sync() }
-        val sameDm = runBlocking { fixtures.alixClient.conversations.listDms().last() }
+        val sameDm =
+            runBlocking {
+                fixtures.alixClient.conversations
+                    .listDms()
+                    .last()
+            }
         runBlocking { sameDm.sync() }
         assertEquals(
             runBlocking { sameDm.messages(deliveryStatus = MessageDeliveryStatus.PUBLISHED) }
                 .size,
-            3
+            3,
         )
     }
 
@@ -362,9 +411,10 @@ class DmTest : BaseInstrumentedTest() {
     fun testCanSendContentTypesToDm() {
         Client.register(codec = ReactionCodec())
 
-        val dm = runBlocking {
-            fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
-        }
+        val dm =
+            runBlocking {
+                fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
+            }
         runBlocking { dm.send("gm") }
         runBlocking { dm.sync() }
         val messageToReact = runBlocking { dm.messages() }[0]
@@ -374,7 +424,7 @@ class DmTest : BaseInstrumentedTest() {
                 reference = messageToReact.id,
                 action = ReactionAction.Added,
                 content = "U+1F603",
-                schema = ReactionSchema.Unicode
+                schema = ReactionSchema.Unicode,
             )
 
         runBlocking {
@@ -399,7 +449,7 @@ class DmTest : BaseInstrumentedTest() {
             fixtures.alixClient.conversations.sync()
             val alixDm =
                 fixtures.alixClient.conversations.findDmByIdentity(
-                    PublicIdentity(IdentityKind.ETHEREUM, fixtures.bo.walletAddress)
+                    PublicIdentity(IdentityKind.ETHEREUM, fixtures.bo.walletAddress),
                 )
             group.streamMessages().test {
                 alixDm?.send("hi")
@@ -419,10 +469,10 @@ class DmTest : BaseInstrumentedTest() {
         val job =
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    fixtures.alixClient.conversations.streamAllMessages(
-                        type = ConversationFilterType.DMS
-                    )
-                        .collect { message -> allMessages.add(message) }
+                    fixtures.alixClient.conversations
+                        .streamAllMessages(
+                            type = ConversationFilterType.DMS,
+                        ).collect { message -> allMessages.add(message) }
                 } catch (e: Exception) {
                 }
             }
@@ -434,9 +484,10 @@ class DmTest : BaseInstrumentedTest() {
         }
         assertEquals(2, allMessages.size)
 
-        val caroDm = runBlocking {
-            fixtures.caroClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
-        }
+        val caroDm =
+            runBlocking {
+                fixtures.caroClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
+            }
         Thread.sleep(2500)
 
         for (i in 0 until 2) {
@@ -455,12 +506,12 @@ class DmTest : BaseInstrumentedTest() {
             fixtures.boClient.conversations.stream(type = ConversationFilterType.DMS).test {
                 val dm =
                     fixtures.alixClient.conversations.findOrCreateDm(
-                        fixtures.boClient.inboxId
+                        fixtures.boClient.inboxId,
                     )
                 assertEquals(dm.id, awaitItem().id)
                 val dm2 =
                     fixtures.caroClient.conversations.findOrCreateDm(
-                        fixtures.boClient.inboxId
+                        fixtures.boClient.inboxId,
                     )
                 assertEquals(dm2.id, awaitItem().id)
             }
@@ -472,26 +523,26 @@ class DmTest : BaseInstrumentedTest() {
             val dm = fixtures.boClient.conversations.findOrCreateDm(fixtures.alixClient.inboxId)
             assertEquals(
                 fixtures.boClient.preferences.conversationState(dm.id),
-                ConsentState.ALLOWED
+                ConsentState.ALLOWED,
             )
 
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
 
             fixtures.boClient.preferences.setConsentState(
-                listOf(ConsentRecord(dm.id, EntryType.CONVERSATION_ID, ConsentState.DENIED))
+                listOf(ConsentRecord(dm.id, EntryType.CONVERSATION_ID, ConsentState.DENIED)),
             )
             assertEquals(
                 fixtures.boClient.preferences.conversationState(dm.id),
-                ConsentState.DENIED
+                ConsentState.DENIED,
             )
             assertEquals(dm.consentState(), ConsentState.DENIED)
 
             fixtures.boClient.preferences.setConsentState(
-                listOf(ConsentRecord(dm.id, EntryType.CONVERSATION_ID, ConsentState.ALLOWED))
+                listOf(ConsentRecord(dm.id, EntryType.CONVERSATION_ID, ConsentState.ALLOWED)),
             )
             assertEquals(
                 fixtures.boClient.preferences.conversationState(dm.id),
-                ConsentState.ALLOWED
+                ConsentState.ALLOWED,
             )
             assertEquals(dm.consentState(), ConsentState.ALLOWED)
         }
@@ -512,14 +563,18 @@ class DmTest : BaseInstrumentedTest() {
             alixDm!!.sync()
 
             // Send a read receipt from Alix
-            Client.register(codec = org.xmtp.android.library.codecs.ReadReceiptCodec())
+            Client.register(
+                codec =
+                    org.xmtp.android.library.codecs
+                        .ReadReceiptCodec(),
+            )
             alixDm.send(
                 content = org.xmtp.android.library.codecs.ReadReceipt,
                 options =
                     SendOptions(
                         contentType =
-                            org.xmtp.android.library.codecs.ContentTypeReadReceipt
-                    )
+                            org.xmtp.android.library.codecs.ContentTypeReadReceipt,
+                    ),
             )
 
             // Bo syncs to receive the read receipt
@@ -539,123 +594,124 @@ class DmTest : BaseInstrumentedTest() {
     }
 
     @Test
-    fun testDmDisappearingMessages() = runBlocking {
-        val initialSettings =
-            DisappearingMessageSettings(
-                1_000_000_000,
-                1_000_000_000 // 1s duration
+    fun testDmDisappearingMessages() =
+        runBlocking {
+            val initialSettings =
+                DisappearingMessageSettings(
+                    1_000_000_000,
+                    1_000_000_000, // 1s duration
+                )
+
+            // Create group with disappearing messages enabled
+            val boDm =
+                boClient.conversations.findOrCreateDm(
+                    alixClient.inboxId,
+                    disappearingMessageSettings = initialSettings,
+                )
+            boDm.send("howdy")
+            alixClient.conversations.syncAllConversations()
+
+            val alixDm = alixClient.conversations.findDmByInboxId(boClient.inboxId)
+
+            // Validate messages exist and settings are applied
+            assertEquals(boDm.messages().size, 2) // memberAdd howdy
+            assertEquals(alixDm?.messages()?.size, 2) // memberAdd howdy
+            Assert.assertNotNull(boDm.disappearingMessageSettings())
+            assertEquals(boDm.disappearingMessageSettings()!!.retentionDurationInNs, 1_000_000_000)
+            assertEquals(boDm.disappearingMessageSettings()!!.disappearStartingAtNs, 1_000_000_000)
+            Thread.sleep(5000)
+            // Validate messages are deleted
+            assertEquals(boDm.messages().size, 1) // memberAdd
+            assertEquals(alixDm?.messages()?.size, 1) // memberAdd
+
+            // Set message disappearing settings to null
+            boDm.updateDisappearingMessageSettings(null)
+            boDm.sync()
+            alixDm!!.sync()
+
+            assertNull(boDm.disappearingMessageSettings())
+            assertNull(alixDm.disappearingMessageSettings())
+            assertFalse(boDm.isDisappearingMessagesEnabled())
+            assertFalse(alixDm.isDisappearingMessagesEnabled())
+
+            // Send messages after disabling disappearing settings
+            boDm.send("message after disabling disappearing")
+            alixDm.send("another message after disabling")
+            boDm.sync()
+
+            Thread.sleep(1000)
+
+            // Ensure messages persist
+            assertEquals(
+                boDm.messages().size,
+                3,
+            ) // memberAdd disappearing settings 1, disappearing settings 2, boMessage, alixMessage
+            assertEquals(
+                alixDm.messages().size,
+                3,
+            ) // memberAdd disappearing settings 1, disappearing settings 2, boMessage, alixMessage
+
+            // Re-enable disappearing messages
+            val updatedSettings =
+                DisappearingMessageSettings(
+                    boDm.messages().first().sentAtNs + 1_000_000_000, // 1s from now
+                    1_000_000_000, // 1s duration
+                )
+            boDm.updateDisappearingMessageSettings(updatedSettings)
+            boDm.sync()
+            alixDm.sync()
+
+            Thread.sleep(1000)
+
+            assertEquals(
+                boDm.disappearingMessageSettings()!!.disappearStartingAtNs,
+                updatedSettings.disappearStartingAtNs,
+            )
+            assertEquals(
+                alixDm.disappearingMessageSettings()!!.disappearStartingAtNs,
+                updatedSettings.disappearStartingAtNs,
             )
 
-        // Create group with disappearing messages enabled
-        val boDm =
-            boClient.conversations.findOrCreateDm(
-                alixClient.inboxId,
-                disappearingMessageSettings = initialSettings
+            // Send new messages
+            boDm.send("this will disappear soon")
+            alixDm.send("so will this")
+            boDm.sync()
+
+            assertEquals(
+                boDm.messages().size,
+                5,
+            ) // memberAdd disappearing settings 3, disappearing settings 4, boMessage, alixMessage,
+            // disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
+            assertEquals(
+                alixDm.messages().size,
+                5,
+            ) // memberAdd disappearing settings 3, disappearing settings 4, boMessage, alixMessage,
+            // disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
+
+            Thread.sleep(6000) // Wait for messages to disappear
+
+            // Validate messages were deleted
+            assertEquals(
+                boDm.messages().size,
+                3,
+            ) // memberAdd disappearing settings 3, disappearing settings 4, boMessage, alixMessage,
+            // disappearing settings 5, disappearing settings 6
+            assertEquals(
+                alixDm.messages().size,
+                3,
+            ) // memberAdd disappearing settings 3, disappearing settings 4, boMessage, alixMessage,
+            // disappearing settings 5, disappearing settings 6
+
+            // Final validation that settings persist
+            assertEquals(
+                boDm.disappearingMessageSettings()!!.retentionDurationInNs,
+                updatedSettings.retentionDurationInNs,
             )
-        boDm.send("howdy")
-        alixClient.conversations.syncAllConversations()
-
-        val alixDm = alixClient.conversations.findDmByInboxId(boClient.inboxId)
-
-        // Validate messages exist and settings are applied
-        assertEquals(boDm.messages().size, 2) // memberAdd howdy
-        assertEquals(alixDm?.messages()?.size, 2) // memberAdd howdy
-        Assert.assertNotNull(boDm.disappearingMessageSettings())
-        assertEquals(boDm.disappearingMessageSettings()!!.retentionDurationInNs, 1_000_000_000)
-        assertEquals(boDm.disappearingMessageSettings()!!.disappearStartingAtNs, 1_000_000_000)
-        Thread.sleep(5000)
-        // Validate messages are deleted
-        assertEquals(boDm.messages().size, 1) // memberAdd
-        assertEquals(alixDm?.messages()?.size, 1) // memberAdd
-
-        // Set message disappearing settings to null
-        boDm.updateDisappearingMessageSettings(null)
-        boDm.sync()
-        alixDm!!.sync()
-
-        assertNull(boDm.disappearingMessageSettings())
-        assertNull(alixDm.disappearingMessageSettings())
-        assertFalse(boDm.isDisappearingMessagesEnabled())
-        assertFalse(alixDm.isDisappearingMessagesEnabled())
-
-        // Send messages after disabling disappearing settings
-        boDm.send("message after disabling disappearing")
-        alixDm.send("another message after disabling")
-        boDm.sync()
-
-        Thread.sleep(1000)
-
-        // Ensure messages persist
-        assertEquals(
-            boDm.messages().size,
-            3
-        ) // memberAdd disappearing settings 1, disappearing settings 2, boMessage, alixMessage
-        assertEquals(
-            alixDm.messages().size,
-            3
-        ) // memberAdd disappearing settings 1, disappearing settings 2, boMessage, alixMessage
-
-        // Re-enable disappearing messages
-        val updatedSettings =
-            DisappearingMessageSettings(
-                boDm.messages().first().sentAtNs + 1_000_000_000, // 1s from now
-                1_000_000_000 // 1s duration
+            assertEquals(
+                alixDm.disappearingMessageSettings()!!.retentionDurationInNs,
+                updatedSettings.retentionDurationInNs,
             )
-        boDm.updateDisappearingMessageSettings(updatedSettings)
-        boDm.sync()
-        alixDm.sync()
-
-        Thread.sleep(1000)
-
-        assertEquals(
-            boDm.disappearingMessageSettings()!!.disappearStartingAtNs,
-            updatedSettings.disappearStartingAtNs
-        )
-        assertEquals(
-            alixDm.disappearingMessageSettings()!!.disappearStartingAtNs,
-            updatedSettings.disappearStartingAtNs
-        )
-
-        // Send new messages
-        boDm.send("this will disappear soon")
-        alixDm.send("so will this")
-        boDm.sync()
-
-        assertEquals(
-            boDm.messages().size,
-            5
-        ) // memberAdd disappearing settings 3, disappearing settings 4, boMessage, alixMessage,
-        // disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
-        assertEquals(
-            alixDm.messages().size,
-            5
-        ) // memberAdd disappearing settings 3, disappearing settings 4, boMessage, alixMessage,
-        // disappearing settings 5, disappearing settings 6, boMessage2, alixMessage2
-
-        Thread.sleep(6000) // Wait for messages to disappear
-
-        // Validate messages were deleted
-        assertEquals(
-            boDm.messages().size,
-            3
-        ) // memberAdd disappearing settings 3, disappearing settings 4, boMessage, alixMessage,
-        // disappearing settings 5, disappearing settings 6
-        assertEquals(
-            alixDm.messages().size,
-            3
-        ) // memberAdd disappearing settings 3, disappearing settings 4, boMessage, alixMessage,
-        // disappearing settings 5, disappearing settings 6
-
-        // Final validation that settings persist
-        assertEquals(
-            boDm.disappearingMessageSettings()!!.retentionDurationInNs,
-            updatedSettings.retentionDurationInNs
-        )
-        assertEquals(
-            alixDm.disappearingMessageSettings()!!.retentionDurationInNs,
-            updatedSettings.retentionDurationInNs
-        )
-        assert(boDm.isDisappearingMessagesEnabled())
-        assert(alixDm.isDisappearingMessagesEnabled())
-    }
+            assert(boDm.isDisappearingMessagesEnabled())
+            assert(alixDm.isDisappearingMessagesEnabled())
+        }
 }

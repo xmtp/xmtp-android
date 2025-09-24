@@ -27,9 +27,10 @@ class ReadReceiptTest : BaseInstrumentedTest() {
     fun testCanUseReadReceiptCodec() {
         Client.register(codec = ReadReceiptCodec())
 
-        val alixConversation = runBlocking {
-            alixClient.conversations.newConversation(boClient.inboxId)
-        }
+        val alixConversation =
+            runBlocking {
+                alixClient.conversations.newConversation(boClient.inboxId)
+            }
 
         runBlocking { alixConversation.send(text = "hey alice 2 bob") }
 
@@ -44,13 +45,16 @@ class ReadReceiptTest : BaseInstrumentedTest() {
         val messages = runBlocking { alixConversation.messages() }
         assertEquals(messages.size, 3)
         if (messages.size == 3) {
-            val contentType: String = messages.first().encodedContent.type.typeId
+            val contentType: String =
+                messages
+                    .first()
+                    .encodedContent.type.typeId
             assertEquals(contentType, "readReceipt")
         }
         val convos = runBlocking { alixClient.conversations.list() }
         assertEquals(
             runBlocking { convos.first().lastMessage() }!!.encodedContent.type.typeId,
-            "text"
+            "text",
         )
     }
 }

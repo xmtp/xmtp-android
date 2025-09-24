@@ -30,9 +30,10 @@ class ReplyTest : BaseInstrumentedTest() {
     fun testCanUseReplyCodec() {
         Client.register(codec = ReplyCodec())
 
-        val alixConversation = runBlocking {
-            alixClient.conversations.newConversation(boClient.inboxId)
-        }
+        val alixConversation =
+            runBlocking {
+                alixClient.conversations.newConversation(boClient.inboxId)
+            }
 
         runBlocking { alixConversation.send(text = "hey alice 2 bob") }
 
@@ -42,7 +43,7 @@ class ReplyTest : BaseInstrumentedTest() {
             Reply(
                 reference = messageToReact.id,
                 content = "Hello",
-                contentType = ContentTypeText
+                contentType = ContentTypeText,
             )
 
         runBlocking {
@@ -77,12 +78,12 @@ class ReplyTest : BaseInstrumentedTest() {
                 Reply(
                     reference = originalMessageId,
                     content = "This is a reply",
-                    contentType = ContentTypeText
+                    contentType = ContentTypeText,
                 )
 
             boGroup.send(
                 content = replyContent,
-                options = SendOptions(contentType = ContentTypeReply)
+                options = SendOptions(contentType = ContentTypeReply),
             )
             aliceGroup.sync()
         }
@@ -112,12 +113,12 @@ class ReplyTest : BaseInstrumentedTest() {
                 Reply(
                     reference = "non-existent-message-id",
                     content = "Reply to deleted",
-                    contentType = ContentTypeText
+                    contentType = ContentTypeText,
                 )
 
             boGroup.send(
                 content = replyContent,
-                options = SendOptions(contentType = ContentTypeReply)
+                options = SendOptions(contentType = ContentTypeReply),
             )
             aliceGroup.sync()
         }
@@ -149,7 +150,7 @@ class ReplyTest : BaseInstrumentedTest() {
                 Reply(
                     reference = originalMessageId,
                     content = "Text reply",
-                    contentType = ContentTypeText
+                    contentType = ContentTypeText,
                 )
 
             boGroup.send(content = textReply, options = SendOptions(contentType = ContentTypeReply))

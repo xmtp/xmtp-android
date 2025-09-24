@@ -25,9 +25,10 @@ class AttachmentTest : BaseInstrumentedTest() {
 
         val fixtures = runBlocking { createFixtures() }
         val aliceClient = fixtures.alixClient
-        val aliceConversation = runBlocking {
-            aliceClient.conversations.newConversation(fixtures.boClient.inboxId)
-        }
+        val aliceConversation =
+            runBlocking {
+                aliceClient.conversations.newConversation(fixtures.boClient.inboxId)
+            }
 
         runBlocking {
             aliceConversation.send(

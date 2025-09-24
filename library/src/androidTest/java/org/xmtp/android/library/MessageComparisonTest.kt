@@ -55,9 +55,9 @@ class MessageComparisonTest : BaseInstrumentedTest() {
                         reference = messageId,
                         action = ReactionAction.Added,
                         content = "👍",
-                        schema = ReactionSchema.Unicode
+                        schema = ReactionSchema.Unicode,
                     ),
-                options = SendOptions(contentType = ContentTypeReaction)
+                options = SendOptions(contentType = ContentTypeReaction),
             )
             boGroup.sync()
         }
@@ -126,7 +126,7 @@ class MessageComparisonTest : BaseInstrumentedTest() {
         // They should have approximately the same number of text messages (±1)
         assertTrue(
             "V1 and V2 should have similar number of text messages",
-            kotlin.math.abs(v1NonReactionMessages.size - v2NonReactionMessages.size) <= 1
+            kotlin.math.abs(v1NonReactionMessages.size - v2NonReactionMessages.size) <= 1,
         )
     }
 
@@ -144,7 +144,7 @@ class MessageComparisonTest : BaseInstrumentedTest() {
                 "First message",
                 "Second message",
                 "Third message with emoji 🎉",
-                "Fourth message with special chars !@#$%"
+                "Fourth message with special chars !@#$%",
             )
 
         runBlocking {
@@ -154,13 +154,15 @@ class MessageComparisonTest : BaseInstrumentedTest() {
             alixGroup.sync()
         }
 
-        val messagesV1 = runBlocking {
-            boGroup.messages(direction = DecodedMessage.SortDirection.ASCENDING)
-        }
+        val messagesV1 =
+            runBlocking {
+                boGroup.messages(direction = DecodedMessage.SortDirection.ASCENDING)
+            }
 
-        val messagesV2 = runBlocking {
-            boGroup.enrichedMessages(direction = DecodedMessage.SortDirection.ASCENDING)
-        }
+        val messagesV2 =
+            runBlocking {
+                boGroup.enrichedMessages(direction = DecodedMessage.SortDirection.ASCENDING)
+            }
 
         // V2 includes GroupUpdated message at the beginning, filter to text messages only
         val v2TextMessages =
@@ -227,9 +229,9 @@ class MessageComparisonTest : BaseInstrumentedTest() {
                                 reference = messageId,
                                 action = ReactionAction.Added,
                                 content = "👍",
-                                schema = ReactionSchema.Unicode
+                                schema = ReactionSchema.Unicode,
                             ),
-                        options = SendOptions(contentType = ContentTypeReaction)
+                        options = SendOptions(contentType = ContentTypeReaction),
                     )
                 }
             }
@@ -249,13 +251,13 @@ class MessageComparisonTest : BaseInstrumentedTest() {
 
         println("V1 fetch time: ${v1Duration}ms for ${messagesV1.size} messages")
         println(
-            "V2 fetch time: ${v2Duration}ms for ${messagesV2.size} messages (excluding embedded reactions)"
+            "V2 fetch time: ${v2Duration}ms for ${messagesV2.size} messages (excluding embedded reactions)",
         )
 
         val v2MessagesWithReactions = messagesV2.filter { it.hasReactions }
         assertTrue(
             "V2 should include messages with embedded reactions",
-            v2MessagesWithReactions.isNotEmpty()
+            v2MessagesWithReactions.isNotEmpty(),
         )
     }
 
@@ -279,9 +281,9 @@ class MessageComparisonTest : BaseInstrumentedTest() {
                         reference = messageId,
                         action = ReactionAction.Added,
                         content = "👍",
-                        schema = ReactionSchema.Unicode
+                        schema = ReactionSchema.Unicode,
                     ),
-                options = SendOptions(contentType = ContentTypeReaction)
+                options = SendOptions(contentType = ContentTypeReaction),
             )
 
             boGroup.send(
@@ -290,9 +292,9 @@ class MessageComparisonTest : BaseInstrumentedTest() {
                         reference = messageId,
                         action = ReactionAction.Added,
                         content = "❤️",
-                        schema = ReactionSchema.Unicode
+                        schema = ReactionSchema.Unicode,
                     ),
-                options = SendOptions(contentType = ContentTypeReaction)
+                options = SendOptions(contentType = ContentTypeReaction),
             )
             boGroup.sync()
             alixGroup.sync()
