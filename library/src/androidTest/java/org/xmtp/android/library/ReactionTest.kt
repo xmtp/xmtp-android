@@ -39,27 +39,27 @@ class ReactionTest : BaseInstrumentedTest() {
 
         // This is how clients send reactions now.
         val canonicalEncoded =
-            EncodedContent.newBuilder()
+            EncodedContent
+                .newBuilder()
                 .also {
                     it.type = ContentTypeReaction
                     it.content =
                         """
-                {
-                    "action": "added",
-                    "content": "smile",
-                    "reference": "abc123",
-                    "schema": "shortcode"
-                }
-            """
-                            .trimIndent()
+                        {
+                            "action": "added",
+                            "content": "smile",
+                            "reference": "abc123",
+                            "schema": "shortcode"
+                        }
+                        """.trimIndent()
                             .toByteStringUtf8()
-                }
-                .build()
+                }.build()
 
         // Previously, some clients sent reactions like this.
         // So we test here to make sure we can still decode them.
         val legacyEncoded =
-            EncodedContent.newBuilder()
+            EncodedContent
+                .newBuilder()
                 .also {
                     it.type = ContentTypeReaction
                     it.putAllParameters(
@@ -70,8 +70,7 @@ class ReactionTest : BaseInstrumentedTest() {
                         ),
                     )
                     it.content = "smile".toByteStringUtf8()
-                }
-                .build()
+                }.build()
 
         val canonical = codec.decode(canonicalEncoded)
         val legacy = codec.decode(legacyEncoded)
@@ -90,9 +89,10 @@ class ReactionTest : BaseInstrumentedTest() {
     fun testCanUseReactionCodec() {
         Client.register(codec = ReactionCodec())
 
-        val alixConversation = runBlocking {
-            alixClient.conversations.newConversation(boClient.inboxId)
-        }
+        val alixConversation =
+            runBlocking {
+                alixClient.conversations.newConversation(boClient.inboxId)
+            }
 
         runBlocking { alixConversation.send(text = "hey alice 2 bob") }
 
@@ -127,9 +127,10 @@ class ReactionTest : BaseInstrumentedTest() {
     fun testCanUseReactionV2Codec() {
         Client.register(codec = ReactionV2Codec())
 
-        val alixConversation = runBlocking {
-            alixClient.conversations.newConversation(boClient.inboxId)
-        }
+        val alixConversation =
+            runBlocking {
+                alixClient.conversations.newConversation(boClient.inboxId)
+            }
 
         runBlocking { alixConversation.send(text = "hey alice 2 bob") }
 
@@ -160,9 +161,10 @@ class ReactionTest : BaseInstrumentedTest() {
             assertEquals(FfiReactionSchema.UNICODE, content?.schema)
         }
 
-        val messagesWithReactions: List<DecodedMessage> = runBlocking {
-            alixConversation.messagesWithReactions()
-        }
+        val messagesWithReactions: List<DecodedMessage> =
+            runBlocking {
+                alixConversation.messagesWithReactions()
+            }
         assertEquals(messagesWithReactions.size, 2)
         assertEquals(messagesWithReactions[0].id, messageToReact.id)
         val reactionContent: FfiReactionPayload? =
@@ -171,62 +173,63 @@ class ReactionTest : BaseInstrumentedTest() {
     }
 
     @Test
-    fun testCanMixReactionTypes() = runBlocking {
-        // Register both codecs
-        Client.register(codec = ReactionV2Codec())
-        Client.register(codec = ReactionCodec())
+    fun testCanMixReactionTypes() =
+        runBlocking {
+            // Register both codecs
+            Client.register(codec = ReactionV2Codec())
+            Client.register(codec = ReactionCodec())
 
-        val alixConversation = alixClient.conversations.newConversation(boClient.inboxId)
+            val alixConversation = alixClient.conversations.newConversation(boClient.inboxId)
 
-        // Send initial message
-        alixConversation.send(text = "hey alice 2 bob")
-        val messageToReact = alixConversation.messages()[0]
+            // Send initial message
+            alixConversation.send(text = "hey alice 2 bob")
+            val messageToReact = alixConversation.messages()[0]
 
-        // Send V2 reaction
-        val reactionV2 =
-            FfiReactionPayload(
-                reference = messageToReact.id,
-                referenceInboxId = alixClient.inboxId,
-                action = FfiReactionAction.ADDED,
-                content = "U+1F603",
-                schema = FfiReactionSchema.UNICODE,
+            // Send V2 reaction
+            val reactionV2 =
+                FfiReactionPayload(
+                    reference = messageToReact.id,
+                    referenceInboxId = alixClient.inboxId,
+                    action = FfiReactionAction.ADDED,
+                    content = "U+1F603",
+                    schema = FfiReactionSchema.UNICODE,
+                )
+            alixConversation.send(
+                content = reactionV2,
+                options = SendOptions(contentType = ContentTypeReactionV2),
             )
-        alixConversation.send(
-            content = reactionV2,
-            options = SendOptions(contentType = ContentTypeReactionV2),
-        )
 
-        // Send V1 reaction
-        val reactionV1 =
-            Reaction(
-                reference = messageToReact.id,
-                action = ReactionAction.Added,
-                content = "U+1F604", // Different emoji to distinguish
-                schema = ReactionSchema.Unicode,
+            // Send V1 reaction
+            val reactionV1 =
+                Reaction(
+                    reference = messageToReact.id,
+                    action = ReactionAction.Added,
+                    content = "U+1F604", // Different emoji to distinguish
+                    schema = ReactionSchema.Unicode,
+                )
+            alixConversation.send(
+                content = reactionV1,
+                options = SendOptions(contentType = ContentTypeReaction),
             )
-        alixConversation.send(
-            content = reactionV1,
-            options = SendOptions(contentType = ContentTypeReaction),
-        )
 
-        // Verify both reactions appear in messagesWithReactions
-        val messagesWithReactions = runBlocking { alixConversation.messagesWithReactions() }
+            // Verify both reactions appear in messagesWithReactions
+            val messagesWithReactions = runBlocking { alixConversation.messagesWithReactions() }
 
-        assertEquals(2, messagesWithReactions.size)
-        assertEquals(messageToReact.id, messagesWithReactions[0].id)
-        assertEquals(2, messagesWithReactions[0].childMessages!!.size)
+            assertEquals(2, messagesWithReactions.size)
+            assertEquals(messageToReact.id, messagesWithReactions[0].id)
+            assertEquals(2, messagesWithReactions[0].childMessages!!.size)
 
-        // Verify both reaction contents
-        val childContents =
-            messagesWithReactions[0].childMessages!!
-                .mapNotNull {
-                    when (val content = it.content<Any>()) {
-                        is FfiReactionPayload -> content.content
-                        is Reaction -> content.content
-                        else -> null
-                    }
-                }
-                .toSet()
-        assertEquals(setOf("U+1F603", "U+1F604"), childContents)
-    }
+            // Verify both reaction contents
+            val childContents =
+                messagesWithReactions[0]
+                    .childMessages!!
+                    .mapNotNull {
+                        when (val content = it.content<Any>()) {
+                            is FfiReactionPayload -> content.content
+                            is Reaction -> content.content
+                            else -> null
+                        }
+                    }.toSet()
+            assertEquals(setOf("U+1F603", "U+1F604"), childContents)
+        }
 }

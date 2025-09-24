@@ -100,14 +100,16 @@ class DecodedMessageV2Test : BaseInstrumentedTest() {
         val limitedMessages = runBlocking { boGroup.enrichedMessages(limit = 5) }
         assertEquals(5, limitedMessages.size)
 
-        val beforeMessages = runBlocking {
-            boGroup.enrichedMessages(beforeNs = limitedMessages[2].sentAtNs)
-        }
+        val beforeMessages =
+            runBlocking {
+                boGroup.enrichedMessages(beforeNs = limitedMessages[2].sentAtNs)
+            }
         assertTrue(beforeMessages.all { it.sentAtNs < limitedMessages[2].sentAtNs })
 
-        val afterMessages = runBlocking {
-            boGroup.enrichedMessages(afterNs = limitedMessages[2].sentAtNs)
-        }
+        val afterMessages =
+            runBlocking {
+                boGroup.enrichedMessages(afterNs = limitedMessages[2].sentAtNs)
+            }
         assertTrue(afterMessages.all { it.sentAtNs > limitedMessages[2].sentAtNs })
     }
 
@@ -127,17 +129,19 @@ class DecodedMessageV2Test : BaseInstrumentedTest() {
             boGroup.send("Third message")
         }
 
-        val descendingMessages = runBlocking {
-            boGroup.enrichedMessages(direction = DecodedMessage.SortDirection.DESCENDING)
-        }
+        val descendingMessages =
+            runBlocking {
+                boGroup.enrichedMessages(direction = DecodedMessage.SortDirection.DESCENDING)
+            }
         // Skip GroupUpdated message, check text messages
         assertEquals("Third message", descendingMessages[0].content<String>())
         assertEquals("Second message", descendingMessages[1].content<String>())
         assertEquals("First message", descendingMessages[2].content<String>())
 
-        val ascendingMessages = runBlocking {
-            boGroup.enrichedMessages(direction = DecodedMessage.SortDirection.ASCENDING)
-        }
+        val ascendingMessages =
+            runBlocking {
+                boGroup.enrichedMessages(direction = DecodedMessage.SortDirection.ASCENDING)
+            }
         // First message is GroupUpdated, then text messages
         assertNotNull(ascendingMessages[0].content<Any>()) // GroupUpdated
         assertEquals("First message", ascendingMessages[1].content<String>())
@@ -158,51 +162,54 @@ class DecodedMessageV2Test : BaseInstrumentedTest() {
             boGroup.prepareMessage("Unpublished message")
         }
 
-        val allMessages = runBlocking {
-            boGroup.enrichedMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.ALL)
-        }
+        val allMessages =
+            runBlocking {
+                boGroup.enrichedMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.ALL)
+            }
         // 2 user messages + 1 GroupUpdated message
         assertEquals(3, allMessages.size)
 
-        val publishedMessages = runBlocking {
-            boGroup.enrichedMessages(
-                deliveryStatus = DecodedMessage.MessageDeliveryStatus.PUBLISHED
-            )
-        }
+        val publishedMessages =
+            runBlocking {
+                boGroup.enrichedMessages(
+                    deliveryStatus = DecodedMessage.MessageDeliveryStatus.PUBLISHED,
+                )
+            }
         // 1 published user message + 1 GroupUpdated message
         assertEquals(2, publishedMessages.size)
         assertEquals("Published message", publishedMessages[0].content<String>())
 
-        val unpublishedMessages = runBlocking {
-            boGroup.enrichedMessages(
-                deliveryStatus = DecodedMessage.MessageDeliveryStatus.UNPUBLISHED
-            )
-        }
+        val unpublishedMessages =
+            runBlocking {
+                boGroup.enrichedMessages(
+                    deliveryStatus = DecodedMessage.MessageDeliveryStatus.UNPUBLISHED,
+                )
+            }
         assertEquals(1, unpublishedMessages.size)
         assertEquals("Unpublished message", unpublishedMessages[0].content<String>())
     }
 
     @Test
-    fun testMessagesV2CustomContentTypes() = runBlocking {
-        val group = alixClient.conversations.newGroup(listOf(boClient.inboxId))
+    fun testMessagesV2CustomContentTypes() =
+        runBlocking {
+            val group = alixClient.conversations.newGroup(listOf(boClient.inboxId))
 
-        Client.register(codec = NumberCodec())
+            Client.register(codec = NumberCodec())
 
-        val myNumber = 3.14
+            val myNumber = 3.14
 
-        group.send(
-            content = myNumber,
-            options = SendOptions(contentType = NumberCodec().contentType),
-        )
+            group.send(
+                content = myNumber,
+                options = SendOptions(contentType = NumberCodec().contentType),
+            )
 
-        val messages = group.enrichedMessages()
-        val content: Double? = messages[0].content<Double>()
-        assertEquals(myNumber, content)
-    }
+            val messages = group.enrichedMessages()
+            val content: Double? = messages[0].content<Double>()
+            assertEquals(myNumber, content)
+        }
 
     @Test
     fun testMessagesV2IncludeReactions() {
-
         val boGroup = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
         runBlocking {
             alixClient.conversations.sync()
@@ -221,9 +228,9 @@ class DecodedMessageV2Test : BaseInstrumentedTest() {
                         reference = messageId,
                         action = ReactionAction.Added,
                         content = "👍",
-                        schema = ReactionSchema.Unicode
+                        schema = ReactionSchema.Unicode,
                     ),
-                options = SendOptions(contentType = ContentTypeReaction)
+                options = SendOptions(contentType = ContentTypeReaction),
             )
 
             boGroup.send(
@@ -232,9 +239,9 @@ class DecodedMessageV2Test : BaseInstrumentedTest() {
                         reference = messageId,
                         action = ReactionAction.Added,
                         content = "❤️",
-                        schema = ReactionSchema.Unicode
+                        schema = ReactionSchema.Unicode,
                     ),
-                options = SendOptions(contentType = ContentTypeReaction)
+                options = SendOptions(contentType = ContentTypeReaction),
             )
             boGroup.sync()
             alixGroup.sync()
@@ -278,9 +285,9 @@ class DecodedMessageV2Test : BaseInstrumentedTest() {
                             reference = messageId,
                             action = ReactionAction.Added,
                             content = "emoji$i",
-                            schema = ReactionSchema.Unicode
+                            schema = ReactionSchema.Unicode,
                         ),
-                    options = SendOptions(contentType = ContentTypeReaction)
+                    options = SendOptions(contentType = ContentTypeReaction),
                 )
             }
             boGroup.sync()

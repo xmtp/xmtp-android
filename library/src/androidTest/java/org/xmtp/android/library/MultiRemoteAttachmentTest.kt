@@ -73,13 +73,13 @@ class MultiRemoteAttachmentTest : BaseInstrumentedTest() {
             val encryptedAttachment =
                 MultiRemoteAttachmentCodec.encryptBytesForLocalAttachment(
                     encodedBytes,
-                    attachment.filename
+                    attachment.filename,
                 )
             val url = testUploadEncryptedPayload(encryptedAttachment.payload.toByteArray())
             val remoteAttachmentInfo =
                 MultiRemoteAttachmentCodec.buildRemoteAttachmentInfo(
                     encryptedAttachment,
-                    URL(url)
+                    URL(url),
                 )
             remoteAttachmentInfos.add(remoteAttachmentInfo)
         }
@@ -87,9 +87,10 @@ class MultiRemoteAttachmentTest : BaseInstrumentedTest() {
         val multiRemoteAttachment =
             MultiRemoteAttachment(remoteAttachments = remoteAttachmentInfos.toList())
 
-        val alixConversation = runBlocking {
-            alixClient.conversations.newConversation(boClient.inboxId)
-        }
+        val alixConversation =
+            runBlocking {
+                alixClient.conversations.newConversation(boClient.inboxId)
+            }
         runBlocking {
             alixConversation.send(
                 content = multiRemoteAttachment,
@@ -102,13 +103,16 @@ class MultiRemoteAttachmentTest : BaseInstrumentedTest() {
 
         // Below steps outlines how to handle receiving a MultiRemoteAttachment message
         if (messages.size == 2 &&
-            messages[0].encodedContent.type.id.equals(ContentTypeMultiRemoteAttachment)
+            messages[0]
+                .encodedContent.type.id
+                .equals(ContentTypeMultiRemoteAttachment)
         ) {
             val loadedMultiRemoteAttachment: FfiMultiRemoteAttachment = messages[0].content()!!
 
             val textAttachments: MutableList<Attachment> = ArrayList()
 
-            for (remoteAttachment: RemoteAttachment in
+            for (
+            remoteAttachment: RemoteAttachment in
             loadedMultiRemoteAttachment.attachments.map { attachment ->
                 RemoteAttachment(
                     url = URL(attachment.url),
@@ -120,7 +124,8 @@ class MultiRemoteAttachmentTest : BaseInstrumentedTest() {
                     secret = attachment.secret.toByteString(),
                     contentLength = attachment.contentLength?.toInt(),
                 )
-            }) {
+            }
+            ) {
                 val url = remoteAttachment.url.toString()
                 // Simulate Download
                 val encryptedPayload: ByteArray = encryptedPayloadUrls[url]!!
@@ -128,7 +133,7 @@ class MultiRemoteAttachmentTest : BaseInstrumentedTest() {
                 val encryptedAttachment: EncryptedEncodedContent =
                     MultiRemoteAttachmentCodec.buildEncryptAttachmentResult(
                         remoteAttachment,
-                        encryptedPayload
+                        encryptedPayload,
                     )
                 // Decrypt payload
                 val encodedContent: EncodedContent =
