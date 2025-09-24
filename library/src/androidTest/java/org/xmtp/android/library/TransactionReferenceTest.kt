@@ -27,9 +27,10 @@ class TransactionReferenceTest : BaseInstrumentedTest() {
     fun testCanUseTransactionReferenceCodec() {
         Client.register(codec = TransactionReferenceCodec())
 
-        val alixConversation = runBlocking {
-            alixClient.conversations.newConversation(boClient.inboxId)
-        }
+        val alixConversation =
+            runBlocking {
+                alixClient.conversations.newConversation(boClient.inboxId)
+            }
 
         val txRef =
             TransactionReference(

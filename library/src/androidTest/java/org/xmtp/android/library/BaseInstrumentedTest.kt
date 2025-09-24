@@ -71,7 +71,7 @@ abstract class BaseInstrumentedTest {
     protected suspend fun createClient(
         account: SigningKey,
         api: ClientOptions.Api = ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-        deviceSyncEnabled: Boolean = true
+        deviceSyncEnabled: Boolean = true,
     ): Client {
         val options = createClientOptions(api, deviceSyncEnabled = deviceSyncEnabled)
         val client = Client.create(account = account, options = options)
@@ -83,21 +83,20 @@ abstract class BaseInstrumentedTest {
      * Creates a standard fixtures setup with automatic cleanup.
      * Returns the 5 standard test clients: alix, bo, caro, davon, eri.
      */
-    protected suspend fun createFixtures(
-        api: ClientOptions.Api = ClientOptions.Api(XMTPEnvironment.LOCAL, false)
-    ): TestFixtures {
+    protected suspend fun createFixtures(api: ClientOptions.Api = ClientOptions.Api(XMTPEnvironment.LOCAL, false)): TestFixtures {
         //  Create accounts
         val alixAccount = PrivateKeyBuilder()
         val boAccount = PrivateKeyBuilder()
         val caroAccount = PrivateKeyBuilder()
 
         // Create clients concurrently
-        val (alixClient, boClient, caroClient) = coroutineScope {
-            val alixDeferred = async { createClient(alixAccount, api) }
-            val boDeferred = async { createClient(boAccount, api) }
-            val caroDeferred = async { createClient(caroAccount, api) }
-            Triple(alixDeferred.await(), boDeferred.await(), caroDeferred.await())
-        }
+        val (alixClient, boClient, caroClient) =
+            coroutineScope {
+                val alixDeferred = async { createClient(alixAccount, api) }
+                val boDeferred = async { createClient(boAccount, api) }
+                val caroDeferred = async { createClient(caroAccount, api) }
+                Triple(alixDeferred.await(), boDeferred.await(), caroDeferred.await())
+            }
 
         return TestFixtures(
             alixAccount = alixAccount,
@@ -125,9 +124,8 @@ abstract class BaseInstrumentedTest {
     protected fun createClientOptions(
         api: ClientOptions.Api,
         dbDirectory: String? = null,
-        deviceSyncEnabled: Boolean
+        deviceSyncEnabled: Boolean,
     ): ClientOptions {
-
         val finalDbDirectory = dbDirectory ?: randomSubfolder()
         dbFolders.add(finalDbDirectory)
 
@@ -136,16 +134,14 @@ abstract class BaseInstrumentedTest {
             dbEncryptionKey = dbEncryptionKey,
             appContext = context,
             dbDirectory = finalDbDirectory,
-            deviceSyncEnabled = deviceSyncEnabled
+            deviceSyncEnabled = deviceSyncEnabled,
         )
     }
 
     /**
      * Helper method to create a test wallet.
      */
-    protected fun createWallet(): PrivateKeyBuilder {
-        return PrivateKeyBuilder()
-    }
+    protected fun createWallet(): PrivateKeyBuilder = PrivateKeyBuilder()
 }
 
 /**

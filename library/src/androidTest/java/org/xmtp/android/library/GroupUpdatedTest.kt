@@ -29,24 +29,26 @@ class GroupUpdatedTest : BaseInstrumentedTest() {
 
     @Test
     fun testCanAddMembers() {
-        val group = runBlocking {
-            alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
-        }
+        val group =
+            runBlocking {
+                alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
+            }
         val messages = runBlocking { group.messages() }
         assertEquals(messages.size, 1)
         val content: GroupUpdated? = messages.first().content()
         assertEquals(
             listOf(boClient.inboxId, caroClient.inboxId).sorted(),
-            content?.addedInboxesList?.map { it.inboxId }?.sorted()
+            content?.addedInboxesList?.map { it.inboxId }?.sorted(),
         )
         assert(content?.removedInboxesList.isNullOrEmpty())
     }
 
     @Test
     fun testCanRemoveMembers() {
-        val group = runBlocking {
-            alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
-        }
+        val group =
+            runBlocking {
+                alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
+            }
         val messages = runBlocking { group.messages() }
         assertEquals(messages.size, 1)
         assertEquals(runBlocking { group.members().size }, 3)
@@ -58,7 +60,7 @@ class GroupUpdatedTest : BaseInstrumentedTest() {
 
         assertEquals(
             listOf(caroClient.inboxId),
-            content?.removedInboxesList?.map { it.inboxId }?.sorted()
+            content?.removedInboxesList?.map { it.inboxId }?.sorted(),
         )
         assert(content?.addedInboxesList.isNullOrEmpty())
     }
@@ -67,9 +69,10 @@ class GroupUpdatedTest : BaseInstrumentedTest() {
     fun testRemovesInvalidMessageKind() {
         val membershipChange = GroupUpdated.newBuilder().build()
 
-        val group = runBlocking {
-            alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
-        }
+        val group =
+            runBlocking {
+                alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
+            }
         val messages = runBlocking { group.messages() }
         assertEquals(messages.size, 1)
         assertEquals(runBlocking { group.members().size }, 3)
@@ -85,21 +88,23 @@ class GroupUpdatedTest : BaseInstrumentedTest() {
     }
 
     @Test
-    fun testIfNotRegisteredReturnsFallback() = runBlocking {
-        val group = alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
-        val messages = group.messages()
-        assertEquals(messages.size, 1)
-        assert(messages.first().fallback.isBlank())
-    }
+    fun testIfNotRegisteredReturnsFallback() =
+        runBlocking {
+            val group = alixClient.conversations.newGroup(listOf(boClient.inboxId, caroClient.inboxId))
+            val messages = group.messages()
+            assertEquals(messages.size, 1)
+            assert(messages.first().fallback.isBlank())
+        }
 
     @Test
     fun testCanUpdateGroupName() {
-        val group = runBlocking {
-            alixClient.conversations.newGroup(
-                listOf(boClient.inboxId, caroClient.inboxId),
-                groupName = "Start Name"
-            )
-        }
+        val group =
+            runBlocking {
+                alixClient.conversations.newGroup(
+                    listOf(boClient.inboxId, caroClient.inboxId),
+                    groupName = "Start Name",
+                )
+            }
         var messages = runBlocking { group.messages() }
         assertEquals(messages.size, 1)
         runBlocking {

@@ -35,54 +35,63 @@ class PerformanceTest : BaseInstrumentedTest() {
     }
 
     @Test
-    fun test1_CreateDM() = runBlocking {
-        val time = measureTimeMillis {
-            alixClient.conversations.findOrCreateDm(boClient.inboxId)
+    fun test1_CreateDM() =
+        runBlocking {
+            val time =
+                measureTimeMillis {
+                    alixClient.conversations.findOrCreateDm(boClient.inboxId)
+                }
+            Log.d("PERF", "created a DM in: ${time}ms")
+            assert(time < 400)
         }
-        Log.d("PERF", "created a DM in: ${time}ms")
-        assert(time < 400)
-    }
 
     @Test
-    fun test2_SendGm() = runBlocking {
-        val dm = alixClient.conversations.findOrCreateDm(boClient.inboxId)
-        val gmMessage = "gm-" + (1..999999).random().toString()
-        val time = measureTimeMillis {
-            dm.send(gmMessage)
+    fun test2_SendGm() =
+        runBlocking {
+            val dm = alixClient.conversations.findOrCreateDm(boClient.inboxId)
+            val gmMessage = "gm-" + (1..999999).random().toString()
+            val time =
+                measureTimeMillis {
+                    dm.send(gmMessage)
+                }
+            Log.d("PERF", "sendGmTime: ${time}ms")
+            assert(time < 200)
         }
-        Log.d("PERF", "sendGmTime: ${time}ms")
-        assert(time < 200)
-    }
 
     @Test
-    fun test3_CreateGroup() = runBlocking {
-        val time = measureTimeMillis {
-            alixClient.conversations.newGroup(
-                listOf(
-                    boClient.inboxId,
-                    caroClient.inboxId,
-                    davonClient.inboxId
+    fun test3_CreateGroup() =
+        runBlocking {
+            val time =
+                measureTimeMillis {
+                    alixClient.conversations.newGroup(
+                        listOf(
+                            boClient.inboxId,
+                            caroClient.inboxId,
+                            davonClient.inboxId,
+                        ),
+                    )
+                }
+            Log.d("PERF", "createGroupTime: ${time}ms")
+            assert(time < 400)
+        }
+
+    @Test
+    fun test4_SendGmInGroup() =
+        runBlocking {
+            val groupMessage = "gm-" + (1..999999).random().toString()
+            val group =
+                alixClient.conversations.newGroup(
+                    listOf(
+                        boClient.inboxId,
+                    ),
                 )
-            )
+            val time =
+                measureTimeMillis {
+                    group.send(groupMessage)
+                }
+            Log.d("PERF", "sendGmInGroupTime: ${time}ms")
+            assert(time < 200)
         }
-        Log.d("PERF", "createGroupTime: ${time}ms")
-        assert(time < 400)
-    }
-
-    @Test
-    fun test4_SendGmInGroup() = runBlocking {
-        val groupMessage = "gm-" + (1..999999).random().toString()
-        val group = alixClient.conversations.newGroup(
-            listOf(
-                boClient.inboxId,
-            )
-        )
-        val time = measureTimeMillis {
-            group.send(groupMessage)
-        }
-        Log.d("PERF", "sendGmInGroupTime: ${time}ms")
-        assert(time < 200)
-    }
 
     @Test
     fun testCreatesADevClientPerformance() {
@@ -90,47 +99,53 @@ class PerformanceTest : BaseInstrumentedTest() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val fakeWallet = PrivateKeyBuilder()
         val start = Date()
-        val client = runBlocking {
-            Client.create(
-                account = fakeWallet,
-                options = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.DEV, true),
-                    appContext = context,
-                    dbEncryptionKey = key
+        val client =
+            runBlocking {
+                Client.create(
+                    account = fakeWallet,
+                    options =
+                        ClientOptions(
+                            ClientOptions.Api(XMTPEnvironment.DEV, true),
+                            appContext = context,
+                            dbEncryptionKey = key,
+                        ),
                 )
-            )
-        }
+            }
         val end = Date()
         val time1 = end.time - start.time
         Log.d("PERF", "Created a client in ${time1 / 1000.0}s")
 
         val start2 = Date()
-        val buildClient1 = runBlocking {
-            Client.build(
-                fakeWallet.publicIdentity,
-                options = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.DEV, true),
-                    appContext = context,
-                    dbEncryptionKey = key
+        val buildClient1 =
+            runBlocking {
+                Client.build(
+                    fakeWallet.publicIdentity,
+                    options =
+                        ClientOptions(
+                            ClientOptions.Api(XMTPEnvironment.DEV, true),
+                            appContext = context,
+                            dbEncryptionKey = key,
+                        ),
                 )
-            )
-        }
+            }
         val end2 = Date()
         val time2 = end2.time - start2.time
         Log.d("PERF", "Built a client in ${time2 / 1000.0}s")
 
         val start3 = Date()
-        val buildClient2 = runBlocking {
-            Client.build(
-                fakeWallet.publicIdentity,
-                options = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.DEV, true),
-                    appContext = context,
-                    dbEncryptionKey = key
-                ),
-                inboxId = client.inboxId
-            )
-        }
+        val buildClient2 =
+            runBlocking {
+                Client.build(
+                    fakeWallet.publicIdentity,
+                    options =
+                        ClientOptions(
+                            ClientOptions.Api(XMTPEnvironment.DEV, true),
+                            appContext = context,
+                            dbEncryptionKey = key,
+                        ),
+                    inboxId = client.inboxId,
+                )
+            }
         val end3 = Date()
         val time3 = end3.time - start3.time
         Log.d("PERF", "Built a client with inboxId in ${time3 / 1000.0}s")
@@ -140,11 +155,12 @@ class PerformanceTest : BaseInstrumentedTest() {
         runBlocking {
             Client.create(
                 PrivateKeyBuilder(),
-                options = ClientOptions(
-                    ClientOptions.Api(XMTPEnvironment.DEV, true),
-                    appContext = context,
-                    dbEncryptionKey = key
-                ),
+                options =
+                    ClientOptions(
+                        ClientOptions.Api(XMTPEnvironment.DEV, true),
+                        appContext = context,
+                        dbEncryptionKey = key,
+                    ),
             )
         }
         val end4 = Date()

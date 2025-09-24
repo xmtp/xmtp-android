@@ -20,8 +20,9 @@ data class NumberCodec(
             versionMinor = 1,
         ),
 ) : ContentCodec<Double> {
-    override fun encode(content: Double): EncodedContent {
-        return EncodedContent.newBuilder()
+    override fun encode(content: Double): EncodedContent =
+        EncodedContent
+            .newBuilder()
             .also {
                 it.type =
                     ContentTypeIdBuilder.builderFromAuthorityId(
@@ -31,18 +32,17 @@ data class NumberCodec(
                         versionMinor = 1,
                     )
                 it.content = mapOf(Pair("number", content)).toString().toByteStringUtf8()
-            }
-            .build()
-    }
+            }.build()
 
     override fun decode(content: EncodedContent): Double =
-        content.content.toStringUtf8().filter { it.isDigit() || it == '.' }.toDouble()
+        content.content
+            .toStringUtf8()
+            .filter { it.isDigit() || it == '.' }
+            .toDouble()
 
     override fun shouldPush(content: Double): Boolean = false
 
-    override fun fallback(content: Double): String {
-        return "Error: This app does not support numbers."
-    }
+    override fun fallback(content: Double): String = "Error: This app does not support numbers."
 }
 
 @RunWith(AndroidJUnit4::class)
@@ -62,9 +62,10 @@ class CodecTest : BaseInstrumentedTest() {
     @Test
     fun testCanRoundTripWithCustomContentType() {
         Client.register(codec = NumberCodec())
-        val aliceConversation = runBlocking {
-            alixClient.conversations.newConversation(boClient.inboxId)
-        }
+        val aliceConversation =
+            runBlocking {
+                alixClient.conversations.newConversation(boClient.inboxId)
+            }
         runBlocking {
             aliceConversation.send(
                 content = 3.14,

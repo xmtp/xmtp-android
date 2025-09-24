@@ -55,7 +55,7 @@ class ArchiveTest : BaseInstrumentedTest() {
             alixClient.createArchive(
                 consentPath,
                 encryptionKey,
-                opts = ArchiveOptions(archiveElements = listOf(ArchiveElement.CONSENT))
+                opts = ArchiveOptions(archiveElements = listOf(ArchiveElement.CONSENT)),
             )
         }
 
