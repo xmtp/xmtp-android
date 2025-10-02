@@ -16,13 +16,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import com.walletconnect.wcmodal.client.WalletConnectModal
-import com.walletconnect.wcmodal.ui.openWalletConnectModal
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.MainActivity
 import org.xmtp.android.example.R
 import org.xmtp.android.example.databinding.FragmentConnectWalletBinding
-import timber.log.Timber
 
 
 class ConnectWalletFragment : Fragment() {
@@ -80,7 +77,6 @@ class ConnectWalletFragment : Fragment() {
                 requireActivity().startActivity(intent)
                 viewModel.clearShowWalletState()
             } catch (e: Exception) {
-                Timber.tag(FRAGMENT_LOG_TAG).e("Activity not found: $e")
             }
         }
     }

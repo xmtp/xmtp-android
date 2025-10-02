@@ -5,7 +5,6 @@ import android.net.Uri
 import androidx.annotation.UiThread
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.walletconnect.wcmodal.client.Modal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
