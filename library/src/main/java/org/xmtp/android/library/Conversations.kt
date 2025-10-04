@@ -64,34 +64,36 @@ data class Conversations(
         }
     }
 
-    suspend fun findConversation(conversationId: String): Conversation? = withContext(Dispatchers.IO) {
-        try {
-            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
-            when (conversation.conversationType()) {
-                FfiConversationType.GROUP -> Conversation.Group(Group(client, conversation))
-                FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
-                else -> null
+    suspend fun findConversation(conversationId: String): Conversation? =
+        withContext(Dispatchers.IO) {
+            try {
+                val conversation = ffiClient.conversation(conversationId.hexToByteArray())
+                when (conversation.conversationType()) {
+                    FfiConversationType.GROUP -> Conversation.Group(Group(client, conversation))
+                    FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
+                    else -> null
+                }
+            } catch (e: Exception) {
+                null
             }
-        } catch (e: Exception) {
-            null
         }
-    }
 
-    suspend fun findConversationByTopic(topic: String): Conversation? = withContext(Dispatchers.IO) {
-        val regex = """/xmtp/mls/1/g-(.*?)/proto""".toRegex()
-        val matchResult = regex.find(topic)
-        val conversationId = matchResult?.groupValues?.get(1) ?: ""
-        try {
-            val conversation = ffiClient.conversation(conversationId.hexToByteArray())
-            when (conversation.conversationType()) {
-                FfiConversationType.GROUP -> Conversation.Group(Group(client, conversation))
-                FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
-                else -> null
+    suspend fun findConversationByTopic(topic: String): Conversation? =
+        withContext(Dispatchers.IO) {
+            val regex = """/xmtp/mls/1/g-(.*?)/proto""".toRegex()
+            val matchResult = regex.find(topic)
+            val conversationId = matchResult?.groupValues?.get(1) ?: ""
+            try {
+                val conversation = ffiClient.conversation(conversationId.hexToByteArray())
+                when (conversation.conversationType()) {
+                    FfiConversationType.GROUP -> Conversation.Group(Group(client, conversation))
+                    FfiConversationType.DM -> Conversation.Dm(Dm(client, conversation))
+                    else -> null
+                }
+            } catch (e: Exception) {
+                null
             }
-        } catch (e: Exception) {
-            null
         }
-    }
 
     suspend fun findDmByInboxId(inboxId: InboxId): Dm? = withContext(Dispatchers.IO) {
         try {
@@ -101,12 +103,13 @@ data class Conversations(
         }
     }
 
-    suspend fun findDmByIdentity(publicIdentity: PublicIdentity): Dm? = withContext(Dispatchers.IO) {
-        val inboxId =
-            client.inboxIdFromIdentity(publicIdentity)
-                ?: throw XMTPException("No inboxId present")
-        findDmByInboxId(inboxId)
-    }
+    suspend fun findDmByIdentity(publicIdentity: PublicIdentity): Dm? =
+        withContext(Dispatchers.IO) {
+            val inboxId =
+                client.inboxIdFromIdentity(publicIdentity)
+                    ?: throw XMTPException("No inboxId present")
+            findDmByInboxId(inboxId)
+        }
 
     suspend fun findMessage(messageId: String): DecodedMessage? = withContext(Dispatchers.IO) {
         try {
@@ -116,14 +119,15 @@ data class Conversations(
         }
     }
 
-    suspend fun findEnrichedMessage(messageId: String): DecodedMessageV2? = withContext(Dispatchers.IO) {
-        try {
-            DecodedMessageV2.create(ffiClient.messageV2(messageId.hexToByteArray()))
-        } catch (e: Exception) {
-            Log.e("findEnrichedMessage failed", e.toString())
-            null
+    suspend fun findEnrichedMessage(messageId: String): DecodedMessageV2? =
+        withContext(Dispatchers.IO) {
+            try {
+                DecodedMessageV2.create(ffiClient.messageV2(messageId.hexToByteArray()))
+            } catch (e: Exception) {
+                Log.e("findEnrichedMessage failed", e.toString())
+                null
+            }
         }
-    }
 
     suspend fun fromWelcome(envelopeBytes: ByteArray): Conversation = withContext(Dispatchers.IO) {
         val conversation = ffiConversations.processStreamedWelcomeMessage(envelopeBytes)
@@ -311,13 +315,14 @@ data class Conversations(
     }
 
     // Sync all new and existing conversations data from the network
-    suspend fun syncAllConversations(consentStates: List<ConsentState>? = null): UInt = withContext(Dispatchers.IO) {
-        ffiConversations.syncAllConversations(
-            consentStates?.let { states ->
-                states.map { ConsentState.toFfiConsentState(it) }
-            }
-        )
-    }
+    suspend fun syncAllConversations(consentStates: List<ConsentState>? = null): UInt =
+        withContext(Dispatchers.IO) {
+            ffiConversations.syncAllConversations(
+                consentStates?.let { states ->
+                    states.map { ConsentState.toFfiConsentState(it) }
+                }
+            )
+        }
 
     suspend fun newConversationWithIdentity(
         peerPublicIdentity: PublicIdentity,
@@ -464,27 +469,28 @@ data class Conversations(
         ffiConversation.map { it.toConversation() }
     }
 
-    private suspend fun FfiConversationListItem.toConversation(): Conversation = withContext(Dispatchers.IO) {
-        when (conversation().conversationType()) {
-            FfiConversationType.DM -> Conversation.Dm(
-                Dm(
-                    client,
-                    conversation(),
-                    lastMessage(),
-                    isCommitLogForked()
+    private suspend fun FfiConversationListItem.toConversation(): Conversation =
+        withContext(Dispatchers.IO) {
+            when (conversation().conversationType()) {
+                FfiConversationType.DM -> Conversation.Dm(
+                    Dm(
+                        client,
+                        conversation(),
+                        lastMessage(),
+                        isCommitLogForked()
+                    )
                 )
-            )
 
-            else -> Conversation.Group(
-                Group(
-                    client,
-                    conversation(),
-                    lastMessage(),
-                    isCommitLogForked()
+                else -> Conversation.Group(
+                    Group(
+                        client,
+                        conversation(),
+                        lastMessage(),
+                        isCommitLogForked()
+                    )
                 )
-            )
+            }
         }
-    }
 
     fun stream(
         type: ConversationFilterType = ConversationFilterType.ALL,
@@ -573,24 +579,26 @@ data class Conversations(
             awaitClose { stream.end() }
         }
 
-    suspend fun getHmacKeys(): Keystore.GetConversationHmacKeysResponse = withContext(Dispatchers.IO) {
-        val hmacKeysResponse = Keystore.GetConversationHmacKeysResponse.newBuilder()
-        val conversations = ffiConversations.getHmacKeys()
-        conversations.iterator().forEach {
-            val hmacKeys = Keystore.GetConversationHmacKeysResponse.HmacKeys.newBuilder()
-            it.value.forEach { key ->
-                val hmacKeyData = Keystore.GetConversationHmacKeysResponse.HmacKeyData.newBuilder()
-                hmacKeyData.hmacKey = key.key.toByteString()
-                hmacKeyData.thirtyDayPeriodsSinceEpoch = key.epoch.toInt()
-                hmacKeys.addValues(hmacKeyData)
+    suspend fun getHmacKeys(): Keystore.GetConversationHmacKeysResponse =
+        withContext(Dispatchers.IO) {
+            val hmacKeysResponse = Keystore.GetConversationHmacKeysResponse.newBuilder()
+            val conversations = ffiConversations.getHmacKeys()
+            conversations.iterator().forEach {
+                val hmacKeys = Keystore.GetConversationHmacKeysResponse.HmacKeys.newBuilder()
+                it.value.forEach { key ->
+                    val hmacKeyData =
+                        Keystore.GetConversationHmacKeysResponse.HmacKeyData.newBuilder()
+                    hmacKeyData.hmacKey = key.key.toByteString()
+                    hmacKeyData.thirtyDayPeriodsSinceEpoch = key.epoch.toInt()
+                    hmacKeys.addValues(hmacKeyData)
+                }
+                hmacKeysResponse.putHmacKeys(
+                    Topic.groupMessage(it.key.toHex()).description,
+                    hmacKeys.build()
+                )
             }
-            hmacKeysResponse.putHmacKeys(
-                Topic.groupMessage(it.key.toHex()).description,
-                hmacKeys.build()
-            )
+            hmacKeysResponse.build()
         }
-        hmacKeysResponse.build()
-    }
 
     suspend fun allPushTopics(): List<String> = withContext(Dispatchers.IO) {
         val conversations = ffiConversations.list(
@@ -606,5 +614,9 @@ data class Conversations(
             )
         )
         conversations.map { Topic.groupMessage(it.conversation().id().toHex()).description }
+    }
+
+    suspend fun deleteMessageLocally(messageId: String) = withContext(Dispatchers.IO) {
+        ffiClient.deleteMessage(messageId.hexToByteArray())
     }
 }

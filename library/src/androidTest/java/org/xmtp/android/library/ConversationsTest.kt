@@ -59,20 +59,19 @@ class ConversationsTest {
     }
 
     @Test
-    fun testCanCreateOptimisticGroup() {
-        val optimisticGroup = runBlocking { boClient.conversations.newGroupOptimistic(groupName = "Testing") }
-        assertEquals(optimisticGroup.name, "Testing")
+    fun testCanCreateOptimisticGroup() = runBlocking {
+        val optimisticGroup =
+            boClient.conversations.newGroupOptimistic(groupName = "Testing")
+        assertEquals(optimisticGroup.name(), "Testing")
         runBlocking { optimisticGroup.prepareMessage("testing") }
         assertEquals(runBlocking { optimisticGroup.messages() }.size, 1)
 
-        runBlocking {
-            optimisticGroup.addMembers(listOf(alixClient.inboxId))
-            optimisticGroup.sync()
-            optimisticGroup.publishMessages()
-            assertEquals(optimisticGroup.messages().size, 2)
-            assertEquals(optimisticGroup.members().size, 2)
-            assertEquals(optimisticGroup.name, "Testing")
-        }
+        optimisticGroup.addMembers(listOf(alixClient.inboxId))
+        optimisticGroup.sync()
+        optimisticGroup.publishMessages()
+        assertEquals(optimisticGroup.messages().size, 2)
+        assertEquals(optimisticGroup.members().size, 2)
+        assertEquals(optimisticGroup.name(), "Testing")
     }
 
     @Test
@@ -580,5 +579,18 @@ class ConversationsTest {
         assertEquals(41, boGroup.messages().size)
         assertEquals(41, alixGroup.messages().size)
         assertEquals(41, caroGroup.messages().size)
+    }
+
+    @Test
+    fun testDeleteMessage() = runBlocking {
+        val group = caroClient.conversations.newGroup(listOf(boClient.inboxId))
+
+        val messageID = group.send("Hi there")
+
+        val originalNumberOfMessages = group.messages().size
+
+        caroClient.conversations.deleteMessageLocally(messageID)
+
+        assertEquals(originalNumberOfMessages - 1, group.messages().size)
     }
 }
