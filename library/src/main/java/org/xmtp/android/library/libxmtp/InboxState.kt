@@ -3,7 +3,9 @@ package org.xmtp.android.library.libxmtp
 import org.xmtp.android.library.InboxId
 import uniffi.xmtpv3.FfiInboxState
 
-class InboxState(private val ffiInboxState: FfiInboxState) {
+class InboxState(
+    private val ffiInboxState: FfiInboxState,
+) {
     val inboxId: InboxId
         get() = ffiInboxState.inboxId
     val identities: List<PublicIdentity>
