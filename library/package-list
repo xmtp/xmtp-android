@@ -298,6 +298,7 @@ $dokka.location:org.xmtp.android.library.libxmtp/IdentityKind/valueOf/#kotlin.St
 $dokka.location:org.xmtp.android.library.libxmtp/IdentityKind/values/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-identity-kind/values.html
 $dokka.location:org.xmtp.android.library.libxmtp/InboxState///PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-inbox-state/index.html
 $dokka.location:org.xmtp.android.library.libxmtp/InboxState/InboxState/#uniffi.xmtpv3.FfiInboxState/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-inbox-state/-inbox-state.html
+$dokka.location:org.xmtp.android.library.libxmtp/InboxState/creationSignatureKind/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-inbox-state/creation-signature-kind.html
 $dokka.location:org.xmtp.android.library.libxmtp/InboxState/identities/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-inbox-state/identities.html
 $dokka.location:org.xmtp.android.library.libxmtp/InboxState/inboxId/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-inbox-state/inbox-id.html
 $dokka.location:org.xmtp.android.library.libxmtp/InboxState/installations/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-inbox-state/installations.html
@@ -1878,8 +1879,9 @@ $dokka.location:uniffi.xmtpv3/FfiInboxOwnerImpl/sign/#kotlin.String/PointingToDe
 $dokka.location:uniffi.xmtpv3/FfiInboxOwnerImpl/uniffiClonePointer/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-inbox-owner-impl/uniffi-clone-pointer.html
 $dokka.location:uniffi.xmtpv3/FfiInboxState.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-inbox-state/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiInboxState///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-inbox-state/index.html
-$dokka.location:uniffi.xmtpv3/FfiInboxState/FfiInboxState/#kotlin.String#uniffi.xmtpv3.FfiIdentifier#kotlin.collections.List[uniffi.xmtpv3.FfiInstallation]#kotlin.collections.List[uniffi.xmtpv3.FfiIdentifier]/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-inbox-state/-ffi-inbox-state.html
+$dokka.location:uniffi.xmtpv3/FfiInboxState/FfiInboxState/#kotlin.String#uniffi.xmtpv3.FfiIdentifier#kotlin.collections.List[uniffi.xmtpv3.FfiInstallation]#kotlin.collections.List[uniffi.xmtpv3.FfiIdentifier]#uniffi.xmtpv3.FfiSignatureKind?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-inbox-state/-ffi-inbox-state.html
 $dokka.location:uniffi.xmtpv3/FfiInboxState/accountIdentities/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-inbox-state/account-identities.html
+$dokka.location:uniffi.xmtpv3/FfiInboxState/creationSignatureKind/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-inbox-state/creation-signature-kind.html
 $dokka.location:uniffi.xmtpv3/FfiInboxState/inboxId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-inbox-state/inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiInboxState/installations/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-inbox-state/installations.html
 $dokka.location:uniffi.xmtpv3/FfiInboxState/recoveryIdentity/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-inbox-state/recovery-identity.html
@@ -2109,6 +2111,15 @@ $dokka.location:uniffi.xmtpv3/FfiReply/FfiReply/#kotlin.String#kotlin.String?#un
 $dokka.location:uniffi.xmtpv3/FfiReply/content/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-reply/content.html
 $dokka.location:uniffi.xmtpv3/FfiReply/reference/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-reply/reference.html
 $dokka.location:uniffi.xmtpv3/FfiReply/referenceInboxId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-reply/reference-inbox-id.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureKind.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-kind/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureKind.ERC1271///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-signature-kind/-e-r-c1271/index.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureKind.ERC191///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-signature-kind/-e-r-c191/index.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureKind.INSTALLATION_KEY///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-signature-kind/-i-n-s-t-a-l-l-a-t-i-o-n_-k-e-y/index.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureKind.LEGACY_DELEGATED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-signature-kind/-l-e-g-a-c-y_-d-e-l-e-g-a-t-e-d/index.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureKind.P256///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-signature-kind/-p256/index.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureKind///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-kind/index.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureKind/valueOf/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-kind/value-of.html
+$dokka.location:uniffi.xmtpv3/FfiSignatureKind/values/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-kind/values.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/index.html
 $dokka.location:uniffi.xmtpv3/FfiSignatureRequest/FfiSignatureRequest/#com.sun.jna.Pointer/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-signature-request/-ffi-signature-request.html
