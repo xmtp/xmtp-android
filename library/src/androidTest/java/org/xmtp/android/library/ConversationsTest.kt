@@ -60,9 +60,9 @@ class ConversationsTest {
 
     @Test
     fun testCanCreateOptimisticGroup() {
-        val optimisticGroup = boClient.conversations.newGroupOptimistic(groupName = "Testing")
+        val optimisticGroup = runBlocking { boClient.conversations.newGroupOptimistic(groupName = "Testing") }
         assertEquals(optimisticGroup.name, "Testing")
-        optimisticGroup.prepareMessage("testing")
+        runBlocking { optimisticGroup.prepareMessage("testing") }
         assertEquals(runBlocking { optimisticGroup.messages() }.size, 1)
 
         runBlocking {
@@ -282,9 +282,11 @@ class ConversationsTest {
             runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
         val blockedConversation =
             runBlocking { boClient.conversations.findOrCreateDm(alixClient.inboxId) }
-        blockedGroup.updateConsentState(ConsentState.DENIED)
-        blockedConversation.updateConsentState(ConsentState.DENIED)
-        runBlocking { boClient.conversations.sync() }
+        runBlocking {
+            blockedGroup.updateConsentState(ConsentState.DENIED)
+            blockedConversation.updateConsentState(ConsentState.DENIED)
+            boClient.conversations.sync()
+        }
 
         val allMessages = mutableListOf<DecodedMessage>()
 
@@ -347,7 +349,7 @@ class ConversationsTest {
                 )
             }
         }
-        val hmacKeys = alixClient.conversations.getHmacKeys()
+        val hmacKeys = runBlocking { alixClient.conversations.getHmacKeys() }
 
         val topics = hmacKeys.hmacKeysMap.keys
         conversations.forEach { convo ->
@@ -392,10 +394,10 @@ class ConversationsTest {
             eriClient.conversations.syncAllConversations()
         }
 
-        val allTopics = eriClient.conversations.allPushTopics()
+        val allTopics = runBlocking { eriClient.conversations.allPushTopics() }
         val conversations = runBlocking { eriClient.conversations.list() }
-        val allHmacKeys = eriClient.conversations.getHmacKeys()
-        val dmHmacKeys = dm1.getHmacKeys()
+        val allHmacKeys = runBlocking { eriClient.conversations.getHmacKeys() }
+        val dmHmacKeys = runBlocking { dm1.getHmacKeys() }
         val dmTopics = runBlocking { dm1.getPushTopics() }
 
         assertEquals(allTopics.size, 3)
@@ -412,6 +414,76 @@ class ConversationsTest {
         val dmHmacTopics = dmHmacKeys.hmacKeysMap.keys
         dmTopics.forEach { topic ->
             assertTrue(dmHmacTopics.contains(topic))
+        }
+    }
+
+    @Test
+    fun testPaginationOfConversationsList() = runBlocking {
+        // Create 15 groups
+        val groups = mutableListOf<Group>()
+        for (i in 0..14) {
+            val group = boClient.conversations.newGroup(
+                listOf(caroClient.inboxId),
+                groupName = "Test Group $i"
+            )
+            groups.add(group)
+        }
+
+        // Send a message to half the groups to ensure they're ordered by last message
+        // and not by created_at
+        groups.forEachIndexed { index, group ->
+            if (index % 2 == 0) {
+                group.send("Sending a message to ensure filtering by last message time works")
+            }
+        }
+
+        // Track all conversations retrieved through pagination
+        val allConversations = mutableSetOf<String>()
+        var pageCount = 0
+        // Get the first page
+        var page = boClient.conversations.listGroups(
+            limit = 5,
+        )
+
+        while (page.isNotEmpty()) {
+            pageCount++
+            // Add new conversation IDs to our set
+            page.forEach { conversation ->
+                if (allConversations.contains(conversation.id)) {
+                    throw AssertionError("Duplicate conversation ID found: ${conversation.id}")
+                }
+                allConversations.add(conversation.id)
+            }
+
+            // If we got fewer than the limit, we've reached the end
+            if (page.size < 5) {
+                break
+            }
+
+            // Get the oldest (last) conversation's timestamp for the next page
+            val lastConversation = page.last()
+
+            // Get the next page - subtract 1 nanosecond to avoid including the same conversation
+            page = boClient.conversations.listGroups(
+                lastActivityBeforeNs = lastConversation.lastActivityNs,
+                limit = 5
+            )
+
+            // Safety check to prevent infinite loop
+            if (pageCount > 10) {
+                throw AssertionError("Too many pages, possible infinite loop")
+            }
+        }
+
+        // Validate results
+        assertEquals("Should have retrieved all 15 groups", 15, allConversations.size)
+
+        // Verify all created groups are in the results
+        groups.forEach { group ->
+            assertTrue(
+                "Group ${group.id} should be in paginated results",
+                allConversations.contains(group.id)
+            )
         }
     }
 
