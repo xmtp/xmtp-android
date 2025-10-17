@@ -160,10 +160,13 @@ sealed class Conversation {
         }
     }
 
-    suspend fun prepareMessage(encodedContent: EncodedContent): String = withContext(Dispatchers.IO) {
+    suspend fun prepareMessage(
+        encodedContent: EncodedContent,
+        opts: MessageVisibilityOptions = MessageVisibilityOptions(shouldPush = true)
+    ): String = withContext(Dispatchers.IO) {
         when (this@Conversation) {
-            is Group -> group.prepareMessage(encodedContent)
-            is Dm -> dm.prepareMessage(encodedContent)
+            is Group -> group.prepareMessage(encodedContent, opts)
+            is Dm -> dm.prepareMessage(encodedContent, opts)
         }
     }
 
@@ -174,10 +177,13 @@ sealed class Conversation {
         }
     }
 
-    suspend fun send(encodedContent: EncodedContent): String = withContext(Dispatchers.IO) {
+    suspend fun send(
+        encodedContent: EncodedContent,
+        opts: MessageVisibilityOptions = MessageVisibilityOptions(shouldPush = true)
+    ): String = withContext(Dispatchers.IO) {
         when (this@Conversation) {
-            is Group -> group.send(encodedContent)
-            is Dm -> dm.send(encodedContent)
+            is Group -> group.send(encodedContent, opts)
+            is Dm -> dm.send(encodedContent, opts)
         }
     }
 

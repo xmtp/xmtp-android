@@ -134,27 +134,36 @@ class Group(
     }
 
     suspend fun send(text: String): String = withContext(Dispatchers.IO) {
-        send(encodeContent(content = text, options = null))
+        val (encodedContent, opts) = encodeContent(content = text, options = null)
+        send(encodedContent, opts)
     }
 
     suspend fun <T> send(content: T, options: SendOptions? = null): String = withContext(Dispatchers.IO) {
-        val preparedMessage = encodeContent(content = content, options = options)
-        send(preparedMessage)
+        val (encodedContent, opts) = encodeContent(content = content, options = options)
+        send(encodedContent, opts)
     }
 
-    suspend fun send(encodedContent: EncodedContent): String = withContext(Dispatchers.IO) {
-        val messageId = libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
+    suspend fun send(
+        encodedContent: EncodedContent,
+        opts: MessageVisibilityOptions = MessageVisibilityOptions(shouldPush = true),
+    ): String = withContext(Dispatchers.IO) {
+        val messageId =
+            libXMTPGroup.send(
+                contentBytes = encodedContent.toByteArray(),
+                opts = opts.toFfi(),
+            )
         messageId.toHex()
     }
 
-    fun <T> encodeContent(content: T, options: SendOptions?): EncodedContent {
+    fun <T> encodeContent(content: T, options: SendOptions?): Pair<EncodedContent, MessageVisibilityOptions> {
         val codec = Client.codecRegistry.find(options?.contentType)
         fun <Codec : ContentCodec<T>> encode(codec: Codec, content: T): EncodedContent {
             return codec.encode(content)
         }
         try {
             @Suppress("UNCHECKED_CAST")
-            var encoded = encode(codec as ContentCodec<T>, content)
+            val typedCodec = codec as ContentCodec<T>
+            var encoded = encode(typedCodec, content)
             val fallback = codec.fallback(content)
             if (!fallback.isNullOrBlank()) {
                 encoded = encoded.toBuilder().also {
@@ -165,19 +174,26 @@ class Group(
             if (compression != null) {
                 encoded = encoded.compress(compression)
             }
-            return encoded
+            val sendOpts = MessageVisibilityOptions(shouldPush = typedCodec.shouldPush(content))
+            return Pair(encoded, sendOpts)
         } catch (e: Exception) {
             throw XMTPException("Codec type is not registered")
         }
     }
 
-    suspend fun prepareMessage(encodedContent: EncodedContent): String = withContext(Dispatchers.IO) {
-        libXMTPGroup.sendOptimistic(encodedContent.toByteArray()).toHex()
+    suspend fun prepareMessage(
+        encodedContent: EncodedContent,
+        opts: MessageVisibilityOptions = MessageVisibilityOptions(shouldPush = true),
+    ): String = withContext(Dispatchers.IO) {
+        libXMTPGroup.sendOptimistic(
+            encodedContent.toByteArray(),
+            opts.toFfi()
+        ).toHex()
     }
 
     suspend fun <T> prepareMessage(content: T, options: SendOptions? = null): String = withContext(Dispatchers.IO) {
-        val encodeContent = encodeContent(content = content, options = options)
-        libXMTPGroup.sendOptimistic(encodeContent.toByteArray()).toHex()
+        val (encodedContent, opts) = encodeContent(content = content, options = options)
+        libXMTPGroup.sendOptimistic(encodedContent.toByteArray(), opts.toFfi()).toHex()
     }
 
     suspend fun publishMessages() = withContext(Dispatchers.IO) {
