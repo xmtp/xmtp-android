@@ -145,8 +145,24 @@ class Client(
             return deletedCount
         }
 
+        /**
+         * Creates a unique cache key for API client instances based on all configuration parameters.
+         * 
+         * The cache key incorporates all parameters that affect the backend connection to ensure
+         * that different API configurations don't share the same cached client instance.
+         * 
+         * @param api The API configuration containing connection parameters
+         * @return A pipe-delimited string containing: env_url|gateway_url|is_secure|app_version
+         * 
+         * Note: Handles nullable values (gatewayUrl, appVersion) by converting them to "null" strings,
+         * ensuring consistent cache key generation even when optional parameters are not provided.
+         */
+        private fun createCacheKey(api: ClientOptions.Api): String {
+            return "${api.env.getUrl()}|${api.gatewayUrl ?: "null"}|${api.isSecure}|${api.appVersion ?: "null"}"
+        }
+
         suspend fun connectToApiBackend(api: ClientOptions.Api): XmtpApiClient {
-            val cacheKey = api.env.getUrl()
+            val cacheKey = createCacheKey(api)
             return cacheLock.withLock {
                 val cached = apiClientCache[cacheKey]
 
@@ -162,7 +178,7 @@ class Client(
         }
 
         suspend fun connectToSyncApiBackend(api: ClientOptions.Api): XmtpApiClient {
-            val cacheKey = api.env.getUrl()
+            val cacheKey = createCacheKey(api)
             return syncCacheLock.withLock {
                 val cached = syncApiClientCache[cacheKey]
 
