@@ -64,6 +64,39 @@ class ClientTest {
     }
 
     @Test
+    fun testClientD14NStagingCanBeCreatedWithBundle() {
+        val key = SecureRandom().generateSeed(32)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val fakeWallet = PrivateKeyBuilder()
+        val options = ClientOptions(
+            ClientOptions.Api(XMTPEnvironment.DEV, true, gatewayUrl = "https://payer.testnet-staging.xmtp.network:443"),
+            appContext = context,
+            dbEncryptionKey = key
+        )
+        val client = runBlocking {
+            Client.create(account = fakeWallet, options = options)
+        }
+
+        val clientIdentity = fakeWallet.publicIdentity
+        runBlocking {
+            client.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let { assert(it) }
+        }
+
+        val fromBundle = runBlocking {
+            Client.build(clientIdentity, options = options)
+        }
+        assertEquals(client.inboxId, fromBundle.inboxId)
+
+        runBlocking {
+            fromBundle.canMessage(listOf(clientIdentity))[clientIdentity.identifier]?.let {
+                assert(
+                    it
+                )
+            }
+        }
+    }
+
+    @Test
     fun testCanBeBuiltOffline() {
         val fixtures = fixtures()
         val key = SecureRandom().generateSeed(32)
