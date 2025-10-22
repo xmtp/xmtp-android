@@ -51,6 +51,7 @@ data class ClientOptions(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
         val isSecure: Boolean = true,
         val appVersion: String? = null,
+        val gatewayHost: String? = null,
     )
 }
 
@@ -76,7 +77,6 @@ class Client(
         XMTPDebugInformation(ffiClient = libXMTPClient, this)
     val libXMTPVersion: String = getVersionInfo()
     private val ffiClient: FfiXmtpClient = libXMTPClient
-
     companion object {
         private const val TAG = "Client"
 
@@ -87,6 +87,7 @@ class Client(
                 registry
             }
 
+        private fun ClientOptions.Api.toCacheKey(): String = "${env.getUrl()}|${isSecure}|${appVersion ?: "nil"}|${gatewayHost ?: "nil"}"
         private val apiClientCache = mutableMapOf<String, XmtpApiClient>()
         private val cacheLock = Mutex()
         private val syncApiClientCache = mutableMapOf<String, XmtpApiClient>()
@@ -150,7 +151,7 @@ class Client(
         }
 
         suspend fun connectToApiBackend(api: ClientOptions.Api): XmtpApiClient {
-            val cacheKey = api.env.getUrl()
+            val cacheKey = api.toCacheKey()
             return cacheLock.withLock {
                 val cached = apiClientCache[cacheKey]
 
@@ -166,7 +167,7 @@ class Client(
         }
 
         suspend fun connectToSyncApiBackend(api: ClientOptions.Api): XmtpApiClient {
-            val cacheKey = api.env.getUrl()
+            val cacheKey = api.toCacheKey()
             return syncCacheLock.withLock {
                 val cached = syncApiClientCache[cacheKey]
 
