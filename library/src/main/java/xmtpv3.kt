@@ -10758,7 +10758,7 @@ data class FfiConversationDebugInfo(
     var `isCommitLogForked`: kotlin.Boolean?,
     var `localCommitLog`: kotlin.String,
     var `remoteCommitLog`: kotlin.String,
-    var `cursor`: kotlin.Long,
+    var `cursor`: List<FfiCursor>,
 ) {
     companion object
 }
@@ -10775,7 +10775,7 @@ public object FfiConverterTypeFfiConversationDebugInfo : FfiConverterRustBuffer<
             FfiConverterOptionalBoolean.read(buf),
             FfiConverterString.read(buf),
             FfiConverterString.read(buf),
-            FfiConverterLong.read(buf),
+            FfiConverterSequenceTypeFfiCursor.read(buf),
         )
 
     override fun allocationSize(value: FfiConversationDebugInfo) =
@@ -10786,7 +10786,7 @@ public object FfiConverterTypeFfiConversationDebugInfo : FfiConverterRustBuffer<
                 FfiConverterOptionalBoolean.allocationSize(value.`isCommitLogForked`) +
                 FfiConverterString.allocationSize(value.`localCommitLog`) +
                 FfiConverterString.allocationSize(value.`remoteCommitLog`) +
-                FfiConverterLong.allocationSize(value.`cursor`)
+                FfiConverterSequenceTypeFfiCursor.allocationSize(value.`cursor`)
         )
 
     override fun write(
@@ -10799,7 +10799,7 @@ public object FfiConverterTypeFfiConversationDebugInfo : FfiConverterRustBuffer<
         FfiConverterOptionalBoolean.write(value.`isCommitLogForked`, buf)
         FfiConverterString.write(value.`localCommitLog`, buf)
         FfiConverterString.write(value.`remoteCommitLog`, buf)
-        FfiConverterLong.write(value.`cursor`, buf)
+        FfiConverterSequenceTypeFfiCursor.write(value.`cursor`, buf)
     }
 }
 
@@ -10920,6 +10920,38 @@ public object FfiConverterTypeFfiCreateGroupOptions : FfiConverterRustBuffer<Ffi
         FfiConverterOptionalString.write(value.`groupDescription`, buf)
         FfiConverterOptionalTypeFfiPermissionPolicySet.write(value.`customPermissionPolicySet`, buf)
         FfiConverterOptionalTypeFfiMessageDisappearingSettings.write(value.`messageDisappearingSettings`, buf)
+    }
+}
+
+data class FfiCursor(
+    var `originatorId`: kotlin.UInt,
+    var `sequenceId`: kotlin.ULong,
+) {
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiCursor : FfiConverterRustBuffer<FfiCursor> {
+    override fun read(buf: ByteBuffer): FfiCursor =
+        FfiCursor(
+            FfiConverterUInt.read(buf),
+            FfiConverterULong.read(buf),
+        )
+
+    override fun allocationSize(value: FfiCursor) =
+        (
+            FfiConverterUInt.allocationSize(value.`originatorId`) +
+                FfiConverterULong.allocationSize(value.`sequenceId`)
+        )
+
+    override fun write(
+        value: FfiCursor,
+        buf: ByteBuffer,
+    ) {
+        FfiConverterUInt.write(value.`originatorId`, buf)
+        FfiConverterULong.write(value.`sequenceId`, buf)
     }
 }
 
@@ -11496,7 +11528,7 @@ data class FfiMessage(
     var `content`: kotlin.ByteArray,
     var `kind`: FfiConversationMessageKind,
     var `deliveryStatus`: FfiDeliveryStatus,
-    var `sequenceId`: kotlin.ULong?,
+    var `sequenceId`: kotlin.ULong,
 ) {
     companion object
 }
@@ -11514,7 +11546,7 @@ public object FfiConverterTypeFfiMessage : FfiConverterRustBuffer<FfiMessage> {
             FfiConverterByteArray.read(buf),
             FfiConverterTypeFfiConversationMessageKind.read(buf),
             FfiConverterTypeFfiDeliveryStatus.read(buf),
-            FfiConverterOptionalULong.read(buf),
+            FfiConverterULong.read(buf),
         )
 
     override fun allocationSize(value: FfiMessage) =
@@ -11526,7 +11558,7 @@ public object FfiConverterTypeFfiMessage : FfiConverterRustBuffer<FfiMessage> {
                 FfiConverterByteArray.allocationSize(value.`content`) +
                 FfiConverterTypeFfiConversationMessageKind.allocationSize(value.`kind`) +
                 FfiConverterTypeFfiDeliveryStatus.allocationSize(value.`deliveryStatus`) +
-                FfiConverterOptionalULong.allocationSize(value.`sequenceId`)
+                FfiConverterULong.allocationSize(value.`sequenceId`)
         )
 
     override fun write(
@@ -11540,7 +11572,7 @@ public object FfiConverterTypeFfiMessage : FfiConverterRustBuffer<FfiMessage> {
         FfiConverterByteArray.write(value.`content`, buf)
         FfiConverterTypeFfiConversationMessageKind.write(value.`kind`, buf)
         FfiConverterTypeFfiDeliveryStatus.write(value.`deliveryStatus`, buf)
-        FfiConverterOptionalULong.write(value.`sequenceId`, buf)
+        FfiConverterULong.write(value.`sequenceId`, buf)
     }
 }
 
@@ -15293,6 +15325,34 @@ public object FfiConverterSequenceTypeFfiConversationMember : FfiConverterRustBu
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeFfiConversationMember.write(it, buf)
+        }
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeFfiCursor : FfiConverterRustBuffer<List<FfiCursor>> {
+    override fun read(buf: ByteBuffer): List<FfiCursor> {
+        val len = buf.getInt()
+        return List<FfiCursor>(len) {
+            FfiConverterTypeFfiCursor.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<FfiCursor>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeFfiCursor.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(
+        value: List<FfiCursor>,
+        buf: ByteBuffer,
+    ) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeFfiCursor.write(it, buf)
         }
     }
 }
