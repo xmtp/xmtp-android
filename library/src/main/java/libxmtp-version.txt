@@ -1,3 +1,3 @@
-Version: a4763059a
-Branch: release/v1.6
-Date: 2025-10-23 23:40:34 +0000
+Version: 1d8cfbc62
+Branch: cv/revert-dynamic-swift-update
+Date: 2025-10-24 05:09:58 +0000
