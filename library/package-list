@@ -906,9 +906,10 @@ $dokka.location:org.xmtp.android.library/Client/signWithInstallationKey/#kotlin.
 $dokka.location:org.xmtp.android.library/Client/verifySignature/#kotlin.String#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-client/verify-signature.html
 $dokka.location:org.xmtp.android.library/Client/verifySignatureWithInstallationId/#kotlin.String#kotlin.ByteArray#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/verify-signature-with-installation-id.html
 $dokka.location:org.xmtp.android.library/ClientOptions.Api///PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/index.html
-$dokka.location:org.xmtp.android.library/ClientOptions.Api/Api/#org.xmtp.android.library.XMTPEnvironment#kotlin.Boolean#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/-api.html
+$dokka.location:org.xmtp.android.library/ClientOptions.Api/Api/#org.xmtp.android.library.XMTPEnvironment#kotlin.Boolean#kotlin.String?#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/-api.html
 $dokka.location:org.xmtp.android.library/ClientOptions.Api/appVersion/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/app-version.html
 $dokka.location:org.xmtp.android.library/ClientOptions.Api/env/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/env.html
+$dokka.location:org.xmtp.android.library/ClientOptions.Api/gatewayHost/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/gateway-host.html
 $dokka.location:org.xmtp.android.library/ClientOptions.Api/isSecure/#/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-api/is-secure.html
 $dokka.location:org.xmtp.android.library/ClientOptions///PointingToDeclaration/library/org.xmtp.android.library/-client-options/index.html
 $dokka.location:org.xmtp.android.library/ClientOptions/ClientOptions/#org.xmtp.android.library.ClientOptions.Api#kotlin.coroutines.SuspendFunction0[kotlin.Unit]?#android.content.Context#kotlin.ByteArray#kotlin.String?#kotlin.String?#kotlin.Boolean#kotlin.Boolean/PointingToDeclaration/library/org.xmtp.android.library/-client-options/-client-options.html
