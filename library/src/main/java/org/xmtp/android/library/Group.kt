@@ -201,7 +201,9 @@ class Group(
 
     suspend fun publishMessages() = withContext(Dispatchers.IO) { libXMTPGroup.publishMessages() }
 
-    suspend fun sync() = withContext(Dispatchers.IO) { libXMTPGroup.sync() }
+    suspend fun sync() = withContext(Dispatchers.IO) { libXMTPGroup.sync()
+        Log.d("TROUBLESHOOT", "syncing finished for group " + id)
+    }
 
     suspend fun lastMessage(): DecodedMessage? =
         withContext(Dispatchers.IO) {

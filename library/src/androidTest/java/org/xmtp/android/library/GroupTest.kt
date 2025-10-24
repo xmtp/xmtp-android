@@ -1,9 +1,11 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -346,19 +348,38 @@ class GroupTest : BaseInstrumentedTest() {
                 )
             }
         runBlocking {
+            Log.d("TROUBLESHOOT", "boGroup about to add admin" + boClient.inboxId )
             boGroup.addAdmin(alixClient.inboxId)
+            Log.d("TROUBLESHOOT", "alix group about to sync the add admin message" + alixClient.inboxId )
             alixClient.conversations.sync()
         }
         val group =
             runBlocking {
-                alixClient.conversations.sync()
-                alixClient.conversations.listGroups().first()
+                alixClient.conversations.findGroup(boGroup.id)
             }
+        Log.d("TROUBLESHOOT", "group id is" + group?.id )
+
+//        runBlocking { delay(8000)}
+        runBlocking { group?.sync() }
+
+        val adminList = runBlocking { group?.listAdmins() }
+        Log.d("TROUBLESHOOT", adminList.toString())
+        assert(adminList?.contains(alixClient.inboxId)!!)
+        Log.d("TROUBLESHOOT", "about to remove member")
+
         runBlocking {
-            group.removeMembers(listOf(caroClient.inboxId))
-            group.sync()
+            group?.removeMembers(listOf(caroClient.inboxId))
+            Log.d("TROUBLESHOOT", "syncing again")
+            group?.sync()
+        }
+        Log.d("TROUBLESHOOT", "syncing  bogroup")
+        runBlocking {
+//            delay(8000)
+            Log.d("TROUBLESHOOT", "syncing  bogroup")
             boGroup.sync()
         }
+        Log.d("TROUBLESHOOT", "about to print members")
+
         assertEquals(
             runBlocking { boGroup.members().map { it.inboxId }.sorted() },
             listOf(
