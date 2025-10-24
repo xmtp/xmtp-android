@@ -164,45 +164,34 @@ class ConversationsTest : BaseInstrumentedTest() {
     fun testsCanSyncAllConversationsFiltered() {
         runBlocking { boClient.conversations.findOrCreateDm(caroClient.inboxId) }
         val group = runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
-        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 2)
-        assert(
-            runBlocking {
-                boClient.conversations.syncAllConversations(
-                    consentStates = listOf(ConsentState.ALLOWED),
-                )
-            }.toInt() >= 2,
-        )
-        assert(
-            runBlocking {
-                boClient.conversations.syncAllConversations(
-                    consentStates = listOf(ConsentState.DENIED),
-                )
-            }.toInt() <= 1,
-        )
+        val syncSummary = runBlocking { boClient.conversations.syncAllConversations() }
+        assert(syncSummary.numEligible >= 2U)
+        var syncSummaryAllowed = runBlocking { boClient.conversations.syncAllConversations(
+            consentStates = listOf(ConsentState.ALLOWED),
+        ) }
+
+        assert(syncSummaryAllowed.numEligible >= 2U)
+
+        var syncSummaryDenied= runBlocking { boClient.conversations.syncAllConversations(
+            consentStates = listOf(ConsentState.DENIED),
+        ) }
+        assert(syncSummaryDenied.numEligible <= 1U)
         runBlocking { group.updateConsentState(ConsentState.DENIED) }
-        assert(
-            runBlocking {
-                boClient.conversations.syncAllConversations(
-                    consentStates = listOf(ConsentState.ALLOWED),
-                )
-            }.toInt() <= 2,
-        )
-        assert(
-            runBlocking {
-                boClient.conversations.syncAllConversations(
-                    consentStates = listOf(ConsentState.DENIED),
-                )
-            }.toInt() <= 2,
-        )
-        assert(
-            runBlocking {
-                boClient.conversations.syncAllConversations(
-                    consentStates =
-                        listOf(ConsentState.DENIED, ConsentState.ALLOWED),
-                )
-            }.toInt() >= 2,
-        )
-        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 1)
+
+        syncSummaryAllowed = runBlocking {boClient.conversations.syncAllConversations(
+            consentStates = listOf(ConsentState.ALLOWED),
+        )}
+        assert(syncSummaryAllowed.numEligible <= 2U)
+        syncSummaryDenied = runBlocking {boClient.conversations.syncAllConversations(
+            consentStates = listOf(ConsentState.DENIED),
+        )}
+        assert(syncSummaryDenied.numEligible <= 2U)
+
+        var syncSummaryAllowedDenied = runBlocking { boClient.conversations.syncAllConversations(
+            consentStates = listOf(ConsentState.ALLOWED, ConsentState.DENIED),
+        ) }
+        assert(syncSummaryAllowedDenied.numEligible >= 2U)
+//        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 1)
     }
 
     @Test

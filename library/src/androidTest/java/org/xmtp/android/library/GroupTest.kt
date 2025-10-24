@@ -1051,7 +1051,7 @@ class GroupTest : BaseInstrumentedTest() {
         runBlocking { alixClient.conversations.sync() }
         val alixGroup: Group = runBlocking { alixClient.conversations.findGroup(boGroup.id)!! }
         val alixGroup2: Group = runBlocking { alixClient.conversations.findGroup(boGroup2.id)!! }
-        var numGroups: UInt?
+        var syncSummary: GroupSyncSummary?
 
         assertEquals(runBlocking { alixGroup.messages() }.size, 1)
         assertEquals(runBlocking { alixGroup2.messages() }.size, 1)
@@ -1059,12 +1059,12 @@ class GroupTest : BaseInstrumentedTest() {
         runBlocking {
             boGroup.send("hi")
             boGroup2.send("hi")
-            numGroups = alixClient.conversations.syncAllConversations()
+            syncSummary = alixClient.conversations.syncAllConversations()
         }
 
         assertEquals(runBlocking { alixGroup.messages() }.size, 2)
         assertEquals(runBlocking { alixGroup2.messages() }.size, 2)
-        assertEquals(numGroups, 3u)
+        assertEquals(syncSummary?.numEligible, 3UL)
 
         runBlocking {
             boGroup2.removeMembers(listOf(alixClient.inboxId))
@@ -1072,20 +1072,20 @@ class GroupTest : BaseInstrumentedTest() {
             boGroup.send("hi")
             boGroup2.send("hi")
             boGroup2.send("hi")
-            numGroups = alixClient.conversations.syncAllConversations()
+            syncSummary = alixClient.conversations.syncAllConversations()
             Thread.sleep(2000)
         }
 
         assertEquals(runBlocking { alixGroup.messages() }.size, 4)
         assertEquals(runBlocking { alixGroup2.messages() }.size, 3)
         // First syncAllGroups after remove includes the group you're removed from
-        assertEquals(numGroups, 3u)
+        assertEquals(syncSummary?.numEligible, 3UL)
 
         runBlocking {
-            numGroups = alixClient.conversations.syncAllConversations()
+            syncSummary = alixClient.conversations.syncAllConversations()
         }
         // Next syncAllGroups will not include the inactive group
-        assertEquals(numGroups, 2u)
+        assertEquals(syncSummary?.numEligible, 2u)
     }
 
     @Test
