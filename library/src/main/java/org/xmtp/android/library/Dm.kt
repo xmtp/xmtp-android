@@ -224,46 +224,46 @@ class Dm(
                                     else -> FfiDirection.DESCENDING
                                 },
                             contentTypes = null,
-                            excludeContentTypes = excludeContentTypes,
-                            excludeSenderInboxIds = excludeSenderInboxIds,
+//                            excludeContentTypes = excludeContentTypes,
+//                            excludeSenderInboxIds = excludeSenderInboxIds,
                         ),
                 ).mapNotNull { DecodedMessage.create(it) }
         }
 
-    suspend fun countMessages(
-        beforeNs: Long? = null,
-        afterNs: Long? = null,
-        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
-        excludeContentTypes: List<FfiContentType>? = null,
-        excludeSenderInboxIds: List<String>? = null,
-    ): Long =
-        withContext(Dispatchers.IO) {
-            libXMTPGroup.countMessages(
-                opts =
-                    FfiListMessagesOptions(
-                        sentBeforeNs = beforeNs,
-                        sentAfterNs = afterNs,
-                        limit = null,
-                        deliveryStatus =
-                            when (deliveryStatus) {
-                                MessageDeliveryStatus.PUBLISHED ->
-                                    FfiDeliveryStatus.PUBLISHED
-
-                                MessageDeliveryStatus.UNPUBLISHED ->
-                                    FfiDeliveryStatus.UNPUBLISHED
-
-                                MessageDeliveryStatus.FAILED ->
-                                    FfiDeliveryStatus.FAILED
-
-                                else -> null
-                            },
-                        direction = null,
-                        contentTypes = null,
-                        excludeContentTypes = excludeContentTypes,
-                        excludeSenderInboxIds = excludeSenderInboxIds,
-                    ),
-            )
-        }
+//    suspend fun countMessages(
+//        beforeNs: Long? = null,
+//        afterNs: Long? = null,
+//        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
+//        excludeContentTypes: List<FfiContentType>? = null,
+//        excludeSenderInboxIds: List<String>? = null,
+//    ): Long =
+//        withContext(Dispatchers.IO) {
+//            libXMTPGroup.countMessages(
+//                opts =
+//                    FfiListMessagesOptions(
+//                        sentBeforeNs = beforeNs,
+//                        sentAfterNs = afterNs,
+//                        limit = null,
+//                        deliveryStatus =
+//                            when (deliveryStatus) {
+//                                MessageDeliveryStatus.PUBLISHED ->
+//                                    FfiDeliveryStatus.PUBLISHED
+//
+//                                MessageDeliveryStatus.UNPUBLISHED ->
+//                                    FfiDeliveryStatus.UNPUBLISHED
+//
+//                                MessageDeliveryStatus.FAILED ->
+//                                    FfiDeliveryStatus.FAILED
+//
+//                                else -> null
+//                            },
+//                        direction = null,
+//                        contentTypes = null,
+//                        excludeContentTypes = excludeContentTypes,
+//                        excludeSenderInboxIds = excludeSenderInboxIds,
+//                    ),
+//            )
+//        }
 
     suspend fun messagesWithReactions(
         limit: Int? = null,
@@ -303,8 +303,8 @@ class Dm(
                                     else -> FfiDirection.DESCENDING
                                 },
                             contentTypes = null,
-                            excludeContentTypes = excludeContentTypes,
-                            excludeSenderInboxIds = excludeSenderInboxIds,
+//                            excludeContentTypes = excludeContentTypes,
+//                            excludeSenderInboxIds = excludeSenderInboxIds,
                         ),
                 )
 
@@ -313,49 +313,49 @@ class Dm(
             }
         }
 
-    suspend fun enrichedMessages(
-        limit: Int? = null,
-        beforeNs: Long? = null,
-        afterNs: Long? = null,
-        direction: SortDirection = SortDirection.DESCENDING,
-        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
-        excludeContentTypes: List<FfiContentType>? = null,
-        excludeSenderInboxIds: List<String>? = null,
-    ): List<DecodedMessageV2> =
-        withContext(Dispatchers.IO) {
-            libXMTPGroup
-                .findEnrichedMessages(
-                    opts =
-                        FfiListMessagesOptions(
-                            sentBeforeNs = beforeNs,
-                            sentAfterNs = afterNs,
-                            limit = limit?.toLong(),
-                            deliveryStatus =
-                                when (deliveryStatus) {
-                                    MessageDeliveryStatus.PUBLISHED ->
-                                        FfiDeliveryStatus.PUBLISHED
-
-                                    MessageDeliveryStatus.UNPUBLISHED ->
-                                        FfiDeliveryStatus.UNPUBLISHED
-
-                                    MessageDeliveryStatus.FAILED ->
-                                        FfiDeliveryStatus.FAILED
-
-                                    else -> null
-                                },
-                            direction =
-                                when (direction) {
-                                    SortDirection.ASCENDING ->
-                                        FfiDirection.ASCENDING
-
-                                    else -> FfiDirection.DESCENDING
-                                },
-                            contentTypes = null,
-                            excludeContentTypes = excludeContentTypes,
-                            excludeSenderInboxIds = excludeSenderInboxIds,
-                        ),
-                ).mapNotNull { DecodedMessageV2.create(it) }
-        }
+//    suspend fun enrichedMessages(
+//        limit: Int? = null,
+//        beforeNs: Long? = null,
+//        afterNs: Long? = null,
+//        direction: SortDirection = SortDirection.DESCENDING,
+//        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
+//        excludeContentTypes: List<FfiContentType>? = null,
+//        excludeSenderInboxIds: List<String>? = null,
+//    ): List<DecodedMessageV2> =
+//        withContext(Dispatchers.IO) {
+//            libXMTPGroup
+//                .findEnrichedMessages(
+//                    opts =
+//                        FfiListMessagesOptions(
+//                            sentBeforeNs = beforeNs,
+//                            sentAfterNs = afterNs,
+//                            limit = limit?.toLong(),
+//                            deliveryStatus =
+//                                when (deliveryStatus) {
+//                                    MessageDeliveryStatus.PUBLISHED ->
+//                                        FfiDeliveryStatus.PUBLISHED
+//
+//                                    MessageDeliveryStatus.UNPUBLISHED ->
+//                                        FfiDeliveryStatus.UNPUBLISHED
+//
+//                                    MessageDeliveryStatus.FAILED ->
+//                                        FfiDeliveryStatus.FAILED
+//
+//                                    else -> null
+//                                },
+//                            direction =
+//                                when (direction) {
+//                                    SortDirection.ASCENDING ->
+//                                        FfiDirection.ASCENDING
+//
+//                                    else -> FfiDirection.DESCENDING
+//                                },
+//                            contentTypes = null,
+////                            excludeContentTypes = excludeContentTypes,
+////                            excludeSenderInboxIds = excludeSenderInboxIds,
+//                        ),
+//                ).mapNotNull { DecodedMessageV2.create(it) }
+//        }
 
     suspend fun processMessage(messageBytes: ByteArray): DecodedMessage? =
         withContext(Dispatchers.IO) {

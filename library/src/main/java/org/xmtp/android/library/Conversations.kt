@@ -24,7 +24,7 @@ import uniffi.xmtpv3.FfiCreateDmOptions
 import uniffi.xmtpv3.FfiCreateGroupOptions
 import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiGroupQueryOrderBy
-import uniffi.xmtpv3.FfiGroupSyncSummary
+//import uniffi.xmtpv3.FfiGroupSyncSummary
 import uniffi.xmtpv3.FfiListConversationsOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
@@ -33,24 +33,24 @@ import uniffi.xmtpv3.FfiPermissionPolicySet
 import uniffi.xmtpv3.FfiSubscribeException
 import uniffi.xmtpv3.FfiXmtpClient
 
-data class GroupSyncSummary(
-    val numEligible: ULong,
-    val numSynced: ULong,
-) {
-    companion object {
-        fun fromFfi(ffiSummary: FfiGroupSyncSummary): GroupSyncSummary =
-            GroupSyncSummary(
-                numEligible = ffiSummary.numEligible,
-                numSynced = ffiSummary.numSynced,
-            )
-    }
-
-    fun toFfi(): FfiGroupSyncSummary =
-        FfiGroupSyncSummary(
-            numEligible = this.numEligible,
-            numSynced = this.numSynced,
-        )
-}
+//data class GroupSyncSummary(
+//    val numEligible: ULong,
+//    val numSynced: ULong,
+//) {
+//    companion object {
+//        fun fromFfi(ffiSummary: FfiGroupSyncSummary): GroupSyncSummary =
+//            GroupSyncSummary(
+//                numEligible = ffiSummary.numEligible,
+//                numSynced = ffiSummary.numSynced,
+//            )
+//    }
+//
+//    fun toFfi(): FfiGroupSyncSummary =
+//        FfiGroupSyncSummary(
+//            numEligible = this.numEligible,
+//            numSynced = this.numSynced,
+//        )
+//}
 
 data class Conversations(
     var client: Client,
@@ -140,15 +140,15 @@ data class Conversations(
             }
         }
 
-    suspend fun findEnrichedMessage(messageId: String): DecodedMessageV2? =
-        withContext(Dispatchers.IO) {
-            try {
-                DecodedMessageV2.create(ffiClient.enrichedMessage(messageId.hexToByteArray()))
-            } catch (e: Exception) {
-                Log.e("findEnrichedMessage failed", e.toString())
-                null
-            }
-        }
+//    suspend fun findEnrichedMessage(messageId: String): DecodedMessageV2? =
+//        withContext(Dispatchers.IO) {
+//            try {
+//                DecodedMessageV2.create(ffiClient.enrichedMessage(messageId.hexToByteArray()))
+//            } catch (e: Exception) {
+//                Log.e("findEnrichedMessage failed", e.toString())
+//                null
+//            }
+//        }
 
     suspend fun fromWelcome(envelopeBytes: ByteArray): Conversation =
         withContext(Dispatchers.IO) {
@@ -354,13 +354,20 @@ data class Conversations(
     suspend fun sync() = withContext(Dispatchers.IO) { ffiConversations.sync() }
 
     // Sync all new and existing conversations data from the network
-    suspend fun syncAllConversations(consentStates: List<ConsentState>? = null): GroupSyncSummary =
+//    suspend fun syncAllConversations(consentStates: List<ConsentState>? = null): GroupSyncSummary =
+    suspend fun syncAllConversations(consentStates: List<ConsentState>? = null): UInt =
+
         withContext(Dispatchers.IO) {
-            GroupSyncSummary.fromFfi(ffiConversations.syncAllConversations(
+//            GroupSyncSummary.fromFfi(ffiConversations.syncAllConversations(
+//                consentStates?.let { states ->
+//                    states.map { ConsentState.toFfiConsentState(it) }
+//                },
+//            ))
+            ffiConversations.syncAllConversations(
                 consentStates?.let { states ->
                     states.map { ConsentState.toFfiConsentState(it) }
                 },
-            ))
+            )
         }
 
     suspend fun newConversationWithIdentity(

@@ -265,70 +265,70 @@ sealed class Conversation {
             }
         }
 
-    suspend fun countMessages(
-        beforeNs: Long? = null,
-        afterNs: Long? = null,
-        deliveryStatus: DecodedMessage.MessageDeliveryStatus =
-            DecodedMessage.MessageDeliveryStatus.ALL,
-        excludedContentTypes: List<FfiContentType>? = null,
-        excludeSenderInboxIds: List<String>? = null,
-    ): Long =
-        withContext(Dispatchers.IO) {
-            when (this@Conversation) {
-                is Group ->
-                    group.countMessages(
-                        beforeNs,
-                        afterNs,
-                        deliveryStatus,
-                        excludedContentTypes,
-                        excludeSenderInboxIds,
-                    )
-                is Dm ->
-                    dm.countMessages(
-                        beforeNs,
-                        afterNs,
-                        deliveryStatus,
-                        excludedContentTypes,
-                        excludeSenderInboxIds,
-                    )
-            }
-        }
+//    suspend fun countMessages(
+//        beforeNs: Long? = null,
+//        afterNs: Long? = null,
+//        deliveryStatus: DecodedMessage.MessageDeliveryStatus =
+//            DecodedMessage.MessageDeliveryStatus.ALL,
+//        excludedContentTypes: List<FfiContentType>? = null,
+//        excludeSenderInboxIds: List<String>? = null,
+//    ): Long =
+//        withContext(Dispatchers.IO) {
+//            when (this@Conversation) {
+//                is Group ->
+//                    group.countMessages(
+//                        beforeNs,
+//                        afterNs,
+//                        deliveryStatus,
+//                        excludedContentTypes,
+//                        excludeSenderInboxIds,
+//                    )
+//                is Dm ->
+//                    dm.countMessages(
+//                        beforeNs,
+//                        afterNs,
+//                        deliveryStatus,
+//                        excludedContentTypes,
+//                        excludeSenderInboxIds,
+//                    )
+//            }
+//        }
 
-    suspend fun enrichedMessages(
-        limit: Int? = null,
-        beforeNs: Long? = null,
-        afterNs: Long? = null,
-        direction: DecodedMessage.SortDirection = DecodedMessage.SortDirection.DESCENDING,
-        deliveryStatus: DecodedMessage.MessageDeliveryStatus =
-            DecodedMessage.MessageDeliveryStatus.ALL,
-        excludedContentTypes: List<FfiContentType>? = null,
-        excludeSenderInboxIds: List<String>? = null,
-    ): List<DecodedMessageV2> =
-        withContext(Dispatchers.IO) {
-            when (this@Conversation) {
-                is Group ->
-                    group.enrichedMessages(
-                        limit,
-                        beforeNs,
-                        afterNs,
-                        direction,
-                        deliveryStatus,
-                        excludedContentTypes,
-                        excludeSenderInboxIds,
-                    )
-
-                is Dm ->
-                    dm.enrichedMessages(
-                        limit,
-                        beforeNs,
-                        afterNs,
-                        direction,
-                        deliveryStatus,
-                        excludedContentTypes,
-                        excludeSenderInboxIds,
-                    )
-            }
-        }
+//    suspend fun enrichedMessages(
+//        limit: Int? = null,
+//        beforeNs: Long? = null,
+//        afterNs: Long? = null,
+//        direction: DecodedMessage.SortDirection = DecodedMessage.SortDirection.DESCENDING,
+//        deliveryStatus: DecodedMessage.MessageDeliveryStatus =
+//            DecodedMessage.MessageDeliveryStatus.ALL,
+//        excludedContentTypes: List<FfiContentType>? = null,
+//        excludeSenderInboxIds: List<String>? = null,
+//    ): List<DecodedMessageV2> =
+//        withContext(Dispatchers.IO) {
+//            when (this@Conversation) {
+//                is Group ->
+//                    group.enrichedMessages(
+//                        limit,
+//                        beforeNs,
+//                        afterNs,
+//                        direction,
+//                        deliveryStatus,
+//                        excludedContentTypes,
+//                        excludeSenderInboxIds,
+//                    )
+//
+//                is Dm ->
+//                    dm.enrichedMessages(
+//                        limit,
+//                        beforeNs,
+//                        afterNs,
+//                        direction,
+//                        deliveryStatus,
+//                        excludedContentTypes,
+//                        excludeSenderInboxIds,
+//                    )
+//            }
+//        }
 
     suspend fun messagesWithReactions(
         limit: Int? = null,

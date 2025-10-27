@@ -160,39 +160,39 @@ class ConversationsTest : BaseInstrumentedTest() {
         }
     }
 
-    @Test
-    fun testsCanSyncAllConversationsFiltered() {
-        runBlocking { boClient.conversations.findOrCreateDm(caroClient.inboxId) }
-        val group = runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
-        val syncSummary = runBlocking { boClient.conversations.syncAllConversations() }
-        assert(syncSummary.numEligible >= 2U)
-        var syncSummaryAllowed = runBlocking { boClient.conversations.syncAllConversations(
-            consentStates = listOf(ConsentState.ALLOWED),
-        ) }
-
-        assert(syncSummaryAllowed.numEligible >= 2U)
-
-        var syncSummaryDenied= runBlocking { boClient.conversations.syncAllConversations(
-            consentStates = listOf(ConsentState.DENIED),
-        ) }
-        assert(syncSummaryDenied.numEligible <= 1U)
-        runBlocking { group.updateConsentState(ConsentState.DENIED) }
-
-        syncSummaryAllowed = runBlocking {boClient.conversations.syncAllConversations(
-            consentStates = listOf(ConsentState.ALLOWED),
-        )}
-        assert(syncSummaryAllowed.numEligible <= 2U)
-        syncSummaryDenied = runBlocking {boClient.conversations.syncAllConversations(
-            consentStates = listOf(ConsentState.DENIED),
-        )}
-        assert(syncSummaryDenied.numEligible <= 2U)
-
-        var syncSummaryAllowedDenied = runBlocking { boClient.conversations.syncAllConversations(
-            consentStates = listOf(ConsentState.ALLOWED, ConsentState.DENIED),
-        ) }
-        assert(syncSummaryAllowedDenied.numEligible >= 2U)
-//        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 1)
-    }
+//    @Test
+//    fun testsCanSyncAllConversationsFiltered() {
+//        runBlocking { boClient.conversations.findOrCreateDm(caroClient.inboxId) }
+//        val group = runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
+//        val syncSummary = runBlocking { boClient.conversations.syncAllConversations() }
+//        assert(syncSummary.numEligible >= 2U)
+//        var syncSummaryAllowed = runBlocking { boClient.conversations.syncAllConversations(
+//            consentStates = listOf(ConsentState.ALLOWED),
+//        ) }
+//
+//        assert(syncSummaryAllowed.numEligible >= 2U)
+//
+//        var syncSummaryDenied= runBlocking { boClient.conversations.syncAllConversations(
+//            consentStates = listOf(ConsentState.DENIED),
+//        ) }
+//        assert(syncSummaryDenied.numEligible <= 1U)
+//        runBlocking { group.updateConsentState(ConsentState.DENIED) }
+//
+//        syncSummaryAllowed = runBlocking {boClient.conversations.syncAllConversations(
+//            consentStates = listOf(ConsentState.ALLOWED),
+//        )}
+//        assert(syncSummaryAllowed.numEligible <= 2U)
+//        syncSummaryDenied = runBlocking {boClient.conversations.syncAllConversations(
+//            consentStates = listOf(ConsentState.DENIED),
+//        )}
+//        assert(syncSummaryDenied.numEligible <= 2U)
+//
+//        var syncSummaryAllowedDenied = runBlocking { boClient.conversations.syncAllConversations(
+//            consentStates = listOf(ConsentState.ALLOWED, ConsentState.DENIED),
+//        ) }
+//        assert(syncSummaryAllowedDenied.numEligible >= 2U)
+////        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 1)
+//    }
 
     @Test
     fun testCanStreamAllMessages() {
@@ -558,68 +558,68 @@ class ConversationsTest : BaseInstrumentedTest() {
             assertEquals(originalNumberOfMessages - 1, group.messages().size)
         }
 
-    @Test
-    fun testCountMessages() =
-        runBlocking {
-            // Test with Group conversation
-            val group = boClient.conversations.newGroup(listOf(alixClient.inboxId))
-
-            // Send some messages
-            group.send("Message 1")
-            group.send("Message 2")
-            group.send("Message 3")
-
-            // Count all messages
-            val groupCount = group.countMessages()
-            assertEquals(4L, groupCount) // 3 messages + 1 member added message
-
-            // Test with DM conversation
-            val dm = boClient.conversations.findOrCreateDm(caroClient.inboxId)
-
-            // Send some messages
-            dm.send("DM Message 1")
-            val msg2ID = dm.send("DM Message 2")
-            val msg2 = boClient.conversations.findMessage(msg2ID)
-
-            val dmCount = dm.countMessages()
-            assertEquals(2L, dmCount)
-
-            // Test with Conversation wrapper
-            val conversation = Conversation.Dm(dm)
-            val conversationCount = conversation.countMessages()
-            assertEquals(2L, conversationCount)
-
-            val msg3ID = dm.send("DM Message 3")
-            val msg3 = boClient.conversations.findMessage(msg3ID)
-
-            val countBefore = dm.countMessages(beforeNs = msg3!!.sentAtNs)
-            assertEquals(2L, countBefore)
-
-            val countAfter = dm.countMessages(afterNs = msg2!!.sentAtNs)
-            assertEquals(1L, countAfter)
-
-            // Test with delivery status filtering
-            val unpublishedId = dm.prepareMessage("Unpublished message")
-
-            val allCount = dm.countMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.ALL)
-            val publishedCount =
-                dm.countMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.PUBLISHED)
-            val unpublishedCount =
-                dm.countMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.UNPUBLISHED)
-
-            assertEquals(4L, allCount)
-            assertEquals(3L, publishedCount)
-            assertEquals(1L, unpublishedCount)
-
-            // Publish the message and verify counts
-            dm.publishMessages()
-
-            val publishedCountAfter =
-                dm.countMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.PUBLISHED)
-            val unpublishedCountAfter =
-                dm.countMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.UNPUBLISHED)
-
-            assertEquals(4L, publishedCountAfter)
-            assertEquals(0L, unpublishedCountAfter)
-        }
+//    @Test
+//    fun testCountMessages() =
+//        runBlocking {
+//            // Test with Group conversation
+//            val group = boClient.conversations.newGroup(listOf(alixClient.inboxId))
+//
+//            // Send some messages
+//            group.send("Message 1")
+//            group.send("Message 2")
+//            group.send("Message 3")
+//
+//            // Count all messages
+//            val groupCount = group.countMessages()
+//            assertEquals(4L, groupCount) // 3 messages + 1 member added message
+//
+//            // Test with DM conversation
+//            val dm = boClient.conversations.findOrCreateDm(caroClient.inboxId)
+//
+//            // Send some messages
+//            dm.send("DM Message 1")
+//            val msg2ID = dm.send("DM Message 2")
+//            val msg2 = boClient.conversations.findMessage(msg2ID)
+//
+//            val dmCount = dm.countMessages()
+//            assertEquals(2L, dmCount)
+//
+//            // Test with Conversation wrapper
+//            val conversation = Conversation.Dm(dm)
+//            val conversationCount = conversation.countMessages()
+//            assertEquals(2L, conversationCount)
+//
+//            val msg3ID = dm.send("DM Message 3")
+//            val msg3 = boClient.conversations.findMessage(msg3ID)
+//
+//            val countBefore = dm.countMessages(beforeNs = msg3!!.sentAtNs)
+//            assertEquals(2L, countBefore)
+//
+//            val countAfter = dm.countMessages(afterNs = msg2!!.sentAtNs)
+//            assertEquals(1L, countAfter)
+//
+//            // Test with delivery status filtering
+//            val unpublishedId = dm.prepareMessage("Unpublished message")
+//
+//            val allCount = dm.countMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.ALL)
+//            val publishedCount =
+//                dm.countMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.PUBLISHED)
+//            val unpublishedCount =
+//                dm.countMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.UNPUBLISHED)
+//
+//            assertEquals(4L, allCount)
+//            assertEquals(3L, publishedCount)
+//            assertEquals(1L, unpublishedCount)
+//
+//            // Publish the message and verify counts
+//            dm.publishMessages()
+//
+//            val publishedCountAfter =
+//                dm.countMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.PUBLISHED)
+//            val unpublishedCountAfter =
+//                dm.countMessages(deliveryStatus = DecodedMessage.MessageDeliveryStatus.UNPUBLISHED)
+//
+//            assertEquals(4L, publishedCountAfter)
+//            assertEquals(0L, unpublishedCountAfter)
+//        }
 }

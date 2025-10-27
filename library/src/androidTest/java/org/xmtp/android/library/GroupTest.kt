@@ -347,6 +347,7 @@ class GroupTest : BaseInstrumentedTest() {
             }
         runBlocking {
             boGroup.addAdmin(alixClient.inboxId)
+            assert(boGroup.listAdmins().contains(alixClient.inboxId))
             alixClient.conversations.sync()
         }
         val group =
@@ -355,6 +356,7 @@ class GroupTest : BaseInstrumentedTest() {
                 alixClient.conversations.listGroups().first()
             }
         runBlocking {
+            group.sync()
             group.removeMembers(listOf(caroClient.inboxId))
             group.sync()
             boGroup.sync()
@@ -1030,63 +1032,63 @@ class GroupTest : BaseInstrumentedTest() {
         assertEquals(preparedMessageId, message.id)
     }
 
-    @Test
-    fun testSyncsAllGroupsInParallel() {
-        val boGroup =
-            runBlocking {
-                boClient.conversations.newGroup(
-                    listOf(
-                        alixClient.inboxId,
-                    ),
-                )
-            }
-        val boGroup2 =
-            runBlocking {
-                boClient.conversations.newGroup(
-                    listOf(
-                        alixClient.inboxId,
-                    ),
-                )
-            }
-        runBlocking { alixClient.conversations.sync() }
-        val alixGroup: Group = runBlocking { alixClient.conversations.findGroup(boGroup.id)!! }
-        val alixGroup2: Group = runBlocking { alixClient.conversations.findGroup(boGroup2.id)!! }
-        var syncSummary: GroupSyncSummary?
-
-        assertEquals(runBlocking { alixGroup.messages() }.size, 1)
-        assertEquals(runBlocking { alixGroup2.messages() }.size, 1)
-
-        runBlocking {
-            boGroup.send("hi")
-            boGroup2.send("hi")
-            syncSummary = alixClient.conversations.syncAllConversations()
-        }
-
-        assertEquals(runBlocking { alixGroup.messages() }.size, 2)
-        assertEquals(runBlocking { alixGroup2.messages() }.size, 2)
-        assertEquals(syncSummary?.numEligible, 3UL)
-
-        runBlocking {
-            boGroup2.removeMembers(listOf(alixClient.inboxId))
-            boGroup.send("hi")
-            boGroup.send("hi")
-            boGroup2.send("hi")
-            boGroup2.send("hi")
-            syncSummary = alixClient.conversations.syncAllConversations()
-            Thread.sleep(2000)
-        }
-
-        assertEquals(runBlocking { alixGroup.messages() }.size, 4)
-        assertEquals(runBlocking { alixGroup2.messages() }.size, 3)
-        // First syncAllGroups after remove includes the group you're removed from
-        assertEquals(syncSummary?.numEligible, 3UL)
-
-        runBlocking {
-            syncSummary = alixClient.conversations.syncAllConversations()
-        }
-        // Next syncAllGroups will not include the inactive group
-        assertEquals(syncSummary?.numEligible, 2u)
-    }
+//    @Test
+//    fun testSyncsAllGroupsInParallel() {
+//        val boGroup =
+//            runBlocking {
+//                boClient.conversations.newGroup(
+//                    listOf(
+//                        alixClient.inboxId,
+//                    ),
+//                )
+//            }
+//        val boGroup2 =
+//            runBlocking {
+//                boClient.conversations.newGroup(
+//                    listOf(
+//                        alixClient.inboxId,
+//                    ),
+//                )
+//            }
+//        runBlocking { alixClient.conversations.sync() }
+//        val alixGroup: Group = runBlocking { alixClient.conversations.findGroup(boGroup.id)!! }
+//        val alixGroup2: Group = runBlocking { alixClient.conversations.findGroup(boGroup2.id)!! }
+//        var syncSummary: GroupSyncSummary?
+//
+//        assertEquals(runBlocking { alixGroup.messages() }.size, 1)
+//        assertEquals(runBlocking { alixGroup2.messages() }.size, 1)
+//
+//        runBlocking {
+//            boGroup.send("hi")
+//            boGroup2.send("hi")
+//            syncSummary = alixClient.conversations.syncAllConversations()
+//        }
+//
+//        assertEquals(runBlocking { alixGroup.messages() }.size, 2)
+//        assertEquals(runBlocking { alixGroup2.messages() }.size, 2)
+//        assertEquals(syncSummary?.numEligible, 3UL)
+//
+//        runBlocking {
+//            boGroup2.removeMembers(listOf(alixClient.inboxId))
+//            boGroup.send("hi")
+//            boGroup.send("hi")
+//            boGroup2.send("hi")
+//            boGroup2.send("hi")
+//            syncSummary = alixClient.conversations.syncAllConversations()
+//            Thread.sleep(2000)
+//        }
+//
+//        assertEquals(runBlocking { alixGroup.messages() }.size, 4)
+//        assertEquals(runBlocking { alixGroup2.messages() }.size, 3)
+//        // First syncAllGroups after remove includes the group you're removed from
+//        assertEquals(syncSummary?.numEligible, 3UL)
+//
+//        runBlocking {
+//            syncSummary = alixClient.conversations.syncAllConversations()
+//        }
+//        // Next syncAllGroups will not include the inactive group
+//        assertEquals(syncSummary?.numEligible, 2u)
+//    }
 
     @Test
     fun testGroupDisappearingMessages() =
@@ -1237,46 +1239,46 @@ class GroupTest : BaseInstrumentedTest() {
             assertNull(pausedForVersionDm)
         }
 
-    @Test
-    fun testCountMessagesWithExcludedContentTypes() {
-        Client.register(codec = ReactionCodec())
-
-        val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
-        runBlocking {
-            group.send("gm")
-            group.sync()
-        }
-        val messageToReact = runBlocking { group.messages() }[0]
-
-        val reaction =
-            Reaction(
-                reference = messageToReact.id,
-                action = ReactionAction.Added,
-                content = "U+1F603",
-                schema = ReactionSchema.Unicode,
-            )
-
-        runBlocking {
-            group.send(
-                content = reaction,
-                options = SendOptions(contentType = ContentTypeReaction),
-            )
-        }
-
-        // Count without exclusions - should include memberAdd, text message, and reaction
-        val totalCount = runBlocking { group.countMessages() }
-        assertEquals(3, totalCount)
-
-        // Count with reaction exclusion - should only include memberAdd and text message
-        val countWithoutReactions =
-            runBlocking {
-                group.countMessages(
-                    excludeContentTypes =
-                        listOf(
-                            uniffi.xmtpv3.FfiContentType.REACTION,
-                        ),
-                )
-            }
-        assertEquals(2, countWithoutReactions)
-    }
+//    @Test
+//    fun testCountMessagesWithExcludedContentTypes() {
+//        Client.register(codec = ReactionCodec())
+//
+//        val group = runBlocking { boClient.conversations.newGroup(listOf(alixClient.inboxId)) }
+//        runBlocking {
+//            group.send("gm")
+//            group.sync()
+//        }
+//        val messageToReact = runBlocking { group.messages() }[0]
+//
+//        val reaction =
+//            Reaction(
+//                reference = messageToReact.id,
+//                action = ReactionAction.Added,
+//                content = "U+1F603",
+//                schema = ReactionSchema.Unicode,
+//            )
+//
+//        runBlocking {
+//            group.send(
+//                content = reaction,
+//                options = SendOptions(contentType = ContentTypeReaction),
+//            )
+//        }
+//
+//        // Count without exclusions - should include memberAdd, text message, and reaction
+//        val totalCount = runBlocking { group.countMessages() }
+//        assertEquals(3, totalCount)
+//
+//        // Count with reaction exclusion - should only include memberAdd and text message
+//        val countWithoutReactions =
+//            runBlocking {
+//                group.countMessages(
+//                    excludeContentTypes =
+//                        listOf(
+//                            uniffi.xmtpv3.FfiContentType.REACTION,
+//                        ),
+//                )
+//            }
+//        assertEquals(2, countWithoutReactions)
+//    }
 }

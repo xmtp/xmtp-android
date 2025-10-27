@@ -16,8 +16,8 @@ import org.xmtp.android.library.libxmtp.InboxState
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.SignatureRequest
 import org.xmtp.android.library.libxmtp.toFfi
-import uniffi.xmtpv3.FfiForkRecoveryOpts
-import uniffi.xmtpv3.FfiForkRecoveryPolicy
+//import uniffi.xmtpv3.FfiForkRecoveryOpts
+//import uniffi.xmtpv3.FfiForkRecoveryPolicy
 import uniffi.xmtpv3.FfiKeyPackageStatus
 import uniffi.xmtpv3.FfiLogLevel
 import uniffi.xmtpv3.FfiLogRotation
@@ -48,7 +48,7 @@ data class ClientOptions(
     val dbDirectory: String? = null,
     val deviceSyncEnabled: Boolean = true,
     val debugEventsEnabled: Boolean = false,
-    val forkRecoveryOptions: ForkRecoveryOptions? = null
+//    val forkRecoveryOptions: ForkRecoveryOptions? = null
 ) {
     data class Api(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
@@ -58,33 +58,33 @@ data class ClientOptions(
     )
 }
 
-enum class ForkRecoveryPolicy {
-    None,
-    AllowlistedGroups,
-    All;
-
-    fun toFfi(): FfiForkRecoveryPolicy =
-        when (this) {
-            None -> FfiForkRecoveryPolicy.NONE
-            AllowlistedGroups -> FfiForkRecoveryPolicy.ALLOWLISTED_GROUPS
-            All -> FfiForkRecoveryPolicy.ALL
-        }
-}
-
-data class ForkRecoveryOptions(
-    val enableRecoveryRequests: ForkRecoveryPolicy,
-    val groupsToRequestRecovery: List<String>,
-    val disableRecoveryResponses: Boolean? = null,
-    val workerIntervalNs: ULong? = null,
-) {
-    fun toFfi(): FfiForkRecoveryOpts =
-        FfiForkRecoveryOpts(
-            enableRecoveryRequests = this.enableRecoveryRequests.toFfi(),
-            groupsToRequestRecovery = this.groupsToRequestRecovery,
-            disableRecoveryResponses = this.disableRecoveryResponses,
-            workerIntervalNs = this.workerIntervalNs,
-        )
-}
+//enum class ForkRecoveryPolicy {
+//    None,
+//    AllowlistedGroups,
+//    All;
+//
+//    fun toFfi(): FfiForkRecoveryPolicy =
+//        when (this) {
+//            None -> FfiForkRecoveryPolicy.NONE
+//            AllowlistedGroups -> FfiForkRecoveryPolicy.ALLOWLISTED_GROUPS
+//            All -> FfiForkRecoveryPolicy.ALL
+//        }
+//}
+//
+//data class ForkRecoveryOptions(
+//    val enableRecoveryRequests: ForkRecoveryPolicy,
+//    val groupsToRequestRecovery: List<String>,
+//    val disableRecoveryResponses: Boolean? = null,
+//    val workerIntervalNs: ULong? = null,
+//) {
+//    fun toFfi(): FfiForkRecoveryOpts =
+//        FfiForkRecoveryOpts(
+//            enableRecoveryRequests = this.enableRecoveryRequests.toFfi(),
+//            groupsToRequestRecovery = this.groupsToRequestRecovery,
+//            disableRecoveryResponses = this.disableRecoveryResponses,
+//            workerIntervalNs = this.workerIntervalNs,
+//        )
+//}
 
 typealias InboxId = String
 
@@ -305,7 +305,7 @@ class Client(
                         deviceSyncMode = null,
                         allowOffline = false,
                         disableEvents = true,
-                        forkRecoveryOpts = null,
+//                        forkRecoveryOpts = null,
                     )
 
                 useClient(ffiClient)
@@ -481,7 +481,7 @@ class Client(
                             },
                         allowOffline = buildOffline,
                         disableEvents = options.debugEventsEnabled,
-                        forkRecoveryOpts = options.forkRecoveryOptions?.toFfi()
+//                        forkRecoveryOpts = options.forkRecoveryOptions?.toFfi()
                     )
                 Pair(ffiClient, dbPath)
             }
