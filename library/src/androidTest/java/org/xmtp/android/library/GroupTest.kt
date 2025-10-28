@@ -1023,7 +1023,7 @@ class GroupTest {
         runBlocking {
             boGroup.send("hi")
             boGroup2.send("hi")
-            numGroups = alixClient.conversations.syncAllConversations()
+            numGroups = alixClient.conversations.syncAllConversations().numEligible.toUInt()
         }
 
         assertEquals(runBlocking { alixGroup.messages() }.size, 2)
@@ -1036,7 +1036,7 @@ class GroupTest {
             boGroup.send("hi")
             boGroup2.send("hi")
             boGroup2.send("hi")
-            numGroups = alixClient.conversations.syncAllConversations()
+            numGroups = alixClient.conversations.syncAllConversations().numEligible.toUInt()
             Thread.sleep(2000)
         }
 
@@ -1046,7 +1046,7 @@ class GroupTest {
         assertEquals(numGroups, 3u)
 
         runBlocking {
-            numGroups = alixClient.conversations.syncAllConversations()
+            numGroups = alixClient.conversations.syncAllConversations().numEligible.toUInt()
         }
         // Next syncAllGroups will not include the inactive group
         assertEquals(numGroups, 2u)

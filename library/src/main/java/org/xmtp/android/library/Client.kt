@@ -272,6 +272,7 @@ class Client(
                 deviceSyncMode = null,
                 allowOffline = false,
                 disableEvents = true,
+                forkRecoveryOpts = null,
             )
 
             useClient(ffiClient)
@@ -432,6 +433,7 @@ class Client(
                 deviceSyncMode = if (!options.deviceSyncEnabled) FfiSyncWorkerMode.DISABLED else FfiSyncWorkerMode.ENABLED,
                 allowOffline = buildOffline,
                 disableEvents = options.debugEventsEnabled,
+                forkRecoveryOpts = null
             )
             Pair(ffiClient, dbPath)
         }

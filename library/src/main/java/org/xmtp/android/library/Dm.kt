@@ -200,7 +200,9 @@ class Dm(
                     SortDirection.ASCENDING -> FfiDirection.ASCENDING
                     else -> FfiDirection.DESCENDING
                 },
-                contentTypes = null
+                contentTypes = null,
+                null,
+                null
             )
         ).mapNotNull {
             DecodedMessage.create(it)
@@ -229,7 +231,9 @@ class Dm(
                     SortDirection.ASCENDING -> FfiDirection.ASCENDING
                     else -> FfiDirection.DESCENDING
                 },
-                contentTypes = null
+                contentTypes = null,
+                null,
+                null,
             )
         )
 
@@ -238,34 +242,34 @@ class Dm(
         }
     }
 
-    suspend fun enrichedMessages(
-        limit: Int? = null,
-        beforeNs: Long? = null,
-        afterNs: Long? = null,
-        direction: SortDirection = SortDirection.DESCENDING,
-        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
-    ): List<DecodedMessageV2> = withContext(Dispatchers.IO) {
-        libXMTPGroup.findMessagesV2(
-            opts = FfiListMessagesOptions(
-                sentBeforeNs = beforeNs,
-                sentAfterNs = afterNs,
-                limit = limit?.toLong(),
-                deliveryStatus = when (deliveryStatus) {
-                    MessageDeliveryStatus.PUBLISHED -> FfiDeliveryStatus.PUBLISHED
-                    MessageDeliveryStatus.UNPUBLISHED -> FfiDeliveryStatus.UNPUBLISHED
-                    MessageDeliveryStatus.FAILED -> FfiDeliveryStatus.FAILED
-                    else -> null
-                },
-                direction = when (direction) {
-                    SortDirection.ASCENDING -> FfiDirection.ASCENDING
-                    else -> FfiDirection.DESCENDING
-                },
-                contentTypes = null
-            )
-        ).mapNotNull {
-            DecodedMessageV2.create(it)
-        }
-    }
+//    suspend fun enrichedMessages(
+//        limit: Int? = null,
+//        beforeNs: Long? = null,
+//        afterNs: Long? = null,
+//        direction: SortDirection = SortDirection.DESCENDING,
+//        deliveryStatus: MessageDeliveryStatus = MessageDeliveryStatus.ALL,
+//    ): List<DecodedMessageV2> = withContext(Dispatchers.IO) {
+//        libXMTPGroup.findMessagesV2(
+//            opts = FfiListMessagesOptions(
+//                sentBeforeNs = beforeNs,
+//                sentAfterNs = afterNs,
+//                limit = limit?.toLong(),
+//                deliveryStatus = when (deliveryStatus) {
+//                    MessageDeliveryStatus.PUBLISHED -> FfiDeliveryStatus.PUBLISHED
+//                    MessageDeliveryStatus.UNPUBLISHED -> FfiDeliveryStatus.UNPUBLISHED
+//                    MessageDeliveryStatus.FAILED -> FfiDeliveryStatus.FAILED
+//                    else -> null
+//                },
+//                direction = when (direction) {
+//                    SortDirection.ASCENDING -> FfiDirection.ASCENDING
+//                    else -> FfiDirection.DESCENDING
+//                },
+//                contentTypes = null
+//            )
+//        ).mapNotNull {
+//            DecodedMessageV2.create(it)
+//        }
+//    }
 
     suspend fun processMessage(messageBytes: ByteArray): DecodedMessage? = withContext(Dispatchers.IO) {
         val message = libXMTPGroup.processStreamedConversationMessage(messageBytes)

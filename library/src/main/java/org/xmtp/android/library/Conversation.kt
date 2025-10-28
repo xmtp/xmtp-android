@@ -214,18 +214,18 @@ sealed class Conversation {
         }
     }
 
-    suspend fun enrichedMessages(
-        limit: Int? = null,
-        beforeNs: Long? = null,
-        afterNs: Long? = null,
-        direction: DecodedMessage.SortDirection = DecodedMessage.SortDirection.DESCENDING,
-        deliveryStatus: DecodedMessage.MessageDeliveryStatus = DecodedMessage.MessageDeliveryStatus.ALL,
-    ): List<DecodedMessageV2> = withContext(Dispatchers.IO) {
-        when (this@Conversation) {
-            is Group -> group.enrichedMessages(limit, beforeNs, afterNs, direction, deliveryStatus)
-            is Dm -> dm.enrichedMessages(limit, beforeNs, afterNs, direction, deliveryStatus)
-        }
-    }
+//    suspend fun enrichedMessages(
+//        limit: Int? = null,
+//        beforeNs: Long? = null,
+//        afterNs: Long? = null,
+//        direction: DecodedMessage.SortDirection = DecodedMessage.SortDirection.DESCENDING,
+//        deliveryStatus: DecodedMessage.MessageDeliveryStatus = DecodedMessage.MessageDeliveryStatus.ALL,
+//    ): List<DecoddjedMessageV2> = withContext(Dispatchers.IO) {
+//        when (this@Conversation) {
+//            is Group -> group.enrichedMessages(limit, beforeNs, afterNs, direction, deliveryStatus)
+//            is Dm -> dm.enrichedMessages(limit, beforeNs, afterNs, direction, deliveryStatus)
+//        }
+//    }
 
     suspend fun messagesWithReactions(
         limit: Int? = null,
