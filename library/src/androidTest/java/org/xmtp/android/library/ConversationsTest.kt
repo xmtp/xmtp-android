@@ -161,20 +161,20 @@ class ConversationsTest : BaseInstrumentedTest() {
     fun testsCanSyncAllConversationsFiltered() {
         runBlocking { boClient.conversations.findOrCreateDm(caroClient.inboxId) }
         val group = runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
-        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 2)
+        assert(runBlocking { boClient.conversations.syncAllConversations() }.numEligible.toInt() >= 2)
         assert(
             runBlocking {
                 boClient.conversations.syncAllConversations(
                     consentStates = listOf(ConsentState.ALLOWED),
                 )
-            }.toInt() >= 2,
+            }.numEligible.toInt() >= 2,
         )
         assert(
             runBlocking {
                 boClient.conversations.syncAllConversations(
                     consentStates = listOf(ConsentState.DENIED),
                 )
-            }.toInt() <= 1,
+            }.numEligible.toInt() <= 1,
         )
         runBlocking { group.updateConsentState(ConsentState.DENIED) }
         assert(
@@ -182,14 +182,14 @@ class ConversationsTest : BaseInstrumentedTest() {
                 boClient.conversations.syncAllConversations(
                     consentStates = listOf(ConsentState.ALLOWED),
                 )
-            }.toInt() <= 2,
+            }.numEligible.toInt() <= 2,
         )
         assert(
             runBlocking {
                 boClient.conversations.syncAllConversations(
                     consentStates = listOf(ConsentState.DENIED),
                 )
-            }.toInt() <= 2,
+            }.numEligible.toInt() <= 2,
         )
         assert(
             runBlocking {
@@ -197,9 +197,9 @@ class ConversationsTest : BaseInstrumentedTest() {
                     consentStates =
                         listOf(ConsentState.DENIED, ConsentState.ALLOWED),
                 )
-            }.toInt() >= 2,
+            }.numEligible.toInt() >= 2,
         )
-        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 1)
+        assert(runBlocking { boClient.conversations.syncAllConversations() }.numEligible.toInt() >= 1)
     }
 
     @Test

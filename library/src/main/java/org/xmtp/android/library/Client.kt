@@ -159,7 +159,7 @@ class Client(
                 }
 
                 // If not cached or not connected, create a fresh client
-                val newClient = connectToBackend(api.env.getUrl(), api.isSecure, api.appVersion)
+                val newClient = connectToBackend(api.env.getUrl(), null, api.isSecure, api.appVersion)
                 apiClientCache[cacheKey] = newClient
                 return@withLock newClient
             }
@@ -175,7 +175,7 @@ class Client(
                 }
 
                 // If not cached or not connected, create a fresh client
-                val newClient = connectToBackend(api.env.getUrl(), api.isSecure, api.appVersion)
+                val newClient = connectToBackend(api.env.getUrl(), null, api.isSecure, api.appVersion)
                 syncApiClientCache[cacheKey] = newClient
                 return@withLock newClient
             }
@@ -270,6 +270,7 @@ class Client(
                         deviceSyncMode = null,
                         allowOffline = false,
                         disableEvents = true,
+                        forkRecoveryOpts = null
                     )
 
                 useClient(ffiClient)
@@ -440,6 +441,7 @@ class Client(
                         deviceSyncMode = if (!options.deviceSyncEnabled) FfiSyncWorkerMode.DISABLED else FfiSyncWorkerMode.ENABLED,
                         allowOffline = buildOffline,
                         disableEvents = options.debugEventsEnabled,
+                        forkRecoveryOpts = null
                     )
                 Pair(ffiClient, dbPath)
             }

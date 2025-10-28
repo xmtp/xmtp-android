@@ -27,6 +27,7 @@ import uniffi.xmtpv3.FfiListMessagesOptions
 import uniffi.xmtpv3.FfiMessage
 import uniffi.xmtpv3.FfiMessageCallback
 import uniffi.xmtpv3.FfiMessageDisappearingSettings
+import uniffi.xmtpv3.FfiSendMessageOpts
 import uniffi.xmtpv3.FfiSubscribeException
 import java.util.Date
 
@@ -114,7 +115,7 @@ class Dm(
 
     suspend fun send(encodedContent: EncodedContent): String =
         withContext(Dispatchers.IO) {
-            val messageId = libXMTPGroup.send(contentBytes = encodedContent.toByteArray())
+            val messageId = libXMTPGroup.send(contentBytes = encodedContent.toByteArray(), FfiSendMessageOpts(true))
             messageId.toHex()
         }
 
@@ -152,7 +153,7 @@ class Dm(
 
     suspend fun prepareMessage(encodedContent: EncodedContent): String =
         withContext(Dispatchers.IO) {
-            libXMTPGroup.sendOptimistic(encodedContent.toByteArray()).toHex()
+            libXMTPGroup.sendOptimistic(encodedContent.toByteArray(), FfiSendMessageOpts(true)).toHex()
         }
 
     suspend fun <T> prepareMessage(
@@ -161,7 +162,7 @@ class Dm(
     ): String =
         withContext(Dispatchers.IO) {
             val encodeContent = encodeContent(content = content, options = options)
-            libXMTPGroup.sendOptimistic(encodeContent.toByteArray()).toHex()
+            libXMTPGroup.sendOptimistic(encodeContent.toByteArray(), FfiSendMessageOpts(true)).toHex()
         }
 
     suspend fun publishMessages() =
@@ -218,6 +219,8 @@ class Dm(
                                     else -> FfiDirection.DESCENDING
                                 },
                             contentTypes = null,
+                            excludeContentTypes = null,
+                            excludeSenderInboxIds = null
                         ),
                 ).mapNotNull {
                     DecodedMessage.create(it)
@@ -251,6 +254,8 @@ class Dm(
                                 else -> FfiDirection.DESCENDING
                             },
                             contentTypes = null,
+                            excludeContentTypes = null,
+                            excludeSenderInboxIds = null
                         ),
                 )
 
@@ -268,7 +273,7 @@ class Dm(
     ): List<DecodedMessageV2> =
         withContext(Dispatchers.IO) {
             libXMTPGroup
-                .findMessagesV2(
+                .findEnrichedMessages(
                     opts =
                         FfiListMessagesOptions(
                             sentBeforeNs = beforeNs,
@@ -287,6 +292,8 @@ class Dm(
                                     else -> FfiDirection.DESCENDING
                                 },
                             contentTypes = null,
+                            excludeContentTypes = null,
+                            excludeSenderInboxIds = null
                         ),
                 ).mapNotNull {
                     DecodedMessageV2.create(it)
