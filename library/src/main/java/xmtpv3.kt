@@ -1277,6 +1277,8 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is 
 // rather `InterfaceTooLargeException`, caused by too many methods 
@@ -1415,6 +1417,8 @@ fun uniffi_xmtpv3_checksum_method_fficonversation_is_admin(
 fun uniffi_xmtpv3_checksum_method_fficonversation_is_conversation_message_disappearing_enabled(
 ): Short
 fun uniffi_xmtpv3_checksum_method_fficonversation_is_super_admin(
+): Short
+fun uniffi_xmtpv3_checksum_method_fficonversation_leave_group(
 ): Short
 fun uniffi_xmtpv3_checksum_method_fficonversation_list_members(
 ): Short
@@ -1792,6 +1796,8 @@ fun uniffi_xmtpv3_fn_method_fficonversation_is_conversation_message_disappearing
 ): Byte
 fun uniffi_xmtpv3_fn_method_fficonversation_is_super_admin(`ptr`: Pointer,`inboxId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
 ): Byte
+fun uniffi_xmtpv3_fn_method_fficonversation_leave_group(`ptr`: Pointer,
+): Long
 fun uniffi_xmtpv3_fn_method_fficonversation_list_members(`ptr`: Pointer,
 ): Long
 fun uniffi_xmtpv3_fn_method_fficonversation_paused_for_version(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
@@ -2474,6 +2480,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_is_super_admin() != 25811.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_leave_group() != 6817.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_list_members() != 21260.toShort()) {
@@ -3779,6 +3788,8 @@ public interface FfiConversationInterface {
     
     fun `isSuperAdmin`(`inboxId`: kotlin.String): kotlin.Boolean
     
+    suspend fun `leaveGroup`()
+    
     suspend fun `listMembers`(): List<FfiConversationMember>
     
     fun `pausedForVersion`(): kotlin.String?
@@ -4350,6 +4361,28 @@ open class FfiConversation: Disposable, AutoCloseable, FfiConversationInterface
     )
     }
     
+
+    
+    @Throws(GenericException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `leaveGroup`() {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_leave_group(
+                thisPtr,
+                
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_xmtpv3_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        GenericException.ErrorHandler,
+    )
+    }
 
     
     @Throws(GenericException::class)
@@ -10849,6 +10882,7 @@ data class FfiGroupUpdated (
     var `initiatedByInboxId`: kotlin.String, 
     var `addedInboxes`: List<FfiInbox>, 
     var `removedInboxes`: List<FfiInbox>, 
+    var `leftInboxes`: List<FfiInbox>, 
     var `metadataFieldChanges`: List<FfiMetadataFieldChange>
 ) {
     
@@ -10864,6 +10898,7 @@ public object FfiConverterTypeFfiGroupUpdated: FfiConverterRustBuffer<FfiGroupUp
             FfiConverterString.read(buf),
             FfiConverterSequenceTypeFfiInbox.read(buf),
             FfiConverterSequenceTypeFfiInbox.read(buf),
+            FfiConverterSequenceTypeFfiInbox.read(buf),
             FfiConverterSequenceTypeFfiMetadataFieldChange.read(buf),
         )
     }
@@ -10872,6 +10907,7 @@ public object FfiConverterTypeFfiGroupUpdated: FfiConverterRustBuffer<FfiGroupUp
             FfiConverterString.allocationSize(value.`initiatedByInboxId`) +
             FfiConverterSequenceTypeFfiInbox.allocationSize(value.`addedInboxes`) +
             FfiConverterSequenceTypeFfiInbox.allocationSize(value.`removedInboxes`) +
+            FfiConverterSequenceTypeFfiInbox.allocationSize(value.`leftInboxes`) +
             FfiConverterSequenceTypeFfiMetadataFieldChange.allocationSize(value.`metadataFieldChanges`)
     )
 
@@ -10879,6 +10915,7 @@ public object FfiConverterTypeFfiGroupUpdated: FfiConverterRustBuffer<FfiGroupUp
             FfiConverterString.write(value.`initiatedByInboxId`, buf)
             FfiConverterSequenceTypeFfiInbox.write(value.`addedInboxes`, buf)
             FfiConverterSequenceTypeFfiInbox.write(value.`removedInboxes`, buf)
+            FfiConverterSequenceTypeFfiInbox.write(value.`leftInboxes`, buf)
             FfiConverterSequenceTypeFfiMetadataFieldChange.write(value.`metadataFieldChanges`, buf)
     }
 }
