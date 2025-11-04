@@ -122,9 +122,9 @@ class Client(
         private fun ClientOptions.Api.toCacheKey(): String =
             "${env.getUrl()}|$isSecure|${appVersion ?: "nil"}|${gatewayHost ?: "nil"}"
 
-        private val apiClientCache = mutableMapOf<String, XmtpApiClient>()
+//        private val apiClientCache = mutableMapOf<String, XmtpApiClient>()
         private val cacheLock = Mutex()
-        private val syncApiClientCache = mutableMapOf<String, XmtpApiClient>()
+//        private val syncApiClientCache = mutableMapOf<String, XmtpApiClient>()
         private val syncCacheLock = Mutex()
 
         fun activatePersistentLibXMTPLogWriter(
@@ -187,15 +187,15 @@ class Client(
         suspend fun connectToApiBackend(api: ClientOptions.Api): XmtpApiClient {
             val cacheKey = api.toCacheKey()
             return cacheLock.withLock {
-                val cached = apiClientCache[cacheKey]
-
-                if (cached != null && isConnected(cached)) {
-                    return cached
-                }
+//                val cached = apiClientCache[cacheKey]
+//
+//                if (cached != null && isConnected(cached)) {
+//                    return cached
+//                }
 
                 // If not cached or not connected, create a fresh client
                 val newClient = connectToBackend(api.env.getUrl(), api.gatewayHost, api.isSecure, api.appVersion)
-                apiClientCache[cacheKey] = newClient
+//                apiClientCache[cacheKey] = newClient
                 return@withLock newClient
             }
         }
@@ -203,15 +203,15 @@ class Client(
         suspend fun connectToSyncApiBackend(api: ClientOptions.Api): XmtpApiClient {
             val cacheKey = api.toCacheKey()
             return syncCacheLock.withLock {
-                val cached = syncApiClientCache[cacheKey]
-
-                if (cached != null && isConnected(cached)) {
-                    return cached
-                }
+//                val cached = syncApiClientCache[cacheKey]
+//
+//                if (cached != null && isConnected(cached)) {
+//                    return cached
+//                }
 
                 // If not cached or not connected, create a fresh client
                 val newClient = connectToBackend(api.env.getUrl(), api.gatewayHost, api.isSecure, api.appVersion)
-                syncApiClientCache[cacheKey] = newClient
+//                syncApiClientCache[cacheKey] = newClient
                 return@withLock newClient
             }
         }

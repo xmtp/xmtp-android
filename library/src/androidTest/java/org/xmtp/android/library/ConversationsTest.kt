@@ -1,5 +1,6 @@
 package org.xmtp.android.library
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +18,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.xmtp.android.library.codecs.ContentTypeGroupUpdated
 import org.xmtp.android.library.libxmtp.ConversationDebugInfo
 import org.xmtp.android.library.libxmtp.DecodedMessage
 import org.xmtp.android.library.messages.PrivateKeyBuilder
@@ -442,7 +444,7 @@ class ConversationsTest : BaseInstrumentedTest() {
     @Test
     fun testStreamsAndMessages() =
         runBlocking {
-            val messages = mutableListOf<String>()
+            val messages = mutableListOf<DecodedMessage>()
             val davonClient = createClient(createWallet())
             val alixGroup =
                 alixClient.conversations.newGroup(listOf(caroClient.inboxId, boClient.inboxId))
@@ -467,9 +469,9 @@ class ConversationsTest : BaseInstrumentedTest() {
                             caroClient
                                 .conversations
                                 .streamAllMessages()
-                                .take(100) // Stop after receiving 90 messages
+                                .take(100) // Stop after receiving 100 messages
                                 .collect { message ->
-                                    synchronized(messages) { messages.add(message.body) }
+                                    synchronized(messages) { messages.add(message) }
                                     println("Caro received: ${message.body}")
                                 }
                         }
@@ -511,6 +513,7 @@ class ConversationsTest : BaseInstrumentedTest() {
                         val group = davonClient.conversations.newGroup(listOf(caroClient.inboxId))
                         group.send(spamMessage)
                         println("Davon spam: $spamMessage")
+                        Log.d("DEBUG-FAILURE", "Davon Spam Group: " + group.id)
                     }
                 }
 
@@ -531,7 +534,30 @@ class ConversationsTest : BaseInstrumentedTest() {
             delay(2000)
 
             caroJob.cancelAndJoin()
+            Log.d("DEBUG-FAILURE", "BoGroup: " + boGroup.id)
+            Log.d("DEBUG-FAILURE", "AlixGroup: " + alixGroup.id)
+            Log.d("DEBUG-FAILURE", "CaroGroup: " + caroGroup.id)
+            Log.d("DEBUG-FAILURE", "BoGroup2: " + boGroup2.id)
+            Log.d("DEBUG-FAILURE", "AlixGroup2: " + alixGroup2.id)
+            Log.d("DEBUG-FAILURE", "CaroGroup2: " + caroGroup2.id)
 
+            Log.d("DEBUG-FAILURE", "Last Message: " + messages[0].body)
+            Log.d("DEBUG-FAILURE", "First Message: " + messages[messages.size - 1].body)
+            Log.d("DEBUG-FAILURE", "Messages: " + messages.map { it.body })
+            
+            // Print content type for all messages
+            messages.forEachIndexed { index, message ->
+                Log.d("DEBUG-FAILURE", "Message $index - Type: ${message.encodedContent.type}, Body: ${message.body}, GroupID: ${message.topic}")
+            }
+            
+            // Filter out GroupUpdated messages
+            val userMessages = messages.filter { message ->
+                message.encodedContent.type != ContentTypeGroupUpdated
+            }
+            
+            Log.d("DEBUG-FAILURE", "User messages count: ${userMessages.size}")
+            Log.d("DEBUG-FAILURE", "Total messages count: ${messages.size}")
+            
             assertEquals(90, messages.size)
             assertEquals(41, caroGroup.messages().size)
 

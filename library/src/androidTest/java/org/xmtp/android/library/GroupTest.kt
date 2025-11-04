@@ -1085,7 +1085,7 @@ class GroupTest : BaseInstrumentedTest() {
             syncSummary = alixClient.conversations.syncAllConversations()
         }
         // Next syncAllGroups will not include the inactive group
-        assertEquals(syncSummary?.numEligible, 2u)
+        assertEquals(syncSummary?.numSynced, 0UL)
     }
 
     @Test
@@ -1152,6 +1152,7 @@ class GroupTest : BaseInstrumentedTest() {
             assertEquals(
                 alixGroup.messages().size,
                 5,
+
             )
 
             // Re-enable disappearing messages
