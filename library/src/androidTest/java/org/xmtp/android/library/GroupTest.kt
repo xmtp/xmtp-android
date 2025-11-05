@@ -1152,7 +1152,6 @@ class GroupTest : BaseInstrumentedTest() {
             assertEquals(
                 alixGroup.messages().size,
                 5,
-
             )
 
             // Re-enable disappearing messages

@@ -168,30 +168,45 @@ class ConversationsTest : BaseInstrumentedTest() {
         val group = runBlocking { boClient.conversations.newGroup(listOf(caroClient.inboxId)) }
         val syncSummary = runBlocking { boClient.conversations.syncAllConversations() }
         assert(syncSummary.numEligible >= 2U)
-        var syncSummaryAllowed = runBlocking { boClient.conversations.syncAllConversations(
-            consentStates = listOf(ConsentState.ALLOWED),
-        ) }
+        var syncSummaryAllowed =
+            runBlocking {
+                boClient.conversations.syncAllConversations(
+                    consentStates = listOf(ConsentState.ALLOWED),
+                )
+            }
 
         assert(syncSummaryAllowed.numEligible >= 2U)
 
-        var syncSummaryDenied= runBlocking { boClient.conversations.syncAllConversations(
-            consentStates = listOf(ConsentState.DENIED),
-        ) }
+        var syncSummaryDenied =
+            runBlocking {
+                boClient.conversations.syncAllConversations(
+                    consentStates = listOf(ConsentState.DENIED),
+                )
+            }
         assert(syncSummaryDenied.numEligible <= 1U)
         runBlocking { group.updateConsentState(ConsentState.DENIED) }
 
-        syncSummaryAllowed = runBlocking {boClient.conversations.syncAllConversations(
-            consentStates = listOf(ConsentState.ALLOWED),
-        )}
+        syncSummaryAllowed =
+            runBlocking {
+                boClient.conversations.syncAllConversations(
+                    consentStates = listOf(ConsentState.ALLOWED),
+                )
+            }
         assert(syncSummaryAllowed.numEligible <= 2U)
-        syncSummaryDenied = runBlocking {boClient.conversations.syncAllConversations(
-            consentStates = listOf(ConsentState.DENIED),
-        )}
+        syncSummaryDenied =
+            runBlocking {
+                boClient.conversations.syncAllConversations(
+                    consentStates = listOf(ConsentState.DENIED),
+                )
+            }
         assert(syncSummaryDenied.numEligible <= 2U)
 
-        var syncSummaryAllowedDenied = runBlocking { boClient.conversations.syncAllConversations(
-            consentStates = listOf(ConsentState.ALLOWED, ConsentState.DENIED),
-        ) }
+        var syncSummaryAllowedDenied =
+            runBlocking {
+                boClient.conversations.syncAllConversations(
+                    consentStates = listOf(ConsentState.ALLOWED, ConsentState.DENIED),
+                )
+            }
         assert(syncSummaryAllowedDenied.numEligible >= 2U)
 //        assert(runBlocking { boClient.conversations.syncAllConversations() }.toInt() >= 1)
     }
@@ -544,20 +559,24 @@ class ConversationsTest : BaseInstrumentedTest() {
             Log.d("DEBUG-FAILURE", "Last Message: " + messages[0].body)
             Log.d("DEBUG-FAILURE", "First Message: " + messages[messages.size - 1].body)
             Log.d("DEBUG-FAILURE", "Messages: " + messages.map { it.body })
-            
+
             // Print content type for all messages
             messages.forEachIndexed { index, message ->
-                Log.d("DEBUG-FAILURE", "Message $index - Type: ${message.encodedContent.type}, Body: ${message.body}, GroupID: ${message.topic}")
+                Log.d(
+                    "DEBUG-FAILURE",
+                    "Message $index - Type: ${message.encodedContent.type}, Body: ${message.body}, GroupID: ${message.topic}",
+                )
             }
-            
+
             // Filter out GroupUpdated messages
-            val userMessages = messages.filter { message ->
-                message.encodedContent.type != ContentTypeGroupUpdated
-            }
-            
+            val userMessages =
+                messages.filter { message ->
+                    message.encodedContent.type != ContentTypeGroupUpdated
+                }
+
             Log.d("DEBUG-FAILURE", "User messages count: ${userMessages.size}")
             Log.d("DEBUG-FAILURE", "Total messages count: ${messages.size}")
-            
+
             assertEquals(90, messages.size)
             assertEquals(41, caroGroup.messages().size)
 

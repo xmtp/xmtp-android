@@ -356,11 +356,13 @@ data class Conversations(
     // Sync all new and existing conversations data from the network
     suspend fun syncAllConversations(consentStates: List<ConsentState>? = null): GroupSyncSummary =
         withContext(Dispatchers.IO) {
-            GroupSyncSummary.fromFfi(ffiConversations.syncAllConversations(
-                consentStates?.let { states ->
-                    states.map { ConsentState.toFfiConsentState(it) }
-                },
-            ))
+            GroupSyncSummary.fromFfi(
+                ffiConversations.syncAllConversations(
+                    consentStates?.let { states ->
+                        states.map { ConsentState.toFfiConsentState(it) }
+                    },
+                ),
+            )
         }
 
     suspend fun newConversationWithIdentity(

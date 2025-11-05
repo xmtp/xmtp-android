@@ -48,7 +48,7 @@ data class ClientOptions(
     val dbDirectory: String? = null,
     val deviceSyncEnabled: Boolean = true,
     val debugEventsEnabled: Boolean = false,
-    val forkRecoveryOptions: ForkRecoveryOptions? = null
+    val forkRecoveryOptions: ForkRecoveryOptions? = null,
 ) {
     data class Api(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
@@ -61,7 +61,8 @@ data class ClientOptions(
 enum class ForkRecoveryPolicy {
     None,
     AllowlistedGroups,
-    All;
+    All,
+    ;
 
     fun toFfi(): FfiForkRecoveryPolicy =
         when (this) {
@@ -124,6 +125,7 @@ class Client(
 
 //        private val apiClientCache = mutableMapOf<String, XmtpApiClient>()
         private val cacheLock = Mutex()
+
 //        private val syncApiClientCache = mutableMapOf<String, XmtpApiClient>()
         private val syncCacheLock = Mutex()
 
@@ -481,7 +483,7 @@ class Client(
                             },
                         allowOffline = buildOffline,
                         disableEvents = options.debugEventsEnabled,
-                        forkRecoveryOpts = options.forkRecoveryOptions?.toFfi()
+                        forkRecoveryOpts = options.forkRecoveryOptions?.toFfi(),
                     )
                 Pair(ffiClient, dbPath)
             }
