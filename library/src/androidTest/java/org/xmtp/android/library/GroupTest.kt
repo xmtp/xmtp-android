@@ -1279,4 +1279,33 @@ class GroupTest : BaseInstrumentedTest() {
             }
         assertEquals(2, countWithoutReactions)
     }
+
+    @Test
+    fun testCanLeaveGroup() =
+        runBlocking {
+            // Create group with alix and bo and verify we have 2 members and group is active for Alix
+            val boGroup = boClient.conversations.newGroup(listOf(alixClient.inboxId))
+            alixClient.conversations.syncAllConversations()
+            boClient.conversations.syncAllConversations()
+            val alixGroup = alixClient.conversations.findGroup(boGroup.id)
+            assertNotNull(alixGroup)
+            val groupMembers = boGroup.members()
+            assertEquals(2, groupMembers.size)
+            assert(alixGroup!!.isActive())
+
+            // Alix leaves group and bo syncs
+            alixGroup.leaveGroup()
+            alixGroup.sync()
+            boGroup.sync()
+            // Alix Group is still active until worker runs
+            assert(alixGroup.isActive())
+
+            // Delay here so that the removal is processed
+            // Verify 1 member and group is no longer active
+            Thread.sleep(3000) // 3 seconds
+            val groupMembersAfterLeave = boGroup.members()
+            assertEquals(1, groupMembersAfterLeave.size)
+            alixGroup.sync()
+            assert(!alixGroup.isActive())
+        }
 }
