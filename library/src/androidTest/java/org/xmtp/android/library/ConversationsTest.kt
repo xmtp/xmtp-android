@@ -528,7 +528,6 @@ class ConversationsTest : BaseInstrumentedTest() {
                         val group = davonClient.conversations.newGroup(listOf(caroClient.inboxId))
                         group.send(spamMessage)
                         println("Davon spam: $spamMessage")
-                        Log.d("DEBUG-FAILURE", "Davon Spam Group: " + group.id)
                     }
                 }
 
@@ -549,23 +548,9 @@ class ConversationsTest : BaseInstrumentedTest() {
             delay(2000)
 
             caroJob.cancelAndJoin()
-            Log.d("DEBUG-FAILURE", "BoGroup: " + boGroup.id)
-            Log.d("DEBUG-FAILURE", "AlixGroup: " + alixGroup.id)
-            Log.d("DEBUG-FAILURE", "CaroGroup: " + caroGroup.id)
-            Log.d("DEBUG-FAILURE", "BoGroup2: " + boGroup2.id)
-            Log.d("DEBUG-FAILURE", "AlixGroup2: " + alixGroup2.id)
-            Log.d("DEBUG-FAILURE", "CaroGroup2: " + caroGroup2.id)
-
-            Log.d("DEBUG-FAILURE", "Last Message: " + messages[0].body)
-            Log.d("DEBUG-FAILURE", "First Message: " + messages[messages.size - 1].body)
-            Log.d("DEBUG-FAILURE", "Messages: " + messages.map { it.body })
 
             // Print content type for all messages
             messages.forEachIndexed { index, message ->
-                Log.d(
-                    "DEBUG-FAILURE",
-                    "Message $index - Type: ${message.encodedContent.type}, Body: ${message.body}, GroupID: ${message.topic}",
-                )
             }
 
             // Filter out GroupUpdated messages
@@ -573,9 +558,6 @@ class ConversationsTest : BaseInstrumentedTest() {
                 messages.filter { message ->
                     message.encodedContent.type != ContentTypeGroupUpdated
                 }
-
-            Log.d("DEBUG-FAILURE", "User messages count: ${userMessages.size}")
-            Log.d("DEBUG-FAILURE", "Total messages count: ${messages.size}")
 
             assertEquals(90, messages.size)
             assertEquals(41, caroGroup.messages().size)
