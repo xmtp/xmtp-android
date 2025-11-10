@@ -16,6 +16,8 @@ import org.xmtp.android.library.libxmtp.InboxState
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import org.xmtp.android.library.libxmtp.SignatureRequest
 import org.xmtp.android.library.libxmtp.toFfi
+import uniffi.xmtpv3.FfiAuthCallback
+import uniffi.xmtpv3.FfiAuthHandle
 import uniffi.xmtpv3.FfiForkRecoveryOpts
 import uniffi.xmtpv3.FfiForkRecoveryPolicy
 import uniffi.xmtpv3.FfiKeyPackageStatus
@@ -39,6 +41,7 @@ import java.io.File
 
 typealias PreEventCallback = suspend () -> Unit
 
+/** Options for configuring the XMTP client. */
 data class ClientOptions(
     val api: Api = Api(),
     val preAuthenticateToInboxCallback: PreEventCallback? = null,
@@ -50,12 +53,27 @@ data class ClientOptions(
     val debugEventsEnabled: Boolean = false,
     val forkRecoveryOptions: ForkRecoveryOptions? = null,
 ) {
+    /**
+     * API configuration, including optional authentication. authCallback is invoked when the
+     * backend requires credentials; implementations must be non-blocking. Use together for gateway
+     * authentication scenarios.
+     */
     data class Api(
         val env: XMTPEnvironment = XMTPEnvironment.DEV,
         val isSecure: Boolean = true,
         val appVersion: String? = null,
         val gatewayHost: String? = null,
-    )
+        val authCallback: AuthCallback? = null,
+        val authHandle: AuthHandle? = null,
+    ) {
+        /**
+         * Cache key excluding auth details, as auth is connection-specific and handled via
+         * callbacks/handles. Connections with auth will use the callback/handle rather than cache
+         * invalidation.
+         */
+        fun toCacheKey(): String =
+            "${env.getUrl()}|$isSecure|${appVersion ?: "nil"}|${gatewayHost ?: "nil"}|${authCallback != null}"
+    }
 }
 
 enum class ForkRecoveryPolicy {
@@ -186,6 +204,19 @@ class Client(
             return deletedCount
         }
 
+        private suspend fun createApiClient(api: ClientOptions.Api): XmtpApiClient {
+            val newClient =
+                connectToBackend(
+                    api.env.getUrl(),
+                    api.gatewayHost,
+                    api.isSecure,
+                    api.appVersion,
+                    api.authCallback?.toFfi(),
+                    api.authHandle?.handle,
+                )
+            return newClient
+        }
+
         suspend fun connectToApiBackend(api: ClientOptions.Api): XmtpApiClient {
             val cacheKey = api.toCacheKey()
             return cacheLock.withLock {
@@ -196,7 +227,7 @@ class Client(
                 }
 
                 // If not cached or not connected, create a fresh client
-                val newClient = connectToBackend(api.env.getUrl(), api.gatewayHost, api.isSecure, api.appVersion)
+                val newClient = createApiClient(api)
                 apiClientCache[cacheKey] = newClient
                 return@withLock newClient
             }
@@ -212,7 +243,7 @@ class Client(
                 }
 
                 // If not cached or not connected, create a fresh client
-                val newClient = connectToBackend(api.env.getUrl(), api.gatewayHost, api.isSecure, api.appVersion)
+                val newClient = createApiClient(api)
                 syncApiClientCache[cacheKey] = newClient
                 return@withLock newClient
             }
