@@ -22,6 +22,7 @@ import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.libxmtp.DecodedMessage
 import org.xmtp.android.library.libxmtp.DecodedMessage.MessageDeliveryStatus
+import org.xmtp.android.library.libxmtp.DecodedMessage.SortBy
 import org.xmtp.android.library.libxmtp.DisappearingMessageSettings
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.PublicIdentity
@@ -714,6 +715,32 @@ class DmTest : BaseInstrumentedTest() {
             assert(boDm.isDisappearingMessagesEnabled())
             assert(alixDm.isDisappearingMessagesEnabled())
         }
+
+    @Test
+    fun testCanQueryMessagesByInsertedTime() {
+        runBlocking {
+            val dm = boClient.conversations.findOrCreateDm(alixClient.inboxId)
+            dm.send("first")
+            dm.send("second")
+            dm.sync()
+
+            val messages = dm.messages()
+            assertEquals(3, messages.size)
+
+            // Verify insertedAtNs is populated
+            val firstMessage = messages.last()
+            assert(firstMessage.insertedAtNs > 0)
+
+            // Test insertedAfterNs filter
+            val filteredMessages = dm.messages(insertedAfterNs = firstMessage.insertedAtNs)
+            assertEquals(2, filteredMessages.size)
+
+            // Test sortBy parameter
+            val sortedBySent = dm.messages(sortBy = SortBy.SENT_TIME)
+            val sortedByInserted = dm.messages(sortBy = SortBy.INSERTED_TIME)
+            assertEquals(sortedBySent.size, sortedByInserted.size)
+        }
+    }
 
     @Test
     fun testCountMessagesWithExcludedContentTypes() {
