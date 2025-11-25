@@ -167,7 +167,7 @@ data class Conversations(
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
         disappearingMessageSettings: DisappearingMessageSettings? = null,
-        appData: String?,
+        appData: String? = null,
     ): Group =
         withContext(Dispatchers.IO) {
             newGroupInternalWithIdentities(
@@ -194,7 +194,7 @@ data class Conversations(
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
         disappearingMessageSettings: DisappearingMessageSettings? = null,
-        appData: String?,
+        appData: String? = null,
     ): Group =
         withContext(Dispatchers.IO) {
             newGroupInternalWithIdentities(
@@ -251,7 +251,7 @@ data class Conversations(
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
         disappearingMessageSettings: DisappearingMessageSettings? = null,
-        appData: String?,
+        appData: String? = null,
     ): Group =
         withContext(Dispatchers.IO) {
             newGroupInternal(
@@ -278,7 +278,7 @@ data class Conversations(
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
         disappearingMessageSettings: DisappearingMessageSettings? = null,
-        appData: String?,
+        appData: String? = null,
     ): Group =
         withContext(Dispatchers.IO) {
             newGroupInternal(
@@ -335,7 +335,7 @@ data class Conversations(
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
         disappearingMessageSettings: DisappearingMessageSettings? = null,
-        appData: String?,
+        appData: String? = null,
     ): Group =
         withContext(Dispatchers.IO) {
             val group =
