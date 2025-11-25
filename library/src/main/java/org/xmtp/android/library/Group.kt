@@ -92,6 +92,15 @@ class Group(
     suspend fun description(): String = withContext(Dispatchers.IO) { libXMTPGroup.groupDescription() }
 
     @Deprecated(
+        message = "Use suspend appData()",
+        replaceWith = ReplaceWith("appData()"),
+    )
+    val appData: String
+        get() = libXMTPGroup.appData()
+
+    suspend fun appData(): String = withContext(Dispatchers.IO) { libXMTPGroup.appData() }
+
+    @Deprecated(
         message = "Use suspend disappearingMessageSettings()",
         replaceWith = ReplaceWith("disappearingMessageSettings()"),
     )
@@ -458,6 +467,15 @@ class Group(
                 libXMTPGroup.updateGroupDescription(description)
             } catch (e: Exception) {
                 throw XMTPException("Permission denied: Unable to update group description", e)
+            }
+        }
+
+    suspend fun updateAppData(appData: String) =
+        withContext(Dispatchers.IO) {
+            try {
+                libXMTPGroup.updateAppData(appData)
+            } catch (e: Exception) {
+                throw XMTPException("Permission denied: Unable to update group app data", e)
             }
         }
 
