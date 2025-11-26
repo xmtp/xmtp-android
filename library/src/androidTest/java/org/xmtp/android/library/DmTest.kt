@@ -452,6 +452,8 @@ class DmTest : BaseInstrumentedTest() {
                 fixtures.alixClient.conversations.findDmByIdentity(
                     PublicIdentity(IdentityKind.ETHEREUM, fixtures.bo.walletAddress),
                 )
+            group.sync()
+
             group.streamMessages().test {
                 alixDm?.send("hi")
                 assertEquals("hi", awaitItem().body)
@@ -756,6 +758,8 @@ class DmTest : BaseInstrumentedTest() {
         }
         val messageToReact = runBlocking { dm.messages() }[0]
 
+        val startingCount = runBlocking { dm.countMessages() }
+
         val reaction =
             Reaction(
                 reference = messageToReact.id,
@@ -769,8 +773,8 @@ class DmTest : BaseInstrumentedTest() {
         }
 
         // Count without exclusions - should include memberAdd, text message, and reaction
-        val totalCount = runBlocking { dm.countMessages() }
-        assertEquals(3, totalCount)
+        val newCount = runBlocking { dm.countMessages() }
+        assertEquals(startingCount + 1, newCount)
 
         // Count with reaction exclusion - should only include memberAdd and text message
         val countWithoutReactions =
@@ -782,6 +786,6 @@ class DmTest : BaseInstrumentedTest() {
                         ),
                 )
             }
-        assertEquals(2, countWithoutReactions)
+        assertEquals(startingCount, countWithoutReactions)
     }
 }
