@@ -66,13 +66,21 @@ data class ClientOptions(
         val authCallback: AuthCallback? = null,
         val authHandle: AuthHandle? = null,
     ) {
+        init {
+            if (authCallback != null && authHandle == null) {
+                throw IllegalArgumentException("authHandle is required if setting authCallback")
+            }
+        }
+        // authHandle is required if setting authCallback so that we can uniquely identify the
+        // client.
+
         /**
          * Cache key excluding auth details, as auth is connection-specific and handled via
          * callbacks/handles. Connections with auth will use the callback/handle rather than cache
          * invalidation.
          */
         fun toCacheKey(): String =
-            "${env.getUrl()}|$isSecure|${appVersion ?: "nil"}|${gatewayHost ?: "nil"}|${authCallback != null}"
+            "${env.getUrl()}|$isSecure|${appVersion ?: "nil"}|${gatewayHost ?: "nil"}|${authHandle?.id() ?: 0}"
     }
 }
 

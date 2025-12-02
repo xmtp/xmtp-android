@@ -1120,6 +1120,8 @@ internal interface IntegrityCheckingUniffiLib : Library {
 
     fun uniffi_xmtpv3_checksum_method_ffiauthcallback_on_auth_required(): Short
 
+    fun uniffi_xmtpv3_checksum_method_ffiauthhandle_id(): Short
+
     fun uniffi_xmtpv3_checksum_method_ffiauthhandle_set(): Short
 
     fun uniffi_xmtpv3_checksum_method_fficonsentcallback_on_consent_update(): Short
@@ -1521,6 +1523,11 @@ internal interface UniffiLib : Library {
     ): Unit
 
     fun uniffi_xmtpv3_fn_constructor_ffiauthhandle_new(uniffi_out_err: UniffiRustCallStatus): Pointer
+
+    fun uniffi_xmtpv3_fn_method_ffiauthhandle_id(
+        `ptr`: Pointer,
+        uniffi_out_err: UniffiRustCallStatus,
+    ): Long
 
     fun uniffi_xmtpv3_fn_method_ffiauthhandle_set(
         `ptr`: Pointer,
@@ -2997,6 +3004,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_xmtpv3_checksum_method_ffiauthcallback_on_auth_required() != 41151.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_xmtpv3_checksum_method_ffiauthhandle_id() != 11318.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_xmtpv3_checksum_method_ffiauthhandle_set() != 39409.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -4411,6 +4421,8 @@ public object FfiConverterTypeFfiAuthCallback : FfiConverter<FfiAuthCallback, Po
 //
 
 public interface FfiAuthHandleInterface {
+    fun `id`(): kotlin.ULong
+
     suspend fun `set`(`credential`: FfiCredential)
 
     companion object
@@ -4505,6 +4517,15 @@ open class FfiAuthHandle :
         uniffiRustCall { status ->
             UniffiLib.INSTANCE.uniffi_xmtpv3_fn_clone_ffiauthhandle(pointer!!, status)
         }
+
+    override fun `id`(): kotlin.ULong =
+        FfiConverterULong.lift(
+            callWithPointer {
+                uniffiRustCall { _status ->
+                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_ffiauthhandle_id(it, _status)
+                }
+            },
+        )
 
     @Throws(GenericException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
@@ -12023,7 +12044,7 @@ public object FfiConverterTypeFfiCreateGroupOptions : FfiConverterRustBuffer<Ffi
 }
 
 data class FfiCredential(
-    var `name`: kotlin.String,
+    var `name`: kotlin.String?,
     var `value`: kotlin.String,
     var `expiresAtSeconds`: kotlin.Long,
 ) {
@@ -12036,14 +12057,14 @@ data class FfiCredential(
 public object FfiConverterTypeFfiCredential : FfiConverterRustBuffer<FfiCredential> {
     override fun read(buf: ByteBuffer): FfiCredential =
         FfiCredential(
-            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
             FfiConverterString.read(buf),
             FfiConverterLong.read(buf),
         )
 
     override fun allocationSize(value: FfiCredential) =
         (
-            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterOptionalString.allocationSize(value.`name`) +
                 FfiConverterString.allocationSize(value.`value`) +
                 FfiConverterLong.allocationSize(value.`expiresAtSeconds`)
         )
@@ -12052,7 +12073,7 @@ public object FfiConverterTypeFfiCredential : FfiConverterRustBuffer<FfiCredenti
         value: FfiCredential,
         buf: ByteBuffer,
     ) {
-        FfiConverterString.write(value.`name`, buf)
+        FfiConverterOptionalString.write(value.`name`, buf)
         FfiConverterString.write(value.`value`, buf)
         FfiConverterLong.write(value.`expiresAtSeconds`, buf)
     }

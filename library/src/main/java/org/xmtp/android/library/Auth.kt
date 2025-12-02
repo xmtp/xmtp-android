@@ -11,14 +11,14 @@ import uniffi.xmtpv3.FfiCredential
  */
 data class Credential
     private constructor(
-        val name: String,
+        val name: String?,
         private val valueCharArray: CharArray,
         val expiresAtSeconds: Long,
     ) {
         val value: String = valueCharArray.concatToString()
 
         init {
-            require(name.isNotBlank()) { "name must not be blank" }
+            require(name?.isNotBlank() == true) { "name must not be blank" }
             require(expiresAtSeconds >= 0) { "expiresAtSeconds must be non-negative" }
         }
 
@@ -26,7 +26,7 @@ data class Credential
         companion object {
             @JvmStatic
             fun create(
-                name: String,
+                name: String?,
                 value: String,
                 /** Number of seconds since unix epoch */
                 expiresAtSeconds: Long,
@@ -81,6 +81,8 @@ class AuthHandle(
     suspend fun set(credential: Credential) {
         ffiHandle.`set`(Credential.toFfi(credential))
     }
+
+    fun id(): ULong = ffiHandle.id()
 
     override fun close() {
         ffiHandle.close()
