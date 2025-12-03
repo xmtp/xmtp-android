@@ -80,10 +80,11 @@ $dokka.location:org.xmtp.android.library.codecs/MultiRemoteAttachmentCodec/encod
 $dokka.location:org.xmtp.android.library.codecs/MultiRemoteAttachmentCodec/fallback/#org.xmtp.android.library.codecs.MultiRemoteAttachment/PointingToDeclaration/library/org.xmtp.android.library.codecs/-multi-remote-attachment-codec/fallback.html
 $dokka.location:org.xmtp.android.library.codecs/MultiRemoteAttachmentCodec/shouldPush/#org.xmtp.android.library.codecs.MultiRemoteAttachment/PointingToDeclaration/library/org.xmtp.android.library.codecs/-multi-remote-attachment-codec/should-push.html
 $dokka.location:org.xmtp.android.library.codecs/Reaction///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/index.html
-$dokka.location:org.xmtp.android.library.codecs/Reaction/Reaction/#kotlin.String#org.xmtp.android.library.codecs.ReactionAction#kotlin.String#org.xmtp.android.library.codecs.ReactionSchema/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/-reaction.html
+$dokka.location:org.xmtp.android.library.codecs/Reaction/Reaction/#kotlin.String#org.xmtp.android.library.codecs.ReactionAction#kotlin.String#org.xmtp.android.library.codecs.ReactionSchema#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/-reaction.html
 $dokka.location:org.xmtp.android.library.codecs/Reaction/action/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/action.html
 $dokka.location:org.xmtp.android.library.codecs/Reaction/content/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/content.html
 $dokka.location:org.xmtp.android.library.codecs/Reaction/reference/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/reference.html
+$dokka.location:org.xmtp.android.library.codecs/Reaction/referenceInboxId/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/reference-inbox-id.html
 $dokka.location:org.xmtp.android.library.codecs/Reaction/schema/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction/schema.html
 $dokka.location:org.xmtp.android.library.codecs/ReactionAction.Added///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-action/-added/index.html
 $dokka.location:org.xmtp.android.library.codecs/ReactionAction.Removed///PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-action/-removed/index.html
@@ -105,9 +106,9 @@ $dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec///PointingToDecl
 $dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/ReactionV2Codec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/-reaction-v2-codec.html
 $dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/content-type.html
 $dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/decode/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/decode.html
-$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/encode/#uniffi.xmtpv3.FfiReactionPayload/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/encode.html
-$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/fallback/#uniffi.xmtpv3.FfiReactionPayload/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/fallback.html
-$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/shouldPush/#uniffi.xmtpv3.FfiReactionPayload/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/should-push.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/encode/#org.xmtp.android.library.codecs.Reaction/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/encode.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/fallback/#org.xmtp.android.library.codecs.Reaction/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/fallback.html
+$dokka.location:org.xmtp.android.library.codecs/ReactionV2Codec/shouldPush/#org.xmtp.android.library.codecs.Reaction/PointingToDeclaration/library/org.xmtp.android.library.codecs/-reaction-v2-codec/should-push.html
 $dokka.location:org.xmtp.android.library.codecs/ReadReceipt///PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt/index.html
 $dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec///PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/index.html
 $dokka.location:org.xmtp.android.library.codecs/ReadReceiptCodec/ReadReceiptCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-read-receipt-codec/-read-receipt-codec.html
