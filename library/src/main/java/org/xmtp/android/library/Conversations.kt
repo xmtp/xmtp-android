@@ -167,30 +167,26 @@ data class Conversations(
         groupImageUrlSquare: String = "",
         groupDescription: String = "",
         disappearingMessageSettings: DisappearingMessageSettings? = null,
-        <<<<<<< HEAD
-    appData: String? = null,
-    =======
-    appData: String?,
-    >>>>>>> 502528e9 (Release v1.6.2)
+        appData: String? = null,
     ): Group =
-    withContext(Dispatchers.IO)
-    {
-        newGroupInternalWithIdentities(
-            identities,
-            GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(permissions),
-            groupName,
-            groupImageUrlSquare,
-            groupDescription,
-            null,
-            disappearingMessageSettings?.let {
-                FfiMessageDisappearingSettings(
-                    it.disappearStartingAtNs,
-                    it.retentionDurationInNs,
-                )
-            },
-            appData,
-        )
-    }
+        withContext(Dispatchers.IO)
+        {
+            newGroupInternalWithIdentities(
+                identities,
+                GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(permissions),
+                groupName,
+                groupImageUrlSquare,
+                groupDescription,
+                null,
+                disappearingMessageSettings?.let {
+                    FfiMessageDisappearingSettings(
+                        it.disappearStartingAtNs,
+                        it.retentionDurationInNs,
+                    )
+                },
+                appData,
+            )
+        }
 
     suspend fun newGroupCustomPermissionsWithIdentities(
         identities: List<PublicIdentity>,
