@@ -169,8 +169,7 @@ data class Conversations(
         disappearingMessageSettings: DisappearingMessageSettings? = null,
         appData: String? = null,
     ): Group =
-        withContext(Dispatchers.IO)
-        {
+        withContext(Dispatchers.IO) {
             newGroupInternalWithIdentities(
                 identities,
                 GroupPermissionPreconfiguration.toFfiGroupPermissionOptions(permissions),
@@ -237,7 +236,7 @@ data class Conversations(
                             groupDescription = groupDescription,
                             customPermissionPolicySet = permissionsPolicySet,
                             messageDisappearingSettings =
-                                messageDisappearingSettings,
+                            messageDisappearingSettings,
                             appData = appData,
                         ),
                 )
@@ -322,7 +321,7 @@ data class Conversations(
                             groupDescription = groupDescription,
                             customPermissionPolicySet = permissionsPolicySet,
                             messageDisappearingSettings =
-                                messageDisappearingSettings,
+                            messageDisappearingSettings,
                             appData,
                         ),
                 )
