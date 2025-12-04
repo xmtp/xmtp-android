@@ -861,7 +861,7 @@ $dokka.location:org.xmtp.android.library/ApiStats/subscribeMessages/#/PointingTo
 $dokka.location:org.xmtp.android.library/ApiStats/subscribeWelcomes/#/PointingToDeclaration/library/org.xmtp.android.library/-api-stats/subscribe-welcomes.html
 $dokka.location:org.xmtp.android.library/ApiStats/uploadKeyPackage/#/PointingToDeclaration/library/org.xmtp.android.library/-api-stats/upload-key-package.html
 $dokka.location:org.xmtp.android.library/Client.Companion///PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/index.html
-$dokka.location:org.xmtp.android.library/Client.Companion/activatePersistentLibXMTPLogWriter/#android.content.Context#uniffi.xmtpv3.FfiLogLevel#uniffi.xmtpv3.FfiLogRotation#kotlin.Int/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/activate-persistent-lib-x-m-t-p-log-writer.html
+$dokka.location:org.xmtp.android.library/Client.Companion/activatePersistentLibXMTPLogWriter/#android.content.Context#uniffi.xmtpv3.FfiLogLevel#uniffi.xmtpv3.FfiLogRotation#kotlin.Int#uniffi.xmtpv3.FfiProcessType/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/activate-persistent-lib-x-m-t-p-log-writer.html
 $dokka.location:org.xmtp.android.library/Client.Companion/build/#org.xmtp.android.library.libxmtp.PublicIdentity#org.xmtp.android.library.ClientOptions#kotlin.String?/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/build.html
 $dokka.location:org.xmtp.android.library/Client.Companion/canMessage/#kotlin.collections.List[org.xmtp.android.library.libxmtp.PublicIdentity]#org.xmtp.android.library.ClientOptions.Api/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/can-message.html
 $dokka.location:org.xmtp.android.library/Client.Companion/clearXMTPLogs/#android.content.Context/PointingToDeclaration/library/org.xmtp.android.library/-client/-companion/clear-x-m-t-p-logs.html
@@ -1315,8 +1315,8 @@ $dokka.location:uniffi.xmtpv3//encodeReply/#uniffi.xmtpv3.FfiReply/PointingToDec
 $dokka.location:uniffi.xmtpv3//encodeText/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/encode-text.html
 $dokka.location:uniffi.xmtpv3//encodeTransactionReference/#uniffi.xmtpv3.FfiTransactionReference/PointingToDeclaration/library/uniffi.xmtpv3/encode-transaction-reference.html
 $dokka.location:uniffi.xmtpv3//encodeWalletSendCalls/#uniffi.xmtpv3.FfiWalletSendCalls/PointingToDeclaration/library/uniffi.xmtpv3/encode-wallet-send-calls.html
-$dokka.location:uniffi.xmtpv3//enterDebugWriter/#kotlin.String#uniffi.xmtpv3.FfiLogLevel#uniffi.xmtpv3.FfiLogRotation#kotlin.UInt/PointingToDeclaration/library/uniffi.xmtpv3/enter-debug-writer.html
-$dokka.location:uniffi.xmtpv3//enterDebugWriterWithLevel/#kotlin.String#uniffi.xmtpv3.FfiLogRotation#kotlin.UInt#uniffi.xmtpv3.FfiLogLevel/PointingToDeclaration/library/uniffi.xmtpv3/enter-debug-writer-with-level.html
+$dokka.location:uniffi.xmtpv3//enterDebugWriter/#kotlin.String#uniffi.xmtpv3.FfiLogLevel#uniffi.xmtpv3.FfiLogRotation#kotlin.UInt#uniffi.xmtpv3.FfiProcessType/PointingToDeclaration/library/uniffi.xmtpv3/enter-debug-writer.html
+$dokka.location:uniffi.xmtpv3//enterDebugWriterWithLevel/#kotlin.String#uniffi.xmtpv3.FfiLogRotation#kotlin.UInt#uniffi.xmtpv3.FfiLogLevel#uniffi.xmtpv3.FfiProcessType/PointingToDeclaration/library/uniffi.xmtpv3/enter-debug-writer-with-level.html
 $dokka.location:uniffi.xmtpv3//ethereumAddressFromPubkey/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/ethereum-address-from-pubkey.html
 $dokka.location:uniffi.xmtpv3//ethereumGeneratePublicKey/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/ethereum-generate-public-key.html
 $dokka.location:uniffi.xmtpv3//ethereumHashPersonal/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/ethereum-hash-personal.html
@@ -1517,6 +1517,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversation/isConversationMessageDisappearingE
 $dokka.location:uniffi.xmtpv3/FfiConversation/isSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/is-super-admin.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/leaveGroup/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/leave-group.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/listMembers/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/list-members.html
+$dokka.location:uniffi.xmtpv3/FfiConversation/membershipState/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/membership-state.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/pausedForVersion/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/paused-for-version.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/processStreamedConversationMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/process-streamed-conversation-message.html
 $dokka.location:uniffi.xmtpv3/FfiConversation/publishMessages/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation/publish-messages.html
@@ -1598,6 +1599,7 @@ $dokka.location:uniffi.xmtpv3/FfiConversationInterface/isConversationMessageDisa
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/isSuperAdmin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/is-super-admin.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/leaveGroup/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/leave-group.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/listMembers/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/list-members.html
+$dokka.location:uniffi.xmtpv3/FfiConversationInterface/membershipState/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/membership-state.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/pausedForVersion/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/paused-for-version.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/processStreamedConversationMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/process-streamed-conversation-message.html
 $dokka.location:uniffi.xmtpv3/FfiConversationInterface/publishMessages/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-conversation-interface/publish-messages.html
@@ -1959,6 +1961,15 @@ $dokka.location:uniffi.xmtpv3/FfiForkRecoveryPolicy.NONE///PointingToDeclaration
 $dokka.location:uniffi.xmtpv3/FfiForkRecoveryPolicy///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-fork-recovery-policy/index.html
 $dokka.location:uniffi.xmtpv3/FfiForkRecoveryPolicy/valueOf/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-fork-recovery-policy/value-of.html
 $dokka.location:uniffi.xmtpv3/FfiForkRecoveryPolicy/values/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-fork-recovery-policy/values.html
+$dokka.location:uniffi.xmtpv3/FfiGroupMembershipState.ALLOWED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-group-membership-state/-a-l-l-o-w-e-d/index.html
+$dokka.location:uniffi.xmtpv3/FfiGroupMembershipState.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-membership-state/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiGroupMembershipState.PENDING///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-group-membership-state/-p-e-n-d-i-n-g/index.html
+$dokka.location:uniffi.xmtpv3/FfiGroupMembershipState.PENDING_REMOVE///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-group-membership-state/-p-e-n-d-i-n-g_-r-e-m-o-v-e/index.html
+$dokka.location:uniffi.xmtpv3/FfiGroupMembershipState.REJECTED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-group-membership-state/-r-e-j-e-c-t-e-d/index.html
+$dokka.location:uniffi.xmtpv3/FfiGroupMembershipState.RESTORED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-group-membership-state/-r-e-s-t-o-r-e-d/index.html
+$dokka.location:uniffi.xmtpv3/FfiGroupMembershipState///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-membership-state/index.html
+$dokka.location:uniffi.xmtpv3/FfiGroupMembershipState/valueOf/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-membership-state/value-of.html
+$dokka.location:uniffi.xmtpv3/FfiGroupMembershipState/values/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-membership-state/values.html
 $dokka.location:uniffi.xmtpv3/FfiGroupMessageKind.APPLICATION///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-group-message-kind/-a-p-p-l-i-c-a-t-i-o-n/index.html
 $dokka.location:uniffi.xmtpv3/FfiGroupMessageKind.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-group-message-kind/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiGroupMessageKind.MEMBERSHIP_CHANGE///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-group-message-kind/-m-e-m-b-e-r-s-h-i-p_-c-h-a-n-g-e/index.html
@@ -2250,6 +2261,12 @@ $dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate.Hmac///PointingToDeclaration/
 $dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate.Hmac/Hmac/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-preference-update/-hmac/-hmac.html
 $dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate.Hmac/key/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-preference-update/-hmac/key.html
 $dokka.location:uniffi.xmtpv3/FfiPreferenceUpdate///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-preference-update/index.html
+$dokka.location:uniffi.xmtpv3/FfiProcessType.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-process-type/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiProcessType.MAIN///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-process-type/-m-a-i-n/index.html
+$dokka.location:uniffi.xmtpv3/FfiProcessType.NOTIFICATION_EXTENSION///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-process-type/-n-o-t-i-f-i-c-a-t-i-o-n_-e-x-t-e-n-s-i-o-n/index.html
+$dokka.location:uniffi.xmtpv3/FfiProcessType///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-process-type/index.html
+$dokka.location:uniffi.xmtpv3/FfiProcessType/valueOf/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-process-type/value-of.html
+$dokka.location:uniffi.xmtpv3/FfiProcessType/values/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-process-type/values.html
 $dokka.location:uniffi.xmtpv3/FfiReactionAction.ADDED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-reaction-action/-a-d-d-e-d/index.html
 $dokka.location:uniffi.xmtpv3/FfiReactionAction.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-reaction-action/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiReactionAction.REMOVED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-reaction-action/-r-e-m-o-v-e-d/index.html
