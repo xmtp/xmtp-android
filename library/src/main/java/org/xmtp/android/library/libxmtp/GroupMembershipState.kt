@@ -31,33 +31,33 @@ enum class GroupMembershipState {
     /**
      * Member is pending removal from the group
      */
-    PENDING_REMOVE;
+    PENDING_REMOVE,
+
+    ;
 
     companion object {
         /**
          * Converts from FFI GroupMembershipState to Kotlin enum
          */
-        fun fromFfiGroupMembershipState(ffiState: FfiGroupMembershipState): GroupMembershipState {
-            return when (ffiState) {
+        fun fromFfiGroupMembershipState(ffiState: FfiGroupMembershipState): GroupMembershipState =
+            when (ffiState) {
                 FfiGroupMembershipState.ALLOWED -> ALLOWED
                 FfiGroupMembershipState.REJECTED -> REJECTED
                 FfiGroupMembershipState.PENDING -> PENDING
                 FfiGroupMembershipState.RESTORED -> RESTORED
                 FfiGroupMembershipState.PENDING_REMOVE -> PENDING_REMOVE
             }
-        }
     }
 
     /**
      * Converts this Kotlin enum to FFI GroupMembershipState
      */
-    fun toFfi(): FfiGroupMembershipState {
-        return when (this) {
+    fun toFfi(): FfiGroupMembershipState =
+        when (this) {
             ALLOWED -> FfiGroupMembershipState.ALLOWED
             REJECTED -> FfiGroupMembershipState.REJECTED
             PENDING -> FfiGroupMembershipState.PENDING
             RESTORED -> FfiGroupMembershipState.RESTORED
             PENDING_REMOVE -> FfiGroupMembershipState.PENDING_REMOVE
         }
-    }
 }
