@@ -7,10 +7,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.Conversations.ConversationFilterType
@@ -1315,6 +1318,18 @@ class GroupTest : BaseInstrumentedTest() {
     @Test
     fun testCanLeaveGroup() =
         runBlocking {
+            // Register the LeaveRequestCodec
+            Client.register(
+                codec =
+                    org.xmtp.android.library.codecs
+                        .LeaveRequestCodec(),
+            )
+            Client.register(
+                codec =
+                    org.xmtp.android.library.codecs
+                        .LeaveRequestCodec(),
+            )
+
             // Create group with alix and bo and verify we have 2 members and group is active for Alix
             val boGroup = boClient.conversations.newGroup(listOf(alixClient.inboxId))
             alixClient.conversations.syncAllConversations()
@@ -1325,12 +1340,39 @@ class GroupTest : BaseInstrumentedTest() {
             assertEquals(2, groupMembers.size)
             assert(alixGroup!!.isActive())
 
+            // Get message count before leaving
+            val messagesBeforeLeave = alixGroup.messages()
+            val messageCountBefore = messagesBeforeLeave.size
+
             // Alix leaves group and bo syncs
             alixGroup.leaveGroup()
             alixGroup.sync()
             boGroup.sync()
             // Alix Group is still active until worker runs
             assert(alixGroup.isActive())
+
+            // Verify that a leave request message was sent
+            val messagesAfterLeave = alixGroup.messages()
+            assertEquals(
+                "Should have one more message after leaving (the leave request)",
+                messageCountBefore + 1,
+                messagesAfterLeave.size,
+            )
+
+            // Verify the leave request message exists
+            val leaveRequestMessage =
+                messagesAfterLeave.find { msg ->
+                    msg.encodedContent.type.typeId == "leave_request"
+                }
+            assertNotNull(leaveRequestMessage)
+
+            // Bo should also see the leave request message
+            val boMessages = boGroup.messages()
+            val boLeaveRequestMessage =
+                boMessages.find { msg ->
+                    msg.encodedContent.type.typeId == "leave_request"
+                }
+            assertNotNull("Bo should see the leave request message", boLeaveRequestMessage)
 
             // Delay here so that the removal is processed
             // Verify 1 member and group is no longer active
@@ -1406,5 +1448,214 @@ class GroupTest : BaseInstrumentedTest() {
             alixGroup.sync()
             val members = alixGroup.members()
             assertEquals("Only Alix should remain in the group", 1, members.size)
+        }
+
+    @Test
+    @Ignore("activate after latest libxmtp update")
+    fun testMembershipStateAfterReAdd() =
+        runBlocking {
+            // Alix creates a group and adds Bo
+            val alixGroup =
+                alixClient.conversations.newGroup(
+                    listOf(boClient.inboxId),
+                )
+
+            // Bo syncs and gets the group
+            boClient.conversations.sync()
+            val boGroup = boClient.conversations.findGroup(alixGroup.id)
+            assertNotNull("Bo should have received the group", boGroup)
+
+            // Verify Bo's initial membership state is PENDING
+            assertEquals(
+                "Bo should be in PENDING state when first invited",
+                GroupMembershipState.PENDING,
+                boGroup!!.membershipState(),
+            )
+
+            // Bo leaves the group
+            boGroup.leaveGroup()
+
+            // Verify Bo's membership state is PENDING_REMOVE after requesting to leave
+            assertEquals(
+                "Bo should be in PENDING_REMOVE state after leaving",
+                GroupMembershipState.PENDING_REMOVE,
+                boGroup.membershipState(),
+            )
+
+            // Alix syncs to process the leave request
+            alixGroup.sync()
+
+            // Wait for admin worker to process the removal
+            Thread.sleep(5000)
+
+            // Bo syncs to get the final removal
+            boGroup.sync()
+
+            // Verify Bo's group is no longer active
+//            assert(!boGroup.isActive())
+
+            // Alix re-adds Bo to the group
+            alixGroup.addMembers(listOf(boClient.inboxId))
+
+            // Alix syncs to send the add
+            alixGroup.sync()
+
+            // Bo syncs to receive the welcome message for being re-added
+            boClient.conversations.sync()
+
+            // Bo should have the group again (same ID)
+            val boGroupAfterReadd = boClient.conversations.findGroup(alixGroup.id)
+            assertNotNull("Bo should have the group after being re-added", boGroupAfterReadd)
+
+            // CRITICAL: Verify Bo's membership state is ALLOWED (not PENDING_REMOVE)
+            assertEquals(
+                "Bo should be in ALLOWED state after being re-added, not PENDING_REMOVE",
+                GroupMembershipState.ALLOWED,
+                boGroupAfterReadd!!.membershipState(),
+            )
+
+            // Verify the group is active again
+            assert(boGroupAfterReadd.isActive())
+
+            // Verify consent state is Unknown (user needs to accept)
+            assertEquals(
+                "Bo's consent should be Unknown after re-add, requiring explicit acceptance",
+                ConsentState.UNKNOWN,
+                boGroupAfterReadd.consentState(),
+            )
+
+            // Verify the group shows up correctly in UX logic
+            val isActiveAndNotPendingRemoval =
+                boGroupAfterReadd.isActive() &&
+                    boGroupAfterReadd.membershipState() != GroupMembershipState.PENDING_REMOVE
+            assert(isActiveAndNotPendingRemoval) {
+                "Group should be active and not in PENDING_REMOVE state for proper UX rendering"
+            }
+
+            // Verify both members are back in the group
+            alixGroup.sync()
+            val membersAfterReadd = alixGroup.members()
+            assertEquals("Both Alix and Bo should be in the group", 2, membersAfterReadd.size)
+        }
+
+    @Test
+    fun testLeaveRequestCodec() =
+        runBlocking {
+            // Test that LeaveRequestCodec can encode and decode correctly
+            val codec =
+                org.xmtp.android.library.codecs
+                    .LeaveRequestCodec()
+
+            // Verify the content type is set correctly
+            assertEquals(
+                "Content type authority should be xmtp.org",
+                "xmtp.org",
+                codec.contentType.authorityId,
+            )
+            assertEquals(
+                "Content type should be leave_request",
+                "leave_request",
+                codec.contentType.typeId,
+            )
+            assertEquals(
+                "Version major should be 1",
+                1,
+                codec.contentType.versionMajor,
+            )
+            assertEquals(
+                "Version minor should be 0",
+                0,
+                codec.contentType.versionMinor,
+            )
+
+            // Test encoding
+            val leaveRequest = org.xmtp.android.library.codecs.LeaveRequest
+            val encoded = codec.encode(leaveRequest)
+
+            assertNotNull("Encoded content should not be null", encoded)
+            assertEquals(
+                "Encoded content type should match",
+                codec.contentType,
+                encoded.type,
+            )
+            assertTrue(
+                "Encoded content should be empty for LeaveRequest",
+                encoded.content.isEmpty,
+            )
+
+            // Test decoding
+            val decoded = codec.decode(encoded)
+            assertEquals(
+                "Decoded content should be LeaveRequest",
+                org.xmtp.android.library.codecs.LeaveRequest,
+                decoded,
+            )
+
+            // Test fallback (should return null)
+            val fallback = codec.fallback(leaveRequest)
+            assertNull("Fallback should be null for LeaveRequest", fallback)
+
+            // Test shouldPush (should return false)
+            val shouldPush = codec.shouldPush(leaveRequest)
+            assertFalse("shouldPush should be false for LeaveRequest", shouldPush)
+        }
+
+    @Test
+    fun testLeaveRequestInGroupMessage() =
+        runBlocking {
+            // Alix creates a group and adds Bo
+            val alixGroup =
+                alixClient.conversations.newGroup(
+                    listOf(boClient.inboxId),
+                )
+
+            // Bo syncs and gets the group
+            boClient.conversations.sync()
+            val boGroup = boClient.conversations.findGroup(alixGroup.id)
+            assertNotNull("Bo should have received the group", boGroup)
+
+            // Register the LeaveRequestCodec
+            Client.register(
+                codec =
+                    org.xmtp.android.library.codecs
+                        .LeaveRequestCodec(),
+            )
+
+            // Bo sends a leave request message
+            boGroup!!.send(
+                content = org.xmtp.android.library.codecs.LeaveRequest,
+                options =
+                    org.xmtp.android.library.SendOptions(
+                        contentType = org.xmtp.android.library.codecs.ContentTypeLeaveRequest,
+                    ),
+            )
+
+            // Bo syncs to see their own message
+            boGroup.sync()
+
+            // Get the messages
+            val messages = boGroup.messages()
+            assertTrue("Should have at least one message", messages.isNotEmpty())
+
+            // Find the leave request message
+            val leaveRequestMessage =
+                messages.find { msg ->
+                    msg.encodedContent.type.typeId == "leave_request"
+                }
+
+            assertNotNull("Should find a leave request message", leaveRequestMessage)
+            assertEquals(
+                "Content type should be leave_request",
+                "leave_request",
+                leaveRequestMessage!!.encodedContent.type.typeId,
+            )
+
+            // Decode the leave request content
+            val decodedContent = leaveRequestMessage.content<org.xmtp.android.library.codecs.LeaveRequest>()
+            assertEquals(
+                "Decoded content should be LeaveRequest",
+                org.xmtp.android.library.codecs.LeaveRequest,
+                decodedContent,
+            )
         }
 }
