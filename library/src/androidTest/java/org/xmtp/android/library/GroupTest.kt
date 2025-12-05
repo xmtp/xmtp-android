@@ -18,8 +18,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.Conversations.ConversationFilterType
 import org.xmtp.android.library.codecs.ContentTypeGroupUpdated
+import org.xmtp.android.library.codecs.ContentTypeLeaveRequest
 import org.xmtp.android.library.codecs.ContentTypeReaction
 import org.xmtp.android.library.codecs.GroupUpdatedCodec
+import org.xmtp.android.library.codecs.LeaveRequest
+import org.xmtp.android.library.codecs.LeaveRequestCodec
 import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionCodec
@@ -1319,16 +1322,7 @@ class GroupTest : BaseInstrumentedTest() {
     fun testCanLeaveGroup() =
         runBlocking {
             // Register the LeaveRequestCodec
-            Client.register(
-                codec =
-                    org.xmtp.android.library.codecs
-                        .LeaveRequestCodec(),
-            )
-            Client.register(
-                codec =
-                    org.xmtp.android.library.codecs
-                        .LeaveRequestCodec(),
-            )
+            Client.register(codec = LeaveRequestCodec())
 
             // Create group with alix and bo and verify we have 2 members and group is active for Alix
             val boGroup = boClient.conversations.newGroup(listOf(alixClient.inboxId))
@@ -1542,9 +1536,7 @@ class GroupTest : BaseInstrumentedTest() {
     fun testLeaveRequestCodec() =
         runBlocking {
             // Test that LeaveRequestCodec can encode and decode correctly
-            val codec =
-                org.xmtp.android.library.codecs
-                    .LeaveRequestCodec()
+            val codec = LeaveRequestCodec()
 
             // Verify the content type is set correctly
             assertEquals(
@@ -1569,7 +1561,7 @@ class GroupTest : BaseInstrumentedTest() {
             )
 
             // Test encoding
-            val leaveRequest = org.xmtp.android.library.codecs.LeaveRequest
+            val leaveRequest = LeaveRequest
             val encoded = codec.encode(leaveRequest)
 
             assertNotNull("Encoded content should not be null", encoded)
@@ -1587,7 +1579,7 @@ class GroupTest : BaseInstrumentedTest() {
             val decoded = codec.decode(encoded)
             assertEquals(
                 "Decoded content should be LeaveRequest",
-                org.xmtp.android.library.codecs.LeaveRequest,
+                LeaveRequest,
                 decoded,
             )
 
@@ -1615,19 +1607,12 @@ class GroupTest : BaseInstrumentedTest() {
             assertNotNull("Bo should have received the group", boGroup)
 
             // Register the LeaveRequestCodec
-            Client.register(
-                codec =
-                    org.xmtp.android.library.codecs
-                        .LeaveRequestCodec(),
-            )
+            Client.register(codec = LeaveRequestCodec())
 
             // Bo sends a leave request message
             boGroup!!.send(
-                content = org.xmtp.android.library.codecs.LeaveRequest,
-                options =
-                    org.xmtp.android.library.SendOptions(
-                        contentType = org.xmtp.android.library.codecs.ContentTypeLeaveRequest,
-                    ),
+                content = LeaveRequest,
+                options = SendOptions(contentType = ContentTypeLeaveRequest),
             )
 
             // Bo syncs to see their own message
@@ -1651,10 +1636,10 @@ class GroupTest : BaseInstrumentedTest() {
             )
 
             // Decode the leave request content
-            val decodedContent = leaveRequestMessage.content<org.xmtp.android.library.codecs.LeaveRequest>()
+            val decodedContent = leaveRequestMessage.content<LeaveRequest>()
             assertEquals(
                 "Decoded content should be LeaveRequest",
-                org.xmtp.android.library.codecs.LeaveRequest,
+                LeaveRequest,
                 decodedContent,
             )
         }
