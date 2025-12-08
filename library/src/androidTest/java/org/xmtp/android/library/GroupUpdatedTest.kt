@@ -150,10 +150,11 @@ class GroupUpdatedTest : BaseInstrumentedTest() {
             val messages = alixGroup.messages()
 
             // Find the GroupUpdated message that contains the left inbox
-            val leaveMessage = messages.find { msg ->
-                val content: GroupUpdated? = msg.content()
-                content?.leftInboxesList?.isNotEmpty() == true
-            }
+            val leaveMessage =
+                messages.find { msg ->
+                    val content: GroupUpdated? = msg.content()
+                    content?.leftInboxesList?.isNotEmpty() == true
+                }
 
             assert(leaveMessage != null) { "Should find a GroupUpdated message with leftInboxes" }
 
