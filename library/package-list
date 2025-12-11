@@ -1474,6 +1474,7 @@ $dokka.location:uniffi.xmtpv3/FfiContentType.ATTACHMENT///PointingToDeclaration/
 $dokka.location:uniffi.xmtpv3/FfiContentType.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-content-type/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiContentType.GROUP_MEMBERSHIP_CHANGE///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-content-type/-g-r-o-u-p_-m-e-m-b-e-r-s-h-i-p_-c-h-a-n-g-e/index.html
 $dokka.location:uniffi.xmtpv3/FfiContentType.GROUP_UPDATED///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-content-type/-g-r-o-u-p_-u-p-d-a-t-e-d/index.html
+$dokka.location:uniffi.xmtpv3/FfiContentType.LEAVE_REQUEST///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-content-type/-l-e-a-v-e_-r-e-q-u-e-s-t/index.html
 $dokka.location:uniffi.xmtpv3/FfiContentType.REACTION///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-content-type/-r-e-a-c-t-i-o-n/index.html
 $dokka.location:uniffi.xmtpv3/FfiContentType.READ_RECEIPT///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-content-type/-r-e-a-d_-r-e-c-e-i-p-t/index.html
 $dokka.location:uniffi.xmtpv3/FfiContentType.REMOTE_ATTACHMENT///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}library/uniffi.xmtpv3/-ffi-content-type/-r-e-m-o-t-e_-a-t-t-a-c-h-m-e-n-t/index.html
@@ -1819,6 +1820,10 @@ $dokka.location:uniffi.xmtpv3/FfiDecodedMessageBody.Intent.Companion///PointingT
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageBody.Intent///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-body/-intent/index.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageBody.Intent/Intent/#uniffi.xmtpv3.FfiIntent/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-body/-intent/-intent.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageBody.Intent/v1/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-body/-intent/v1.html
+$dokka.location:uniffi.xmtpv3/FfiDecodedMessageBody.LeaveRequest.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-body/-leave-request/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiDecodedMessageBody.LeaveRequest///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-body/-leave-request/index.html
+$dokka.location:uniffi.xmtpv3/FfiDecodedMessageBody.LeaveRequest/LeaveRequest/#uniffi.xmtpv3.FfiLeaveRequest/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-body/-leave-request/-leave-request.html
+$dokka.location:uniffi.xmtpv3/FfiDecodedMessageBody.LeaveRequest/v1/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-body/-leave-request/v1.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageBody.MultiRemoteAttachment.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-body/-multi-remote-attachment/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageBody.MultiRemoteAttachment///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-body/-multi-remote-attachment/index.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageBody.MultiRemoteAttachment/MultiRemoteAttachment/#uniffi.xmtpv3.FfiMultiRemoteAttachment/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-body/-multi-remote-attachment/-multi-remote-attachment.html
@@ -1869,6 +1874,10 @@ $dokka.location:uniffi.xmtpv3/FfiDecodedMessageContent.Intent.Companion///Pointi
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageContent.Intent///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-content/-intent/index.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageContent.Intent/Intent/#uniffi.xmtpv3.FfiIntent?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-content/-intent/-intent.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageContent.Intent/v1/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-content/-intent/v1.html
+$dokka.location:uniffi.xmtpv3/FfiDecodedMessageContent.LeaveRequest.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-content/-leave-request/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiDecodedMessageContent.LeaveRequest///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-content/-leave-request/index.html
+$dokka.location:uniffi.xmtpv3/FfiDecodedMessageContent.LeaveRequest/LeaveRequest/#uniffi.xmtpv3.FfiLeaveRequest/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-content/-leave-request/-leave-request.html
+$dokka.location:uniffi.xmtpv3/FfiDecodedMessageContent.LeaveRequest/v1/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-content/-leave-request/v1.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageContent.MultiRemoteAttachment.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-content/-multi-remote-attachment/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageContent.MultiRemoteAttachment///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-content/-multi-remote-attachment/index.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageContent.MultiRemoteAttachment/MultiRemoteAttachment/#uniffi.xmtpv3.FfiMultiRemoteAttachment/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-content/-multi-remote-attachment/-multi-remote-attachment.html
@@ -2095,6 +2104,10 @@ $dokka.location:uniffi.xmtpv3/FfiKeyPackageStatus///PointingToDeclaration/libra
 $dokka.location:uniffi.xmtpv3/FfiKeyPackageStatus/FfiKeyPackageStatus/#uniffi.xmtpv3.FfiLifetime?#kotlin.String?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-key-package-status/-ffi-key-package-status.html
 $dokka.location:uniffi.xmtpv3/FfiKeyPackageStatus/lifetime/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-key-package-status/lifetime.html
 $dokka.location:uniffi.xmtpv3/FfiKeyPackageStatus/validationError/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-key-package-status/validation-error.html
+$dokka.location:uniffi.xmtpv3/FfiLeaveRequest.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-leave-request/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiLeaveRequest///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-leave-request/index.html
+$dokka.location:uniffi.xmtpv3/FfiLeaveRequest/FfiLeaveRequest/#kotlin.ByteArray?/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-leave-request/-ffi-leave-request.html
+$dokka.location:uniffi.xmtpv3/FfiLeaveRequest/authenticatedNote/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-leave-request/authenticated-note.html
 $dokka.location:uniffi.xmtpv3/FfiLifetime.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-lifetime/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiLifetime///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-lifetime/index.html
 $dokka.location:uniffi.xmtpv3/FfiLifetime/FfiLifetime/#kotlin.ULong#kotlin.ULong/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-lifetime/-ffi-lifetime.html
