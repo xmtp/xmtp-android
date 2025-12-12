@@ -23,6 +23,13 @@ data class LeaveRequest(
     }
 
     override fun hashCode(): Int = authenticatedNote?.contentHashCode() ?: 0
+
+    companion object {
+        fun create(authenticatedNote: ByteArray? = null): LeaveRequest =
+            LeaveRequest(
+                authenticatedNote = if (authenticatedNote?.isEmpty() == true) null else authenticatedNote,
+            )
+    }
 }
 
 val ContentTypeLeaveRequest =
@@ -32,3 +39,30 @@ val ContentTypeLeaveRequest =
         versionMajor = 1,
         versionMinor = 0,
     )
+
+data class LeaveRequestCodec(
+    override var contentType: ContentTypeId = ContentTypeLeaveRequest,
+) : ContentCodec<LeaveRequest> {
+    override fun encode(content: LeaveRequest): EncodedContent {
+        val ffi =
+            uniffi.xmtpv3.FfiLeaveRequest(
+                authenticatedNote = content.authenticatedNote,
+            )
+
+        return EncodedContent.parseFrom(
+            uniffi.xmtpv3.encodeLeaveRequest(ffi),
+        )
+    }
+
+    override fun decode(content: EncodedContent): LeaveRequest {
+        val decoded = uniffi.xmtpv3.decodeLeaveRequest(content.toByteArray())
+
+        return LeaveRequest(
+            authenticatedNote = decoded.authenticatedNote,
+        )
+    }
+
+    override fun fallback(content: LeaveRequest): String = "A member has requested leaving the group"
+
+    override fun shouldPush(content: LeaveRequest): Boolean = false
+}
