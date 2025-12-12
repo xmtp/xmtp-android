@@ -1,9 +1,12 @@
 package org.xmtp.android.library.codecs
 
-import com.google.protobuf.ByteString
-
 /**
  * Represents a leave request message sent when a user wants to leave a group.
+ *
+ * Leave requests are automatically sent when calling `leaveGroup()` on a conversation.
+ * Users should not need to manually encode or send this content type.
+ *
+ * Following protobuf semantics, empty ByteArray is treated as equivalent to null during encoding/decoding.
  *
  * @property authenticatedNote Optional authenticated note for the leave request
  */
@@ -29,26 +32,3 @@ val ContentTypeLeaveRequest =
         versionMajor = 1,
         versionMinor = 0,
     )
-
-data class LeaveRequestCodec(
-    override var contentType: ContentTypeId = ContentTypeLeaveRequest,
-) : ContentCodec<LeaveRequest> {
-    override fun encode(content: LeaveRequest): EncodedContent =
-        EncodedContent
-            .newBuilder()
-            .also {
-                it.type = ContentTypeLeaveRequest
-                content.authenticatedNote?.let { note ->
-                    it.content = ByteString.copyFrom(note)
-                }
-            }.build()
-
-    override fun decode(content: EncodedContent): LeaveRequest =
-        LeaveRequest(
-            authenticatedNote = if (content.content.isEmpty) null else content.content.toByteArray(),
-        )
-
-    override fun fallback(content: LeaveRequest): String? = "A member has requested to leave the group"
-
-    override fun shouldPush(content: LeaveRequest): Boolean = false
-}
