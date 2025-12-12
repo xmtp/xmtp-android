@@ -57,7 +57,7 @@ data class LeaveRequestCodec(
     override fun decode(content: EncodedContent): LeaveRequest {
         val decoded = uniffi.xmtpv3.decodeLeaveRequest(content.toByteArray())
 
-        return LeaveRequest(
+        return LeaveRequest.create(
             authenticatedNote = decoded.authenticatedNote,
         )
     }
