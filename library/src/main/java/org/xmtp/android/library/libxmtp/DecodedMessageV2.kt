@@ -180,7 +180,7 @@ class DecodedMessageV2 private constructor(
             )
 
         private fun mapLeaveRequest(ffiLeaveRequest: FfiLeaveRequest): LeaveRequest =
-            LeaveRequest(authenticatedNote = ffiLeaveRequest.authenticatedNote)
+            LeaveRequest.create(authenticatedNote = ffiLeaveRequest.authenticatedNote)
 
         // Helper functions for GroupUpdated proto mapping
 
