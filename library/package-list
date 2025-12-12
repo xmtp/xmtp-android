@@ -1309,6 +1309,7 @@ $dokka.location:uniffi.xmtpv3//decodeActions/#kotlin.ByteArray/PointingToDeclara
 $dokka.location:uniffi.xmtpv3//decodeAttachment/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-attachment.html
 $dokka.location:uniffi.xmtpv3//decodeGroupUpdated/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-group-updated.html
 $dokka.location:uniffi.xmtpv3//decodeIntent/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-intent.html
+$dokka.location:uniffi.xmtpv3//decodeLeaveRequest/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-leave-request.html
 $dokka.location:uniffi.xmtpv3//decodeMultiRemoteAttachment/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-multi-remote-attachment.html
 $dokka.location:uniffi.xmtpv3//decodeReaction/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-reaction.html
 $dokka.location:uniffi.xmtpv3//decodeReadReceipt/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-read-receipt.html
@@ -1320,6 +1321,7 @@ $dokka.location:uniffi.xmtpv3//decodeWalletSendCalls/#kotlin.ByteArray/PointingT
 $dokka.location:uniffi.xmtpv3//encodeActions/#uniffi.xmtpv3.FfiActions/PointingToDeclaration/library/uniffi.xmtpv3/encode-actions.html
 $dokka.location:uniffi.xmtpv3//encodeAttachment/#uniffi.xmtpv3.FfiAttachment/PointingToDeclaration/library/uniffi.xmtpv3/encode-attachment.html
 $dokka.location:uniffi.xmtpv3//encodeIntent/#uniffi.xmtpv3.FfiIntent/PointingToDeclaration/library/uniffi.xmtpv3/encode-intent.html
+$dokka.location:uniffi.xmtpv3//encodeLeaveRequest/#uniffi.xmtpv3.FfiLeaveRequest/PointingToDeclaration/library/uniffi.xmtpv3/encode-leave-request.html
 $dokka.location:uniffi.xmtpv3//encodeMultiRemoteAttachment/#uniffi.xmtpv3.FfiMultiRemoteAttachment/PointingToDeclaration/library/uniffi.xmtpv3/encode-multi-remote-attachment.html
 $dokka.location:uniffi.xmtpv3//encodeReaction/#uniffi.xmtpv3.FfiReactionPayload/PointingToDeclaration/library/uniffi.xmtpv3/encode-reaction.html
 $dokka.location:uniffi.xmtpv3//encodeReadReceipt/#uniffi.xmtpv3.FfiReadReceipt/PointingToDeclaration/library/uniffi.xmtpv3/encode-read-receipt.html
