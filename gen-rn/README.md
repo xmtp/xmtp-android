@@ -27,7 +27,8 @@ The script supports the following environment variables:
 
 - Never commit your `ANTHROPIC_API_KEY` to version control
 - Store your API key in your shell profile as described in Setup
-- Rotate your API key if it's accidentally exposed
+- Rotate your API key immediately if it's accidentally exposed or committed
+- The temporary `ai-script.js` file is automatically deleted after execution for security
 
 ## Setup
 
@@ -98,12 +99,12 @@ After running, check the `output/` directory:
 output/
 ├── release-notes.md    # Main AI-generated release notes
 ├── release-data.txt    # Raw git analysis data (for debugging)
-├── pr-refs.txt         # PR numbers found in commits
-└── ai-script.js        # Temporary AI generation script
+└── pr-refs.txt         # PR numbers found in commits
 ```
 
 > [!NOTE]
-> The `gen-rn/output/` directory is automatically excluded from version control via `.gitignore`. Generated files will not be committed to the repository.
+> - The `gen-rn/output/` directory is automatically excluded from version control via `.gitignore`
+> - The temporary `ai-script.js` file is automatically deleted after execution for security
 
 ## Troubleshooting
 

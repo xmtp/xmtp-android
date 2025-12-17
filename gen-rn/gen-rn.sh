@@ -10,6 +10,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUTPUT_DIR="./output"
 MAX_TOKENS="${MAX_TOKENS:-4000}"  # Configurable via environment variable, default 4000
 
+# Validate MAX_TOKENS is numeric and within range
+if [[ "$MAX_TOKENS" =~ ^[0-9]+$ ]]; then
+    if [ "$MAX_TOKENS" -lt 1000 ] || [ "$MAX_TOKENS" -gt 8000 ]; then
+        echo "⚠ Warning: MAX_TOKENS should be between 1000-8000, got $MAX_TOKENS. Using default 4000."
+        MAX_TOKENS=4000
+    fi
+else
+    echo "⚠ Warning: MAX_TOKENS must be numeric, got '$MAX_TOKENS'. Using default 4000."
+    MAX_TOKENS=4000
+fi
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -46,8 +57,8 @@ validate_tag_name() {
         exit 1
     fi
 
-    # Check if tag exists in repository
-    if ! git rev-parse "$tag" >/dev/null 2>&1; then
+    # Check if tag exists in repository (verify it's actually a tag, not a branch or commit)
+    if ! git rev-parse -q --verify "refs/tags/$tag" >/dev/null 2>&1; then
         print_error "Tag does not exist: $tag"
         echo "Use 'git tag' to see available tags"
         exit 1
@@ -142,8 +153,8 @@ setup_environment() {
 
         # First, determine if current tag has 'v' prefix
         if [[ "$TAG_NAME" == v* ]]; then
-            # Look for other v-prefixed tags (use grep -F for fixed-string matching)
-            PREVIOUS_TAG=$(git tag --sort=-version:refname | grep "^v" | grep -Fv "$TAG_NAME" | head -n 1)
+            # Look for other v-prefixed tags (use grep -Fx for exact fixed-string matching)
+            PREVIOUS_TAG=$(git tag --sort=-version:refname | grep "^v" | grep -Fxv "$TAG_NAME" | head -n 1)
 
             # Guard against self-comparison
             if [ "$PREVIOUS_TAG" = "$TAG_NAME" ]; then
@@ -153,39 +164,42 @@ setup_environment() {
             # Look for non-v-prefixed tags in the same version series
             VERSION_SERIES=$(echo "$TAG_NAME" | cut -d. -f1-2)  # e.g., "4.6" from "4.6.4"
 
-            # Try to find previous tag in same series first
-            # Use git tag --sort for cross-platform compatibility and grep -F for fixed-string matching
-            PREVIOUS_TAG=$(git tag --sort=version:refname | grep "^${VERSION_SERIES}\." | grep -F -B1 "$TAG_NAME" | head -n1)
-
-            # Guard against self-comparison
-            if [ "$PREVIOUS_TAG" = "$TAG_NAME" ]; then
-                PREVIOUS_TAG=""
-            fi
+            # Try to find previous tag in same series first (portable approach without grep -B)
+            PREVIOUS_TAG=$(git tag --sort=version:refname | grep "^${VERSION_SERIES}\." | {
+                local prev=""
+                while IFS= read -r tag; do
+                    if [ "$tag" = "$TAG_NAME" ]; then
+                        echo "$prev"
+                        break
+                    fi
+                    prev="$tag"
+                done
+            })
 
             # If no same-series tag found, try broader search
             if [ -z "$PREVIOUS_TAG" ]; then
                 MAJOR_VERSION=$(echo "$TAG_NAME" | cut -d. -f1)  # e.g., "4" from "4.6.4"
-                PREVIOUS_TAG=$(git tag --sort=version:refname | grep "^${MAJOR_VERSION}\." | grep -F -B1 "$TAG_NAME" | head -n1)
-
-                # Guard against self-comparison
-                if [ "$PREVIOUS_TAG" = "$TAG_NAME" ]; then
-                    PREVIOUS_TAG=""
-                fi
+                PREVIOUS_TAG=$(git tag --sort=version:refname | grep "^${MAJOR_VERSION}\." | {
+                    local prev=""
+                    while IFS= read -r tag; do
+                        if [ "$tag" = "$TAG_NAME" ]; then
+                            echo "$prev"
+                            break
+                        fi
+                        prev="$tag"
+                    done
+                })
             fi
-            
+
             # If still no tag, fall back to any non-v tag
             if [ -z "$PREVIOUS_TAG" ]; then
-                PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "^v" | grep -Fv "$TAG_NAME" | head -n 1)
-
-                # Guard against self-comparison
-                if [ "$PREVIOUS_TAG" = "$TAG_NAME" ]; then
-                    PREVIOUS_TAG=""
-                fi
+                PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "^v" | grep -Fxv "$TAG_NAME" | head -n 1)
             fi
         fi
         
         if [ -z "$PREVIOUS_TAG" ]; then
-            PREVIOUS_TAG=$(git rev-list --max-parents=0 HEAD)
+            # Get first root commit (handles repos with multiple root commits)
+            PREVIOUS_TAG=$(git rev-list --max-parents=0 HEAD | head -n 1)
             print_warning "No previous tag found, comparing against first commit"
         else
             echo "Using previous tag: $PREVIOUS_TAG"
@@ -396,12 +410,30 @@ FORMAT REQUIREMENTS:
 
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+
+            // Provide actionable error messages for common failures
+            if (response.status === 401) {
+                throw new Error(`Authentication failed (401). Check your ANTHROPIC_API_KEY is valid and not expired.`);
+            } else if (response.status === 429) {
+                throw new Error(`Rate limit exceeded (429). Wait a few minutes and try again, or reduce MAX_TOKENS.`);
+            } else if (response.status === 400) {
+                throw new Error(`Bad request (400). This may be due to invalid MAX_TOKENS or request format. Error: ${errorText.substring(0, 200)}`);
+            } else {
+                throw new Error(`HTTP error! status: ${response.status}, body: ${errorText.substring(0, 300)}`);
+            }
         }
 
         const data = await response.json();
-        const releaseNotes = data.content
-            .map(item => (item.type === "text" ? item.text : ""))
+
+        // Validate API response structure
+        const content = Array.isArray(data?.content) ? data.content : null;
+        if (!content || content.length === 0) {
+            const responsePreview = JSON.stringify(data).substring(0, 200);
+            throw new Error(`Unexpected API response: missing or invalid 'content' array. Response: ${responsePreview}`);
+        }
+
+        const releaseNotes = content
+            .map(item => (item && item.type === "text" ? item.text : ""))
             .filter(Boolean)
             .join("\n");
 
@@ -458,6 +490,9 @@ EOF
     else
         print_warning "AI generation failed, but fallback content was created"
     fi
+
+    # Clean up temporary AI script for security
+    rm -f "$ai_script"
 }
 
 # Function to display results
@@ -465,7 +500,13 @@ display_results() {
     print_header "Release Notes Generated"
 
     echo "📁 Generated files in $OUTPUT_DIR/:"
-    ls -la "$OUTPUT_DIR/" | awk '/^-/ && $9 != "" {print "  " $9 " (" $5 " bytes)"}'
+    # List files with sizes (handles filenames with spaces correctly)
+    for file in "$OUTPUT_DIR"/*; do
+        if [ -f "$file" ]; then
+            size=$(wc -c < "$file")
+            printf "  %s (%s bytes)\n" "$(basename "$file")" "$size"
+        fi
+    done
     echo ""
     
     if [ -f "$OUTPUT_DIR/release-notes.md" ]; then
