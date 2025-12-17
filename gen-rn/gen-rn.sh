@@ -73,7 +73,7 @@ check_prerequisites() {
 
     # Check Node.js version (requires 18+ for native fetch support)
     NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
-    if [ "$NODE_VERSION" -lt 18 ]; then
+    if ! [[ "$NODE_VERSION" =~ ^[0-9]+$ ]] || [ "$NODE_VERSION" -lt 18 ]; then
         print_error "Node.js 18 or later is required (found: $(node --version))"
         echo "The script uses native fetch() API which requires Node.js 18+"
         echo "Please upgrade Node.js from https://nodejs.org/"
@@ -142,17 +142,20 @@ setup_environment() {
 
         # First, determine if current tag has 'v' prefix
         if [[ "$TAG_NAME" == v* ]]; then
-            # Look for other v-prefixed tags
-            PREVIOUS_TAG=$(git tag --sort=-version:refname | grep "^v" | grep -v "$TAG_NAME" | head -n 1)
+            # Look for other v-prefixed tags (use grep -F for fixed-string matching)
+            PREVIOUS_TAG=$(git tag --sort=-version:refname | grep "^v" | grep -Fv "$TAG_NAME" | head -n 1)
+
+            # Guard against self-comparison
+            if [ "$PREVIOUS_TAG" = "$TAG_NAME" ]; then
+                PREVIOUS_TAG=""
+            fi
         else
             # Look for non-v-prefixed tags in the same version series
             VERSION_SERIES=$(echo "$TAG_NAME" | cut -d. -f1-2)  # e.g., "4.6" from "4.6.4"
 
-            # Escape dots in tag name for regex matching
-            ESCAPED_TAG_NAME=$(echo "$TAG_NAME" | sed 's/\./\\./g')
-
             # Try to find previous tag in same series first
-            PREVIOUS_TAG=$(git tag | grep "^${VERSION_SERIES}\." | sort -V | grep -B1 "^${ESCAPED_TAG_NAME}$" | head -n1)
+            # Use git tag --sort for cross-platform compatibility and grep -F for fixed-string matching
+            PREVIOUS_TAG=$(git tag --sort=version:refname | grep "^${VERSION_SERIES}\." | grep -F -B1 "$TAG_NAME" | head -n1)
 
             # Guard against self-comparison
             if [ "$PREVIOUS_TAG" = "$TAG_NAME" ]; then
@@ -162,7 +165,7 @@ setup_environment() {
             # If no same-series tag found, try broader search
             if [ -z "$PREVIOUS_TAG" ]; then
                 MAJOR_VERSION=$(echo "$TAG_NAME" | cut -d. -f1)  # e.g., "4" from "4.6.4"
-                PREVIOUS_TAG=$(git tag | grep "^${MAJOR_VERSION}\." | sort -V | grep -B1 "^${ESCAPED_TAG_NAME}$" | head -n1)
+                PREVIOUS_TAG=$(git tag --sort=version:refname | grep "^${MAJOR_VERSION}\." | grep -F -B1 "$TAG_NAME" | head -n1)
 
                 # Guard against self-comparison
                 if [ "$PREVIOUS_TAG" = "$TAG_NAME" ]; then
@@ -172,7 +175,12 @@ setup_environment() {
             
             # If still no tag, fall back to any non-v tag
             if [ -z "$PREVIOUS_TAG" ]; then
-                PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "^v" | grep -v "$TAG_NAME" | head -n 1)
+                PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "^v" | grep -Fv "$TAG_NAME" | head -n 1)
+
+                # Guard against self-comparison
+                if [ "$PREVIOUS_TAG" = "$TAG_NAME" ]; then
+                    PREVIOUS_TAG=""
+                fi
             fi
         fi
         
@@ -259,7 +267,7 @@ gather_release_info() {
     for file in build.gradle settings.gradle gradle.properties library/build.gradle example/build.gradle README.md CHANGELOG.md; do
         if [ -f "$file" ]; then
             if git rev-list "$PREVIOUS_TAG..$TAG_NAME" &>/dev/null; then
-                if git diff --name-only "$PREVIOUS_TAG..$TAG_NAME" | grep -q "^$file$"; then
+                if git diff --name-only "$PREVIOUS_TAG..$TAG_NAME" | grep -Fxq "$file"; then
                     echo "Changes in $file:" >> "$info_file"
                     if ! git diff "$PREVIOUS_TAG..$TAG_NAME" -- "$file" >> "$info_file" 2>&1; then
                         print_warning "Failed to get diff for $file"
