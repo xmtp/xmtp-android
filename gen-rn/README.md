@@ -50,20 +50,39 @@ export MAX_TOKENS=6000
 
 ## Usage
 
-```bash
-# Specify both tags to show what changed between releases
-# This example generates release notes for 4.6.4 based on updates since 4.6.3
-./gen-rn.sh 4.6.4 4.6.3
+### Basic usage
 
-# Generate release notes for 4.6.4 (compares against auto-detected previous tag, likely 4.6.3)
+```bash
+# Auto-detect previous tag and generate delta
 ./gen-rn.sh 4.6.4
 
+# Specify both tags to compare (what's new in 4.6.4 vs 4.6.3)
+./gen-rn.sh 4.6.4 4.6.3
+
+# Interactive mode - prompts for tag selection
+# Detects previous tag and generate delta
 ./gen-rn.sh
-# Displays available tags and enables you to enter a tag.
-# Compares against auto-detected previous tag.
 
 # Help
 ./gen-rn.sh --help
+```
+
+### Custom base comparison with `--from-base`
+
+Use the `--from-base` flag to compare a release against any git reference (branch, tag, or commit):
+
+```bash
+# Show everything in 4.6.4 that's not in main
+./gen-rn.sh 4.6.4 --from-base main
+
+# Show full content of a release candidate
+./gen-rn.sh 4.6.4-rc.1 --from-base main
+
+# Show all changes since a specific older tag
+./gen-rn.sh 4.6.4 --from-base 4.5.0
+
+# Compare against a branch
+./gen-rn.sh 4.6.4 --from-base release/4.6
 ```
 
 ### Supported release types

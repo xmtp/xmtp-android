@@ -139,12 +139,36 @@ setup_environment() {
         fi
     fi
 
+    # Check if user accidentally used --from-base as tag name
+    if [ "$TAG_NAME" = "--from-base" ]; then
+        print_error "Missing tag name before --from-base flag"
+        echo "Correct usage: ./gen-rn.sh <tag_name> --from-base <ref>"
+        echo "Example: ./gen-rn.sh 4.6.4 --from-base main"
+        exit 1
+    fi
+
     # Validate tag name
     validate_tag_name "$TAG_NAME"
-    
-    # Get previous tag with smart detection (from working local-test-runner.sh)
+
+    # Get previous tag with smart detection or --from-base option
     PREVIOUS_TAG=""  # Initialize to empty string for set -u compatibility
-    if [ "${2:-}" != "" ]; then
+
+    # Check if --from-base flag is used
+    if [ "${2:-}" = "--from-base" ]; then
+        if [ -z "${3:-}" ]; then
+            print_error "--from-base requires a git reference (tag, branch, or commit)"
+            echo "Example: ./gen-rn.sh $TAG_NAME --from-base main"
+            exit 1
+        fi
+        PREVIOUS_TAG="$3"
+        # Validate that the base reference exists in git
+        if ! git rev-parse "$PREVIOUS_TAG" >/dev/null 2>&1; then
+            print_error "Base reference does not exist: $PREVIOUS_TAG"
+            echo "Use 'git branch -a' or 'git tag' to see available references"
+            exit 1
+        fi
+        echo "Using custom base reference: $PREVIOUS_TAG"
+    elif [ "${2:-}" != "" ]; then
         PREVIOUS_TAG="$2"
         # Validate previous tag
         validate_tag_name "$PREVIOUS_TAG"
@@ -537,7 +561,7 @@ main() {
     echo ""
     
     check_prerequisites
-    setup_environment "${1:-}" "${2:-}"
+    setup_environment "${1:-}" "${2:-}" "${3:-}"
     gather_release_info
     generate_ai_release_notes
     display_results
@@ -551,13 +575,17 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
     echo ""
     echo "Usage:"
     echo "  $0 [tag_name] [previous_tag]"
+    echo "  $0 [tag_name] --from-base <ref>"
     echo "  $0 --help|-h"
     echo ""
     echo "Examples:"
-    echo "  $0                     # Interactive mode - will prompt for tag"
-    echo "  $0 4.6.4               # Generate notes for v4.6.4 (auto-detect previous)"
-    echo "  $0 4.6.4 4.6.3         # Generate notes comparing 4.6.4 to 4.6.3"
-    echo "  $0 latest              # Generate notes for most recent tag"
+    echo "  $0                            # Interactive mode - will prompt for tag"
+    echo "  $0 4.6.4                      # Generate notes for 4.6.4 (auto-detect previous)"
+    echo "  $0 4.6.4 4.6.3                # Compare 4.6.4 to 4.6.3 (what's new)"
+    echo "  $0 4.6.4 --from-base main     # Show everything in 4.6.4 not in main"
+    echo "  $0 4.6.4 --from-base 4.5.0    # Show everything since 4.5.0"
+    echo "  $0 4.6.4-rc.1 --from-base main  # Full content of RC release"
+    echo "  $0 latest                     # Generate notes for most recent tag"
     echo ""
     echo "Requirements:"
     echo "  - Git repository with release tags"
