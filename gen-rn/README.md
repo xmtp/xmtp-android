@@ -2,6 +2,9 @@
 
 AI-powered release notes generation for XMTP SDK releases using git history analysis and Claude AI.
 
+> [!IMPORTANT]
+> Generated release notes must be reviewed by humans before publication. The AI provides a starting point, not a final product.
+
 ## Purpose
 
 1. **Engineering sanity check**: Help engineers understand exactly what's included in a release
@@ -20,11 +23,11 @@ The script supports the following environment variables:
 - `ANTHROPIC_API_KEY` (required): Your Anthropic API key for Claude AI
 - `MAX_TOKENS` (optional): Maximum tokens for AI response (default: 4000, range: 1000-8000)
 
-Example with custom token limit:
-```bash
-export MAX_TOKENS=6000
-./gen-rn.sh 4.6.4
-```
+### API key handling
+
+- Never commit your `ANTHROPIC_API_KEY` to version control
+- Store your API key in your shell profile as described in Setup
+- Rotate your API key if it's accidentally exposed
 
 ## Setup
 
@@ -40,31 +43,26 @@ git fetch --tags
 # Make script executable  
 chmod +x gen-rn.sh
 
-# Generate release notes
-./gen-rn.sh 4.6.4
+# Optionally, set custom token limit for current terminal session
+export MAX_TOKENS=6000
 ```
 
 ## Usage
 
-### Interactive mode
-
 ```bash
-./gen-rn.sh
-# Displays available tags and enables you to enter a tag.
-# Compares against auto-detected previous tag.
-```
+# Specify both tags to show what changed between releases
+# This example generates release notes for 4.6.4 based on updates since 4.6.3
+./gen-rn.sh 4.6.4 4.6.3
 
-### Specific release
-
-```bash
 # Generate release notes for 4.6.4 (compares against auto-detected previous tag, likely 4.6.3)
 ./gen-rn.sh 4.6.4
 
-# Specify both tags for comparison (show what changed from 4.6.3 to 4.6.4)
-./gen-rn.sh 4.6.4 4.6.3
+./gen-rn.sh
+# Displays available tags and enables you to enter a tag.
+# Compares against auto-detected previous tag.
 
-# Use latest tag (compares latest against its predecessor)
-./gen-rn.sh latest
+# Help
+./gen-rn.sh --help
 ```
 
 ### Supported release types
@@ -82,21 +80,8 @@ The script automatically detects release types based on tag naming:
 ./gen-rn.sh 4.6.7-dev.abc123 4.6.7   # → Release type: development
 ```
 
-### Help
+### Tag name validation
 
-```bash
-./gen-rn.sh --help
-```
-
-## Security
-
-### API Key Handling
-- Never commit your `ANTHROPIC_API_KEY` to version control
-- Store your API key in your shell profile (e.g., `~/.zshrc`, `~/.bashrc`)
-- Consider using a secrets manager for production environments
-- Rotate your API key if it's accidentally exposed
-
-### Input Validation
 The script validates all tag names to prevent command injection attacks. Tag names must contain only:
 - Letters (a-z, A-Z)
 - Numbers (0-9)
@@ -117,8 +102,8 @@ output/
 └── ai-script.js        # Temporary AI generation script
 ```
 
-> [!IMPORTANT]
-> Generated release notes must be reviewed by humans before publication. The AI provides a starting point, not a final product.
+> [!NOTE]
+> The `gen-rn/output/` directory is automatically excluded from version control via `.gitignore`. Generated files will not be committed to the repository.
 
 ## Troubleshooting
 
