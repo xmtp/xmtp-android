@@ -13,6 +13,19 @@ AI-powered release notes generation for XMTP SDK releases using git history anal
 - Node.js installed
 - Anthropic API key: Get a key at: [https://console.anthropic.com/](https://console.anthropic.com/)
 
+## Configuration
+
+The script supports the following environment variables:
+
+- `ANTHROPIC_API_KEY` (required): Your Anthropic API key for Claude AI
+- `MAX_TOKENS` (optional): Maximum tokens for AI response (default: 4000, range: 1000-8000)
+
+Example with custom token limit:
+```bash
+export MAX_TOKENS=6000
+./gen-rn.sh 4.6.4
+```
+
 ## Setup
 
 ```bash
@@ -74,6 +87,23 @@ The script automatically detects release types based on tag naming:
 ```bash
 ./gen-rn.sh --help
 ```
+
+## Security
+
+### API Key Handling
+- Never commit your `ANTHROPIC_API_KEY` to version control
+- Store your API key in your shell profile (e.g., `~/.zshrc`, `~/.bashrc`)
+- Consider using a secrets manager for production environments
+- Rotate your API key if it's accidentally exposed
+
+### Input Validation
+The script validates all tag names to prevent command injection attacks. Tag names must contain only:
+- Letters (a-z, A-Z)
+- Numbers (0-9)
+- Dots (.)
+- Hyphens (-)
+- Underscores (_)
+- Forward slashes (/)
 
 ## Output files
 

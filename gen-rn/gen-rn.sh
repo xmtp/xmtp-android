@@ -3,11 +3,12 @@
 # XMTP SDK Release Notes Generator
 # Generate AI-powered release notes for XMTP SDK releases using Claude
 
-set -e
+set -euo pipefail
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUTPUT_DIR="./output"
+MAX_TOKENS="${MAX_TOKENS:-4000}"  # Configurable via environment variable, default 4000
 
 # Colors for output
 RED='\033[0;31m'
@@ -32,6 +33,25 @@ print_warning() {
 
 print_error() {
     echo -e "${RED}✗ $1${NC}"
+}
+
+# Function to validate tag name to prevent command injection
+validate_tag_name() {
+    local tag="$1"
+
+    # Allow alphanumeric, dots, hyphens, underscores, and forward slashes (for v-prefixed tags)
+    if [[ ! "$tag" =~ ^[a-zA-Z0-9._/-]+$ ]]; then
+        print_error "Invalid tag name: $tag"
+        echo "Tag names must contain only letters, numbers, dots, hyphens, underscores, and slashes"
+        exit 1
+    fi
+
+    # Check if tag exists in repository
+    if ! git rev-parse "$tag" >/dev/null 2>&1; then
+        print_error "Tag does not exist: $tag"
+        echo "Use 'git tag' to see available tags"
+        exit 1
+    fi
 }
 
 # Function to check prerequisites
@@ -84,12 +104,12 @@ setup_environment() {
     echo ""
     
     # Get current tag or prompt user
-    if [ "$1" != "" ]; then
+    if [ "${1:-}" != "" ]; then
         TAG_NAME="$1"
     else
         echo "Enter the tag name to generate release notes for:"
         read -r TAG_NAME
-        
+
         if [ "$TAG_NAME" = "latest" ]; then
             TAG_NAME=$(git tag --sort=-version:refname | head -n 1)
             if [ -z "$TAG_NAME" ]; then
@@ -98,10 +118,15 @@ setup_environment() {
             fi
         fi
     fi
+
+    # Validate tag name
+    validate_tag_name "$TAG_NAME"
     
     # Get previous tag with smart detection (from working local-test-runner.sh)
-    if [ "$2" != "" ]; then
+    if [ "${2:-}" != "" ]; then
         PREVIOUS_TAG="$2"
+        # Validate previous tag
+        validate_tag_name "$PREVIOUS_TAG"
     else
         # Try to find the previous tag more intelligently
         
@@ -171,30 +196,45 @@ gather_release_info() {
     # Get commit messages between tags
     echo "=== COMMIT MESSAGES ===" >> "$info_file"
     if git rev-list "$PREVIOUS_TAG..$TAG_NAME" &>/dev/null; then
-        git log "$PREVIOUS_TAG..$TAG_NAME" --pretty=format:"- %s (%an, %ad)" --date=short >> "$info_file" || true
+        if ! git log "$PREVIOUS_TAG..$TAG_NAME" --pretty=format:"- %s (%an, %ad)" --date=short >> "$info_file" 2>&1; then
+            print_warning "Failed to get commit messages between tags"
+            echo "Error retrieving commit messages" >> "$info_file"
+        fi
     else
         print_warning "Could not compare tags, using last 10 commits"
-        git log -10 --pretty=format:"- %s (%an, %ad)" --date=short >> "$info_file"
+        if ! git log -10 --pretty=format:"- %s (%an, %ad)" --date=short >> "$info_file" 2>&1; then
+            print_error "Failed to get commit messages"
+            echo "Error retrieving commit messages" >> "$info_file"
+        fi
     fi
     echo -e "\n" >> "$info_file"
     
     # Get changed files with stats
     echo "=== CHANGED FILES ===" >> "$info_file"
     if git rev-list "$PREVIOUS_TAG..$TAG_NAME" &>/dev/null; then
-        git diff --name-status "$PREVIOUS_TAG..$TAG_NAME" >> "$info_file" 2>/dev/null || true
+        if ! git diff --name-status "$PREVIOUS_TAG..$TAG_NAME" >> "$info_file" 2>&1; then
+            print_warning "Failed to get changed files between tags"
+            echo "Error retrieving changed files" >> "$info_file"
+        fi
     else
-        git diff --name-status HEAD~10..HEAD >> "$info_file" 2>/dev/null || true
+        if ! git diff --name-status HEAD~10..HEAD >> "$info_file" 2>&1; then
+            print_warning "Failed to get changed files"
+            echo "Error retrieving changed files" >> "$info_file"
+        fi
     fi
     echo -e "\n" >> "$info_file"
     
-    # Get detailed diff for key files
+    # Get detailed diff for key files (Android-specific)
     echo "=== KEY FILE CHANGES ===" >> "$info_file"
-    for file in package.json package-lock.json Cargo.toml Cargo.lock setup.py requirements.txt build.gradle app/build.gradle README.md CHANGELOG.md; do
+    for file in build.gradle settings.gradle gradle.properties library/build.gradle example/build.gradle README.md CHANGELOG.md; do
         if [ -f "$file" ]; then
             if git rev-list "$PREVIOUS_TAG..$TAG_NAME" &>/dev/null; then
                 if git diff --name-only "$PREVIOUS_TAG..$TAG_NAME" | grep -q "^$file$"; then
                     echo "Changes in $file:" >> "$info_file"
-                    git diff "$PREVIOUS_TAG..$TAG_NAME" -- "$file" >> "$info_file" 2>/dev/null || true
+                    if ! git diff "$PREVIOUS_TAG..$TAG_NAME" -- "$file" >> "$info_file" 2>&1; then
+                        print_warning "Failed to get diff for $file"
+                        echo "Error retrieving diff for $file" >> "$info_file"
+                    fi
                     echo -e "\n" >> "$info_file"
                 fi
             fi
@@ -232,9 +272,11 @@ generate_ai_release_notes() {
     # Create the AI generation script
     cat > "$ai_script" << 'EOF'
 const fs = require('fs');
+const path = require('path');
 
 async function generateReleaseNotes() {
-    const releaseInfo = fs.readFileSync('./output/release-data.txt', 'utf8');
+    const outputDir = process.env.OUTPUT_DIR || './output';
+    const releaseInfo = fs.readFileSync(path.join(outputDir, 'release-data.txt'), 'utf8');
     
     // Truncate if too long (API limits)
     const maxLength = 50000;
@@ -305,7 +347,7 @@ FORMAT REQUIREMENTS:
             },
             body: JSON.stringify({
                 model: "claude-sonnet-4-20250514",
-                max_tokens: 1000,
+                max_tokens: parseInt(process.env.MAX_TOKENS) || 4000,
                 messages: [
                     { role: "user", content: prompt }
                 ],
@@ -326,7 +368,8 @@ FORMAT REQUIREMENTS:
             .join("\n");
 
         // Save release notes
-        fs.writeFileSync('./output/release-notes.md', releaseNotes);
+        const outputPath = path.join(outputDir, 'release-notes.md');
+        fs.writeFileSync(outputPath, releaseNotes);
         console.log("✅ Release notes generated successfully");
         
     } catch (error) {
@@ -349,7 +392,8 @@ ${truncatedInfo.substring(0, 2000)}
 ---
 *Note: This is fallback content. Please review git history and create proper release notes.*
 `;
-        fs.writeFileSync('./output/release-notes.md', fallbackNotes);
+        const fallbackPath = path.join(outputDir, 'release-notes.md');
+        fs.writeFileSync(fallbackPath, fallbackNotes);
         console.log("📁 Fallback release notes created");
         process.exit(1);
     }
@@ -367,6 +411,8 @@ EOF
     export TAG_NAME="$TAG_NAME"
     export PREVIOUS_TAG="$PREVIOUS_TAG"
     export RELEASE_TYPE="$RELEASE_TYPE"
+    export OUTPUT_DIR="$OUTPUT_DIR"
+    export MAX_TOKENS="$MAX_TOKENS"
     
     # Run the AI generation
     if node "$ai_script" "$TAG_NAME" "$PREVIOUS_TAG" "$RELEASE_TYPE"; then
@@ -379,9 +425,9 @@ EOF
 # Function to display results
 display_results() {
     print_header "Release Notes Generated"
-    
+
     echo "📁 Generated files in $OUTPUT_DIR/:"
-    ls -la "$OUTPUT_DIR/" | grep -v "^d" | awk '{print "  " $9 " (" $5 " bytes)"}'
+    ls -la "$OUTPUT_DIR/" | grep -v "^d" | grep -v "^total" | awk 'NF > 0 && $9 != "." && $9 != ".." {print "  " $9 " (" $5 " bytes)"}'
     echo ""
     
     if [ -f "$OUTPUT_DIR/release-notes.md" ]; then
