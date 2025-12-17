@@ -72,7 +72,7 @@ check_prerequisites() {
     fi
     
     # Check for API key
-    if [ -z "$ANTHROPIC_API_KEY" ]; then
+    if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
         print_error "ANTHROPIC_API_KEY environment variable is not set."
         echo "Please set your API key: export ANTHROPIC_API_KEY=\"your-key-here\""
         exit 1
@@ -123,13 +123,14 @@ setup_environment() {
     validate_tag_name "$TAG_NAME"
     
     # Get previous tag with smart detection (from working local-test-runner.sh)
+    PREVIOUS_TAG=""  # Initialize to empty string for set -u compatibility
     if [ "${2:-}" != "" ]; then
         PREVIOUS_TAG="$2"
         # Validate previous tag
         validate_tag_name "$PREVIOUS_TAG"
     else
         # Try to find the previous tag more intelligently
-        
+
         # First, determine if current tag has 'v' prefix
         if [[ "$TAG_NAME" == v* ]]; then
             # Look for other v-prefixed tags
@@ -160,6 +161,13 @@ setup_environment() {
             echo "Using previous tag: $PREVIOUS_TAG"
         fi
     fi
+
+    # Prevent self-comparison
+    if [ "$TAG_NAME" = "$PREVIOUS_TAG" ]; then
+        print_error "Cannot compare tag to itself: $TAG_NAME"
+        echo "Please specify a different previous tag"
+        exit 1
+    fi
     
     # Determine release type
     if [[ "$TAG_NAME" == *"rc"* ]]; then
@@ -172,7 +180,7 @@ setup_environment() {
     
     echo ""
     print_success "Environment configured:"
-    echo "  Repository: $(basename $(git rev-parse --show-toplevel))"
+    echo "  Repository: $(basename "$(git rev-parse --show-toplevel)")"
     echo "  Current tag: $TAG_NAME"
     echo "  Previous tag: $PREVIOUS_TAG"
     echo "  Release type: $RELEASE_TYPE"
@@ -184,9 +192,9 @@ gather_release_info() {
     print_header "Gathering Release Information"
     
     local info_file="$OUTPUT_DIR/release-data.txt"
-    
+
     echo "=== XMTP SDK Release Analysis ===" > "$info_file"
-    echo "Repository: $(basename $(git rev-parse --show-toplevel))" >> "$info_file"
+    echo "Repository: $(basename "$(git rev-parse --show-toplevel)")" >> "$info_file"
     echo "Current tag: $TAG_NAME" >> "$info_file"
     echo "Previous tag: $PREVIOUS_TAG" >> "$info_file"
     echo "Release type: $RELEASE_TYPE" >> "$info_file"
@@ -427,7 +435,7 @@ display_results() {
     print_header "Release Notes Generated"
 
     echo "📁 Generated files in $OUTPUT_DIR/:"
-    ls -la "$OUTPUT_DIR/" | grep -v "^d" | grep -v "^total" | awk 'NF > 0 && $9 != "." && $9 != ".." {print "  " $9 " (" $5 " bytes)"}'
+    ls -la "$OUTPUT_DIR/" | awk '/^-/ && $9 != "" {print "  " $9 " (" $5 " bytes)"}'
     echo ""
     
     if [ -f "$OUTPUT_DIR/release-notes.md" ]; then
@@ -485,6 +493,10 @@ if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     echo "  - Node.js installed"
     echo "  - ANTHROPIC_API_KEY environment variable set"
     echo "  - Internet connection (for AI API)"
+    echo ""
+    echo "Environment Variables:"
+    echo "  ANTHROPIC_API_KEY    Required: Your Anthropic API key"
+    echo "  MAX_TOKENS           Optional: Max tokens for AI response (default: 4000, range: 1000-8000)"
     echo ""
     echo "Output:"
     echo "  - output/release-notes.md    # Main AI-generated release notes"
