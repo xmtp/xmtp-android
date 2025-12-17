@@ -10,7 +10,7 @@ AI-powered release notes generation for XMTP SDK releases using git history anal
 
 ## Prerequisites
 
-- Node.js installed
+- Node.js 18 or later (required for native fetch API support)
 - Anthropic API key: Get a key at: [https://console.anthropic.com/](https://console.anthropic.com/)
 
 ## Configuration

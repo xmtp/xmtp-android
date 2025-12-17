@@ -67,7 +67,16 @@ check_prerequisites() {
     # Check for Node.js (for the AI script)
     if ! command -v node &> /dev/null; then
         print_error "Node.js is required but not installed."
-        echo "Please install Node.js from https://nodejs.org/"
+        echo "Please install Node.js 18 or later from https://nodejs.org/"
+        exit 1
+    fi
+
+    # Check Node.js version (requires 18+ for native fetch support)
+    NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+    if [ "$NODE_VERSION" -lt 18 ]; then
+        print_error "Node.js 18 or later is required (found: $(node --version))"
+        echo "The script uses native fetch() API which requires Node.js 18+"
+        echo "Please upgrade Node.js from https://nodejs.org/"
         exit 1
     fi
     
@@ -97,10 +106,10 @@ setup_environment() {
     # Get available tags
     echo "Available git tags:"
     echo "Recent tags:"
-    git tag --sort=-version:refname | grep -E "^[0-9]" | head -10
+    git tag --sort=-version:refname | grep -E "^[0-9]" | head -10 || true
     echo ""
     echo "Legacy tags:"
-    git tag --sort=-version:refname | grep "^v" | head -5
+    git tag --sort=-version:refname | grep "^v" | head -5 || true
     echo ""
     
     # Get current tag or prompt user
@@ -138,14 +147,27 @@ setup_environment() {
         else
             # Look for non-v-prefixed tags in the same version series
             VERSION_SERIES=$(echo "$TAG_NAME" | cut -d. -f1-2)  # e.g., "4.6" from "4.6.4"
-            
+
+            # Escape dots in tag name for regex matching
+            ESCAPED_TAG_NAME=$(echo "$TAG_NAME" | sed 's/\./\\./g')
+
             # Try to find previous tag in same series first
-            PREVIOUS_TAG=$(git tag | grep "^${VERSION_SERIES}\." | sort -V | grep -B1 "^${TAG_NAME}$" | head -n1)
-            
+            PREVIOUS_TAG=$(git tag | grep "^${VERSION_SERIES}\." | sort -V | grep -B1 "^${ESCAPED_TAG_NAME}$" | head -n1)
+
+            # Guard against self-comparison
+            if [ "$PREVIOUS_TAG" = "$TAG_NAME" ]; then
+                PREVIOUS_TAG=""
+            fi
+
             # If no same-series tag found, try broader search
             if [ -z "$PREVIOUS_TAG" ]; then
                 MAJOR_VERSION=$(echo "$TAG_NAME" | cut -d. -f1)  # e.g., "4" from "4.6.4"
-                PREVIOUS_TAG=$(git tag | grep "^${MAJOR_VERSION}\." | sort -V | grep -B1 "^${TAG_NAME}$" | head -n1)
+                PREVIOUS_TAG=$(git tag | grep "^${MAJOR_VERSION}\." | sort -V | grep -B1 "^${ESCAPED_TAG_NAME}$" | head -n1)
+
+                # Guard against self-comparison
+                if [ "$PREVIOUS_TAG" = "$TAG_NAME" ]; then
+                    PREVIOUS_TAG=""
+                fi
             fi
             
             # If still no tag, fall back to any non-v tag
@@ -466,14 +488,14 @@ main() {
     echo ""
     
     check_prerequisites
-    setup_environment "$1" "$2"
+    setup_environment "${1:-}" "${2:-}"
     gather_release_info
     generate_ai_release_notes
     display_results
 }
 
 # Script usage help
-if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
     echo "XMTP SDK Release Notes Generator"
     echo ""
     echo "Generates AI-powered release notes for XMTP SDK releases using git history analysis."
@@ -490,7 +512,7 @@ if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     echo ""
     echo "Requirements:"
     echo "  - Git repository with release tags"
-    echo "  - Node.js installed"
+    echo "  - Node.js 18 or later (for native fetch API support)"
     echo "  - ANTHROPIC_API_KEY environment variable set"
     echo "  - Internet connection (for AI API)"
     echo ""
