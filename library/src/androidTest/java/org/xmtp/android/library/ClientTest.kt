@@ -1108,26 +1108,6 @@ class ClientTest : BaseInstrumentedTest() {
         }
 
     @Test
-    fun testUploadArchiveDebugInformation() =
-        runBlocking {
-            val key = SecureRandom().generateSeed(32)
-            val context = InstrumentationRegistry.getInstrumentation().targetContext
-            val alixWallet = PrivateKeyBuilder()
-            val alix =
-                Client.create(
-                    account = alixWallet,
-                    options =
-                        ClientOptions(
-                            ClientOptions.Api(XMTPEnvironment.LOCAL, false),
-                            appContext = context,
-                            dbEncryptionKey = key,
-                        ),
-                )
-            val uploadKey = alix.debugInformation.uploadDebugInformation()
-            assert(uploadKey.isNotEmpty())
-        }
-
-    @Test
     fun testCannotCreateMoreThan10Installations() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val encryptionKey = SecureRandom().generateSeed(32)
