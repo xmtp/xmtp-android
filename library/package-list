@@ -2641,6 +2641,8 @@ $dokka.location:uniffi.xmtpv3/GenericException.ClientBuilder///PointingToDeclara
 $dokka.location:uniffi.xmtpv3/GenericException.ClientBuilder/ClientBuilder/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-client-builder/-client-builder.html
 $dokka.location:uniffi.xmtpv3/GenericException.DeviceSync///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-device-sync/index.html
 $dokka.location:uniffi.xmtpv3/GenericException.DeviceSync/DeviceSync/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-device-sync/-device-sync.html
+$dokka.location:uniffi.xmtpv3/GenericException.Enrich///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-enrich/index.html
+$dokka.location:uniffi.xmtpv3/GenericException.Enrich/Enrich/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-enrich/-enrich.html
 $dokka.location:uniffi.xmtpv3/GenericException.Erc1271SignatureException///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-erc1271-signature-exception/index.html
 $dokka.location:uniffi.xmtpv3/GenericException.Erc1271SignatureException/Erc1271SignatureException/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-erc1271-signature-exception/-erc1271-signature-exception.html
 $dokka.location:uniffi.xmtpv3/GenericException.ErrorHandler///PointingToDeclaration/library/uniffi.xmtpv3/-generic-exception/-error-handler/index.html
