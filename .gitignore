@@ -97,3 +97,6 @@ lint/tmp/
 .DS_Store
 
 .kotlin
+
+# Release notes generator output
+gen-rn/output/
