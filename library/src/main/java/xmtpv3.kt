@@ -18,26 +18,24 @@ package uniffi.xmtpv3
 // helpers directly inline like we're doing here.
 
 import com.sun.jna.Library
-import com.sun.jna.IntegerType
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.Structure
-import com.sun.jna.Callback
-import com.sun.jna.ptr.*
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.CharBuffer
-import java.nio.charset.CodingErrorAction
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.coroutines.resume
+import com.sun.jna.ptr.ByReference
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.CharBuffer
+import java.nio.charset.CodingErrorAction
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
+import kotlin.coroutines.resume
 
 // This is a helper for safely working with byte buffers returned from the Rust code.
 // A rust-owned buffer is represented by its capacity, its current length, and a
@@ -850,529 +848,6 @@ internal open class UniffiVTableCallbackInterfaceFfiPreferenceCallback(
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is 
 // rather `InterfaceTooLargeException`, caused by too many methods 
@@ -1514,6 +989,8 @@ fun uniffi_xmtpv3_checksum_method_fficonversation_count_messages(
 ): Short
 fun uniffi_xmtpv3_checksum_method_fficonversation_created_at_ns(
 ): Short
+    fun uniffi_xmtpv3_checksum_method_fficonversation_delete_message(
+    ): Short
 fun uniffi_xmtpv3_checksum_method_fficonversation_dm_peer_inbox_id(
 ): Short
 fun uniffi_xmtpv3_checksum_method_fficonversation_find_duplicate_dms(
@@ -1926,6 +1403,9 @@ fun uniffi_xmtpv3_fn_method_fficonversation_count_messages(`ptr`: Pointer,`opts`
 ): Long
 fun uniffi_xmtpv3_fn_method_fficonversation_created_at_ns(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
 ): Long
+    fun uniffi_xmtpv3_fn_method_fficonversation_delete_message(
+        `ptr`: Pointer, `messageId`: RustBuffer.ByValue, uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
 fun uniffi_xmtpv3_fn_method_fficonversation_dm_peer_inbox_id(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
 ): RustBuffer.ByValue
 fun uniffi_xmtpv3_fn_method_fficonversation_find_duplicate_dms(`ptr`: Pointer,
@@ -2691,6 +2171,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_created_at_ns() != 17973.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_xmtpv3_checksum_method_fficonversation_delete_message() != 54360.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_xmtpv3_checksum_method_fficonversation_dm_peer_inbox_id() != 2178.toShort()) {
@@ -4692,6 +4175,11 @@ public interface FfiConversationInterface {
     fun `countMessages`(`opts`: FfiListMessagesOptions): kotlin.Long
     
     fun `createdAtNs`(): kotlin.Long
+
+    /**
+     * Delete a message by its ID. Returns the ID of the deletion message.
+     */
+    fun `deleteMessage`(`messageId`: kotlin.ByteArray): kotlin.ByteArray
     
     fun `dmPeerInboxId`(): kotlin.String?
     
@@ -5072,6 +4560,23 @@ open class FfiConversation: Disposable, AutoCloseable, FfiConversationInterface
 }
     }
     )
+    }
+
+
+    /**
+     * Delete a message by its ID. Returns the ID of the deletion message.
+     */
+    @Throws(GenericException::class)
+    override fun `deleteMessage`(`messageId`: kotlin.ByteArray): kotlin.ByteArray {
+        return FfiConverterByteArray.lift(
+            callWithPointer {
+                uniffiRustCallWithError(GenericException) { _status ->
+                    UniffiLib.INSTANCE.uniffi_xmtpv3_fn_method_fficonversation_delete_message(
+                        it, FfiConverterByteArray.lower(`messageId`), _status
+                    )
+                }
+            }
+        )
     }
     
 
@@ -12145,6 +11650,33 @@ public object FfiConverterTypeFfiDecodedMessageMetadata: FfiConverterRustBuffer<
 }
 
 
+data class FfiDeletedMessage(
+    var `deletedBy`: FfiDeletedBy,
+) {
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiDeletedMessage : FfiConverterRustBuffer<FfiDeletedMessage> {
+    override fun read(buf: ByteBuffer): FfiDeletedMessage {
+        return FfiDeletedMessage(
+            FfiConverterTypeFfiDeletedBy.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: FfiDeletedMessage) = (
+        FfiConverterTypeFfiDeletedBy.allocationSize(value.`deletedBy`)
+        )
+
+    override fun write(value: FfiDeletedMessage, buf: ByteBuffer) {
+        FfiConverterTypeFfiDeletedBy.write(value.`deletedBy`, buf)
+    }
+}
+
+
 
 data class FfiEncodedContent (
     var `typeId`: FfiContentTypeId?, 
@@ -13138,15 +12670,16 @@ public object FfiConverterTypeFfiPasskeySignature: FfiConverterRustBuffer<FfiPas
 
 
 
-data class FfiPermissionPolicySet (
-    var `addMemberPolicy`: FfiPermissionPolicy, 
-    var `removeMemberPolicy`: FfiPermissionPolicy, 
-    var `addAdminPolicy`: FfiPermissionPolicy, 
-    var `removeAdminPolicy`: FfiPermissionPolicy, 
-    var `updateGroupNamePolicy`: FfiPermissionPolicy, 
-    var `updateGroupDescriptionPolicy`: FfiPermissionPolicy, 
-    var `updateGroupImageUrlSquarePolicy`: FfiPermissionPolicy, 
-    var `updateMessageDisappearingPolicy`: FfiPermissionPolicy
+data class FfiPermissionPolicySet(
+    var `addMemberPolicy`: FfiPermissionPolicy,
+    var `removeMemberPolicy`: FfiPermissionPolicy,
+    var `addAdminPolicy`: FfiPermissionPolicy,
+    var `removeAdminPolicy`: FfiPermissionPolicy,
+    var `updateGroupNamePolicy`: FfiPermissionPolicy,
+    var `updateGroupDescriptionPolicy`: FfiPermissionPolicy,
+    var `updateGroupImageUrlSquarePolicy`: FfiPermissionPolicy,
+    var `updateMessageDisappearingPolicy`: FfiPermissionPolicy,
+    var `updateAppDataPolicy`: FfiPermissionPolicy,
 ) {
     
     companion object
@@ -13166,6 +12699,7 @@ public object FfiConverterTypeFfiPermissionPolicySet: FfiConverterRustBuffer<Ffi
             FfiConverterTypeFfiPermissionPolicy.read(buf),
             FfiConverterTypeFfiPermissionPolicy.read(buf),
             FfiConverterTypeFfiPermissionPolicy.read(buf),
+            FfiConverterTypeFfiPermissionPolicy.read(buf),
         )
     }
 
@@ -13177,7 +12711,8 @@ public object FfiConverterTypeFfiPermissionPolicySet: FfiConverterRustBuffer<Ffi
             FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupNamePolicy`) +
             FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupDescriptionPolicy`) +
             FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateGroupImageUrlSquarePolicy`) +
-            FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateMessageDisappearingPolicy`)
+                FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateMessageDisappearingPolicy`) +
+                FfiConverterTypeFfiPermissionPolicy.allocationSize(value.`updateAppDataPolicy`)
     )
 
     override fun write(value: FfiPermissionPolicySet, buf: ByteBuffer) {
@@ -13189,6 +12724,7 @@ public object FfiConverterTypeFfiPermissionPolicySet: FfiConverterRustBuffer<Ffi
             FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupDescriptionPolicy`, buf)
             FfiConverterTypeFfiPermissionPolicy.write(value.`updateGroupImageUrlSquarePolicy`, buf)
             FfiConverterTypeFfiPermissionPolicy.write(value.`updateMessageDisappearingPolicy`, buf)
+        FfiConverterTypeFfiPermissionPolicy.write(value.`updateAppDataPolicy`, buf)
     }
 }
 
@@ -13883,7 +13419,12 @@ enum class FfiContentType {
     ATTACHMENT,
     REMOTE_ATTACHMENT,
     TRANSACTION_REFERENCE,
-    LEAVE_REQUEST;
+    WALLET_SEND_CALLS,
+    LEAVE_REQUEST,
+    MARKDOWN,
+    ACTIONS,
+    INTENT,
+    MULTI_REMOTE_ATTACHMENT;
     companion object
 }
 
@@ -14135,6 +13676,12 @@ sealed class FfiDecodedMessageBody {
         val v1: FfiLeaveRequest) : FfiDecodedMessageBody() {
         companion object
     }
+
+    data class DeletedMessage(
+        val v1: FfiDeletedMessage,
+    ) : FfiDecodedMessageBody() {
+        companion object
+    }
     
     data class Custom(
         val v1: FfiEncodedContent) : FfiDecodedMessageBody() {
@@ -14191,7 +13738,11 @@ public object FfiConverterTypeFfiDecodedMessageBody : FfiConverterRustBuffer<Ffi
             13 -> FfiDecodedMessageBody.LeaveRequest(
                 FfiConverterTypeFfiLeaveRequest.read(buf),
                 )
-            14 -> FfiDecodedMessageBody.Custom(
+            14 -> FfiDecodedMessageBody.DeletedMessage(
+                FfiConverterTypeFfiDeletedMessage.read(buf),
+            )
+
+            15 -> FfiDecodedMessageBody.Custom(
                 FfiConverterTypeFfiEncodedContent.read(buf),
                 )
             else -> throw RuntimeException("invalid enum value, something is very wrong!!")
@@ -14290,6 +13841,13 @@ public object FfiConverterTypeFfiDecodedMessageBody : FfiConverterRustBuffer<Ffi
                 + FfiConverterTypeFfiLeaveRequest.allocationSize(value.v1)
             )
         }
+        is FfiDecodedMessageBody.DeletedMessage -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                    + FfiConverterTypeFfiDeletedMessage.allocationSize(value.v1)
+                )
+        }
         is FfiDecodedMessageBody.Custom -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
@@ -14366,8 +13924,14 @@ public object FfiConverterTypeFfiDecodedMessageBody : FfiConverterRustBuffer<Ffi
                 FfiConverterTypeFfiLeaveRequest.write(value.v1, buf)
                 Unit
             }
-            is FfiDecodedMessageBody.Custom -> {
+            is FfiDecodedMessageBody.DeletedMessage -> {
                 buf.putInt(14)
+                FfiConverterTypeFfiDeletedMessage.write(value.v1, buf)
+                Unit
+            }
+
+            is FfiDecodedMessageBody.Custom -> {
+                buf.putInt(15)
                 FfiConverterTypeFfiEncodedContent.write(value.v1, buf)
                 Unit
             }
@@ -14448,6 +14012,12 @@ sealed class FfiDecodedMessageContent: Disposable  {
     
     data class LeaveRequest(
         val v1: FfiLeaveRequest) : FfiDecodedMessageContent() {
+        companion object
+    }
+
+    data class DeletedMessage(
+        val v1: FfiDeletedMessage,
+    ) : FfiDecodedMessageContent() {
         companion object
     }
     
@@ -14553,6 +14123,14 @@ sealed class FfiDecodedMessageContent: Disposable  {
                 
             }
             is FfiDecodedMessageContent.LeaveRequest -> {
+
+                Disposable.destroy(
+                    this.v1
+                )
+
+            }
+
+            is FfiDecodedMessageContent.DeletedMessage -> {
                 
     Disposable.destroy(
         this.v1
@@ -14620,7 +14198,11 @@ public object FfiConverterTypeFfiDecodedMessageContent : FfiConverterRustBuffer<
             14 -> FfiDecodedMessageContent.LeaveRequest(
                 FfiConverterTypeFfiLeaveRequest.read(buf),
                 )
-            15 -> FfiDecodedMessageContent.Custom(
+            15 -> FfiDecodedMessageContent.DeletedMessage(
+                FfiConverterTypeFfiDeletedMessage.read(buf),
+            )
+
+            16 -> FfiDecodedMessageContent.Custom(
                 FfiConverterTypeFfiEncodedContent.read(buf),
                 )
             else -> throw RuntimeException("invalid enum value, something is very wrong!!")
@@ -14726,6 +14308,13 @@ public object FfiConverterTypeFfiDecodedMessageContent : FfiConverterRustBuffer<
                 + FfiConverterTypeFfiLeaveRequest.allocationSize(value.v1)
             )
         }
+        is FfiDecodedMessageContent.DeletedMessage -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                    + FfiConverterTypeFfiDeletedMessage.allocationSize(value.v1)
+                )
+        }
         is FfiDecodedMessageContent.Custom -> {
             // Add the size for the Int that specifies the variant plus the size needed for all fields
             (
@@ -14807,9 +14396,79 @@ public object FfiConverterTypeFfiDecodedMessageContent : FfiConverterRustBuffer<
                 FfiConverterTypeFfiLeaveRequest.write(value.v1, buf)
                 Unit
             }
-            is FfiDecodedMessageContent.Custom -> {
+            is FfiDecodedMessageContent.DeletedMessage -> {
                 buf.putInt(15)
+                FfiConverterTypeFfiDeletedMessage.write(value.v1, buf)
+                Unit
+            }
+
+            is FfiDecodedMessageContent.Custom -> {
+                buf.putInt(16)
                 FfiConverterTypeFfiEncodedContent.write(value.v1, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+}
+
+
+sealed class FfiDeletedBy {
+
+    object Sender : FfiDeletedBy()
+
+
+    data class Admin(
+        val `inboxId`: kotlin.String,
+    ) : FfiDeletedBy() {
+        companion object
+    }
+
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeFfiDeletedBy : FfiConverterRustBuffer<FfiDeletedBy> {
+    override fun read(buf: ByteBuffer): FfiDeletedBy {
+        return when (buf.getInt()) {
+            1 -> FfiDeletedBy.Sender
+            2 -> FfiDeletedBy.Admin(
+                FfiConverterString.read(buf),
+            )
+
+            else -> throw RuntimeException("invalid enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: FfiDeletedBy) = when (value) {
+        is FfiDeletedBy.Sender -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                )
+        }
+
+        is FfiDeletedBy.Admin -> {
+            // Add the size for the Int that specifies the variant plus the size needed for all fields
+            (
+                4UL
+                    + FfiConverterString.allocationSize(value.`inboxId`)
+                )
+        }
+    }
+
+    override fun write(value: FfiDeletedBy, buf: ByteBuffer) {
+        when (value) {
+            is FfiDeletedBy.Sender -> {
+                buf.putInt(1)
+                Unit
+            }
+
+            is FfiDeletedBy.Admin -> {
+                buf.putInt(2)
+                FfiConverterString.write(value.`inboxId`, buf)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
@@ -15169,7 +14828,8 @@ enum class FfiMetadataField {
     
     GROUP_NAME,
     DESCRIPTION,
-    IMAGE_URL_SQUARE;
+    IMAGE_URL_SQUARE,
+    APP_DATA;
     companion object
 }
 
