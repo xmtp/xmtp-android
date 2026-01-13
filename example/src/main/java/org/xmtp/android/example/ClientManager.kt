@@ -11,15 +11,24 @@ import org.xmtp.android.example.utils.KeyUtil
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.ClientOptions
 import org.xmtp.android.library.XMTPEnvironment
+import org.xmtp.android.library.codecs.AttachmentCodec
 import org.xmtp.android.library.codecs.GroupUpdatedCodec
-import org.xmtp.android.library.libxmtp.IdentityKind
-import org.xmtp.android.library.libxmtp.PublicIdentity
+import org.xmtp.android.library.codecs.ReactionCodec
+import org.xmtp.android.library.codecs.RemoteAttachmentCodec
+import org.xmtp.android.library.codecs.ReplyCodec
+import org.xmtp.android.library.messages.PrivateKeyBuilder
+import timber.log.Timber
+import uniffi.xmtpv3.FfiLogLevel
 import java.security.SecureRandom
 
 object ClientManager {
+    var selectedEnvironment: XMTPEnvironment = XMTPEnvironment.DEV
+    var selectedLogLevel: FfiLogLevel? = null // null means Off
+
     fun clientOptions(
         appContext: Context,
         address: String,
+        environment: XMTPEnvironment = selectedEnvironment,
     ): ClientOptions {
         val keyUtil = KeyUtil(appContext)
         val encryptionKey =
@@ -29,7 +38,7 @@ object ClientManager {
         return ClientOptions(
             api =
                 ClientOptions.Api(
-                    XMTPEnvironment.DEV,
+                    environment,
                     isSecure = true,
                 ),
             appContext = appContext,
@@ -58,17 +67,63 @@ object ClientManager {
         if (clientState.value is ClientState.Ready) return
         GlobalScope.launch(Dispatchers.IO) {
             try {
+                val keyUtil = KeyUtil(appContext)
+                val privateKeyBytes = keyUtil.retrievePrivateKey(address)
+
+                // Restore the saved environment, default to DEV if not found
+                val savedEnvironment = keyUtil.retrieveEnvironment()
+                selectedEnvironment = savedEnvironment?.let {
+                    try {
+                        XMTPEnvironment.valueOf(it)
+                    } catch (e: IllegalArgumentException) {
+                        XMTPEnvironment.DEV
+                    }
+                } ?: XMTPEnvironment.DEV
+
+                Timber.d(
+                    "createClient: address=$address, hasPrivateKey=${privateKeyBytes != null}, environment=$selectedEnvironment",
+                )
+
                 _client =
-                    Client.build(
-                        PublicIdentity(IdentityKind.ETHEREUM, address),
-                        clientOptions(appContext, address),
-                    )
+                    if (privateKeyBytes != null) {
+                        // Rebuild the wallet from stored private key and use Client.create()
+                        // This allows signing if identity registration is needed
+                        val privateKey = PrivateKeyBuilder.buildFromPrivateKeyData(privateKeyBytes)
+                        val wallet = PrivateKeyBuilder(privateKey)
+                        val rebuiltAddress = wallet.publicIdentity.identifier
+                        Timber.d("createClient: rebuiltAddress=$rebuiltAddress")
+
+                        Client.create(
+                            wallet,
+                            clientOptions(appContext, rebuiltAddress),
+                        )
+                    } else {
+                        // No private key stored - this could happen on old installations
+                        // Signal that we need to re-authenticate
+                        throw IllegalStateException("No wallet key found. Please sign in again.")
+                    }
                 Client.register(codec = GroupUpdatedCodec())
+                Client.register(codec = ReplyCodec())
+                Client.register(codec = ReactionCodec())
+                Client.register(codec = AttachmentCodec())
+                Client.register(codec = RemoteAttachmentCodec())
                 _clientState.value = ClientState.Ready
             } catch (e: Exception) {
+                Timber.e(e, "createClient failed")
                 _clientState.value = ClientState.Error(e.localizedMessage.orEmpty())
             }
         }
+    }
+
+    // Set a client that was created externally (e.g., during wallet generation)
+    fun setClient(client: Client) {
+        _client = client
+        Client.register(codec = GroupUpdatedCodec())
+        Client.register(codec = ReplyCodec())
+        Client.register(codec = ReactionCodec())
+        Client.register(codec = AttachmentCodec())
+        Client.register(codec = RemoteAttachmentCodec())
+        _clientState.value = ClientState.Ready
     }
 
     @UiThread

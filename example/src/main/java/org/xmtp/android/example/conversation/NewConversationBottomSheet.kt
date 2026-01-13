@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -24,7 +25,7 @@ class NewConversationBottomSheet : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "NewConversationBottomSheet"
 
-        private val ADDRESS_PATTERN = Pattern.compile("^0x[a-fA-F0-9]{40}\$")
+        private val ADDRESS_PATTERN = Pattern.compile("^0x[a-fA-F0-9]{40}$")
 
         fun newInstance(): NewConversationBottomSheet = NewConversationBottomSheet()
     }
@@ -50,12 +51,39 @@ class NewConversationBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-        binding.addressInput.addTextChangedListener {
-            if (viewModel.uiState.value is NewConversationViewModel.UiState.Loading) return@addTextChangedListener
-            val input = binding.addressInput.text.trim()
-            val matcher = ADDRESS_PATTERN.matcher(input)
-            if (matcher.matches()) {
-                viewModel.createConversation(input.toString())
+        binding.addressInput.addTextChangedListener { text ->
+            val input = text?.toString()?.trim() ?: ""
+            val isValidAddress = ADDRESS_PATTERN.matcher(input).matches()
+
+            // Show/hide clear button
+            binding.clearButton.isVisible = input.isNotEmpty()
+
+            // Enable/disable create button
+            binding.createButton.isEnabled = isValidAddress
+
+            // Update helper text color based on validation
+            if (input.isNotEmpty() && !isValidAddress) {
+                binding.helperText.setTextColor(
+                    resources.getColor(R.color.error, null),
+                )
+            } else {
+                binding.helperText.setTextColor(
+                    resources.getColor(R.color.text_tertiary, null),
+                )
+            }
+        }
+
+        binding.clearButton.setOnClickListener {
+            binding.addressInput.text?.clear()
+        }
+
+        binding.createButton.setOnClickListener {
+            val address =
+                binding.addressInput.text
+                    ?.toString()
+                    ?.trim() ?: ""
+            if (ADDRESS_PATTERN.matcher(address).matches()) {
+                viewModel.createConversation(address)
             }
         }
     }
@@ -69,11 +97,15 @@ class NewConversationBottomSheet : BottomSheetDialogFragment() {
         when (uiState) {
             is NewConversationViewModel.UiState.Error -> {
                 binding.addressInput.isEnabled = true
+                binding.createButton.isEnabled = true
+                binding.createButton.text = getString(R.string.start_conversation)
                 binding.progress.visibility = View.GONE
                 showError(uiState.message)
             }
             NewConversationViewModel.UiState.Loading -> {
                 binding.addressInput.isEnabled = false
+                binding.createButton.isEnabled = false
+                binding.createButton.text = ""
                 binding.progress.visibility = View.VISIBLE
             }
             is NewConversationViewModel.UiState.Success -> {

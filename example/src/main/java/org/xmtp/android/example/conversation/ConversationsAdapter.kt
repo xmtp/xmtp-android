@@ -5,65 +5,64 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import org.xmtp.android.example.MainViewModel
 import org.xmtp.android.example.databinding.ListItemConversationBinding
-import org.xmtp.android.example.databinding.ListItemConversationFooterBinding
 
 class ConversationsAdapter(
     private val clickListener: ConversationsClickListener,
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+) : RecyclerView.Adapter<ConversationViewHolder>() {
     init {
         setHasStableIds(true)
     }
 
-    private val listItems = mutableListOf<MainViewModel.MainListItem>()
+    private val listItems = mutableListOf<MainViewModel.MainListItem.ConversationItem>()
 
     fun setData(newItems: List<MainViewModel.MainListItem>) {
         listItems.clear()
-        listItems.addAll(newItems)
+        listItems.addAll(newItems.filterIsInstance<MainViewModel.MainListItem.ConversationItem>())
         notifyDataSetChanged()
     }
 
     fun addItem(item: MainViewModel.MainListItem) {
+        if (item !is MainViewModel.MainListItem.ConversationItem) return
+        // Check if item already exists and update it instead of adding duplicate
+        val existingIndex = listItems.indexOfFirst { it.id == item.id }
+        if (existingIndex >= 0) {
+            listItems.removeAt(existingIndex)
+        }
         listItems.add(0, item)
         notifyDataSetChanged()
+    }
+
+    fun updateConversationMessage(
+        topic: String,
+        message: org.xmtp.android.library.libxmtp.DecodedMessage,
+    ) {
+        val index = listItems.indexOfFirst { it.id == topic }
+        if (index >= 0) {
+            val existingItem = listItems[index]
+            val updatedItem = existingItem.copy(mostRecentMessage = message)
+            listItems.removeAt(index)
+            listItems.add(0, updatedItem) // Move to top
+            notifyDataSetChanged()
+        }
     }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
-    ): RecyclerView.ViewHolder {
+    ): ConversationViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return when (viewType) {
-            MainViewModel.MainListItem.ITEM_TYPE_CONVERSATION -> {
-                val binding = ListItemConversationBinding.inflate(inflater, parent, false)
-                ConversationViewHolder(binding, clickListener)
-            }
-            MainViewModel.MainListItem.ITEM_TYPE_FOOTER -> {
-                val binding = ListItemConversationFooterBinding.inflate(inflater, parent, false)
-                ConversationFooterViewHolder(binding, clickListener)
-            }
-            else -> throw IllegalArgumentException("Unsupported view type $viewType")
-        }
+        val binding = ListItemConversationBinding.inflate(inflater, parent, false)
+        return ConversationViewHolder(binding, clickListener)
     }
 
     override fun onBindViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ConversationViewHolder,
         position: Int,
     ) {
-        val item = listItems[position]
-        when (holder) {
-            is ConversationViewHolder -> {
-                holder.bind(item as MainViewModel.MainListItem.ConversationItem)
-            }
-            is ConversationFooterViewHolder -> {
-                holder.bind(item as MainViewModel.MainListItem.Footer)
-            }
-            else -> throw IllegalArgumentException("Unsupported view holder")
-        }
+        holder.bind(listItems[position])
     }
 
-    override fun getItemViewType(position: Int) = listItems[position].itemType
-
-    override fun getItemCount() = listItems.count()
+    override fun getItemCount() = listItems.size
 
     override fun getItemId(position: Int) = listItems[position].id.hashCode().toLong()
 }

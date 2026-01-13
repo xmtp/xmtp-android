@@ -12,17 +12,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.xmtp.android.example.extension.flowWhileShared
-import org.xmtp.android.example.extension.stateFlow
 import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
 import org.xmtp.android.library.Conversation
 import org.xmtp.android.library.Topic
 import org.xmtp.android.library.libxmtp.DecodedMessage
 import org.xmtp.android.library.push.Service
+import timber.log.Timber
 
 class MainViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading(null))
@@ -44,9 +47,12 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val listItems = mutableListOf<MainListItem>()
             try {
+                Timber.d("fetchConversations: starting, clientState=${ClientManager.clientState.value}")
                 val conversations = ClientManager.client.conversations
                 // Ensure we fetch the latest conversations from the network before listing
+                Timber.d("fetchConversations: syncing conversations...")
                 conversations.sync()
+                Timber.d("fetchConversations: sync complete")
                 val subscriptions =
                     conversations
                         .allPushTopics()
@@ -82,25 +88,25 @@ class MainViewModel : ViewModel() {
                 subscriptions.add(welcomeTopic)
 
                 PushNotificationTokenManager.xmtpPush.subscribeWithMetadata(subscriptions)
+                val conversationList = conversations.list()
+                Timber.d("fetchConversations: found ${conversationList.size} conversations")
                 listItems.addAll(
-                    conversations.list().map { conversation ->
+                    conversationList.map { conversation ->
                         val lastMessage = fetchMostRecentMessage(conversation)
+                        val (displayName, peerAddress) = getConversationDisplayInfo(conversation)
                         MainListItem.ConversationItem(
                             id = conversation.topic,
-                            conversation,
-                            lastMessage,
+                            conversation = conversation,
+                            mostRecentMessage = lastMessage,
+                            displayName = displayName,
+                            peerAddress = peerAddress,
                         )
                     },
                 )
-                listItems.add(
-                    MainListItem.Footer(
-                        id = "footer",
-                        ClientManager.client.inboxId,
-                        ClientManager.client.environment.name,
-                    ),
-                )
+                Timber.d("fetchConversations: success, total items=${listItems.size}")
                 _uiState.value = UiState.Success(listItems)
             } catch (e: Exception) {
+                Timber.e(e, "fetchConversations: error")
                 _uiState.value = UiState.Error(e.localizedMessage.orEmpty())
             }
         }
@@ -110,25 +116,68 @@ class MainViewModel : ViewModel() {
     private fun fetchMostRecentMessage(conversation: Conversation): DecodedMessage? =
         runBlocking { conversation.lastMessage() }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val stream: StateFlow<MainListItem?> =
-        stateFlow(viewModelScope, null) { subscriptionCount ->
-            if (ClientManager.clientState.value is ClientManager.ClientState.Ready) {
-                ClientManager.client.conversations
-                    .stream()
-                    .flowWhileShared(
-                        subscriptionCount,
-                        SharingStarted.WhileSubscribed(1000L),
-                    ).flowOn(Dispatchers.IO)
-                    .distinctUntilChanged()
-                    .mapLatest { conversation ->
-                        val lastMessage = fetchMostRecentMessage(conversation)
-                        MainListItem.ConversationItem(conversation.topic, conversation, lastMessage)
-                    }.catch { emptyFlow<MainListItem>() }
-            } else {
-                emptyFlow()
+    @WorkerThread
+    private fun getConversationDisplayInfo(conversation: Conversation): Pair<String, String?> =
+        runBlocking {
+            when (conversation) {
+                is Conversation.Group -> {
+                    val groupName = conversation.group.name()
+                    val displayName = if (groupName.isNotBlank()) groupName else conversation.id
+                    Pair(displayName, null)
+                }
+                is Conversation.Dm -> {
+                    val peerInboxId = conversation.dm.peerInboxId
+                    val members = conversation.dm.members()
+                    val peerMember = members.find { it.inboxId == peerInboxId }
+                    val peerAddress = peerMember?.identities?.firstOrNull()?.identifier
+                    val displayName = peerAddress ?: conversation.id
+                    Pair(displayName, peerAddress)
+                }
             }
         }
+
+    // Stream for new conversations - reacts to client state changes
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val stream: StateFlow<MainListItem?> =
+        ClientManager.clientState
+            .filterIsInstance<ClientManager.ClientState.Ready>()
+            .flatMapLatest {
+                ClientManager.client.conversations
+                    .stream()
+                    .distinctUntilChanged()
+                    .mapLatest<Conversation, MainListItem?> { conversation ->
+                        val lastMessage = fetchMostRecentMessage(conversation)
+                        val (displayName, peerAddress) = getConversationDisplayInfo(conversation)
+                        MainListItem.ConversationItem(
+                            id = conversation.topic,
+                            conversation = conversation,
+                            mostRecentMessage = lastMessage,
+                            displayName = displayName,
+                            peerAddress = peerAddress,
+                        )
+                    }.catch { emptyFlow<MainListItem?>() }
+            }.flowOn(Dispatchers.IO)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
+
+    // Stream for message updates - triggers when any conversation receives a new message
+    // Uses flatMapLatest to react to client state changes
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val messageStream: StateFlow<MessageUpdate?> =
+        ClientManager.clientState
+            .filterIsInstance<ClientManager.ClientState.Ready>()
+            .flatMapLatest {
+                ClientManager.client.conversations
+                    .streamAllMessages()
+                    .map<DecodedMessage, MessageUpdate?> { message ->
+                        MessageUpdate(message.topic, message)
+                    }.catch { emptyFlow<MessageUpdate?>() }
+            }.flowOn(Dispatchers.IO)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
+
+    data class MessageUpdate(
+        val topic: String,
+        val message: DecodedMessage,
+    )
 
     sealed class UiState {
         data class Loading(
@@ -150,19 +199,14 @@ class MainViewModel : ViewModel() {
     ) {
         companion object {
             const val ITEM_TYPE_CONVERSATION = 1
-            const val ITEM_TYPE_FOOTER = 2
         }
 
         data class ConversationItem(
             override val id: String,
             val conversation: Conversation,
             val mostRecentMessage: DecodedMessage?,
+            val displayName: String,
+            val peerAddress: String? = null,
         ) : MainListItem(id, ITEM_TYPE_CONVERSATION)
-
-        data class Footer(
-            override val id: String,
-            val address: String,
-            val environment: String,
-        ) : MainListItem(id, ITEM_TYPE_FOOTER)
     }
 }

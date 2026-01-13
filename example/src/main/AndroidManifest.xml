@@ -63,6 +63,15 @@
         <activity
             android:name=".conversation.ConversationDetailActivity"
             android:exported="false" />
+        <activity
+            android:name=".conversation.GroupManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".conversation.UserProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".conversation.NewConversationActivity"
+            android:exported="false" />
 
         <service
             android:name=".account.AuthenticatorService"
