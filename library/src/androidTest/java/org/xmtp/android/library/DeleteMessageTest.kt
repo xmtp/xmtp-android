@@ -5,7 +5,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -252,8 +251,8 @@ class DeleteMessageTest : BaseInstrumentedTest() {
         assertNotNull(deletedContent)
         assertTrue(deletedContent?.deletedBy is DeletedBy.Sender)
 
-        val stringContent = boEnrichedAfterDeletion?.content<String>()
-        assertNull(stringContent)
+        assertEquals("xmtp.org", boEnrichedAfterDeletion?.contentTypeId?.authorityId)
+        assertEquals("deletedMessage", boEnrichedAfterDeletion?.contentTypeId?.typeId)
     }
 
     @Test
