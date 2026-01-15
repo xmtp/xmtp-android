@@ -22,6 +22,7 @@ import uniffi.xmtpv3.FfiConversationType
 import uniffi.xmtpv3.FfiConversations
 import uniffi.xmtpv3.FfiCreateDmOptions
 import uniffi.xmtpv3.FfiCreateGroupOptions
+import uniffi.xmtpv3.FfiDecodedMessage
 import uniffi.xmtpv3.FfiGroupPermissionsOptions
 import uniffi.xmtpv3.FfiGroupQueryOrderBy
 import uniffi.xmtpv3.FfiGroupSyncSummary
@@ -674,12 +675,15 @@ data class Conversations(
             awaitClose { stream.end() }
         }
 
-    fun streamMessageDeletions(onClose: (() -> Unit)? = null): Flow<String> =
+    fun streamMessageDeletions(onClose: (() -> Unit)? = null): Flow<DecodedMessageV2> =
         callbackFlow {
             val deletionCallback =
                 object : FfiMessageDeletionCallback {
-                    override fun onMessageDeleted(messageId: ByteArray) {
-                        trySend(messageId.toHex())
+                    override fun onMessageDeleted(message: FfiDecodedMessage) {
+                        val decodedMessage = DecodedMessageV2.create(message)
+                        if (decodedMessage != null) {
+                            trySend(decodedMessage)
+                        }
                     }
                 }
 
