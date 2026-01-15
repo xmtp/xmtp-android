@@ -1,5 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.XMTPAndroid" parent="Theme.Material3.Light.NoActionBar" />
+    <style name="Theme.XMTPAndroid" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Primary colors -->
+        <item name="colorPrimary">@color/xmtp_primary</item>
+        <item name="colorPrimaryDark">@color/xmtp_primary_dark</item>
+        <item name="colorPrimaryVariant">@color/xmtp_primary_dark</item>
+        <item name="colorOnPrimary">@color/text_on_primary</item>
+
+        <!-- Secondary colors (using primary for consistency) -->
+        <item name="colorSecondary">@color/xmtp_primary</item>
+        <item name="colorSecondaryVariant">@color/xmtp_primary_dark</item>
+        <item name="colorOnSecondary">@color/text_on_primary</item>
+
+        <!-- Surface and background -->
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorSurfaceVariant">@color/surface_variant</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+
+        <!-- Error -->
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/white</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/xmtp_primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- Button style override -->
+    <style name="Widget.XMTP.Button" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/xmtp_primary</item>
+        <item name="android:textColor">@color/text_on_primary</item>
+    </style>
+
+    <!-- Outlined Button style -->
+    <style name="Widget.XMTP.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/xmtp_primary</item>
+        <item name="android:textColor">@color/xmtp_primary</item>
+    </style>
+
+    <!-- FAB style -->
+    <style name="Widget.XMTP.FloatingActionButton" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">@color/xmtp_primary</item>
+        <item name="tint">@color/white</item>
+    </style>
+
+    <!-- Message Bubble Shapes -->
+    <style name="MessageBubbleSent" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">18dp</item>
+        <item name="cornerSizeTopRight">18dp</item>
+        <item name="cornerSizeBottomLeft">18dp</item>
+        <item name="cornerSizeBottomRight">4dp</item>
+    </style>
+
+    <style name="MessageBubbleReceived" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">18dp</item>
+        <item name="cornerSizeTopRight">18dp</item>
+        <item name="cornerSizeBottomLeft">4dp</item>
+        <item name="cornerSizeBottomRight">18dp</item>
+    </style>
+
 </resources>

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="56dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="1dp"
+    android:paddingBottom="1dp">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/messageContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/message_sent_background"
+        app:cardElevation="1dp"
+        app:shapeAppearanceOverlay="@style/MessageBubbleSent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_max="wrap"
+        app:layout_constraintWidth_percent="0.85">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="6dp">
+
+            <!-- Reply preview (hidden by default) -->
+            <LinearLayout
+                android:id="@+id/replyContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/reply_background_sent"
+                android:orientation="vertical"
+                android:paddingStart="12dp"
+                android:paddingEnd="10dp"
+                android:paddingVertical="6dp"
+                android:layout_marginBottom="6dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:id="@+id/replyAuthor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/message_reply_sent_author"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="0x1234...abcd" />
+
+                <TextView
+                    android:id="@+id/replyText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/message_reply_sent_text"
+                    android:textSize="13sp"
+                    android:layout_marginTop="1dp"
+                    tools:text="Original message content..." />
+            </LinearLayout>
+
+            <!-- Attachment image (hidden by default) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/attachmentContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/attachmentImage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:maxWidth="220dp"
+                        android:maxHeight="220dp"
+                        android:adjustViewBounds="true"
+                        android:scaleType="fitCenter"
+                        tools:src="@tools:sample/backgrounds/scenic" />
+
+                    <!-- Loading indicator for remote attachments -->
+                    <ProgressBar
+                        android:id="@+id/attachmentLoading"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- File attachment (for non-image files) -->
+            <LinearLayout
+                android:id="@+id/fileAttachmentContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="8dp"
+                android:background="@drawable/file_attachment_background"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/fileIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_attach_file_24"
+                    app:tint="@color/message_sent_text" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+
+                    <TextView
+                        android:id="@+id/fileName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/message_sent_text"
+                        android:textSize="14sp"
+                        android:maxWidth="160dp"
+                        android:maxLines="1"
+                        android:ellipsize="middle"
+                        tools:text="document.pdf" />
+
+                    <TextView
+                        android:id="@+id/fileSize"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/message_sent_time"
+                        android:textSize="12sp"
+                        tools:text="1.2 MB" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Message body -->
+            <TextView
+                android:id="@+id/messageBody"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/message_sent_text"
+                android:textSize="16sp"
+                android:lineSpacingExtra="2dp"
+                android:letterSpacing="0.01"
+                tools:text="Hello, this is a sent message!" />
+
+            <!-- Bottom row: reactions and time/status -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginTop="3dp">
+
+                <!-- Reactions -->
+                <TextView
+                    android:id="@+id/messageReactions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:layout_marginEnd="8dp"
+                    android:visibility="gone"
+                    tools:text="2"
+                    tools:visibility="visible" />
+
+                <!-- Time -->
+                <TextView
+                    android:id="@+id/messageTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/message_sent_time"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif"
+                    tools:text="12:34" />
+
+                <!-- Delivery status icon -->
+                <ImageView
+                    android:id="@+id/deliveryStatus"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginStart="3dp"
+                    android:src="@drawable/ic_check_double"
+                    android:visibility="gone"
+                    app:tint="@color/message_sent_time"
+                    tools:visibility="visible" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

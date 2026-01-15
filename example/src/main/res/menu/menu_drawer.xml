@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_wallet_info"
+            android:icon="@drawable/ic_info_24"
+            android:title="@string/wallet_info_title" />
+
+        <item
+            android:id="@+id/nav_new_conversation"
+            android:icon="@drawable/ic_add_24"
+            android:title="@string/new_conversation" />
+
+        <item
+            android:id="@+id/nav_new_group"
+            android:icon="@drawable/ic_group_add_24"
+            android:title="@string/new_group" />
+    </group>
+
+    <item android:title="@string/settings_section">
+        <menu>
+            <item
+                android:id="@+id/nav_hide_deleted_messages"
+                android:icon="@drawable/ic_visibility_off_24"
+                android:checkable="true"
+                android:title="@string/hide_deleted_messages" />
+        </menu>
+    </item>
+
+    <item android:title="@string/logs_section">
+        <menu>
+            <item
+                android:id="@+id/nav_view_logs"
+                android:icon="@drawable/ic_description_24"
+                android:title="@string/view_logs" />
+
+            <item
+                android:id="@+id/nav_toggle_logs"
+                android:icon="@drawable/ic_bug_report_24"
+                android:checkable="true"
+                android:title="@string/persistent_logs_label" />
+        </menu>
+    </item>
+
+    <item android:title="@string/account_section">
+        <menu>
+            <item
+                android:id="@+id/nav_copy_address"
+                android:icon="@drawable/ic_content_copy_24"
+                android:title="@string/copy_address" />
+
+            <item
+                android:id="@+id/nav_disconnect"
+                android:icon="@drawable/ic_logout_24"
+                android:title="@string/disconnect_wallet" />
+        </menu>
+    </item>
+
+</menu>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="12dp">
+
+    <!-- Member Avatar -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/memberAvatarCard"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/memberAvatarText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="AB" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Member Info -->
+    <TextView
+        android:id="@+id/memberAddress"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:ellipsize="middle"
+        android:singleLine="true"
+        android:textColor="@color/text_primary"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toTopOf="@id/memberInboxId"
+        app:layout_constraintEnd_toStartOf="@id/memberRole"
+        app:layout_constraintStart_toEndOf="@id/memberAvatarCard"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="0x1234567890abcdef1234567890abcdef12345678" />
+
+    <TextView
+        android:id="@+id/memberInboxId"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="2dp"
+        android:ellipsize="middle"
+        android:singleLine="true"
+        android:textColor="@color/text_tertiary"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/memberRole"
+        app:layout_constraintStart_toEndOf="@id/memberAvatarCard"
+        app:layout_constraintTop_toBottomOf="@id/memberAddress"
+        tools:text="Inbox: abc123..." />
+
+    <!-- Role Badge -->
+    <com.google.android.material.chip.Chip
+        android:id="@+id/memberRole"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:visibility="gone"
+        app:chipBackgroundColor="@color/xmtp_primary"
+        app:chipMinHeight="24dp"
+        app:chipMinTouchTargetSize="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/menuButton"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Admin"
+        tools:visibility="visible" />
+
+    <!-- Menu Button -->
+    <ImageButton
+        android:id="@+id/menuButton"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_more_vert_24"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/text_tertiary"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
