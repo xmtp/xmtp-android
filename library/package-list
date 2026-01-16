@@ -279,6 +279,7 @@ $dokka.location:org.xmtp.android.library.libxmtp/DecodedMessage/expiresAtNs/#/Po
 $dokka.location:org.xmtp.android.library.libxmtp/DecodedMessage/fallback/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-decoded-message/fallback.html
 $dokka.location:org.xmtp.android.library.libxmtp/DecodedMessage/id/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-decoded-message/id.html
 $dokka.location:org.xmtp.android.library.libxmtp/DecodedMessage/insertedAtNs/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-decoded-message/inserted-at-ns.html
+$dokka.location:org.xmtp.android.library.libxmtp/DecodedMessage/kind/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-decoded-message/kind.html
 $dokka.location:org.xmtp.android.library.libxmtp/DecodedMessage/senderInboxId/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-decoded-message/sender-inbox-id.html
 $dokka.location:org.xmtp.android.library.libxmtp/DecodedMessage/sentAt/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-decoded-message/sent-at.html
 $dokka.location:org.xmtp.android.library.libxmtp/DecodedMessage/sentAtNs/#/PointingToDeclaration/library/org.xmtp.android.library.libxmtp/-decoded-message/sent-at-ns.html
