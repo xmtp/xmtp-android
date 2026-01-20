@@ -31,7 +31,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.connect.ConnectWalletActivity
 import org.xmtp.android.example.conversation.ConversationDetailActivity
-import org.xmtp.android.example.conversation.ConversationDetailViewModel
 import org.xmtp.android.example.conversation.ConversationsAdapter
 import org.xmtp.android.example.conversation.ConversationsClickListener
 import org.xmtp.android.example.conversation.NewConversationActivity
@@ -60,17 +59,18 @@ class MainActivity :
     private var walletInfoBottomSheet: WalletInfoBottomSheet? = null
     private val REQUEST_CODE_POST_NOTIFICATIONS = 101
 
-    // Add constant for SharedPreferences
     companion object {
         private const val PREFS_NAME = "XMTPPreferences"
         private const val KEY_LOGS_ACTIVATED = "logs_activated"
+        // Push notification server - configured via build variants in production
+        private const val DEFAULT_PUSH_SERVER = "10.0.2.2:8080"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         accountManager = AccountManager.get(this)
         checkAndRequestPermissions()
-        PushNotificationTokenManager.init(this, "10.0.2.2:8080")
+        PushNotificationTokenManager.init(this, DEFAULT_PUSH_SERVER)
         viewModel.setupPush()
 
         val keys = KeyUtil(this).loadKeys()
@@ -172,7 +172,6 @@ class MainActivity :
         val keyUtil = KeyUtil(this)
         val hideDeleted = keyUtil.getHideDeletedMessages()
         menu.findItem(R.id.nav_hide_deleted_messages)?.isChecked = hideDeleted
-        ConversationDetailViewModel.hideDeletedMessages = hideDeleted
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -269,6 +268,9 @@ class MainActivity :
     }
 
     override fun onDestroy() {
+        // Cancel the retry job to prevent memory leaks
+        retryJob?.cancel()
+        retryJob = null
         logsBottomSheet?.dismiss()
         walletInfoBottomSheet?.dismiss()
         super.onDestroy()
@@ -328,7 +330,13 @@ class MainActivity :
 
     private fun handleMessageUpdate(update: MainViewModel.MessageUpdate?) {
         update?.let {
-            adapter.updateConversationMessage(it.topic, it.message)
+            val contentType = it.message.encodedContent.type?.typeId
+            // For edit/delete messages, refresh the full conversation to get updated enriched content
+            if (contentType == "editMessage" || contentType == "deleteMessage") {
+                viewModel.fetchConversations()
+            } else {
+                adapter.updateConversationMessage(it.topic, it.message)
+            }
         }
     }
 
@@ -456,7 +464,6 @@ class MainActivity :
     private fun onHideDeletedMessagesToggled(enabled: Boolean) {
         val keyUtil = KeyUtil(this)
         keyUtil.setHideDeletedMessages(enabled)
-        ConversationDetailViewModel.hideDeletedMessages = enabled
         val message = if (enabled) "Deleted messages will be hidden" else "Deleted messages will be shown"
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }

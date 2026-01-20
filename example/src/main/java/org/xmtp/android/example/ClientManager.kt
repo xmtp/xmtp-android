@@ -2,8 +2,10 @@ package org.xmtp.android.example
 
 import android.content.Context
 import androidx.annotation.UiThread
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -12,6 +14,7 @@ import org.xmtp.android.library.Client
 import org.xmtp.android.library.ClientOptions
 import org.xmtp.android.library.XMTPEnvironment
 import org.xmtp.android.library.codecs.AttachmentCodec
+import org.xmtp.android.library.codecs.EditMessageCodec
 import org.xmtp.android.library.codecs.GroupUpdatedCodec
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.RemoteAttachmentCodec
@@ -24,6 +27,9 @@ import java.security.SecureRandom
 object ClientManager {
     var selectedEnvironment: XMTPEnvironment = XMTPEnvironment.DEV
     var selectedLogLevel: FfiLogLevel? = null // null means Off
+
+    // Application-scoped coroutine scope for client operations
+    private val managerScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     fun clientOptions(
         appContext: Context,
@@ -65,7 +71,7 @@ object ClientManager {
         appContext: Context,
     ) {
         if (clientState.value is ClientState.Ready) return
-        GlobalScope.launch(Dispatchers.IO) {
+        managerScope.launch {
             try {
                 val keyUtil = KeyUtil(appContext)
                 val privateKeyBytes = keyUtil.retrievePrivateKey(address)
@@ -107,6 +113,7 @@ object ClientManager {
                 Client.register(codec = ReactionCodec())
                 Client.register(codec = AttachmentCodec())
                 Client.register(codec = RemoteAttachmentCodec())
+                Client.register(codec = EditMessageCodec())
                 _clientState.value = ClientState.Ready
             } catch (e: Exception) {
                 Timber.e(e, "createClient failed")
@@ -123,6 +130,7 @@ object ClientManager {
         Client.register(codec = ReactionCodec())
         Client.register(codec = AttachmentCodec())
         Client.register(codec = RemoteAttachmentCodec())
+        Client.register(codec = EditMessageCodec())
         _clientState.value = ClientState.Ready
     }
 
@@ -133,9 +141,9 @@ object ClientManager {
     }
 
     sealed class ClientState {
-        object Unknown : ClientState()
+        data object Unknown : ClientState()
 
-        object Ready : ClientState()
+        data object Ready : ClientState()
 
         data class Error(
             val message: String,

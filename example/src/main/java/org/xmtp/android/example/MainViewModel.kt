@@ -1,7 +1,6 @@
 package org.xmtp.android.example
 
 import androidx.annotation.UiThread
-import androidx.annotation.WorkerThread
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
 import org.xmtp.android.library.Conversation
 import org.xmtp.android.library.Topic
@@ -112,27 +110,23 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    @WorkerThread
-    private fun fetchMostRecentMessage(conversation: Conversation): DecodedMessage? =
-        runBlocking { conversation.lastMessage() }
+    private suspend fun fetchMostRecentMessage(conversation: Conversation): DecodedMessage? =
+        conversation.lastMessage()
 
-    @WorkerThread
-    private fun getConversationDisplayInfo(conversation: Conversation): Pair<String, String?> =
-        runBlocking {
-            when (conversation) {
-                is Conversation.Group -> {
-                    val groupName = conversation.group.name()
-                    val displayName = if (groupName.isNotBlank()) groupName else conversation.id
-                    Pair(displayName, null)
-                }
-                is Conversation.Dm -> {
-                    val peerInboxId = conversation.dm.peerInboxId
-                    val members = conversation.dm.members()
-                    val peerMember = members.find { it.inboxId == peerInboxId }
-                    val peerAddress = peerMember?.identities?.firstOrNull()?.identifier
-                    val displayName = peerAddress ?: conversation.id
-                    Pair(displayName, peerAddress)
-                }
+    private suspend fun getConversationDisplayInfo(conversation: Conversation): Pair<String, String?> =
+        when (conversation) {
+            is Conversation.Group -> {
+                val groupName = conversation.group.name()
+                val displayName = if (groupName.isNotBlank()) groupName else conversation.id
+                Pair(displayName, null)
+            }
+            is Conversation.Dm -> {
+                val peerInboxId = conversation.dm.peerInboxId
+                val members = conversation.dm.members()
+                val peerMember = members.find { it.inboxId == peerInboxId }
+                val peerAddress = peerMember?.identities?.firstOrNull()?.identifier
+                val displayName = peerAddress ?: conversation.id
+                Pair(displayName, peerAddress)
             }
         }
 

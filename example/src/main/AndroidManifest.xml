@@ -72,6 +72,10 @@
         <activity
             android:name=".conversation.NewConversationActivity"
             android:exported="false" />
+        <activity
+            android:name=".conversation.AttachmentPreviewActivity"
+            android:exported="false"
+            android:theme="@style/Theme.XMTPAndroid.NoActionBar" />
 
         <service
             android:name=".account.AuthenticatorService"

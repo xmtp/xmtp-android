@@ -3,19 +3,18 @@ package org.xmtp.android.library
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
-import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.xmtp.android.library.codecs.DeletedBy
-import org.xmtp.android.library.codecs.DeletedMessage
+import org.xmtp.android.library.codecs.EditMessage
+import org.xmtp.android.library.codecs.TextCodec
 
 @RunWith(AndroidJUnit4::class)
-class DeleteMessageTest : BaseInstrumentedTest() {
+@Ignore("enable when edit message is released")
+class EditMessageTest : BaseInstrumentedTest() {
     private lateinit var fixtures: TestFixtures
     private lateinit var alixClient: Client
     private lateinit var boClient: Client
@@ -31,66 +30,37 @@ class DeleteMessageTest : BaseInstrumentedTest() {
     }
 
     @Test
-    fun testSenderCanDeleteOwnMessage() {
+    fun testSenderCanEditOwnMessage() {
         val alixGroup =
             runBlocking {
                 alixClient.conversations.newGroup(listOf(boClient.inboxId))
             }
 
+        val originalText = "Hello, this message will be edited"
         val messageId =
             runBlocking {
-                alixGroup.send("Hello, this message will be deleted")
+                alixGroup.send(originalText)
             }
 
         runBlocking { alixGroup.sync() }
         var messages = runBlocking { alixGroup.messages() }
         assertTrue(messages.any { it.id == messageId })
 
-        val deletionMessageId =
+        val editedText = "Hello, this message has been edited"
+        val editedContent = TextCodec().encode(editedText)
+        val editMessageId =
             runBlocking {
-                alixGroup.deleteMessage(messageId)
+                alixGroup.editMessage(messageId, editedContent.toByteArray())
             }
-        assertNotNull(deletionMessageId)
+        assertNotNull(editMessageId)
 
         runBlocking { alixGroup.sync() }
         messages = runBlocking { alixGroup.messages() }
-        assertTrue(messages.any { it.id == deletionMessageId })
+        assertTrue(messages.any { it.id == editMessageId })
     }
 
     @Test
-    fun testSuperAdminCanDeleteOthersMessage() {
-        val alixGroup =
-            runBlocking {
-                alixClient.conversations.newGroup(listOf(boClient.inboxId))
-            }
-
-        runBlocking { boClient.conversations.sync() }
-        val boGroup =
-            runBlocking {
-                boClient.conversations.listGroups().first { it.id == alixGroup.id }
-            }
-
-        val messageId =
-            runBlocking {
-                boGroup.send("Hello from Bo")
-            }
-
-        runBlocking {
-            alixGroup.sync()
-            boGroup.sync()
-        }
-
-        assertTrue(runBlocking { alixGroup.isSuperAdmin(alixClient.inboxId) })
-
-        val deletionMessageId =
-            runBlocking {
-                alixGroup.deleteMessage(messageId)
-            }
-        assertNotNull(deletionMessageId)
-    }
-
-    @Test
-    fun testRegularUserCannotDeleteOthersMessage() {
+    fun testRegularUserCannotEditOthersMessage() {
         val alixGroup =
             runBlocking {
                 alixClient.conversations.newGroup(listOf(boClient.inboxId))
@@ -112,68 +82,47 @@ class DeleteMessageTest : BaseInstrumentedTest() {
             boGroup.sync()
         }
 
-        assertFalse(runBlocking { boGroup.isSuperAdmin(boClient.inboxId) })
+        val editedContent = TextCodec().encode("Edited by Bo")
 
         assertThrows(XMTPException::class.java) {
             runBlocking {
-                boGroup.deleteMessage(messageId)
+                boGroup.editMessage(messageId, editedContent.toByteArray())
             }
         }
     }
 
     @Test
-    fun testCannotDeleteAlreadyDeletedMessage() {
-        val alixGroup =
-            runBlocking {
-                alixClient.conversations.newGroup(listOf(boClient.inboxId))
-            }
-
-        val messageId =
-            runBlocking {
-                alixGroup.send("Message to delete twice")
-            }
-
-        runBlocking {
-            alixGroup.deleteMessage(messageId)
-            alixGroup.sync()
-        }
-
-        assertThrows(XMTPException::class.java) {
-            runBlocking {
-                alixGroup.deleteMessage(messageId)
-            }
-        }
-    }
-
-    @Test
-    fun testDeleteMessageInDm() {
+    fun testEditMessageInDm() {
         val alixDm =
             runBlocking {
                 alixClient.conversations.findOrCreateDm(boClient.inboxId)
             }
 
+        val originalText = "Hello in DM"
         val messageId =
             runBlocking {
-                alixDm.send("Hello in DM")
+                alixDm.send(originalText)
             }
 
         runBlocking { alixDm.sync() }
         var messages = runBlocking { alixDm.messages() }
         assertTrue(messages.any { it.id == messageId })
 
-        val deletionMessageId =
+        val editedText = "Edited hello in DM"
+        val editedContent = TextCodec().encode(editedText)
+        val editMessageId =
             runBlocking {
-                alixDm.deleteMessage(messageId)
+                alixDm.editMessage(messageId, editedContent.toByteArray())
             }
-        assertNotNull(deletionMessageId)
+        assertNotNull(editMessageId)
 
         runBlocking { alixDm.sync() }
         messages = runBlocking { alixDm.messages() }
-        assertTrue(messages.any { it.id == deletionMessageId })
+        assertTrue(messages.any { it.id == editMessageId })
     }
 
     @Test
-    fun testDeleteMessageViaConversation() {
+    fun testEditMessageViaConversation() {
         val alixGroup =
             runBlocking {
                 alixClient.conversations.newGroup(listOf(boClient.inboxId))
@@ -186,29 +135,35 @@ class DeleteMessageTest : BaseInstrumentedTest() {
                 conversation.send("Hello via conversation")
             }
 
-        val deletionMessageId =
+        val editedContent = TextCodec().encode("Edited via conversation")
+        val editMessageId =
             runBlocking {
-                conversation.deleteMessage(messageId)
+                conversation.editMessage(messageId, editedContent.toByteArray())
             }
-        assertNotNull(deletionMessageId)
+        assertNotNull(editMessageId)
     }
 
     @Test
-    fun testDeleteMessageWithInvalidId() {
+    fun testEditMessageWithInvalidId() {
         val alixGroup =
             runBlocking {
                 alixClient.conversations.newGroup(listOf(boClient.inboxId))
             }
 
+        val editedContent = TextCodec().encode("Edited content")
+
         assertThrows(XMTPException::class.java) {
             runBlocking {
-                alixGroup.deleteMessage("0000000000000000000000000000000000000000000000000000000000000000")
+                alixGroup.editMessage(
+                    "0000000000000000000000000000000000000000000000000000000000000000",
+                    editedContent.toByteArray(),
+                )
             }
         }
     }
 
     @Test
-    fun testReceiverSeesDeletedMessageContentType() {
+    fun testReceiverSeesEditedMessageContent() {
         val alixGroup =
             runBlocking {
                 alixClient.conversations.newGroup(listOf(boClient.inboxId))
@@ -220,7 +175,7 @@ class DeleteMessageTest : BaseInstrumentedTest() {
                 boClient.conversations.listGroups().first { it.id == alixGroup.id }
             }
 
-        val originalText = "Test message for deletion verification"
+        val originalText = "Original message content"
         val messageId =
             runBlocking {
                 alixGroup.send(originalText)
@@ -236,29 +191,30 @@ class DeleteMessageTest : BaseInstrumentedTest() {
         assertNotNull(boOriginalEnriched)
         assertEquals(originalText, boOriginalEnriched?.content<String>())
 
+        val editedText = "Edited message content"
+        val editedContent = TextCodec().encode(editedText)
         runBlocking {
-            alixGroup.deleteMessage(messageId)
+            alixGroup.editMessage(messageId, editedContent.toByteArray())
             alixGroup.sync()
         }
 
         runBlocking { boGroup.sync() }
 
         boEnrichedMessages = runBlocking { boGroup.enrichedMessages() }
-        val boEnrichedAfterDeletion = boEnrichedMessages.find { it.id == messageId }
+        val boEnrichedAfterEdit = boEnrichedMessages.find { it.id == messageId }
 
-        assertNotNull(boEnrichedAfterDeletion)
+        assertNotNull(boEnrichedAfterEdit)
 
-        val deletedContent = boEnrichedAfterDeletion?.content<DeletedMessage>()
-        assertNotNull(deletedContent)
-        assertTrue(deletedContent?.deletedBy is DeletedBy.Sender)
+        // The enriched message should now show the edited content
+        assertEquals(editedText, boEnrichedAfterEdit?.content<String>())
 
-        // Verify the content type is now deletedMessage
-        assertEquals("xmtp.org", boEnrichedAfterDeletion?.contentTypeId?.authorityId)
-        assertEquals("deletedMessage", boEnrichedAfterDeletion?.contentTypeId?.typeId)
+        // Verify the content type is still text (the original type is preserved)
+        assertEquals("xmtp.org", boEnrichedAfterEdit?.contentTypeId?.authorityId)
+        assertEquals("text", boEnrichedAfterEdit?.contentTypeId?.typeId)
     }
 
     @Test
-    fun testAdminDeleteShowsAdminDeletedBy() {
+    fun testMultipleEditsShowLatest() {
         val alixGroup =
             runBlocking {
                 alixClient.conversations.newGroup(listOf(boClient.inboxId))
@@ -270,9 +226,10 @@ class DeleteMessageTest : BaseInstrumentedTest() {
                 boClient.conversations.listGroups().first { it.id == alixGroup.id }
             }
 
+        val originalText = "Version 1"
         val messageId =
             runBlocking {
-                boGroup.send("Message from Bo")
+                alixGroup.send(originalText)
             }
 
         runBlocking {
@@ -280,20 +237,33 @@ class DeleteMessageTest : BaseInstrumentedTest() {
             boGroup.sync()
         }
 
-        assertTrue(runBlocking { alixGroup.isSuperAdmin(alixClient.inboxId) })
-
+        // First edit
+        val edit1Text = "Version 2"
+        val edit1Content = TextCodec().encode(edit1Text)
         runBlocking {
-            alixGroup.deleteMessage(messageId)
+            alixGroup.editMessage(messageId, edit1Content.toByteArray())
             alixGroup.sync()
-            boGroup.sync()
         }
 
-        val boEnrichedMessages = runBlocking { boGroup.enrichedMessages() }
-        val deletedMessage = boEnrichedMessages.find { it.id == messageId }
-        assertNotNull(deletedMessage)
+        // Second edit
+        val edit2Text = "Version 3"
+        val edit2Content = TextCodec().encode(edit2Text)
+        runBlocking {
+            alixGroup.editMessage(messageId, edit2Content.toByteArray())
+            alixGroup.sync()
+        }
 
-        val deletedContent = deletedMessage?.content<DeletedMessage>()
-        assertNotNull(deletedContent)
-        assertTrue(deletedContent?.deletedBy is DeletedBy.Admin)
+        runBlocking { boGroup.sync() }
+
+        val boEnrichedMessages = runBlocking { boGroup.enrichedMessages() }
+        val boEnrichedMessage = boEnrichedMessages.find { it.id == messageId }
+
+        assertNotNull(boEnrichedMessage)
+        // Should show the latest edit
+        assertEquals(edit2Text, boEnrichedMessage?.content<String>())
+    }
+
+    private fun assertTrue(condition: Boolean) {
+        org.junit.Assert.assertTrue(condition)
     }
 }

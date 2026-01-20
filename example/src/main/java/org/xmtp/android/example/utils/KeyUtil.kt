@@ -2,19 +2,54 @@ package org.xmtp.android.example.utils
 
 import android.accounts.AccountManager
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Base64.NO_WRAP
 import android.util.Base64.decode
 import android.util.Base64.encodeToString
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import org.xmtp.android.example.R
+import timber.log.Timber
 
 class KeyUtil(
-    val context: Context,
+    private val context: Context,
 ) {
-    private val PREFS_NAME = "EncryptionPref"
-    private val PRIVATE_KEY_PREFS = "PrivateKeyPref"
-    private val SETTINGS_PREFS = "SettingsPref"
-    private val KEY_ENVIRONMENT = "xmtp_environment"
-    private val KEY_HIDE_DELETED_MESSAGES = "hide_deleted_messages"
+    private companion object {
+        const val ENCRYPTED_PREFS_NAME = "EncryptedKeyPref"
+        const val SETTINGS_PREFS = "SettingsPref"
+        const val KEY_ENVIRONMENT = "xmtp_environment"
+        const val KEY_HIDE_DELETED_MESSAGES = "hide_deleted_messages"
+
+        // Key prefixes
+        const val PREFIX_DB_KEY = "xmtp-dev-"
+        const val PREFIX_WALLET_KEY = "xmtp-wallet-"
+    }
+
+    private val masterKey: MasterKey by lazy {
+        MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+    }
+
+    private val encryptedPrefs: SharedPreferences by lazy {
+        try {
+            EncryptedSharedPreferences.create(
+                context,
+                ENCRYPTED_PREFS_NAME,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to create EncryptedSharedPreferences, falling back to regular prefs")
+            // Fallback to regular SharedPreferences if encryption fails (e.g., on some devices)
+            context.getSharedPreferences(ENCRYPTED_PREFS_NAME, Context.MODE_PRIVATE)
+        }
+    }
+
+    private val settingsPrefs: SharedPreferences by lazy {
+        context.getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
+    }
 
     fun loadKeys(): String? {
         val accountManager = AccountManager.get(context)
@@ -28,82 +63,96 @@ class KeyUtil(
         address: String,
         dbEncryptionKey: ByteArray?,
     ) {
-        val alias = "xmtp-dev-${address.lowercase()}"
-
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val editor = prefs.edit()
-        editor.putString(alias, encodeToString(dbEncryptionKey, NO_WRAP))
-        editor.apply()
+        val alias = "$PREFIX_DB_KEY${address.lowercase()}"
+        encryptedPrefs.edit()
+            .putString(alias, encodeToString(dbEncryptionKey, NO_WRAP))
+            .apply()
     }
 
     fun retrieveKey(address: String): ByteArray? {
-        val alias = "xmtp-dev-${address.lowercase()}"
-
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val keyString = prefs.getString(alias, null)
-        return if (keyString != null) {
-            decode(keyString, NO_WRAP)
-        } else {
-            null
+        val alias = "$PREFIX_DB_KEY${address.lowercase()}"
+        val keyString = encryptedPrefs.getString(alias, null)
+        return keyString?.let {
+            try {
+                decode(it, NO_WRAP)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to decode key")
+                null
+            }
         }
     }
 
-    // Store the wallet private key for signing
+    /**
+     * Store the wallet private key for signing.
+     * Uses EncryptedSharedPreferences backed by Android Keystore.
+     */
     fun storePrivateKey(
         address: String,
         privateKeyBytes: ByteArray,
     ) {
-        val alias = "xmtp-wallet-${address.lowercase()}"
-        val prefs = context.getSharedPreferences(PRIVATE_KEY_PREFS, Context.MODE_PRIVATE)
-        prefs.edit().putString(alias, encodeToString(privateKeyBytes, NO_WRAP)).apply()
+        val alias = "$PREFIX_WALLET_KEY${address.lowercase()}"
+        encryptedPrefs.edit()
+            .putString(alias, encodeToString(privateKeyBytes, NO_WRAP))
+            .apply()
     }
 
-    // Retrieve the wallet private key for signing
+    /**
+     * Retrieve the wallet private key for signing.
+     * Uses EncryptedSharedPreferences backed by Android Keystore.
+     */
     fun retrievePrivateKey(address: String): ByteArray? {
-        val alias = "xmtp-wallet-${address.lowercase()}"
-        val prefs = context.getSharedPreferences(PRIVATE_KEY_PREFS, Context.MODE_PRIVATE)
-        val keyString = prefs.getString(alias, null)
-        return if (keyString != null) {
-            decode(keyString, NO_WRAP)
-        } else {
-            null
+        val alias = "$PREFIX_WALLET_KEY${address.lowercase()}"
+        val keyString = encryptedPrefs.getString(alias, null)
+        return keyString?.let {
+            try {
+                decode(it, NO_WRAP)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to decode private key")
+                null
+            }
         }
     }
 
-    // Clear the wallet private key
+    /**
+     * Clear the wallet private key.
+     */
     fun clearPrivateKey(address: String) {
-        val alias = "xmtp-wallet-${address.lowercase()}"
-        val prefs = context.getSharedPreferences(PRIVATE_KEY_PREFS, Context.MODE_PRIVATE)
-        prefs.edit().remove(alias).apply()
+        val alias = "$PREFIX_WALLET_KEY${address.lowercase()}"
+        encryptedPrefs.edit().remove(alias).apply()
     }
 
-    // Store the selected environment
+    /**
+     * Store the selected environment.
+     */
     fun storeEnvironment(environment: String) {
-        val prefs = context.getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_ENVIRONMENT, environment).apply()
+        settingsPrefs.edit().putString(KEY_ENVIRONMENT, environment).apply()
     }
 
-    // Retrieve the selected environment
+    /**
+     * Retrieve the selected environment.
+     */
     fun retrieveEnvironment(): String? {
-        val prefs = context.getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_ENVIRONMENT, null)
+        return settingsPrefs.getString(KEY_ENVIRONMENT, null)
     }
 
-    // Clear the environment setting
+    /**
+     * Clear the environment setting.
+     */
     fun clearEnvironment() {
-        val prefs = context.getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
-        prefs.edit().remove(KEY_ENVIRONMENT).apply()
+        settingsPrefs.edit().remove(KEY_ENVIRONMENT).apply()
     }
 
-    // Store hide deleted messages setting
+    /**
+     * Store hide deleted messages setting.
+     */
     fun setHideDeletedMessages(hide: Boolean) {
-        val prefs = context.getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
-        prefs.edit().putBoolean(KEY_HIDE_DELETED_MESSAGES, hide).apply()
+        settingsPrefs.edit().putBoolean(KEY_HIDE_DELETED_MESSAGES, hide).apply()
     }
 
-    // Retrieve hide deleted messages setting
+    /**
+     * Retrieve hide deleted messages setting.
+     */
     fun getHideDeletedMessages(): Boolean {
-        val prefs = context.getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
-        return prefs.getBoolean(KEY_HIDE_DELETED_MESSAGES, false)
+        return settingsPrefs.getBoolean(KEY_HIDE_DELETED_MESSAGES, false)
     }
 }

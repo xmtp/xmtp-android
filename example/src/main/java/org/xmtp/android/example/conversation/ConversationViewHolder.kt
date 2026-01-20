@@ -9,7 +9,9 @@ import org.xmtp.android.example.R
 import org.xmtp.android.example.databinding.ListItemConversationBinding
 import org.xmtp.android.example.extension.truncatedAddress
 import org.xmtp.android.library.Conversation
+import org.xmtp.android.library.codecs.Attachment
 import org.xmtp.android.library.codecs.DeletedMessage
+import org.xmtp.android.library.libxmtp.Reply
 import org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupUpdated
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -90,6 +92,21 @@ class ConversationViewHolder(
         val messageBody: String =
             when (val content = item.mostRecentMessage?.content<Any>()) {
                 is String -> content
+                is Reply -> {
+                    // Extract the actual reply text instead of "Replied with..."
+                    when (val replyContent = content.content) {
+                        is String -> replyContent
+                        else -> "Message"
+                    }
+                }
+                is Attachment -> {
+                    // Show appropriate label for attachments
+                    if (content.mimeType.startsWith("image/")) {
+                        if (content.mimeType == "image/gif") "GIF" else "Photo"
+                    } else {
+                        "Attachment"
+                    }
+                }
                 is GroupUpdated -> {
                     val added = content.addedInboxesList?.size ?: 0
                     val removed = content.removedInboxesList?.size ?: 0
@@ -101,7 +118,7 @@ class ConversationViewHolder(
                     }
                 }
                 is DeletedMessage -> "Message deleted"
-                else -> item.mostRecentMessage?.body ?: ""
+                else -> "Message"
             }
 
         val isMe = item.mostRecentMessage?.senderInboxId == ClientManager.client.inboxId

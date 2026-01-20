@@ -3,6 +3,8 @@ package org.xmtp.android.example.message
 import android.graphics.BitmapFactory
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import org.xmtp.android.example.conversation.ConversationDetailViewModel
 import org.xmtp.android.example.databinding.ListItemMessageSentBinding
 import org.xmtp.android.library.codecs.Attachment
@@ -42,18 +44,30 @@ class SentMessageViewHolder(
             }
             is Attachment -> {
                 val isImage = content.mimeType.startsWith("image/")
+                val isGif = content.mimeType == "image/gif"
                 if (isImage) {
-                    // Display image attachment
+                    // Display image/GIF attachment using Glide
                     binding.attachmentContainer.visibility = View.VISIBLE
                     binding.attachmentLoading.visibility = View.GONE
                     try {
                         val bytes = content.data.toByteArray()
-                        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                        binding.attachmentImage.setImageBitmap(bitmap)
+                        if (isGif) {
+                            // Use Glide for GIF playback
+                            Glide.with(binding.attachmentImage.context)
+                                .asGif()
+                                .load(bytes)
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                .into(binding.attachmentImage)
+                        } else {
+                            // Use Glide for regular images too for consistency
+                            Glide.with(binding.attachmentImage.context)
+                                .load(bytes)
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                .into(binding.attachmentImage)
+                        }
                     } catch (e: Exception) {
                         binding.attachmentImage.setImageResource(android.R.drawable.ic_menu_gallery)
                     }
-                    // Hide text body for image-only messages
                     binding.messageBody.visibility = View.GONE
                 } else {
                     // Display file attachment
@@ -72,6 +86,9 @@ class SentMessageViewHolder(
                 // Show reply container with original message info
                 binding.replyContainer.visibility = View.VISIBLE
 
+                // Reset reply image visibility
+                binding.replyImageContainer.visibility = View.GONE
+
                 // Get original message info
                 val originalMessage = content.inReplyTo
                 if (originalMessage != null) {
@@ -80,8 +97,45 @@ class SentMessageViewHolder(
                     val originalText =
                         when (originalContent) {
                             is String -> originalContent
-                            is DeletedMessage -> "🗑️ This message was deleted"
-                            else -> originalMessage.fallbackText ?: "Message"
+                            is DeletedMessage -> "Deleted message"
+                            is Attachment -> {
+                                // Check if it's an image and show thumbnail
+                                if (originalContent.mimeType.startsWith("image/")) {
+                                    try {
+                                        val bytes = originalContent.data.toByteArray()
+                                        val isGif = originalContent.mimeType == "image/gif"
+                                        if (isGif) {
+                                            Glide.with(binding.replyImage.context)
+                                                .asGif()
+                                                .load(bytes)
+                                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                                .into(binding.replyImage)
+                                        } else {
+                                            Glide.with(binding.replyImage.context)
+                                                .load(bytes)
+                                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                                .into(binding.replyImage)
+                                        }
+                                        binding.replyImageContainer.visibility = View.VISIBLE
+                                    } catch (e: Exception) {
+                                        // Ignore image decode errors
+                                    }
+                                    if (originalContent.mimeType == "image/gif") "GIF" else "Photo"
+                                } else {
+                                    "Attachment"
+                                }
+                            }
+                            is Reply -> {
+                                // For replies, show the actual reply content
+                                when (val nestedReplyContent = originalContent.content) {
+                                    is String -> nestedReplyContent
+                                    else -> "Message"
+                                }
+                            }
+                            else -> {
+                                // For unknown content types, just show "Message" to avoid "Replied with..." fallback text
+                                "Message"
+                            }
                         }
                     binding.replyAuthor.text = originalSender
                     binding.replyText.text = originalText
@@ -131,12 +185,12 @@ class SentMessageViewHolder(
                     else -> {}
                 }
             }
-            // Remove emojis with no active reactions
-            activeReactions.entries.removeAll { it.value.isEmpty() }
+            // Filter out emojis with no active reactions (use filter instead of mutable removeAll)
+            val filteredReactions = activeReactions.filterValues { it.isNotEmpty() }
 
-            if (activeReactions.isNotEmpty()) {
-                val totalCount = activeReactions.values.sumOf { it.size }
-                val displayEmojis = activeReactions.keys.take(3).joinToString("")
+            if (filteredReactions.isNotEmpty()) {
+                val totalCount = filteredReactions.values.sumOf { it.size }
+                val displayEmojis = filteredReactions.keys.take(3).joinToString("")
                 binding.messageReactions.visibility = View.VISIBLE
                 binding.messageReactions.text = if (totalCount > 1) "$displayEmojis $totalCount" else displayEmojis
             } else {

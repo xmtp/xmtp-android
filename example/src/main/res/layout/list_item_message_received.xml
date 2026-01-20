@@ -51,7 +51,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/reply_background_received"
-                android:orientation="vertical"
+                android:orientation="horizontal"
                 android:paddingStart="12dp"
                 android:paddingEnd="10dp"
                 android:paddingVertical="6dp"
@@ -62,27 +62,53 @@
                 android:visibility="gone"
                 tools:visibility="visible">
 
-                <TextView
-                    android:id="@+id/replyAuthor"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/message_reply_received_author"
-                    android:textSize="13sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    tools:text="0x1234...abcd" />
+                <!-- Reply image thumbnail (hidden by default) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/replyImageContainer"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="4dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
 
-                <TextView
-                    android:id="@+id/replyText"
+                    <ImageView
+                        android:id="@+id/replyImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        tools:src="@tools:sample/backgrounds/scenic" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="@color/message_reply_received_text"
-                    android:textSize="13sp"
-                    android:layout_marginTop="1dp"
-                    tools:text="Original message content..." />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/replyAuthor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/message_reply_received_author"
+                        android:textSize="13sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        tools:text="0x1234...abcd" />
+
+                    <TextView
+                        android:id="@+id/replyText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="@color/message_reply_received_text"
+                        android:textSize="13sp"
+                        android:layout_marginTop="1dp"
+                        tools:text="Original message content..." />
+                </LinearLayout>
             </LinearLayout>
 
             <!-- Attachment image (hidden by default) -->

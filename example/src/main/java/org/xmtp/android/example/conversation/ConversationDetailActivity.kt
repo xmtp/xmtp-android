@@ -32,10 +32,13 @@ import org.xmtp.android.example.extension.truncatedAddress
 import org.xmtp.android.example.message.EmojiPickerAdapter
 import org.xmtp.android.example.message.MessageAdapter
 import org.xmtp.android.example.message.MessageClickListener
+import org.xmtp.android.example.message.SearchResultAdapter
+import org.xmtp.android.example.message.SearchResultItem
 import org.xmtp.android.library.Conversation
 import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.libxmtp.DecodedMessageV2
+import org.xmtp.android.library.libxmtp.Reply
 import java.io.File
 import kotlin.math.abs
 
@@ -45,18 +48,35 @@ class ConversationDetailActivity :
     private lateinit var binding: ActivityConversationDetailBinding
     private lateinit var adapter: MessageAdapter
     private lateinit var emojiAdapter: EmojiPickerAdapter
+    private lateinit var searchResultAdapter: SearchResultAdapter
     private var isEmojiPickerVisible = false
+    private var isSearchVisible = false
+    private var shouldScrollAfterFetch = false
 
     private val viewModel: ConversationDetailViewModel by viewModels()
 
     // Attachment handling
     private var cameraImageUri: Uri? = null
 
+    private val attachmentPreviewLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val uris = result.data?.getParcelableArrayListExtra<Uri>(AttachmentPreviewActivity.RESULT_ATTACHMENTS)
+                if (!uris.isNullOrEmpty()) {
+                    sendAttachments(uris)
+                }
+            }
+        }
+
     private val galleryLauncher =
         registerForActivityResult(
-            ActivityResultContracts.GetContent(),
-        ) { uri: Uri? ->
-            uri?.let { handleSelectedAttachment(it) }
+            ActivityResultContracts.GetMultipleContents(),
+        ) { uris: List<Uri> ->
+            if (uris.isNotEmpty()) {
+                showAttachmentPreview(uris)
+            }
         }
 
     private val cameraLauncher =
@@ -64,15 +84,17 @@ class ConversationDetailActivity :
             ActivityResultContracts.TakePicture(),
         ) { success: Boolean ->
             if (success) {
-                cameraImageUri?.let { handleSelectedAttachment(it) }
+                cameraImageUri?.let { showAttachmentPreview(listOf(it)) }
             }
         }
 
     private val fileLauncher =
         registerForActivityResult(
-            ActivityResultContracts.OpenDocument(),
-        ) { uri: Uri? ->
-            uri?.let { handleSelectedAttachment(it) }
+            ActivityResultContracts.OpenMultipleDocuments(),
+        ) { uris: List<Uri> ->
+            if (uris.isNotEmpty()) {
+                showAttachmentPreview(uris)
+            }
         }
 
     private val peerAddress
@@ -119,6 +141,10 @@ class ConversationDetailActivity :
         super.onCreate(savedInstanceState)
         viewModel.setConversationTopic(intent.extras?.getString(EXTRA_CONVERSATION_TOPIC))
 
+        // Load and apply user preferences for hide deleted messages
+        val keyUtil = org.xmtp.android.example.utils.KeyUtil(this)
+        viewModel.setHideDeletedMessages(keyUtil.getHideDeletedMessages())
+
         binding = ActivityConversationDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -152,6 +178,10 @@ class ConversationDetailActivity :
         binding.sendButton.setOnClickListener {
             val text = binding.messageEditText.text.toString()
             if (text.isNotBlank()) {
+                // Hide emoji picker when sending
+                if (isEmojiPickerVisible) {
+                    hideEmojiPicker()
+                }
                 val flow = viewModel.sendMessage(text)
                 lifecycleScope.launch {
                     repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -186,6 +216,12 @@ class ConversationDetailActivity :
 
         // Setup reply preview
         setupReplyPreview()
+
+        // Setup edit preview
+        setupEditPreview()
+
+        // Setup search
+        setupSearch()
     }
 
     private fun setupEmojiPicker() {
@@ -242,6 +278,132 @@ class ConversationDetailActivity :
         binding.emojiButton.setImageResource(R.drawable.ic_emoji_24)
     }
 
+    private fun setupSearch() {
+        // Setup search result adapter
+        searchResultAdapter = SearchResultAdapter { messageId ->
+            // Close search and scroll to the message
+            hideSearch()
+            scrollToMessage(messageId)
+        }
+        binding.searchResultsList.layoutManager = LinearLayoutManager(this)
+        binding.searchResultsList.adapter = searchResultAdapter
+
+        // Search button click
+        binding.searchButton.setOnClickListener {
+            showSearch()
+        }
+
+        // Cancel button click
+        binding.cancelSearchButton.setOnClickListener {
+            hideSearch()
+        }
+
+        // Clear search text button
+        binding.clearSearchButton.setOnClickListener {
+            binding.searchEditText.text?.clear()
+        }
+
+        // Search text changes
+        binding.searchEditText.addTextChangedListener { text ->
+            val query = text?.toString() ?: ""
+            binding.clearSearchButton.visibility = if (query.isNotEmpty()) View.VISIBLE else View.GONE
+            performSearch(query)
+        }
+    }
+
+    private fun showSearch() {
+        isSearchVisible = true
+        binding.searchBarCard.visibility = View.VISIBLE
+        binding.messageComposerCard.visibility = View.GONE
+        binding.refresh.visibility = View.GONE
+        binding.searchEditText.requestFocus()
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.showSoftInput(binding.searchEditText, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    private fun hideSearch() {
+        isSearchVisible = false
+        binding.searchBarCard.visibility = View.GONE
+        binding.searchResultsList.visibility = View.GONE
+        binding.noResultsView.visibility = View.GONE
+        binding.messageComposerCard.visibility = View.VISIBLE
+        binding.refresh.visibility = View.VISIBLE
+        binding.searchEditText.text?.clear()
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.hideSoftInputFromWindow(binding.searchEditText.windowToken, 0)
+    }
+
+    private fun performSearch(query: String) {
+        if (query.isEmpty()) {
+            binding.searchResultsList.visibility = View.GONE
+            binding.noResultsView.visibility = View.GONE
+            return
+        }
+
+        val currentState = viewModel.uiState.value
+        val items = when (currentState) {
+            is ConversationDetailViewModel.UiState.Success -> currentState.listItems
+            is ConversationDetailViewModel.UiState.Loading -> currentState.listItems
+            else -> null
+        }
+
+        items?.let { list ->
+            val lowercaseQuery = query.lowercase()
+            val results = list
+                .mapNotNull { item ->
+                    // Get the message from the sealed class
+                    val message = when (item) {
+                        is ConversationDetailViewModel.MessageListItem.SentMessage -> item.message
+                        is ConversationDetailViewModel.MessageListItem.ReceivedMessage -> item.message
+                        is ConversationDetailViewModel.MessageListItem.SystemMessage -> null // Skip system messages
+                    } ?: return@mapNotNull null
+
+                    // Get the content as text, handling Reply messages specially
+                    val content = message.content<Any>()
+                    val textContent = when (content) {
+                        is String -> {
+                            // Skip fallback text patterns like "Replied with '...' to an earlier message"
+                            if (content.startsWith("Replied with")) return@mapNotNull null
+                            content
+                        }
+                        is Reply -> {
+                            // For replies, extract the actual reply text (not "Replied with...")
+                            when (val replyContent = content.content) {
+                                is String -> replyContent
+                                else -> return@mapNotNull null
+                            }
+                        }
+                        else -> return@mapNotNull null
+                    }
+
+                    // Skip empty or deleted messages
+                    if (textContent.isEmpty()) return@mapNotNull null
+
+                    // Check if it matches the search query
+                    if (!textContent.lowercase().contains(lowercaseQuery)) return@mapNotNull null
+
+                    SearchResultItem(
+                        id = message.id,
+                        senderInboxId = message.senderInboxId,
+                        content = textContent,
+                        sentAtNs = message.sentAtNs,
+                        isDeleted = false
+                    )
+                }
+
+            searchResultAdapter.setSearchQuery(query)
+            searchResultAdapter.submitList(results)
+
+            if (results.isEmpty()) {
+                binding.searchResultsList.visibility = View.GONE
+                binding.noResultsView.visibility = View.VISIBLE
+            } else {
+                binding.searchResultsList.visibility = View.VISIBLE
+                binding.noResultsView.visibility = View.GONE
+            }
+        }
+    }
+
     private fun setupReplyPreview() {
         // Close button clears the reply
         binding.replyPreviewClose.setOnClickListener {
@@ -256,9 +418,37 @@ class ConversationDetailActivity :
                         binding.replyPreviewContainer.visibility = View.VISIBLE
                         binding.replyPreviewAuthor.text = message.senderInboxId.take(8) + "..."
                         val content = message.content<Any>()
+
+                        // Reset image visibility
+                        binding.replyPreviewImageContainer.visibility = View.GONE
+
+                        // Extract the actual text content, handling Reply messages specially
                         val messageText =
                             when (content) {
                                 is String -> content
+                                is Reply -> {
+                                    // For replies, show the reply content (not "Replied with...")
+                                    when (val replyContent = content.content) {
+                                        is String -> replyContent
+                                        else -> "Message"
+                                    }
+                                }
+                                is org.xmtp.android.library.codecs.Attachment -> {
+                                    // Show image thumbnail for attachments
+                                    if (content.mimeType.startsWith("image/")) {
+                                        try {
+                                            val bytes = content.data.toByteArray()
+                                            val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                                            binding.replyPreviewImage.setImageBitmap(bitmap)
+                                            binding.replyPreviewImageContainer.visibility = View.VISIBLE
+                                        } catch (e: Exception) {
+                                            // Ignore image decode errors
+                                        }
+                                        "Photo"
+                                    } else {
+                                        "Attachment"
+                                    }
+                                }
                                 else -> message.fallbackText ?: "Message"
                             }
                         binding.replyPreviewText.text = messageText
@@ -269,6 +459,73 @@ class ConversationDetailActivity :
                 }
             }
         }
+    }
+
+    private fun setupEditPreview() {
+        // Close button clears the edit
+        binding.editPreviewClose.setOnClickListener {
+            viewModel.clearEdit()
+            binding.messageEditText.text.clear()
+        }
+
+        // Observe edit state
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.editingMessage.collect { message ->
+                    if (message != null) {
+                        binding.editPreviewContainer.visibility = View.VISIBLE
+                        val content = message.content<Any>()
+
+                        // Reset image visibility
+                        binding.editPreviewImageContainer.visibility = View.GONE
+
+                        // Extract the actual text content, handling Reply messages specially
+                        val messageText =
+                            when (content) {
+                                is String -> content
+                                is Reply -> {
+                                    // For replies, get the reply content (which is the actual text)
+                                    when (val replyContent = content.content) {
+                                        is String -> replyContent
+                                        else -> message.fallbackText ?: "Message"
+                                    }
+                                }
+                                is org.xmtp.android.library.codecs.Attachment -> {
+                                    // Show image thumbnail for attachments being edited
+                                    if (content.mimeType.startsWith("image/")) {
+                                        try {
+                                            val bytes = content.data.toByteArray()
+                                            val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                                            binding.editPreviewImage.setImageBitmap(bitmap)
+                                            binding.editPreviewImageContainer.visibility = View.VISIBLE
+                                        } catch (e: Exception) {
+                                            // Ignore image decode errors
+                                        }
+                                        "Photo"
+                                    } else {
+                                        "Attachment"
+                                    }
+                                }
+                                else -> message.fallbackText ?: "Message"
+                            }
+                        binding.editPreviewText.text = messageText
+                        // Pre-fill the text field with the message content
+                        binding.messageEditText.setText(messageText)
+                        binding.messageEditText.setSelection(messageText.length)
+                        binding.messageEditText.requestFocus()
+                    } else {
+                        binding.editPreviewContainer.visibility = View.GONE
+                    }
+                }
+            }
+        }
+    }
+
+    private fun startEditingMessage(message: DecodedMessageV2) {
+        // Clear any reply first
+        viewModel.clearReply()
+        // Set the message to edit
+        viewModel.setEditingMessage(message)
     }
 
     private fun setupInitialHeader() {
@@ -405,6 +662,13 @@ class ConversationDetailActivity :
             is ConversationDetailViewModel.UiState.Success -> {
                 binding.refresh.isRefreshing = false
                 adapter.setData(uiState.listItems)
+                // Scroll to bottom after data is loaded if flag is set
+                if (shouldScrollAfterFetch) {
+                    shouldScrollAfterFetch = false
+                    binding.list.post {
+                        binding.list.scrollToPosition(0)
+                    }
+                }
             }
 
             is ConversationDetailViewModel.UiState.Error -> {
@@ -429,6 +693,7 @@ class ConversationDetailActivity :
                 binding.messageEditText.text.clear()
                 binding.messageEditText.isEnabled = true
                 binding.sendButton.isEnabled = true
+                shouldScrollAfterFetch = true
                 viewModel.fetchMessages()
             }
         }
@@ -438,6 +703,10 @@ class ConversationDetailActivity :
         when (result) {
             is ConversationDetailViewModel.StreamedMessageResult.NewMessage -> {
                 adapter.addItem(result.item)
+                // Auto-scroll to show new message (position 0 since layout is reversed)
+                binding.list.post {
+                    binding.list.smoothScrollToPosition(0)
+                }
             }
             is ConversationDetailViewModel.StreamedMessageResult.RefreshNeeded -> {
                 // A delete message was received, refresh the list to show updated state
@@ -460,6 +729,9 @@ class ConversationDetailActivity :
         val isFromMe = ClientManager.client.inboxId == message.senderInboxId
         // Allow delete if it's my message OR if I'm a super admin in a group
         val canDelete = isFromMe || (conversationType == Conversation.Type.GROUP && isSuperAdmin)
+        // Only allow edit for own text and reply messages (not attachments)
+        val content = message.content<Any>()
+        val canEdit = isFromMe && (content is String || content is Reply)
 
         // Find user's existing active reaction on this message
         // We need to aggregate Added/Removed to find the current state
@@ -523,8 +795,8 @@ class ConversationDetailActivity :
                     }
                     // Different emoji clicked when user has existing reaction - remove old, add new
                     myExistingReaction != null -> {
-                        removeReaction(message.id, myExistingReaction)
-                        sendReaction(message.id, emoji)
+                        // Use sequential operation to avoid race condition
+                        replaceReaction(message.id, myExistingReaction, emoji)
                     }
                     // No existing reaction - add new
                     else -> {
@@ -538,6 +810,21 @@ class ConversationDetailActivity :
         dialogView.findViewById<View>(R.id.replyButton).setOnClickListener {
             dialog.dismiss()
             viewModel.setReplyToMessage(message)
+        }
+
+        // Setup edit button
+        val editButton = dialogView.findViewById<View>(R.id.editButton)
+        val dividerEdit = dialogView.findViewById<View>(R.id.dividerEdit)
+        if (canEdit) {
+            editButton.visibility = View.VISIBLE
+            dividerEdit.visibility = View.VISIBLE
+            editButton.setOnClickListener {
+                dialog.dismiss()
+                startEditingMessage(message)
+            }
+        } else {
+            editButton.visibility = View.GONE
+            dividerEdit.visibility = View.GONE
         }
 
         val deleteButton = dialogView.findViewById<View>(R.id.deleteButton)
@@ -598,6 +885,41 @@ class ConversationDetailActivity :
                 }
                 ConversationDetailViewModel.ReactionState.Success -> {
                     viewModel.fetchMessages()
+                }
+                else -> {}
+            }
+        }
+    }
+
+    /**
+     * Replace an existing reaction with a new one.
+     * Removes the old reaction first and waits for completion before adding the new one.
+     * This prevents race conditions when changing reactions.
+     */
+    private fun replaceReaction(
+        messageId: String,
+        oldEmoji: String,
+        newEmoji: String,
+    ) {
+        lifecycleScope.launch {
+            // First remove the old reaction and wait for completion
+            val removeResult = viewModel.sendReaction(messageId, oldEmoji, isRemoving = true)
+            when (removeResult) {
+                is ConversationDetailViewModel.ReactionState.Error -> {
+                    showError(removeResult.message)
+                    return@launch
+                }
+                ConversationDetailViewModel.ReactionState.Success -> {
+                    // Only after successful removal, add the new reaction
+                    when (val addResult = viewModel.sendReaction(messageId, newEmoji, isRemoving = false)) {
+                        is ConversationDetailViewModel.ReactionState.Error -> {
+                            showError(addResult.message)
+                        }
+                        ConversationDetailViewModel.ReactionState.Success -> {
+                            viewModel.fetchMessages()
+                        }
+                        else -> {}
+                    }
                 }
                 else -> {}
             }
@@ -732,50 +1054,69 @@ class ConversationDetailActivity :
         galleryLauncher.launch("image/gif")
     }
 
-    private fun handleSelectedAttachment(uri: Uri) {
+    private fun showAttachmentPreview(uris: List<Uri>) {
+        val intent = AttachmentPreviewActivity.intent(this, uris)
+        attachmentPreviewLauncher.launch(intent)
+    }
+
+    private fun sendAttachments(uris: List<Uri>) {
         lifecycleScope.launch {
-            try {
-                val (filename, mimeType, data) =
-                    withContext(Dispatchers.IO) {
-                        readAttachmentFromUri(uri)
-                    }
+            val attachmentCount = uris.size
+            var successCount = 0
+            var errorCount = 0
 
-                // Check file size (max 10MB for inline attachments)
-                val maxSize = 10 * 1024 * 1024 // 10MB
-                if (data.size > maxSize) {
-                    Toast
-                        .makeText(
+            Toast
+                .makeText(
+                    this@ConversationDetailActivity,
+                    if (attachmentCount > 1) "Sending $attachmentCount attachments..." else getString(R.string.sending_attachment),
+                    Toast.LENGTH_SHORT,
+                ).show()
+
+            for ((index, uri) in uris.withIndex()) {
+                try {
+                    val (filename, mimeType, data) =
+                        withContext(Dispatchers.IO) {
+                            readAttachmentFromUri(uri)
+                        }
+
+                    // Check file size (max 10MB for inline attachments)
+                    val maxSize = 10 * 1024 * 1024 // 10MB
+                    if (data.size > maxSize) {
+                        errorCount++
+                        Toast.makeText(
                             this@ConversationDetailActivity,
-                            R.string.attachment_too_large,
-                            Toast.LENGTH_SHORT,
+                            getString(R.string.attachment_too_large),
+                            Toast.LENGTH_SHORT
                         ).show()
-                    return@launch
-                }
+                        continue
+                    }
 
-                // Send attachment
+                    when (val result = viewModel.sendAttachment(filename, mimeType, data)) {
+                        is ConversationDetailViewModel.SendAttachmentState.Success -> {
+                            successCount++
+                        }
+                        is ConversationDetailViewModel.SendAttachmentState.Error -> {
+                            errorCount++
+                        }
+                        else -> {}
+                    }
+                } catch (e: Exception) {
+                    errorCount++
+                }
+            }
+
+            // Show result toast
+            if (errorCount > 0) {
                 Toast
                     .makeText(
                         this@ConversationDetailActivity,
-                        R.string.sending_attachment,
+                        if (successCount > 0) "Sent $successCount attachments, $errorCount failed" else getString(R.string.attachment_error),
                         Toast.LENGTH_SHORT,
                     ).show()
+            }
 
-                when (val result = viewModel.sendAttachment(filename, mimeType, data)) {
-                    is ConversationDetailViewModel.SendAttachmentState.Success -> {
-                        viewModel.fetchMessages()
-                    }
-                    is ConversationDetailViewModel.SendAttachmentState.Error -> {
-                        showError(result.message)
-                    }
-                    else -> {}
-                }
-            } catch (e: Exception) {
-                Toast
-                    .makeText(
-                        this@ConversationDetailActivity,
-                        R.string.attachment_error,
-                        Toast.LENGTH_SHORT,
-                    ).show()
+            if (successCount > 0) {
+                viewModel.fetchMessages()
             }
         }
     }
@@ -783,15 +1124,26 @@ class ConversationDetailActivity :
     private fun readAttachmentFromUri(uri: Uri): Triple<String, String, ByteArray> {
         val contentResolver: ContentResolver = contentResolver
 
-        // Get filename
+        // Get filename and size
         var filename = "attachment"
+        var fileSize: Long = 0
         contentResolver.query(uri, null, null, null, null)?.use { cursor ->
             if (cursor.moveToFirst()) {
                 val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                 if (nameIndex >= 0) {
                     filename = cursor.getString(nameIndex) ?: "attachment"
                 }
+                val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
+                if (sizeIndex >= 0) {
+                    fileSize = cursor.getLong(sizeIndex)
+                }
             }
+        }
+
+        // Check file size limit (10MB max to prevent OOM)
+        val maxSize = 10 * 1024 * 1024L // 10MB
+        if (fileSize > maxSize) {
+            throw IllegalArgumentException("File too large. Maximum size is 10MB.")
         }
 
         // Get MIME type
@@ -802,10 +1154,24 @@ class ConversationDetailActivity :
                 )
                 ?: "application/octet-stream"
 
-        // Read data
-        val data =
-            contentResolver.openInputStream(uri)?.use { it.readBytes() }
-                ?: throw IllegalStateException("Could not read attachment")
+        // Validate MIME type (basic security check)
+        val allowedTypes = setOf(
+            "image/", "video/", "audio/", "text/", "application/pdf",
+            "application/msword", "application/vnd.", "application/json"
+        )
+        val isAllowed = allowedTypes.any { mimeType.startsWith(it) || mimeType == it }
+        if (!isAllowed && !mimeType.startsWith("application/")) {
+            throw IllegalArgumentException("File type not supported: $mimeType")
+        }
+
+        // Read data with size check
+        val data = contentResolver.openInputStream(uri)?.use { inputStream ->
+            val bytes = inputStream.readBytes()
+            if (bytes.size > maxSize) {
+                throw IllegalArgumentException("File too large. Maximum size is 10MB.")
+            }
+            bytes
+        } ?: throw IllegalStateException("Could not read attachment")
 
         return Triple(filename, mimeType, data)
     }

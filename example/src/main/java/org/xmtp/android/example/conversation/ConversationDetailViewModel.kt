@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.xmtp.android.example.ClientManager
 import org.xmtp.android.example.extension.flowWhileShared
@@ -28,13 +27,16 @@ import org.xmtp.android.library.codecs.ContentTypeAttachment
 import org.xmtp.android.library.codecs.ContentTypeReaction
 import org.xmtp.android.library.codecs.ContentTypeReply
 import org.xmtp.android.library.codecs.ContentTypeText
+import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.codecs.DeletedBy
 import org.xmtp.android.library.codecs.DeletedMessage
 import org.xmtp.android.library.codecs.Reaction
 import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.codecs.Reply
+import org.xmtp.android.library.codecs.ReplyCodec
 import org.xmtp.android.library.libxmtp.DecodedMessageV2
+import org.xmtp.android.library.libxmtp.Reply as EnrichedReply
 import org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupUpdated
 
 class ConversationDetailViewModel(
@@ -58,6 +60,16 @@ class ConversationDetailViewModel(
     private val _replyToMessage = MutableStateFlow<DecodedMessageV2?>(null)
     val replyToMessage: StateFlow<DecodedMessageV2?> = _replyToMessage
 
+    private val _editingMessage = MutableStateFlow<DecodedMessageV2?>(null)
+    val editingMessage: StateFlow<DecodedMessageV2?> = _editingMessage
+
+    // Instance-level setting - set from Activity based on user preferences
+    private val _hideDeletedMessages = MutableStateFlow(false)
+
+    fun setHideDeletedMessages(hide: Boolean) {
+        _hideDeletedMessages.value = hide
+    }
+
     private var conversation: Conversation? = null
 
     fun setReplyToMessage(message: DecodedMessageV2?) {
@@ -66,6 +78,14 @@ class ConversationDetailViewModel(
 
     fun clearReply() {
         _replyToMessage.value = null
+    }
+
+    fun setEditingMessage(message: DecodedMessageV2?) {
+        _editingMessage.value = message
+    }
+
+    fun clearEdit() {
+        _editingMessage.value = null
     }
 
     @UiThread
@@ -80,18 +100,18 @@ class ConversationDetailViewModel(
                 if (conversation == null) {
                     conversation = ClientManager.client.conversations.findConversationByTopic(conversationTopic!!)
                 }
-                conversation?.let {
+                conversation?.let { conv ->
                     // Sync conversation to get latest messages (including deletions)
-                    when (it) {
-                        is Conversation.Group -> it.group.sync()
-                        is Conversation.Dm -> it.dm.sync()
+                    val isDm = when (conv) {
+                        is Conversation.Group -> { conv.group.sync(); false }
+                        is Conversation.Dm -> { conv.dm.sync(); true }
                     }
-                    listItems.addAll(
-                        it.enrichedMessages().mapNotNull { message ->
+                    val shouldHideDeleted = _hideDeletedMessages.value
+                    listItems.addAll(conv.enrichedMessages().mapNotNull { message ->
                             message?.let { msg ->
-                                val item = classifyMessage(msg)
+                                val item = classifyMessage(msg, isDm) ?: return@mapNotNull null
                                 // Filter out deleted messages if hideDeletedMessages is enabled
-                                if (hideDeletedMessages && item is MessageListItem.SystemMessage) {
+                                if (shouldHideDeleted && item is MessageListItem.SystemMessage) {
                                     val content = msg.content<Any>()
                                     if (content is DeletedMessage) {
                                         return@mapNotNull null
@@ -99,8 +119,7 @@ class ConversationDetailViewModel(
                                 }
                                 item
                             }
-                        },
-                    )
+                        })
                 }
                 _uiState.value = UiState.Success(listItems)
             } catch (e: Exception) {
@@ -112,13 +131,12 @@ class ConversationDetailViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val streamMessages: StateFlow<StreamedMessageResult?> =
         stateFlow(viewModelScope, null) { subscriptionCount ->
+            // Ensure conversation is initialized
             if (conversation == null) {
-                conversation =
-                    runBlocking {
-                        ClientManager.client.conversations.findConversationByTopic(conversationTopic!!)
-                    }
+                conversation = ClientManager.client.conversations.findConversationByTopic(conversationTopic!!)
             }
             if (conversation != null) {
+                val isDm = conversation is Conversation.Dm
                 conversation!!
                     .streamMessages()
                     .flowWhileShared(
@@ -127,21 +145,24 @@ class ConversationDetailViewModel(
                     ).flowOn(Dispatchers.IO)
                     .distinctUntilChanged()
                     .mapLatest { message ->
-                        // Check if this is a delete or reaction message - if so, signal a refresh is needed
+                        // Check if this is a delete, reaction, or edit message - if so, signal a refresh is needed
                         val contentTypeId = message.encodedContent.type
                         val isDeleteMessage = contentTypeId?.typeId == "deleteMessage"
                         val isReactionMessage = contentTypeId?.typeId == "reaction"
+                        val isEditMessage = contentTypeId?.typeId == "editMessage"
 
-                        if (isDeleteMessage || isReactionMessage) {
+                        if (isDeleteMessage || isReactionMessage || isEditMessage) {
                             // Return a signal to refresh the message list
-                            // Reactions and deletes modify existing messages, so we need a full refresh
+                            // Reactions, deletes, and edits modify existing messages, so we need a full refresh
                             StreamedMessageResult.RefreshNeeded
                         } else {
                             // Convert streamed DecodedMessage to DecodedMessageV2 using findEnrichedMessage
                             val enrichedMessage =
                                 ClientManager.client.conversations.findEnrichedMessage(message.id)
                             enrichedMessage?.let {
-                                StreamedMessageResult.NewMessage(classifyMessage(it))
+                                classifyMessage(it, isDm)?.let { item ->
+                                    StreamedMessageResult.NewMessage(item)
+                                }
                             }
                         }
                     }.catch { _ ->
@@ -157,16 +178,35 @@ class ConversationDetailViewModel(
             val item: MessageListItem,
         ) : StreamedMessageResult()
 
-        object RefreshNeeded : StreamedMessageResult()
+        data object RefreshNeeded : StreamedMessageResult()
     }
 
     @UiThread
     fun sendMessage(body: String): StateFlow<SendMessageState> {
         val flow = MutableStateFlow<SendMessageState>(SendMessageState.Loading)
         val replyTo = _replyToMessage.value
+        val editMessage = _editingMessage.value
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                if (replyTo != null) {
+                if (editMessage != null) {
+                    // Send as edit message using native editMessage API
+                    // Check if the original message was a Reply - if so, preserve the Reply structure
+                    val originalContent = editMessage.content<Any>()
+                    val editedContent = if (originalContent is EnrichedReply) {
+                        // Preserve the Reply structure with the new content
+                        val updatedReply = Reply(
+                            reference = originalContent.referenceId,
+                            content = body,
+                            contentType = ContentTypeText,
+                        )
+                        ReplyCodec().encode(updatedReply)
+                    } else {
+                        // Regular text message
+                        TextCodec().encode(body)
+                    }
+                    conversation?.editMessage(editMessage.id, editedContent.toByteArray())
+                    _editingMessage.value = null
+                } else if (replyTo != null) {
                     // Send as reply using Reply codec
                     val replyContent =
                         Reply(
@@ -274,9 +314,9 @@ class ConversationDetailViewModel(
     }
 
     sealed class SendMessageState {
-        object Loading : SendMessageState()
+        data object Loading : SendMessageState()
 
-        object Success : SendMessageState()
+        data object Success : SendMessageState()
 
         data class Error(
             val message: String,
@@ -284,9 +324,9 @@ class ConversationDetailViewModel(
     }
 
     sealed class DeleteMessageState {
-        object Loading : DeleteMessageState()
+        data object Loading : DeleteMessageState()
 
-        object Success : DeleteMessageState()
+        data object Success : DeleteMessageState()
 
         data class Error(
             val message: String,
@@ -294,9 +334,9 @@ class ConversationDetailViewModel(
     }
 
     sealed class ReactionState {
-        object Loading : ReactionState()
+        data object Loading : ReactionState()
 
-        object Success : ReactionState()
+        data object Success : ReactionState()
 
         data class Error(
             val message: String,
@@ -304,9 +344,9 @@ class ConversationDetailViewModel(
     }
 
     sealed class SendAttachmentState {
-        object Loading : SendAttachmentState()
+        data object Loading : SendAttachmentState()
 
-        object Success : SendAttachmentState()
+        data object Success : SendAttachmentState()
 
         data class Error(
             val message: String,
@@ -341,15 +381,22 @@ class ConversationDetailViewModel(
     }
 
     companion object {
-        // Flag to hide deleted messages entirely (set from Activity)
-        var hideDeletedMessages: Boolean = false
+        // Protocol message types that should not be displayed in the UI
+        private val HIDDEN_CONTENT_TYPES = setOf("editMessage", "deleteMessage", "reaction")
 
-        fun classifyMessage(message: DecodedMessageV2): MessageListItem {
+        fun classifyMessage(message: DecodedMessageV2, isDm: Boolean = false): MessageListItem? {
+            // Filter out protocol messages that modify other messages
+            val contentTypeId = message.contentTypeId.typeId
+            if (contentTypeId in HIDDEN_CONTENT_TYPES) {
+                return null
+            }
+
             val content = message.content<Any>()
             val isFromMe = ClientManager.client.inboxId == message.senderInboxId
 
-            // Check for system messages (deleted, group updates)
+            // Check for system/protocol messages
             return when (content) {
+                // Placeholder for deleted message content (shown in UI)
                 is DeletedMessage -> {
                     val deletedByText =
                         when (content.deletedBy) {
@@ -363,17 +410,27 @@ class ConversationDetailViewModel(
                     )
                 }
                 is GroupUpdated -> {
-                    val addedText =
-                        content.addedInboxesList
-                            ?.mapNotNull { it.inboxId }
-                            ?.takeIf { it.isNotEmpty() }
-                            ?.let { "Added: ${it.joinToString(", ") { id -> id.take(8) + "..." }}" }
-                    val removedText =
-                        content.removedInboxesList
-                            ?.mapNotNull { it.inboxId }
-                            ?.takeIf { it.isNotEmpty() }
-                            ?.let { "Removed: ${it.joinToString(", ") { id -> id.take(8) + "..." }}" }
-                    val text = listOfNotNull(addedText, removedText).joinToString("\n").ifEmpty { "Group updated" }
+                    // For DMs, show "Conversation started by [initiator]" instead of member changes
+                    val text = if (isDm) {
+                        val initiatorId = content.initiatedByInboxId
+                        if (initiatorId.isNotEmpty()) {
+                            "Conversation started by ${initiatorId.take(8)}..."
+                        } else {
+                            "Conversation started"
+                        }
+                    } else {
+                        val addedText =
+                            content.addedInboxesList
+                                ?.mapNotNull { it.inboxId }
+                                ?.takeIf { it.isNotEmpty() }
+                                ?.let { "Added: ${it.joinToString(", ") { id -> id.take(8) + "..." }}" }
+                        val removedText =
+                            content.removedInboxesList
+                                ?.mapNotNull { it.inboxId }
+                                ?.takeIf { it.isNotEmpty() }
+                                ?.let { "Removed: ${it.joinToString(", ") { id -> id.take(8) + "..." }}" }
+                        listOfNotNull(addedText, removedText).joinToString("\n").ifEmpty { "Group updated" }
+                    }
                     MessageListItem.SystemMessage(message.id, message, text)
                 }
                 else -> {
