@@ -30,6 +30,9 @@ subprojects {
             target '**/*.kt'
             targetExclude '**/build/**', '**/generated/**', '**/xmtpv3.kt'
             ktlint('1.7.1')
+            suppressLintsFor {
+                shortCode = 'standard:max-line-length'
+            }
         }
 
         kotlinGradle {
