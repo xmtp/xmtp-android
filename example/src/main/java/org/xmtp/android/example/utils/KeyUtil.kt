@@ -26,7 +26,8 @@ class KeyUtil(
     }
 
     private val masterKey: MasterKey by lazy {
-        MasterKey.Builder(context)
+        MasterKey
+            .Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
     }
@@ -38,7 +39,7 @@ class KeyUtil(
                 ENCRYPTED_PREFS_NAME,
                 masterKey,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
             )
         } catch (e: Exception) {
             Timber.e(e, "Failed to create EncryptedSharedPreferences, falling back to regular prefs")
@@ -64,7 +65,8 @@ class KeyUtil(
         dbEncryptionKey: ByteArray?,
     ) {
         val alias = "$PREFIX_DB_KEY${address.lowercase()}"
-        encryptedPrefs.edit()
+        encryptedPrefs
+            .edit()
             .putString(alias, encodeToString(dbEncryptionKey, NO_WRAP))
             .apply()
     }
@@ -91,7 +93,8 @@ class KeyUtil(
         privateKeyBytes: ByteArray,
     ) {
         val alias = "$PREFIX_WALLET_KEY${address.lowercase()}"
-        encryptedPrefs.edit()
+        encryptedPrefs
+            .edit()
             .putString(alias, encodeToString(privateKeyBytes, NO_WRAP))
             .apply()
     }
@@ -131,9 +134,7 @@ class KeyUtil(
     /**
      * Retrieve the selected environment.
      */
-    fun retrieveEnvironment(): String? {
-        return settingsPrefs.getString(KEY_ENVIRONMENT, null)
-    }
+    fun retrieveEnvironment(): String? = settingsPrefs.getString(KEY_ENVIRONMENT, null)
 
     /**
      * Clear the environment setting.
@@ -152,7 +153,5 @@ class KeyUtil(
     /**
      * Retrieve hide deleted messages setting.
      */
-    fun getHideDeletedMessages(): Boolean {
-        return settingsPrefs.getBoolean(KEY_HIDE_DELETED_MESSAGES, false)
-    }
+    fun getHideDeletedMessages(): Boolean = settingsPrefs.getBoolean(KEY_HIDE_DELETED_MESSAGES, false)
 }

@@ -25,41 +25,51 @@ data class SearchResultItem(
     val senderInboxId: String,
     val content: String,
     val sentAtNs: Long,
-    val isDeleted: Boolean = false
+    val isDeleted: Boolean = false,
 )
 
 class SearchResultAdapter(
-    private val onResultClick: (String) -> Unit
+    private val onResultClick: (String) -> Unit,
 ) : ListAdapter<SearchResultItem, SearchResultAdapter.ViewHolder>(DiffCallback()) {
-
     private var searchQuery: String = ""
 
     fun setSearchQuery(query: String) {
         searchQuery = query
     }
 
-    private val avatarColors = listOf(
-        Color.parseColor("#FC4F37"),
-        Color.parseColor("#5856D6"),
-        Color.parseColor("#34C759"),
-        Color.parseColor("#FF9500"),
-        Color.parseColor("#007AFF"),
-        Color.parseColor("#AF52DE"),
-        Color.parseColor("#00C7BE"),
-        Color.parseColor("#FF2D55")
-    )
+    private val avatarColors =
+        listOf(
+            Color.parseColor("#FC4F37"),
+            Color.parseColor("#5856D6"),
+            Color.parseColor("#34C759"),
+            Color.parseColor("#FF9500"),
+            Color.parseColor("#007AFF"),
+            Color.parseColor("#AF52DE"),
+            Color.parseColor("#00C7BE"),
+            Color.parseColor("#FF2D55"),
+        )
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_search_result, parent, false)
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder {
+        val view =
+            LayoutInflater
+                .from(parent.context)
+                .inflate(R.layout.item_search_result, parent, false)
         return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) {
         holder.bind(getItem(position))
     }
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class ViewHolder(
+        itemView: View,
+    ) : RecyclerView.ViewHolder(itemView) {
         private val avatarCard: MaterialCardView = itemView.findViewById(R.id.avatarCard)
         private val avatarText: TextView = itemView.findViewById(R.id.avatarText)
         private val senderName: TextView = itemView.findViewById(R.id.senderName)
@@ -102,7 +112,10 @@ class SearchResultAdapter(
             }
         }
 
-        private fun highlightSearchTerm(text: String, query: String): SpannableString {
+        private fun highlightSearchTerm(
+            text: String,
+            query: String,
+        ): SpannableString {
             val spannableString = SpannableString(text)
             if (query.isEmpty()) return spannableString
 
@@ -119,7 +132,7 @@ class SearchResultAdapter(
                     StyleSpan(android.graphics.Typeface.BOLD),
                     index,
                     index + query.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
 
                 // Color the matched text
@@ -127,7 +140,7 @@ class SearchResultAdapter(
                     ForegroundColorSpan(Color.parseColor("#007AFF")),
                     index,
                     index + query.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                 )
 
                 startIndex = index + query.length
@@ -138,12 +151,14 @@ class SearchResultAdapter(
     }
 
     class DiffCallback : DiffUtil.ItemCallback<SearchResultItem>() {
-        override fun areItemsTheSame(oldItem: SearchResultItem, newItem: SearchResultItem): Boolean {
-            return oldItem.id == newItem.id
-        }
+        override fun areItemsTheSame(
+            oldItem: SearchResultItem,
+            newItem: SearchResultItem,
+        ): Boolean = oldItem.id == newItem.id
 
-        override fun areContentsTheSame(oldItem: SearchResultItem, newItem: SearchResultItem): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(
+            oldItem: SearchResultItem,
+            newItem: SearchResultItem,
+        ): Boolean = oldItem == newItem
     }
 }

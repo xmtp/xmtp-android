@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,46 +24,49 @@ fun Avatar(
     name: String,
     modifier: Modifier = Modifier,
     size: Dp = 48.dp,
-    showOnlineIndicator: Boolean = false
+    showOnlineIndicator: Boolean = false,
 ) {
     val initials = getInitials(name)
     val backgroundColor = getAvatarColor(name)
 
     Box(
         modifier = modifier.size(size),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         // Main avatar circle
         Box(
-            modifier = Modifier
-                .size(size)
-                .clip(CircleShape)
-                .background(backgroundColor),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .size(size)
+                    .clip(CircleShape)
+                    .background(backgroundColor),
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = initials,
                 color = Color.White,
                 fontSize = (size.value * 0.35f).sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
             )
         }
 
         // Online indicator
         if (showOnlineIndicator) {
             Box(
-                modifier = Modifier
-                    .size(size * 0.25f)
-                    .align(Alignment.BottomEnd)
-                    .clip(CircleShape)
-                    .background(Color.White)
+                modifier =
+                    Modifier
+                        .size(size * 0.25f)
+                        .align(Alignment.BottomEnd)
+                        .clip(CircleShape)
+                        .background(Color.White),
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(size * 0.2f)
-                        .align(Alignment.Center)
-                        .clip(CircleShape)
-                        .background(Color(0xFF34C759))
+                    modifier =
+                        Modifier
+                            .size(size * 0.2f)
+                            .align(Alignment.Center)
+                            .clip(CircleShape)
+                            .background(Color(0xFF34C759)),
                 )
             }
         }

@@ -27,13 +27,14 @@ val WarningOrange = Color(0xFFFF9500)
 val ErrorRed = Color(0xFFFF3B30)
 
 // Avatar colors for consistent sender identification
-val AvatarColors = listOf(
-    Color(0xFFFC4F37),
-    Color(0xFF5856D6),
-    Color(0xFF34C759),
-    Color(0xFFFF9500),
-    Color(0xFF007AFF),
-    Color(0xFFAF52DE),
-    Color(0xFF00C7BE),
-    Color(0xFFFF2D55)
-)
+val AvatarColors =
+    listOf(
+        Color(0xFFFC4F37),
+        Color(0xFF5856D6),
+        Color(0xFF34C759),
+        Color(0xFFFF9500),
+        Color(0xFF007AFF),
+        Color(0xFFAF52DE),
+        Color(0xFF00C7BE),
+        Color(0xFFFF2D55),
+    )

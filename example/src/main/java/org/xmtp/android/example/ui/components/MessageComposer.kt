@@ -5,7 +5,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -58,48 +57,50 @@ fun MessageComposer(
     replyAuthor: String? = null,
     onClearReply: () -> Unit = {},
     onAttachmentClick: () -> Unit = {},
-    onEmojiClick: () -> Unit = {}
+    onEmojiClick: () -> Unit = {},
 ) {
     val canSend = value.isNotBlank() && !isSending
 
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .imePadding(),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .imePadding(),
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp
+        tonalElevation = 2.dp,
     ) {
         Column {
             // Reply preview
             AnimatedVisibility(
                 visible = replyTo != null,
                 enter = slideInVertically { it },
-                exit = slideOutVertically { it }
+                exit = slideOutVertically { it },
             ) {
                 if (replyTo != null) {
                     ReplyPreview(
                         message = replyTo,
                         author = replyAuthor,
-                        onDismiss = onClearReply
+                        onDismiss = onClearReply,
                     )
                 }
             }
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.Bottom
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.Bottom,
             ) {
                 // Attachment button
                 IconButton(
                     onClick = onAttachmentClick,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(40.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add attachment",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 }
 
@@ -107,23 +108,25 @@ fun MessageComposer(
                 Surface(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 4.dp),
-                        verticalAlignment = Alignment.Bottom
+                        verticalAlignment = Alignment.Bottom,
                     ) {
                         BasicTextField(
                             value = value,
                             onValueChange = onValueChange,
-                            modifier = Modifier
-                                .weight(1f)
-                                .heightIn(min = 40.dp, max = 120.dp)
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            textStyle = TextStyle(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 16.sp
-                            ),
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .heightIn(min = 40.dp, max = 120.dp)
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                            textStyle =
+                                TextStyle(
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 16.sp,
+                                ),
                             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                             decorationBox = { innerTextField ->
                                 Box {
@@ -131,27 +134,28 @@ fun MessageComposer(
                                         Text(
                                             text = "Message",
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            fontSize = 16.sp
+                                            fontSize = 16.sp,
                                         )
                                     }
                                     innerTextField()
                                 }
                             },
-                            enabled = !isSending
+                            enabled = !isSending,
                         )
 
                         // Emoji button
                         IconButton(
                             onClick = onEmojiClick,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .padding(bottom = 2.dp)
+                            modifier =
+                                Modifier
+                                    .size(36.dp)
+                                    .padding(bottom = 2.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.EmojiEmotions,
                                 contentDescription = "Emoji",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(22.dp)
+                                modifier = Modifier.size(22.dp),
                             )
                         }
                     }
@@ -161,28 +165,31 @@ fun MessageComposer(
 
                 // Send button
                 Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (canSend) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.surfaceVariant
-                        )
-                        .clickable(enabled = canSend) { onSendClick() },
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (canSend) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                },
+                            ).clickable(enabled = canSend) { onSendClick() },
+                    contentAlignment = Alignment.Center,
                 ) {
                     if (isSending) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
                             color = Color.White,
-                            strokeWidth = 2.dp
+                            strokeWidth = 2.dp,
                         )
                     } else {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
                             contentDescription = "Send",
                             tint = Color.White,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
                         )
                     }
                 }
@@ -196,21 +203,23 @@ private fun ReplyPreview(
     message: String,
     author: String?,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         // Left accent bar
         Box(
-            modifier = Modifier
-                .width(2.dp)
-                .height(32.dp)
-                .background(MaterialTheme.colorScheme.primary)
+            modifier =
+                Modifier
+                    .width(2.dp)
+                    .height(32.dp)
+                    .background(MaterialTheme.colorScheme.primary),
         )
 
         Spacer(modifier = Modifier.width(8.dp))
@@ -219,25 +228,25 @@ private fun ReplyPreview(
             Text(
                 text = "Replying to ${author ?: "message"}",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
+                maxLines = 1,
             )
         }
 
         IconButton(
             onClick = onDismiss,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(24.dp),
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = "Cancel reply",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(16.dp),
             )
         }
     }
@@ -251,7 +260,7 @@ private fun MessageComposerPreview() {
         MessageComposer(
             value = text,
             onValueChange = { text = it },
-            onSendClick = {}
+            onSendClick = {},
         )
     }
 }
@@ -263,7 +272,7 @@ private fun MessageComposerWithTextPreview() {
         MessageComposer(
             value = "Hello, this is a test message!",
             onValueChange = {},
-            onSendClick = {}
+            onSendClick = {},
         )
     }
 }
@@ -276,7 +285,7 @@ private fun MessageComposerSendingPreview() {
             value = "Sending message...",
             onValueChange = {},
             onSendClick = {},
-            isSending = true
+            isSending = true,
         )
     }
 }
@@ -290,7 +299,7 @@ private fun MessageComposerWithReplyPreview() {
             onValueChange = {},
             onSendClick = {},
             replyTo = "This is the original message content",
-            replyAuthor = "0x1234...5678"
+            replyAuthor = "0x1234...5678",
         )
     }
 }

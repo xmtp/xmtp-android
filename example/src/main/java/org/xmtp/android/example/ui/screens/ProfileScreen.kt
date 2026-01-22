@@ -51,7 +51,7 @@ fun ProfileScreen(
     installationId: String,
     modifier: Modifier = Modifier,
     onLogout: () -> Unit = {},
-    onShowQR: () -> Unit = {}
+    onShowQR: () -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -62,27 +62,29 @@ fun ProfileScreen(
                 title = {
                     Text(
                         text = "Profile",
-                        style = MaterialTheme.typography.headlineMedium
+                        style = MaterialTheme.typography.headlineMedium,
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ),
             )
-        }
+        },
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Avatar
             Avatar(
                 name = walletAddress,
-                size = 100.dp
+                size = 100.dp,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -91,7 +93,7 @@ fun ProfileScreen(
             Text(
                 text = abbreviateAddress(walletAddress),
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -100,7 +102,7 @@ fun ProfileScreen(
             InfoCard(
                 title = "Wallet Address",
                 value = walletAddress,
-                onCopy = { copyToClipboard(context, "Wallet Address", walletAddress) }
+                onCopy = { copyToClipboard(context, "Wallet Address", walletAddress) },
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -108,7 +110,7 @@ fun ProfileScreen(
             InfoCard(
                 title = "Inbox ID",
                 value = inboxId,
-                onCopy = { copyToClipboard(context, "Inbox ID", inboxId) }
+                onCopy = { copyToClipboard(context, "Inbox ID", inboxId) },
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -116,7 +118,7 @@ fun ProfileScreen(
             InfoCard(
                 title = "Installation ID",
                 value = installationId,
-                onCopy = { copyToClipboard(context, "Installation ID", installationId) }
+                onCopy = { copyToClipboard(context, "Installation ID", installationId) },
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -126,19 +128,20 @@ fun ProfileScreen(
                 onClick = onShowQR,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    ),
             ) {
                 Icon(
                     imageVector = Icons.Default.QrCode,
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(20.dp),
                 )
                 Text(
                     text = "Show QR Code",
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 8.dp),
                 )
             }
 
@@ -149,19 +152,20 @@ fun ProfileScreen(
                 onClick = onLogout,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                )
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                    ),
             ) {
                 Icon(
                     imageVector = Icons.Default.Logout,
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(20.dp),
                 )
                 Text(
                     text = "Logout",
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 8.dp),
                 )
             }
         }
@@ -172,27 +176,29 @@ fun ProfileScreen(
 private fun InfoCard(
     title: String,
     value: String,
-    onCopy: () -> Unit
+    onCopy: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            ),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
                     text = value,
@@ -200,29 +206,32 @@ private fun InfoCard(
                     fontFamily = FontFamily.Monospace,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
             IconButton(onClick = onCopy) {
                 Icon(
                     imageVector = Icons.Default.ContentCopy,
                     contentDescription = "Copy",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
         }
     }
 }
 
-private fun abbreviateAddress(address: String): String {
-    return if (address.length > 12) {
+private fun abbreviateAddress(address: String): String =
+    if (address.length > 12) {
         "${address.take(6)}...${address.takeLast(4)}"
     } else {
         address
     }
-}
 
-private fun copyToClipboard(context: Context, label: String, text: String) {
+private fun copyToClipboard(
+    context: Context,
+    label: String,
+    text: String,
+) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText(label, text)
     clipboard.setPrimaryClip(clip)
@@ -236,7 +245,7 @@ private fun ProfileScreenPreview() {
         ProfileScreen(
             walletAddress = "0x1234567890123456789012345678901234567890",
             inboxId = "abcdef1234567890abcdef1234567890",
-            installationId = "installation-id-12345"
+            installationId = "installation-id-12345",
         )
     }
 }

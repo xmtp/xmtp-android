@@ -1,6 +1,5 @@
 package org.xmtp.android.example.message
 
-import android.graphics.BitmapFactory
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -41,10 +40,12 @@ class ReceivedMessageViewHolder(
                 binding.messageBody.text = content
                 binding.messageBody.visibility = View.VISIBLE
             }
+
             is Reaction -> {
                 binding.messageBody.text = "${content.content} (reaction)"
                 binding.messageBody.visibility = View.VISIBLE
             }
+
             is Attachment -> {
                 val isImage = content.mimeType.startsWith("image/")
                 val isGif = content.mimeType == "image/gif"
@@ -56,14 +57,16 @@ class ReceivedMessageViewHolder(
                         val bytes = content.data.toByteArray()
                         if (isGif) {
                             // Use Glide for GIF playback
-                            Glide.with(binding.attachmentImage.context)
+                            Glide
+                                .with(binding.attachmentImage.context)
                                 .asGif()
                                 .load(bytes)
                                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                                 .into(binding.attachmentImage)
                         } else {
                             // Use Glide for regular images too for consistency
-                            Glide.with(binding.attachmentImage.context)
+                            Glide
+                                .with(binding.attachmentImage.context)
                                 .load(bytes)
                                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                                 .into(binding.attachmentImage)
@@ -80,6 +83,7 @@ class ReceivedMessageViewHolder(
                     binding.messageBody.visibility = View.GONE
                 }
             }
+
             is Reply -> {
                 val replyContent = content.content
                 val replyText = if (replyContent is String) replyContent else "Reply"
@@ -108,13 +112,15 @@ class ReceivedMessageViewHolder(
                                         val bytes = originalContent.data.toByteArray()
                                         val isGif = originalContent.mimeType == "image/gif"
                                         if (isGif) {
-                                            Glide.with(binding.replyImage.context)
+                                            Glide
+                                                .with(binding.replyImage.context)
                                                 .asGif()
                                                 .load(bytes)
                                                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                                                 .into(binding.replyImage)
                                         } else {
-                                            Glide.with(binding.replyImage.context)
+                                            Glide
+                                                .with(binding.replyImage.context)
                                                 .load(bytes)
                                                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                                                 .into(binding.replyImage)
@@ -128,6 +134,7 @@ class ReceivedMessageViewHolder(
                                     "Attachment"
                                 }
                             }
+
                             is Reply -> {
                                 // For replies, show the actual reply content
                                 when (val nestedReplyContent = originalContent.content) {
@@ -135,6 +142,7 @@ class ReceivedMessageViewHolder(
                                     else -> "Message"
                                 }
                             }
+
                             else -> {
                                 // For unknown content types, just show "Message" to avoid "Replied with..." fallback text
                                 "Message"
@@ -158,6 +166,7 @@ class ReceivedMessageViewHolder(
                     binding.replyContainer.setOnClickListener(null)
                 }
             }
+
             else -> {
                 binding.messageBody.text = item.message.fallbackText ?: "Unknown content"
                 binding.messageBody.visibility = View.VISIBLE
@@ -191,9 +200,11 @@ class ReceivedMessageViewHolder(
                     ReactionAction.Added -> {
                         activeReactions.getOrPut(emoji) { mutableSetOf() }.add(sender)
                     }
+
                     ReactionAction.Removed -> {
                         activeReactions[emoji]?.remove(sender)
                     }
+
                     else -> {}
                 }
             }

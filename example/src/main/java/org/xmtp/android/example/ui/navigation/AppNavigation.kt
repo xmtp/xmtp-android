@@ -34,10 +34,15 @@ import org.xmtp.android.example.ui.screens.MessageItem
 import org.xmtp.android.example.ui.screens.ProfileScreen
 import org.xmtp.android.example.ui.screens.SettingsScreen
 
-sealed class Screen(val route: String) {
+sealed class Screen(
+    val route: String,
+) {
     object Home : Screen("home")
+
     object Profile : Screen("profile")
+
     object Settings : Screen("settings")
+
     object Chat : Screen("chat/{conversationId}") {
         fun createRoute(conversationId: String) = "chat/$conversationId"
     }
@@ -47,29 +52,30 @@ data class BottomNavItem(
     val screen: Screen,
     val title: String,
     val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
+    val unselectedIcon: ImageVector,
 )
 
-val bottomNavItems = listOf(
-    BottomNavItem(
-        screen = Screen.Home,
-        title = "Chats",
-        selectedIcon = Icons.Filled.Chat,
-        unselectedIcon = Icons.Outlined.Chat
-    ),
-    BottomNavItem(
-        screen = Screen.Profile,
-        title = "Profile",
-        selectedIcon = Icons.Filled.Person,
-        unselectedIcon = Icons.Outlined.Person
-    ),
-    BottomNavItem(
-        screen = Screen.Settings,
-        title = "Settings",
-        selectedIcon = Icons.Filled.Settings,
-        unselectedIcon = Icons.Outlined.Settings
+val bottomNavItems =
+    listOf(
+        BottomNavItem(
+            screen = Screen.Home,
+            title = "Chats",
+            selectedIcon = Icons.Filled.Chat,
+            unselectedIcon = Icons.Outlined.Chat,
+        ),
+        BottomNavItem(
+            screen = Screen.Profile,
+            title = "Profile",
+            selectedIcon = Icons.Filled.Person,
+            unselectedIcon = Icons.Outlined.Person,
+        ),
+        BottomNavItem(
+            screen = Screen.Settings,
+            title = "Settings",
+            selectedIcon = Icons.Filled.Settings,
+            unselectedIcon = Icons.Outlined.Settings,
+        ),
     )
-)
 
 @Composable
 fun AppNavigation(
@@ -83,34 +89,37 @@ fun AppNavigation(
     onSendMessage: (String, String) -> Unit = { _, _ -> },
     onNewConversation: () -> Unit = {},
     onLogout: () -> Unit = {},
-    onHideDeletedMessagesChange: (Boolean) -> Unit = {}
+    onHideDeletedMessagesChange: (Boolean) -> Unit = {},
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
     // Check if we should show bottom nav
-    val showBottomNav = currentDestination?.route in listOf(
-        Screen.Home.route,
-        Screen.Profile.route,
-        Screen.Settings.route
-    )
+    val showBottomNav =
+        currentDestination?.route in
+            listOf(
+                Screen.Home.route,
+                Screen.Profile.route,
+                Screen.Settings.route,
+            )
 
     Scaffold(
         bottomBar = {
             if (showBottomNav) {
                 NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.surface,
                 ) {
                     bottomNavItems.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any {
-                            it.route == item.screen.route
-                        } == true
+                        val selected =
+                            currentDestination?.hierarchy?.any {
+                                it.route == item.screen.route
+                            } == true
 
                         NavigationBarItem(
                             icon = {
                                 Icon(
                                     imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                    contentDescription = item.title
+                                    contentDescription = item.title,
                                 )
                             },
                             label = { Text(item.title) },
@@ -123,17 +132,17 @@ fun AppNavigation(
                                     launchSingleTop = true
                                     restoreState = true
                                 }
-                            }
+                            },
                         )
                     }
                 }
             }
-        }
+        },
     ) { paddingValues ->
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues),
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
@@ -141,7 +150,7 @@ fun AppNavigation(
                     onConversationClick = { conversationId ->
                         navController.navigate(Screen.Chat.createRoute(conversationId))
                     },
-                    onNewConversationClick = onNewConversation
+                    onNewConversationClick = onNewConversation,
                 )
             }
 
@@ -150,22 +159,23 @@ fun AppNavigation(
                     walletAddress = walletAddress,
                     inboxId = inboxId,
                     installationId = installationId,
-                    onLogout = onLogout
+                    onLogout = onLogout,
                 )
             }
 
             composable(Screen.Settings.route) {
                 SettingsScreen(
                     hideDeletedMessages = hideDeletedMessages,
-                    onHideDeletedMessagesChange = onHideDeletedMessagesChange
+                    onHideDeletedMessagesChange = onHideDeletedMessagesChange,
                 )
             }
 
             composable(
                 route = Screen.Chat.route,
-                arguments = listOf(
-                    navArgument("conversationId") { type = NavType.StringType }
-                )
+                arguments =
+                    listOf(
+                        navArgument("conversationId") { type = NavType.StringType },
+                    ),
             ) { backStackEntry ->
                 val conversationId = backStackEntry.arguments?.getString("conversationId") ?: ""
                 val conversation = conversations.find { it.id == conversationId }
@@ -179,7 +189,7 @@ fun AppNavigation(
                     onBackClick = { navController.popBackStack() },
                     onSendMessage = { message ->
                         onSendMessage(conversationId, message)
-                    }
+                    },
                 )
             }
         }

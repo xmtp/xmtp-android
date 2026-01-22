@@ -27,7 +27,6 @@ import org.xmtp.android.library.codecs.ContentTypeAttachment
 import org.xmtp.android.library.codecs.ContentTypeReaction
 import org.xmtp.android.library.codecs.ContentTypeReply
 import org.xmtp.android.library.codecs.ContentTypeText
-import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.codecs.DeletedBy
 import org.xmtp.android.library.codecs.DeletedMessage
 import org.xmtp.android.library.codecs.Reaction
@@ -35,9 +34,10 @@ import org.xmtp.android.library.codecs.ReactionAction
 import org.xmtp.android.library.codecs.ReactionSchema
 import org.xmtp.android.library.codecs.Reply
 import org.xmtp.android.library.codecs.ReplyCodec
+import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.DecodedMessageV2
-import org.xmtp.android.library.libxmtp.Reply as EnrichedReply
 import org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupUpdated
+import org.xmtp.android.library.libxmtp.Reply as EnrichedReply
 
 class ConversationDetailViewModel(
     private val savedStateHandle: SavedStateHandle,
@@ -102,12 +102,21 @@ class ConversationDetailViewModel(
                 }
                 conversation?.let { conv ->
                     // Sync conversation to get latest messages (including deletions)
-                    val isDm = when (conv) {
-                        is Conversation.Group -> { conv.group.sync(); false }
-                        is Conversation.Dm -> { conv.dm.sync(); true }
-                    }
+                    val isDm =
+                        when (conv) {
+                            is Conversation.Group -> {
+                                conv.group.sync()
+                                false
+                            }
+
+                            is Conversation.Dm -> {
+                                conv.dm.sync()
+                                true
+                            }
+                        }
                     val shouldHideDeleted = _hideDeletedMessages.value
-                    listItems.addAll(conv.enrichedMessages().mapNotNull { message ->
+                    listItems.addAll(
+                        conv.enrichedMessages().mapNotNull { message ->
                             message?.let { msg ->
                                 val item = classifyMessage(msg, isDm) ?: return@mapNotNull null
                                 // Filter out deleted messages if hideDeletedMessages is enabled
@@ -119,7 +128,8 @@ class ConversationDetailViewModel(
                                 }
                                 item
                             }
-                        })
+                        },
+                    )
                 }
                 _uiState.value = UiState.Success(listItems)
             } catch (e: Exception) {
@@ -192,18 +202,20 @@ class ConversationDetailViewModel(
                     // Send as edit message using native editMessage API
                     // Check if the original message was a Reply - if so, preserve the Reply structure
                     val originalContent = editMessage.content<Any>()
-                    val editedContent = if (originalContent is EnrichedReply) {
-                        // Preserve the Reply structure with the new content
-                        val updatedReply = Reply(
-                            reference = originalContent.referenceId,
-                            content = body,
-                            contentType = ContentTypeText,
-                        )
-                        ReplyCodec().encode(updatedReply)
-                    } else {
-                        // Regular text message
-                        TextCodec().encode(body)
-                    }
+                    val editedContent =
+                        if (originalContent is EnrichedReply) {
+                            // Preserve the Reply structure with the new content
+                            val updatedReply =
+                                Reply(
+                                    reference = originalContent.referenceId,
+                                    content = body,
+                                    contentType = ContentTypeText,
+                                )
+                            ReplyCodec().encode(updatedReply)
+                        } else {
+                            // Regular text message
+                            TextCodec().encode(body)
+                        }
                     conversation?.editMessage(editMessage.id, editedContent.toByteArray())
                     _editingMessage.value = null
                 } else if (replyTo != null) {
@@ -384,7 +396,10 @@ class ConversationDetailViewModel(
         // Protocol message types that should not be displayed in the UI
         private val HIDDEN_CONTENT_TYPES = setOf("editMessage", "deleteMessage", "reaction")
 
-        fun classifyMessage(message: DecodedMessageV2, isDm: Boolean = false): MessageListItem? {
+        fun classifyMessage(
+            message: DecodedMessageV2,
+            isDm: Boolean = false,
+        ): MessageListItem? {
             // Filter out protocol messages that modify other messages
             val contentTypeId = message.contentTypeId.typeId
             if (contentTypeId in HIDDEN_CONTENT_TYPES) {
@@ -409,30 +424,33 @@ class ConversationDetailViewModel(
                         "This message was deleted by $deletedByText",
                     )
                 }
+
                 is GroupUpdated -> {
                     // For DMs, show "Conversation started by [initiator]" instead of member changes
-                    val text = if (isDm) {
-                        val initiatorId = content.initiatedByInboxId
-                        if (initiatorId.isNotEmpty()) {
-                            "Conversation started by ${initiatorId.take(8)}..."
+                    val text =
+                        if (isDm) {
+                            val initiatorId = content.initiatedByInboxId
+                            if (initiatorId.isNotEmpty()) {
+                                "Conversation started by ${initiatorId.take(8)}..."
+                            } else {
+                                "Conversation started"
+                            }
                         } else {
-                            "Conversation started"
+                            val addedText =
+                                content.addedInboxesList
+                                    ?.mapNotNull { it.inboxId }
+                                    ?.takeIf { it.isNotEmpty() }
+                                    ?.let { "Added: ${it.joinToString(", ") { id -> id.take(8) + "..." }}" }
+                            val removedText =
+                                content.removedInboxesList
+                                    ?.mapNotNull { it.inboxId }
+                                    ?.takeIf { it.isNotEmpty() }
+                                    ?.let { "Removed: ${it.joinToString(", ") { id -> id.take(8) + "..." }}" }
+                            listOfNotNull(addedText, removedText).joinToString("\n").ifEmpty { "Group updated" }
                         }
-                    } else {
-                        val addedText =
-                            content.addedInboxesList
-                                ?.mapNotNull { it.inboxId }
-                                ?.takeIf { it.isNotEmpty() }
-                                ?.let { "Added: ${it.joinToString(", ") { id -> id.take(8) + "..." }}" }
-                        val removedText =
-                            content.removedInboxesList
-                                ?.mapNotNull { it.inboxId }
-                                ?.takeIf { it.isNotEmpty() }
-                                ?.let { "Removed: ${it.joinToString(", ") { id -> id.take(8) + "..." }}" }
-                        listOfNotNull(addedText, removedText).joinToString("\n").ifEmpty { "Group updated" }
-                    }
                     MessageListItem.SystemMessage(message.id, message, text)
                 }
+
                 else -> {
                     if (isFromMe) {
                         MessageListItem.SentMessage(message.id, message)

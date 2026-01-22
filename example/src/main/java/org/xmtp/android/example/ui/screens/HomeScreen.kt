@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,10 +22,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -42,7 +37,7 @@ data class ConversationItem(
     val timestamp: String,
     val isGroup: Boolean = false,
     val memberCount: Int? = null,
-    val unreadCount: Int = 0
+    val unreadCount: Int = 0,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,7 +48,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onConversationClick: (String) -> Unit = {},
     onNewConversationClick: () -> Unit = {},
-    onSearchClick: () -> Unit = {}
+    onSearchClick: () -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -62,54 +57,58 @@ fun HomeScreen(
                 title = {
                     Text(
                         text = "Messages",
-                        style = MaterialTheme.typography.headlineMedium
+                        style = MaterialTheme.typography.headlineMedium,
                     )
                 },
                 actions = {
                     IconButton(onClick = onSearchClick) {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "Search"
+                            contentDescription = "Search",
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ),
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNewConversationClick,
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.primary,
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "New Conversation"
+                    contentDescription = "New Conversation",
                 )
             }
-        }
+        },
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
         ) {
             when {
                 isLoading -> {
                     CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier.align(Alignment.Center),
                     )
                 }
+
                 conversations.isEmpty() -> {
                     EmptyConversationsView(
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier.align(Alignment.Center),
                     )
                 }
+
                 else -> {
                     ConversationsList(
                         conversations = conversations,
-                        onConversationClick = onConversationClick
+                        onConversationClick = onConversationClick,
                     )
                 }
             }
@@ -120,15 +119,15 @@ fun HomeScreen(
 @Composable
 private fun ConversationsList(
     conversations: List<ConversationItem>,
-    onConversationClick: (String) -> Unit
+    onConversationClick: (String) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 8.dp)
+        contentPadding = PaddingValues(vertical = 8.dp),
     ) {
         items(
             items = conversations,
-            key = { it.id }
+            key = { it.id },
         ) { conversation ->
             ConversationRow(
                 name = conversation.name,
@@ -137,35 +136,33 @@ private fun ConversationsList(
                 isGroup = conversation.isGroup,
                 memberCount = conversation.memberCount,
                 unreadCount = conversation.unreadCount,
-                onClick = { onConversationClick(conversation.id) }
+                onClick = { onConversationClick(conversation.id) },
             )
             Divider(
                 modifier = Modifier.padding(start = 80.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
             )
         }
     }
 }
 
 @Composable
-private fun EmptyConversationsView(
-    modifier: Modifier = Modifier
-) {
+private fun EmptyConversationsView(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = "No Conversations Yet",
             style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
             text = "Start a new conversation using the + button",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 8.dp)
+            modifier = Modifier.padding(top = 8.dp),
         )
     }
 }
@@ -175,32 +172,33 @@ private fun EmptyConversationsView(
 private fun HomeScreenPreview() {
     XMTPTheme {
         HomeScreen(
-            conversations = listOf(
-                ConversationItem(
-                    id = "1",
-                    name = "0x1234...5678",
-                    lastMessage = "Hey, how are you?",
-                    timestamp = "10:30 AM",
-                    isGroup = false
+            conversations =
+                listOf(
+                    ConversationItem(
+                        id = "1",
+                        name = "0x1234...5678",
+                        lastMessage = "Hey, how are you?",
+                        timestamp = "10:30 AM",
+                        isGroup = false,
+                    ),
+                    ConversationItem(
+                        id = "2",
+                        name = "XMTP Dev Team",
+                        lastMessage = "Alice: Let's ship this!",
+                        timestamp = "Yesterday",
+                        isGroup = true,
+                        memberCount = 5,
+                        unreadCount = 3,
+                    ),
+                    ConversationItem(
+                        id = "3",
+                        name = "Bob",
+                        lastMessage = "Check out this update!",
+                        timestamp = "2:45 PM",
+                        isGroup = false,
+                        unreadCount = 1,
+                    ),
                 ),
-                ConversationItem(
-                    id = "2",
-                    name = "XMTP Dev Team",
-                    lastMessage = "Alice: Let's ship this!",
-                    timestamp = "Yesterday",
-                    isGroup = true,
-                    memberCount = 5,
-                    unreadCount = 3
-                ),
-                ConversationItem(
-                    id = "3",
-                    name = "Bob",
-                    lastMessage = "Check out this update!",
-                    timestamp = "2:45 PM",
-                    isGroup = false,
-                    unreadCount = 1
-                )
-            )
         )
     }
 }
@@ -219,7 +217,7 @@ private fun LoadingHomeScreenPreview() {
     XMTPTheme {
         HomeScreen(
             conversations = emptyList(),
-            isLoading = true
+            isLoading = true,
         )
     }
 }

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Person
@@ -40,40 +39,43 @@ fun ConversationRow(
     isGroup: Boolean = false,
     memberCount: Int? = null,
     unreadCount: Int = 0,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
 ) {
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        color = MaterialTheme.colorScheme.surface
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick),
+        color = MaterialTheme.colorScheme.surface,
     ) {
         Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Avatar
             Box(
                 modifier = Modifier.size(52.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Avatar(name = name, size = 52.dp)
 
                 // Group/DM indicator badge
                 Box(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .align(Alignment.BottomEnd)
-                        .clip(CircleShape)
-                        .background(if (isGroup) Color(0xFF34C759) else Color(0xFF007AFF)),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .size(20.dp)
+                            .align(Alignment.BottomEnd)
+                            .clip(CircleShape)
+                            .background(if (isGroup) Color(0xFF34C759) else Color(0xFF007AFF)),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = if (isGroup) Icons.Default.Group else Icons.Default.Person,
                         contentDescription = if (isGroup) "Group" else "Direct Message",
                         modifier = Modifier.size(12.dp),
-                        tint = Color.White
+                        tint = Color.White,
                     )
                 }
             }
@@ -83,12 +85,12 @@ fun ConversationRow(
             // Content
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = name,
@@ -96,7 +98,7 @@ fun ConversationRow(
                         fontWeight = if (unreadCount > 0) FontWeight.Bold else FontWeight.Normal,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -104,24 +106,26 @@ fun ConversationRow(
                     Text(
                         text = timestamp,
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (unreadCount > 0)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
+                        color =
+                            if (unreadCount > 0) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                     )
                 }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         if (isGroup && memberCount != null) {
                             Text(
                                 text = "$memberCount members",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
 
@@ -131,7 +135,7 @@ fun ConversationRow(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            fontWeight = if (unreadCount > 0) FontWeight.Medium else FontWeight.Normal
+                            fontWeight = if (unreadCount > 0) FontWeight.Medium else FontWeight.Normal,
                         )
                     }
 
@@ -140,13 +144,13 @@ fun ConversationRow(
 
                         Surface(
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
                         ) {
                             Text(
                                 text = if (unreadCount > 99) "99+" else unreadCount.toString(),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color.White,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             )
                         }
                     }
@@ -164,7 +168,7 @@ private fun DMConversationPreview() {
             name = "0x1234...5678",
             lastMessage = "Hey, how are you doing?",
             timestamp = "10:30 AM",
-            isGroup = false
+            isGroup = false,
         )
     }
 }
@@ -178,7 +182,7 @@ private fun GroupConversationPreview() {
             lastMessage = "Alice: Let's ship this feature!",
             timestamp = "Yesterday",
             isGroup = true,
-            memberCount = 5
+            memberCount = 5,
         )
     }
 }
@@ -192,7 +196,7 @@ private fun UnreadConversationPreview() {
             lastMessage = "Check out this new update!",
             timestamp = "2:45 PM",
             isGroup = false,
-            unreadCount = 3
+            unreadCount = 3,
         )
     }
 }

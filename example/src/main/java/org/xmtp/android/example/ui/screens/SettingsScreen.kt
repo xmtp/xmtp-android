@@ -34,10 +34,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -60,7 +56,7 @@ fun SettingsScreen(
     onStorageClick: () -> Unit = {},
     onViewLogsClick: () -> Unit = {},
     onAboutClick: () -> Unit = {},
-    onClearDataClick: () -> Unit = {}
+    onClearDataClick: () -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -69,21 +65,23 @@ fun SettingsScreen(
                 title = {
                     Text(
                         text = "Settings",
-                        style = MaterialTheme.typography.headlineMedium
+                        style = MaterialTheme.typography.headlineMedium,
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ),
             )
-        }
+        },
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
         ) {
             // Appearance Section
             SectionTitle(text = "Appearance")
@@ -94,7 +92,7 @@ fun SettingsScreen(
                     title = "Dark Mode",
                     subtitle = "Use dark theme",
                     isChecked = darkModeEnabled,
-                    onCheckedChange = onDarkModeChange
+                    onCheckedChange = onDarkModeChange,
                 )
             }
 
@@ -109,7 +107,7 @@ fun SettingsScreen(
                     title = "Hide Deleted Messages",
                     subtitle = "Don't show deleted messages in conversations",
                     isChecked = hideDeletedMessages,
-                    onCheckedChange = onHideDeletedMessagesChange
+                    onCheckedChange = onHideDeletedMessagesChange,
                 )
             }
 
@@ -124,7 +122,7 @@ fun SettingsScreen(
                     title = "Push Notifications",
                     subtitle = "Receive notifications for new messages",
                     isChecked = notificationsEnabled,
-                    onCheckedChange = onNotificationsChange
+                    onCheckedChange = onNotificationsChange,
                 )
             }
 
@@ -137,22 +135,22 @@ fun SettingsScreen(
                 SettingsNavigationRow(
                     icon = Icons.Default.Security,
                     title = "Privacy & Security",
-                    onClick = onPrivacyClick
+                    onClick = onPrivacyClick,
                 )
                 SettingsNavigationRow(
                     icon = Icons.Default.Storage,
                     title = "Storage",
-                    onClick = onStorageClick
+                    onClick = onStorageClick,
                 )
                 SettingsNavigationRow(
                     icon = Icons.Default.BugReport,
                     title = "View Logs",
-                    onClick = onViewLogsClick
+                    onClick = onViewLogsClick,
                 )
                 SettingsNavigationRow(
                     icon = Icons.Default.Info,
                     title = "About",
-                    onClick = onAboutClick
+                    onClick = onAboutClick,
                 )
             }
 
@@ -162,13 +160,13 @@ fun SettingsScreen(
             SectionTitle(text = "Danger Zone", color = MaterialTheme.colorScheme.error)
 
             SettingsCard(
-                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
             ) {
                 SettingsNavigationRow(
                     icon = Icons.Default.DeleteForever,
                     title = "Clear All Data",
                     iconTint = MaterialTheme.colorScheme.error,
-                    onClick = onClearDataClick
+                    onClick = onClearDataClick,
                 )
             }
 
@@ -179,7 +177,7 @@ fun SettingsScreen(
                 text = "XMTP Example App v1.0.0",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier.align(Alignment.CenterHorizontally),
             )
         }
     }
@@ -188,25 +186,25 @@ fun SettingsScreen(
 @Composable
 private fun SectionTitle(
     text: String,
-    color: Color = MaterialTheme.colorScheme.primary
+    color: Color = MaterialTheme.colorScheme.primary,
 ) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleSmall,
         color = color,
-        modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+        modifier = Modifier.padding(bottom = 8.dp, start = 4.dp),
     )
 }
 
 @Composable
 private fun SettingsCard(
     containerColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
+        colors = CardDefaults.cardColors(containerColor = containerColor),
     ) {
         Column {
             content()
@@ -220,42 +218,43 @@ private fun SettingsToggleRow(
     title: String,
     subtitle: String,
     isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!isChecked) }
-            .padding(16.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable { onCheckedChange(!isChecked) }
+                .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
                 )
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
         Switch(
             checked = isChecked,
-            onCheckedChange = onCheckedChange
+            onCheckedChange = onCheckedChange,
         )
     }
 }
@@ -265,33 +264,34 @@ private fun SettingsNavigationRow(
     icon: ImageVector,
     title: String,
     iconTint: Color = MaterialTheme.colorScheme.primary,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = iconTint,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
             )
         }
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

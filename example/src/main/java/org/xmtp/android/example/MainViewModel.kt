@@ -110,8 +110,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private suspend fun fetchMostRecentMessage(conversation: Conversation): DecodedMessage? =
-        conversation.lastMessage()
+    private suspend fun fetchMostRecentMessage(conversation: Conversation): DecodedMessage? = conversation.lastMessage()
 
     private suspend fun getConversationDisplayInfo(conversation: Conversation): Pair<String, String?> =
         when (conversation) {
@@ -120,6 +119,7 @@ class MainViewModel : ViewModel() {
                 val displayName = if (groupName.isNotBlank()) groupName else conversation.id
                 Pair(displayName, null)
             }
+
             is Conversation.Dm -> {
                 val peerInboxId = conversation.dm.peerInboxId
                 val members = conversation.dm.members()

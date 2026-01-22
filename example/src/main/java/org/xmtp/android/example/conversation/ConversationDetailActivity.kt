@@ -366,6 +366,7 @@ class ConversationDetailActivity :
                             if (content.startsWith("Replied with")) return@mapNotNull null
                             content
                         }
+
                         is Reply -> {
                             // For replies, extract the actual reply text (not "Replied with...")
                             when (val replyContent = content.content) {
@@ -373,6 +374,7 @@ class ConversationDetailActivity :
                                 else -> return@mapNotNull null
                             }
                         }
+
                         else -> return@mapNotNull null
                     }
 
@@ -433,12 +435,14 @@ class ConversationDetailActivity :
                                         else -> "Message"
                                     }
                                 }
+
                                 is org.xmtp.android.library.codecs.Attachment -> {
                                     // Show image thumbnail for attachments
                                     if (content.mimeType.startsWith("image/")) {
                                         try {
                                             val bytes = content.data.toByteArray()
-                                            val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                                            val bitmap =
+                                                android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                                             binding.replyPreviewImage.setImageBitmap(bitmap)
                                             binding.replyPreviewImageContainer.visibility = View.VISIBLE
                                         } catch (e: Exception) {
@@ -449,6 +453,7 @@ class ConversationDetailActivity :
                                         "Attachment"
                                     }
                                 }
+
                                 else -> message.fallbackText ?: "Message"
                             }
                         binding.replyPreviewText.text = messageText
@@ -490,12 +495,14 @@ class ConversationDetailActivity :
                                         else -> message.fallbackText ?: "Message"
                                     }
                                 }
+
                                 is org.xmtp.android.library.codecs.Attachment -> {
                                     // Show image thumbnail for attachments being edited
                                     if (content.mimeType.startsWith("image/")) {
                                         try {
                                             val bytes = content.data.toByteArray()
-                                            val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                                            val bitmap =
+                                                android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                                             binding.editPreviewImage.setImageBitmap(bitmap)
                                             binding.editPreviewImageContainer.visibility = View.VISIBLE
                                         } catch (e: Exception) {
@@ -506,6 +513,7 @@ class ConversationDetailActivity :
                                         "Attachment"
                                     }
                                 }
+
                                 else -> message.fallbackText ?: "Message"
                             }
                         binding.editPreviewText.text = messageText
@@ -589,6 +597,7 @@ class ConversationDetailActivity :
                                     .uppercase()
                             binding.headerAvatarText.text = avatarText
                         }
+
                         is Conversation.Dm -> {
                             // Get the peer's info for DMs
                             val members = withContext(Dispatchers.IO) { conv.dm.members() }
@@ -630,11 +639,13 @@ class ConversationDetailActivity :
                     startActivity(GroupManagementActivity.intent(this, topic))
                 }
             }
+
             Conversation.Type.DM -> {
                 peerWalletAddress?.let { address ->
                     startActivity(UserProfileActivity.intent(this, address, peerInboxId))
                 }
             }
+
             null -> {
                 // Conversation info not loaded yet
                 Toast.makeText(this, R.string.loading, Toast.LENGTH_SHORT).show()
@@ -708,11 +719,14 @@ class ConversationDetailActivity :
                     binding.list.smoothScrollToPosition(0)
                 }
             }
+
             is ConversationDetailViewModel.StreamedMessageResult.RefreshNeeded -> {
                 // A delete message was received, refresh the list to show updated state
                 viewModel.fetchMessages()
             }
-            null -> { /* ignore */ }
+
+            null -> { /* ignore */
+            }
         }
     }
 
@@ -866,9 +880,11 @@ class ConversationDetailActivity :
                 is ConversationDetailViewModel.ReactionState.Error -> {
                     showError(result.message)
                 }
+
                 ConversationDetailViewModel.ReactionState.Success -> {
                     viewModel.fetchMessages()
                 }
+
                 else -> {}
             }
         }
@@ -883,9 +899,11 @@ class ConversationDetailActivity :
                 is ConversationDetailViewModel.ReactionState.Error -> {
                     showError(result.message)
                 }
+
                 ConversationDetailViewModel.ReactionState.Success -> {
                     viewModel.fetchMessages()
                 }
+
                 else -> {}
             }
         }
@@ -909,18 +927,22 @@ class ConversationDetailActivity :
                     showError(removeResult.message)
                     return@launch
                 }
+
                 ConversationDetailViewModel.ReactionState.Success -> {
                     // Only after successful removal, add the new reaction
                     when (val addResult = viewModel.sendReaction(messageId, newEmoji, isRemoving = false)) {
                         is ConversationDetailViewModel.ReactionState.Error -> {
                             showError(addResult.message)
                         }
+
                         ConversationDetailViewModel.ReactionState.Success -> {
                             viewModel.fetchMessages()
                         }
+
                         else -> {}
                     }
                 }
+
                 else -> {}
             }
         }
@@ -1068,7 +1090,11 @@ class ConversationDetailActivity :
             Toast
                 .makeText(
                     this@ConversationDetailActivity,
-                    if (attachmentCount > 1) "Sending $attachmentCount attachments..." else getString(R.string.sending_attachment),
+                    if (attachmentCount > 1) {
+                        "Sending $attachmentCount attachments..."
+                    } else {
+                        getString(R.string.sending_attachment)
+                    },
                     Toast.LENGTH_SHORT,
                 ).show()
 
@@ -1095,9 +1121,11 @@ class ConversationDetailActivity :
                         is ConversationDetailViewModel.SendAttachmentState.Success -> {
                             successCount++
                         }
+
                         is ConversationDetailViewModel.SendAttachmentState.Error -> {
                             errorCount++
                         }
+
                         else -> {}
                     }
                 } catch (e: Exception) {
@@ -1110,7 +1138,11 @@ class ConversationDetailActivity :
                 Toast
                     .makeText(
                         this@ConversationDetailActivity,
-                        if (successCount > 0) "Sent $successCount attachments, $errorCount failed" else getString(R.string.attachment_error),
+                        if (successCount > 0) {
+                            "Sent $successCount attachments, $errorCount failed"
+                        } else {
+                            getString(R.string.attachment_error)
+                        },
                         Toast.LENGTH_SHORT,
                     ).show()
             }

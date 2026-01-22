@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -25,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -38,7 +37,7 @@ import org.xmtp.android.example.ui.theme.XMTPTheme
 enum class DeliveryStatus {
     SENDING,
     SENT,
-    FAILED
+    FAILED,
 }
 
 @Composable
@@ -55,20 +54,26 @@ fun MessageBubble(
     replyAuthor: String? = null,
     isDeleted: Boolean = false,
     onLongClick: () -> Unit = {},
-    onReplyClick: (() -> Unit)? = null
+    onReplyClick: (() -> Unit)? = null,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 2.dp),
-        horizontalArrangement = if (isMe) Arrangement.End else Arrangement.Start
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 2.dp),
+        horizontalArrangement = if (isMe) Arrangement.End else Arrangement.Start,
     ) {
         if (isMe) {
-            Spacer(modifier = Modifier.weight(1f, fill = false).widthIn(min = 60.dp))
+            Spacer(
+                modifier =
+                    Modifier
+                        .weight(1f, fill = false)
+                        .widthIn(min = 60.dp),
+            )
         }
 
         Column(
-            horizontalAlignment = if (isMe) Alignment.End else Alignment.Start
+            horizontalAlignment = if (isMe) Alignment.End else Alignment.Start,
         ) {
             // Sender name for group messages
             if (senderName != null && !isMe) {
@@ -77,7 +82,7 @@ fun MessageBubble(
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = senderColor ?: MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 12.dp, bottom = 2.dp)
+                    modifier = Modifier.padding(start = 12.dp, bottom = 2.dp),
                 )
             }
 
@@ -85,43 +90,54 @@ fun MessageBubble(
             Surface(
                 shape = RoundedCornerShape(18.dp),
                 color = if (isMe) SentMessageBackground else MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier
-                    .widthIn(max = 280.dp)
-                    .clickable(onClick = onLongClick)
+                modifier =
+                    Modifier
+                        .widthIn(max = 280.dp)
+                        .clickable(onClick = onLongClick),
             ) {
                 // Use IntrinsicSize.Max to ensure all children share the maximum width
                 // This makes the reply bubble at least as wide as the preview
                 Column(
-                    modifier = Modifier
-                        .width(IntrinsicSize.Max)
-                        .padding(
-                            horizontal = 12.dp,
-                            vertical = 8.dp
-                        )
+                    modifier =
+                        Modifier
+                            .width(IntrinsicSize.Max)
+                            .padding(
+                                horizontal = 12.dp,
+                                vertical = 8.dp,
+                            ),
                 ) {
                     // Reply preview
                     if (replyPreview != null) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = if (isMe) Color.White.copy(alpha = 0.15f)
-                                   else MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 4.dp)
-                                .clickable { onReplyClick?.invoke() }
+                            color =
+                                if (isMe) {
+                                    Color.White.copy(alpha = 0.15f)
+                                } else {
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+                                },
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 4.dp)
+                                    .clickable { onReplyClick?.invoke() },
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Box(
-                                    modifier = Modifier
-                                        .width(2.dp)
-                                        .size(2.dp, 24.dp)
-                                        .background(
-                                            if (isMe) Color.White.copy(alpha = 0.5f)
-                                            else MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                                        )
+                                    modifier =
+                                        Modifier
+                                            .width(2.dp)
+                                            .size(2.dp, 24.dp)
+                                            .background(
+                                                if (isMe) {
+                                                    Color.White.copy(alpha = 0.5f)
+                                                } else {
+                                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                                                },
+                                            ),
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Column {
@@ -130,16 +146,24 @@ fun MessageBubble(
                                             text = replyAuthor,
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = if (isMe) Color.White.copy(alpha = 0.8f)
-                                                   else MaterialTheme.colorScheme.primary
+                                            color =
+                                                if (isMe) {
+                                                    Color.White.copy(alpha = 0.8f)
+                                                } else {
+                                                    MaterialTheme.colorScheme.primary
+                                                },
                                         )
                                     }
                                     Text(
                                         text = replyPreview,
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = if (isMe) Color.White.copy(alpha = 0.7f)
-                                               else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 2
+                                        color =
+                                            if (isMe) {
+                                                Color.White.copy(alpha = 0.7f)
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                            },
+                                        maxLines = 2,
                                     )
                                 }
                             }
@@ -152,45 +176,55 @@ fun MessageBubble(
                         style = MaterialTheme.typography.bodyLarge,
                         color = if (isMe) Color.White else MaterialTheme.colorScheme.onSurface,
                         fontStyle = if (isDeleted) FontStyle.Italic else FontStyle.Normal,
-                        modifier = if (replyPreview != null) Modifier.fillMaxWidth() else Modifier
+                        modifier = if (replyPreview != null) Modifier.fillMaxWidth() else Modifier,
                     )
 
                     // Timestamp and delivery status
                     Row(
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .padding(top = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier =
+                            Modifier
+                                .align(Alignment.End)
+                                .padding(top = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             text = timestamp,
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (isMe) Color.White.copy(alpha = 0.7f)
-                                   else MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 11.sp
+                            color =
+                                if (isMe) {
+                                    Color.White.copy(alpha = 0.7f)
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                            fontSize = 11.sp,
                         )
 
                         if (isMe) {
                             Spacer(modifier = Modifier.width(4.dp))
                             when (deliveryStatus) {
-                                DeliveryStatus.SENDING -> Icon(
-                                    imageVector = Icons.Default.Schedule,
-                                    contentDescription = "Sending",
-                                    modifier = Modifier.size(12.dp),
-                                    tint = Color.White.copy(alpha = 0.7f)
-                                )
-                                DeliveryStatus.SENT -> Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "Sent",
-                                    modifier = Modifier.size(12.dp),
-                                    tint = Color.White.copy(alpha = 0.7f)
-                                )
-                                DeliveryStatus.FAILED -> Icon(
-                                    imageVector = Icons.Default.Error,
-                                    contentDescription = "Failed",
-                                    modifier = Modifier.size(12.dp),
-                                    tint = Color.Red
-                                )
+                                DeliveryStatus.SENDING ->
+                                    Icon(
+                                        imageVector = Icons.Default.Schedule,
+                                        contentDescription = "Sending",
+                                        modifier = Modifier.size(12.dp),
+                                        tint = Color.White.copy(alpha = 0.7f),
+                                    )
+
+                                DeliveryStatus.SENT ->
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = "Sent",
+                                        modifier = Modifier.size(12.dp),
+                                        tint = Color.White.copy(alpha = 0.7f),
+                                    )
+
+                                DeliveryStatus.FAILED ->
+                                    Icon(
+                                        imageVector = Icons.Default.Error,
+                                        contentDescription = "Failed",
+                                        modifier = Modifier.size(12.dp),
+                                        tint = Color.Red,
+                                    )
                             }
                         }
                     }
@@ -201,16 +235,16 @@ fun MessageBubble(
             if (!reactions.isNullOrEmpty()) {
                 Row(
                     modifier = Modifier.padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     reactions.take(5).forEach { (emoji, count) ->
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
+                            color = MaterialTheme.colorScheme.surfaceVariant,
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Text(text = emoji, fontSize = 14.sp)
                                 if (count > 1) {
@@ -218,7 +252,7 @@ fun MessageBubble(
                                     Text(
                                         text = count.toString(),
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
                             }
@@ -229,7 +263,12 @@ fun MessageBubble(
         }
 
         if (!isMe) {
-            Spacer(modifier = Modifier.weight(1f, fill = false).widthIn(min = 60.dp))
+            Spacer(
+                modifier =
+                    Modifier
+                        .weight(1f, fill = false)
+                        .widthIn(min = 60.dp),
+            )
         }
     }
 }
@@ -237,23 +276,24 @@ fun MessageBubble(
 @Composable
 fun SystemMessage(
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
         ) {
             Text(
                 text = text,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             )
         }
     }
@@ -266,7 +306,7 @@ private fun SentMessagePreview() {
         MessageBubble(
             message = "Hello! How are you doing today?",
             timestamp = "10:30 AM",
-            isMe = true
+            isMe = true,
         )
     }
 }
@@ -280,7 +320,7 @@ private fun ReceivedMessagePreview() {
             timestamp = "10:31 AM",
             isMe = false,
             senderName = "0x1234...5678",
-            senderColor = Color(0xFF5856D6)
+            senderColor = Color(0xFF5856D6),
         )
     }
 }
@@ -293,7 +333,7 @@ private fun MessageWithReactionsPreview() {
             message = "This is awesome!",
             timestamp = "10:32 AM",
             isMe = true,
-            reactions = listOf("👍" to 3, "❤️" to 2)
+            reactions = listOf("👍" to 3, "❤️" to 2),
         )
     }
 }
@@ -307,7 +347,7 @@ private fun ReplyMessagePreview() {
             timestamp = "10:33 AM",
             isMe = false,
             replyPreview = "This is the original message that was very long...",
-            replyAuthor = "0x1234...5678"
+            replyAuthor = "0x1234...5678",
         )
     }
 }
@@ -320,7 +360,7 @@ private fun DeletedMessagePreview() {
             message = "",
             timestamp = "10:34 AM",
             isMe = true,
-            isDeleted = true
+            isDeleted = true,
         )
     }
 }

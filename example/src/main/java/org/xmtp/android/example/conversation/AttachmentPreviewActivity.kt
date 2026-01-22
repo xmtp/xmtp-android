@@ -7,13 +7,11 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.text.format.Formatter
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
-import androidx.viewpager2.widget.ViewPager2
 import org.xmtp.android.example.R
 import org.xmtp.android.example.databinding.ActivityAttachmentPreviewBinding
 
@@ -22,7 +20,6 @@ import org.xmtp.android.example.databinding.ActivityAttachmentPreviewBinding
  * Shows selected attachments with caption input before sending.
  */
 class AttachmentPreviewActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityAttachmentPreviewBinding
 
     private val attachmentUris = mutableListOf<Uri>()
@@ -34,11 +31,13 @@ class AttachmentPreviewActivity : AppCompatActivity() {
         const val RESULT_ATTACHMENTS = "result_attachments"
         const val RESULT_CAPTIONS = "result_captions"
 
-        fun intent(context: Context, uris: List<Uri>): Intent {
-            return Intent(context, AttachmentPreviewActivity::class.java).apply {
+        fun intent(
+            context: Context,
+            uris: List<Uri>,
+        ): Intent =
+            Intent(context, AttachmentPreviewActivity::class.java).apply {
                 putParcelableArrayListExtra(EXTRA_ATTACHMENT_URIS, ArrayList(uris))
             }
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,12 +69,16 @@ class AttachmentPreviewActivity : AppCompatActivity() {
             // Save current caption before sending
             saveCaptionForCurrentIndex()
 
-            val resultIntent = Intent().apply {
-                putParcelableArrayListExtra(RESULT_ATTACHMENTS, ArrayList(attachmentUris))
-                putStringArrayListExtra(RESULT_CAPTIONS, ArrayList(
-                    attachmentUris.indices.map { captions[it] ?: "" }
-                ))
-            }
+            val resultIntent =
+                Intent().apply {
+                    putParcelableArrayListExtra(RESULT_ATTACHMENTS, ArrayList(attachmentUris))
+                    putStringArrayListExtra(
+                        RESULT_CAPTIONS,
+                        ArrayList(
+                            attachmentUris.indices.map { captions[it] ?: "" },
+                        ),
+                    )
+                }
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
         }
@@ -113,32 +116,37 @@ class AttachmentPreviewActivity : AppCompatActivity() {
         updateThumbnailSelection(0)
     }
 
-    private fun createThumbnailView(uri: Uri, index: Int): View {
+    private fun createThumbnailView(
+        uri: Uri,
+        index: Int,
+    ): View {
         val thumbnailSize = resources.getDimensionPixelSize(R.dimen.thumbnail_size)
-        val imageView = ImageView(this).apply {
-            layoutParams = android.widget.LinearLayout.LayoutParams(thumbnailSize, thumbnailSize).apply {
-                marginEnd = 8
-            }
-            scaleType = ImageView.ScaleType.CENTER_CROP
-            setBackgroundResource(R.drawable.thumbnail_border)
-            setPadding(4, 4, 4, 4)
+        val imageView =
+            ImageView(this).apply {
+                layoutParams =
+                    android.widget.LinearLayout.LayoutParams(thumbnailSize, thumbnailSize).apply {
+                        marginEnd = 8
+                    }
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                setBackgroundResource(R.drawable.thumbnail_border)
+                setPadding(4, 4, 4, 4)
 
-            // Load thumbnail
-            try {
-                contentResolver.openInputStream(uri)?.use { inputStream ->
-                    val bitmap = BitmapFactory.decodeStream(inputStream)
-                    setImageBitmap(bitmap)
+                // Load thumbnail
+                try {
+                    contentResolver.openInputStream(uri)?.use { inputStream ->
+                        val bitmap = BitmapFactory.decodeStream(inputStream)
+                        setImageBitmap(bitmap)
+                    }
+                } catch (e: Exception) {
+                    setImageResource(R.drawable.ic_attach_file_24)
                 }
-            } catch (e: Exception) {
-                setImageResource(R.drawable.ic_attach_file_24)
-            }
 
-            setOnClickListener {
-                saveCaptionForCurrentIndex()
-                displayAttachment(index)
-                updateThumbnailSelection(index)
+                setOnClickListener {
+                    saveCaptionForCurrentIndex()
+                    displayAttachment(index)
+                    updateThumbnailSelection(index)
+                }
             }
-        }
         imageView.tag = index
         return imageView
     }
@@ -192,12 +200,13 @@ class AttachmentPreviewActivity : AppCompatActivity() {
             binding.fileSize.text = Formatter.formatFileSize(this, fileSize)
 
             // Set appropriate icon based on mime type
-            val iconRes = when {
-                mimeType.startsWith("video/") -> R.drawable.ic_video_24
-                mimeType.startsWith("audio/") -> R.drawable.ic_audio_24
-                mimeType == "application/pdf" -> R.drawable.ic_pdf_24
-                else -> R.drawable.ic_attach_file_24
-            }
+            val iconRes =
+                when {
+                    mimeType.startsWith("video/") -> R.drawable.ic_video_24
+                    mimeType.startsWith("audio/") -> R.drawable.ic_audio_24
+                    mimeType == "application/pdf" -> R.drawable.ic_pdf_24
+                    else -> R.drawable.ic_attach_file_24
+                }
             binding.fileIcon.setImageResource(iconRes)
         }
 

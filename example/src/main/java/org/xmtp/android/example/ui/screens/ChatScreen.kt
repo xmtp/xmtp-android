@@ -1,15 +1,12 @@
 package org.xmtp.android.example.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -62,7 +59,7 @@ data class MessageItem(
     val replyPreview: String? = null,
     val replyAuthor: String? = null,
     val isDeleted: Boolean = false,
-    val isSystemMessage: Boolean = false
+    val isSystemMessage: Boolean = false,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,7 +80,7 @@ fun ChatScreen(
     onCancelReply: () -> Unit = {},
     onMessageLongClick: (String) -> Unit = {},
     onReplyClick: (String) -> Unit = {},
-    onScrollToMessage: (String) -> Unit = {}
+    onScrollToMessage: (String) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     var messageText by rememberSaveable { mutableStateOf("") }
@@ -100,17 +97,16 @@ fun ChatScreen(
                 messages
                     .filter { msg ->
                         !msg.isSystemMessage &&
-                        !msg.isDeleted &&
-                        msg.content.isNotEmpty() &&
-                        msg.content.lowercase().contains(lowercaseSearch)
-                    }
-                    .map { msg ->
+                            !msg.isDeleted &&
+                            msg.content.isNotEmpty() &&
+                            msg.content.lowercase().contains(lowercaseSearch)
+                    }.map { msg ->
                         SearchResult(
                             id = msg.id,
                             senderName = msg.senderName ?: "You",
                             content = msg.content,
                             timestamp = msg.timestamp,
-                            isDeleted = msg.isDeleted
+                            isDeleted = msg.isDeleted,
                         )
                     }
             }
@@ -135,13 +131,13 @@ fun ChatScreen(
                                 text = conversationName,
                                 style = MaterialTheme.typography.titleMedium,
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
                             )
                             if (isGroup && memberCount != null) {
                                 Text(
                                     text = "$memberCount members",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
                         }
@@ -150,7 +146,7 @@ fun ChatScreen(
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
+                                contentDescription = "Back",
                             )
                         }
                     },
@@ -158,21 +154,22 @@ fun ChatScreen(
                         IconButton(onClick = { isSearching = !isSearching }) {
                             Icon(
                                 imageVector = Icons.Default.Search,
-                                contentDescription = "Search"
+                                contentDescription = "Search",
                             )
                         }
                         if (isGroup) {
                             IconButton(onClick = onInfoClick) {
                                 Icon(
                                     imageVector = Icons.Default.Info,
-                                    contentDescription = "Group Info"
+                                    contentDescription = "Group Info",
                                 )
                             }
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
+                    colors =
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                        ),
                 )
 
                 // Search bar
@@ -180,7 +177,7 @@ fun ChatScreen(
                     searchText = searchText,
                     onSearchTextChange = { searchText = it },
                     isSearching = isSearching,
-                    onSearchToggle = { isSearching = it }
+                    onSearchToggle = { isSearching = it },
                 )
             }
         },
@@ -188,7 +185,7 @@ fun ChatScreen(
             AnimatedVisibility(
                 visible = !isSearching,
                 enter = slideInVertically { it },
-                exit = slideOutVertically { it }
+                exit = slideOutVertically { it },
             ) {
                 MessageComposer(
                     value = messageText,
@@ -203,19 +200,20 @@ fun ChatScreen(
                     replyAuthor = replyingTo?.senderName,
                     onClearReply = onCancelReply,
                     onAttachmentClick = onAttachmentClick,
-                    onEmojiClick = onEmojiClick
+                    onEmojiClick = onEmojiClick,
                 )
             }
-        }
+        },
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier.align(Alignment.Center),
                 )
             } else if (isSearching && searchText.isNotEmpty()) {
                 // Show search results
@@ -233,18 +231,18 @@ fun ChatScreen(
                         if (index >= 0) {
                             // Using launched effect won't work here, so we handle it via callback
                         }
-                    }
+                    },
                 )
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     state = listState,
                     contentPadding = PaddingValues(vertical = 8.dp),
-                    reverseLayout = false
+                    reverseLayout = false,
                 ) {
                     items(
                         items = messages,
-                        key = { it.id }
+                        key = { it.id },
                     ) { message ->
                         if (message.isSystemMessage) {
                             SystemMessage(text = message.content)
@@ -261,7 +259,7 @@ fun ChatScreen(
                                 replyAuthor = message.replyAuthor,
                                 isDeleted = message.isDeleted,
                                 onLongClick = { onMessageLongClick(message.id) },
-                                onReplyClick = { onReplyClick(message.id) }
+                                onReplyClick = { onReplyClick(message.id) },
                             )
                         }
                     }
@@ -277,35 +275,36 @@ private fun ChatScreenPreview() {
     XMTPTheme {
         ChatScreen(
             conversationName = "0x1234...5678",
-            messages = listOf(
-                MessageItem(
-                    id = "1",
-                    content = "Hey! How are you?",
-                    timestamp = "10:30 AM",
-                    isMe = false,
-                    senderName = "0x1234...5678"
+            messages =
+                listOf(
+                    MessageItem(
+                        id = "1",
+                        content = "Hey! How are you?",
+                        timestamp = "10:30 AM",
+                        isMe = false,
+                        senderName = "0x1234...5678",
+                    ),
+                    MessageItem(
+                        id = "2",
+                        content = "I'm doing great! Just shipped a new feature.",
+                        timestamp = "10:31 AM",
+                        isMe = true,
+                    ),
+                    MessageItem(
+                        id = "3",
+                        content = "That's awesome! Can you show me?",
+                        timestamp = "10:32 AM",
+                        isMe = false,
+                        senderName = "0x1234...5678",
+                    ),
+                    MessageItem(
+                        id = "4",
+                        content = "Sure, let me send you a screenshot!",
+                        timestamp = "10:33 AM",
+                        isMe = true,
+                        reactions = listOf("👍" to 1, "🔥" to 2),
+                    ),
                 ),
-                MessageItem(
-                    id = "2",
-                    content = "I'm doing great! Just shipped a new feature.",
-                    timestamp = "10:31 AM",
-                    isMe = true
-                ),
-                MessageItem(
-                    id = "3",
-                    content = "That's awesome! Can you show me?",
-                    timestamp = "10:32 AM",
-                    isMe = false,
-                    senderName = "0x1234...5678"
-                ),
-                MessageItem(
-                    id = "4",
-                    content = "Sure, let me send you a screenshot!",
-                    timestamp = "10:33 AM",
-                    isMe = true,
-                    reactions = listOf("👍" to 1, "🔥" to 2)
-                )
-            )
         )
     }
 }
@@ -318,37 +317,38 @@ private fun GroupChatScreenPreview() {
             conversationName = "XMTP Dev Team",
             isGroup = true,
             memberCount = 5,
-            messages = listOf(
-                MessageItem(
-                    id = "sys1",
-                    content = "Alice joined the group",
-                    timestamp = "",
-                    isMe = false,
-                    isSystemMessage = true
+            messages =
+                listOf(
+                    MessageItem(
+                        id = "sys1",
+                        content = "Alice joined the group",
+                        timestamp = "",
+                        isMe = false,
+                        isSystemMessage = true,
+                    ),
+                    MessageItem(
+                        id = "1",
+                        content = "Welcome to the team!",
+                        timestamp = "10:30 AM",
+                        isMe = false,
+                        senderName = "Bob",
+                        senderColor = Color(0xFF5856D6),
+                    ),
+                    MessageItem(
+                        id = "2",
+                        content = "Thanks! Excited to be here.",
+                        timestamp = "10:31 AM",
+                        isMe = true,
+                    ),
+                    MessageItem(
+                        id = "3",
+                        content = "Let's ship some features!",
+                        timestamp = "10:32 AM",
+                        isMe = false,
+                        senderName = "Charlie",
+                        senderColor = Color(0xFFFF9500),
+                    ),
                 ),
-                MessageItem(
-                    id = "1",
-                    content = "Welcome to the team!",
-                    timestamp = "10:30 AM",
-                    isMe = false,
-                    senderName = "Bob",
-                    senderColor = Color(0xFF5856D6)
-                ),
-                MessageItem(
-                    id = "2",
-                    content = "Thanks! Excited to be here.",
-                    timestamp = "10:31 AM",
-                    isMe = true
-                ),
-                MessageItem(
-                    id = "3",
-                    content = "Let's ship some features!",
-                    timestamp = "10:32 AM",
-                    isMe = false,
-                    senderName = "Charlie",
-                    senderColor = Color(0xFFFF9500)
-                )
-            )
         )
     }
 }
@@ -359,28 +359,30 @@ private fun ChatWithReplyPreview() {
     XMTPTheme {
         ChatScreen(
             conversationName = "Alice",
-            messages = listOf(
+            messages =
+                listOf(
+                    MessageItem(
+                        id = "1",
+                        content = "Hey, did you see the new update?",
+                        timestamp = "10:30 AM",
+                        isMe = false,
+                    ),
+                    MessageItem(
+                        id = "2",
+                        content = "Yes! It looks amazing!",
+                        timestamp = "10:31 AM",
+                        isMe = true,
+                        replyPreview = "Hey, did you see the new update?",
+                        replyAuthor = "Alice",
+                    ),
+                ),
+            replyingTo =
                 MessageItem(
                     id = "1",
                     content = "Hey, did you see the new update?",
                     timestamp = "10:30 AM",
-                    isMe = false
+                    isMe = false,
                 ),
-                MessageItem(
-                    id = "2",
-                    content = "Yes! It looks amazing!",
-                    timestamp = "10:31 AM",
-                    isMe = true,
-                    replyPreview = "Hey, did you see the new update?",
-                    replyAuthor = "Alice"
-                )
-            ),
-            replyingTo = MessageItem(
-                id = "1",
-                content = "Hey, did you see the new update?",
-                timestamp = "10:30 AM",
-                isMe = false
-            )
         )
     }
 }

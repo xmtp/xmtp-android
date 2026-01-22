@@ -62,6 +62,7 @@ class MainActivity :
     companion object {
         private const val PREFS_NAME = "XMTPPreferences"
         private const val KEY_LOGS_ACTIVATED = "logs_activated"
+
         // Push notification server - configured via build variants in production
         private const val DEFAULT_PUSH_SERVER = "10.0.2.2:8080"
     }
@@ -129,10 +130,12 @@ class MainActivity :
                         is ClientManager.ClientState.Error -> {
                             retryCreateClientWithBackoff()
                         }
+
                         is ClientManager.ClientState.Ready -> {
                             retryJob?.cancel()
                             retryJob = null
                         }
+
                         else -> Unit
                     }
                 }
@@ -179,30 +182,37 @@ class MainActivity :
             R.id.nav_wallet_info -> {
                 openWalletInfoBottomSheet()
             }
+
             R.id.nav_new_conversation -> {
                 openNewConversation()
             }
+
             R.id.nav_new_group -> {
                 openNewConversation()
             }
+
             R.id.nav_view_logs -> {
                 openLogsViewer()
             }
+
             R.id.nav_toggle_logs -> {
                 val newState = !item.isChecked
                 item.isChecked = newState
                 onLogsToggled(newState)
                 return true // Don't close drawer for toggle
             }
+
             R.id.nav_hide_deleted_messages -> {
                 val newState = !item.isChecked
                 item.isChecked = newState
                 onHideDeletedMessagesToggled(newState)
                 return true // Don't close drawer for toggle
             }
+
             R.id.nav_copy_address -> {
                 copyWalletAddress()
             }
+
             R.id.nav_disconnect -> {
                 disconnectWallet()
             }
@@ -295,6 +305,7 @@ class MainActivity :
                 binding.fab.visibility = View.VISIBLE
                 updateDrawerHeader()
             }
+
             is ClientManager.ClientState.Error -> {
                 Timber.e("ensureClientState: Error - ${clientState.message}")
                 // If there's no wallet key, clear the account and redirect to sign-in
@@ -308,6 +319,7 @@ class MainActivity :
                     showError(clientState.message)
                 }
             }
+
             is ClientManager.ClientState.Unknown -> {
                 Timber.d("ensureClientState: Unknown")
             }
@@ -330,7 +342,9 @@ class MainActivity :
 
     private fun handleMessageUpdate(update: MainViewModel.MessageUpdate?) {
         update?.let {
-            val contentType = it.message.encodedContent.type?.typeId
+            val contentType =
+                it.message.encodedContent.type
+                    ?.typeId
             // For edit/delete messages, refresh the full conversation to get updated enriched content
             if (contentType == "editMessage" || contentType == "deleteMessage") {
                 viewModel.fetchConversations()
@@ -350,10 +364,12 @@ class MainActivity :
                     adapter.setData(uiState.listItems)
                 }
             }
+
             is MainViewModel.UiState.Success -> {
                 binding.refresh.isRefreshing = false
                 adapter.setData(uiState.listItems)
             }
+
             is MainViewModel.UiState.Error -> {
                 binding.refresh.isRefreshing = false
                 showError(uiState.message)
