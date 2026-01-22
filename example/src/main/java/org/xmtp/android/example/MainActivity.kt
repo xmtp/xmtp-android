@@ -178,17 +178,31 @@ class MainActivity :
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        val isClientReady = ClientManager.clientState.value is ClientManager.ClientState.Ready
+
         when (item.itemId) {
             R.id.nav_wallet_info -> {
-                openWalletInfoBottomSheet()
+                if (isClientReady) {
+                    openWalletInfoBottomSheet()
+                } else {
+                    Toast.makeText(this, "Client not ready", Toast.LENGTH_SHORT).show()
+                }
             }
 
             R.id.nav_new_conversation -> {
-                openNewConversation()
+                if (isClientReady) {
+                    openNewConversation()
+                } else {
+                    Toast.makeText(this, "Client not ready", Toast.LENGTH_SHORT).show()
+                }
             }
 
             R.id.nav_new_group -> {
-                openNewConversation()
+                if (isClientReady) {
+                    openNewConversation()
+                } else {
+                    Toast.makeText(this, "Client not ready", Toast.LENGTH_SHORT).show()
+                }
             }
 
             R.id.nav_view_logs -> {
@@ -210,11 +224,26 @@ class MainActivity :
             }
 
             R.id.nav_copy_address -> {
-                copyWalletAddress()
+                if (isClientReady) {
+                    copyWalletAddress()
+                } else {
+                    Toast.makeText(this, "Client not ready", Toast.LENGTH_SHORT).show()
+                }
             }
 
             R.id.nav_disconnect -> {
-                disconnectWallet()
+                if (isClientReady) {
+                    disconnectWallet()
+                } else {
+                    // Still allow disconnect to clear broken state
+                    ClientManager.clearClient()
+                    PushNotificationTokenManager.clearXMTPPush()
+                    val accounts = accountManager.getAccountsByType(resources.getString(R.string.account_type))
+                    accounts.forEach { account ->
+                        accountManager.removeAccount(account, null, null, null)
+                    }
+                    showSignIn()
+                }
             }
         }
         binding.drawerLayout.closeDrawer(GravityCompat.START)
@@ -223,7 +252,7 @@ class MainActivity :
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+        if (::binding.isInitialized && binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             binding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             @Suppress("DEPRECATION")
@@ -343,7 +372,8 @@ class MainActivity :
     private fun handleMessageUpdate(update: MainViewModel.MessageUpdate?) {
         update?.let {
             val contentType =
-                it.message.encodedContent.type
+                it.message.encodedContent
+                    ?.type
                     ?.typeId
             // For edit/delete messages, refresh the full conversation to get updated enriched content
             if (contentType == "editMessage" || contentType == "deleteMessage") {

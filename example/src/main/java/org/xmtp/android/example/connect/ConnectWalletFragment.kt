@@ -102,6 +102,7 @@ class ConnectWalletFragment : Fragment() {
         when (binding.environmentSpinner.selectedItemPosition) {
             0 -> XMTPEnvironment.DEV
             1 -> XMTPEnvironment.PRODUCTION
+            2 -> XMTPEnvironment.LOCAL
             else -> XMTPEnvironment.DEV
         }
 

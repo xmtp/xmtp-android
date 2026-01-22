@@ -13,6 +13,7 @@
     <string-array name="environment_options">
         <item>Dev</item>
         <item>Production</item>
+        <item>Local</item>
     </string-array>
     <string name="select_log_level">Log Level</string>
     <string-array name="log_level_options">

@@ -149,7 +149,10 @@ class MainViewModel : ViewModel() {
                             displayName = displayName,
                             peerAddress = peerAddress,
                         )
-                    }.catch { emptyFlow<MainListItem?>() }
+                    }.catch { e ->
+                        Timber.e(e, "Error in conversation stream")
+                        emit(null)
+                    }
             }.flowOn(Dispatchers.IO)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
 
@@ -164,7 +167,10 @@ class MainViewModel : ViewModel() {
                     .streamAllMessages()
                     .map<DecodedMessage, MessageUpdate?> { message ->
                         MessageUpdate(message.topic, message)
-                    }.catch { emptyFlow<MessageUpdate?>() }
+                    }.catch { e ->
+                        Timber.e(e, "Error in message stream")
+                        emit(null)
+                    }
             }.flowOn(Dispatchers.IO)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
 

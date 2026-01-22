@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.format.Formatter
 import android.view.View
@@ -45,8 +46,14 @@ class AttachmentPreviewActivity : AppCompatActivity() {
         binding = ActivityAttachmentPreviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Get attachment URIs from intent
-        val uris = intent.getParcelableArrayListExtra<Uri>(EXTRA_ATTACHMENT_URIS)
+        // Get attachment URIs from intent (API 33+ compatible)
+        val uris =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableArrayListExtra(EXTRA_ATTACHMENT_URIS, Uri::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getParcelableArrayListExtra(EXTRA_ATTACHMENT_URIS)
+            }
         if (uris.isNullOrEmpty()) {
             finish()
             return
@@ -131,12 +138,20 @@ class AttachmentPreviewActivity : AppCompatActivity() {
                 setBackgroundResource(R.drawable.thumbnail_border)
                 setPadding(4, 4, 4, 4)
 
-                // Load thumbnail
+                // Load thumbnail with downsampling to prevent OOM
                 try {
                     contentResolver.openInputStream(uri)?.use { inputStream ->
-                        val bitmap = BitmapFactory.decodeStream(inputStream)
-                        setImageBitmap(bitmap)
-                    }
+                        val options =
+                            BitmapFactory.Options().apply {
+                                inSampleSize = 4 // Downsample for thumbnails
+                            }
+                        val bitmap = BitmapFactory.decodeStream(inputStream, null, options)
+                        if (bitmap != null) {
+                            setImageBitmap(bitmap)
+                        } else {
+                            setImageResource(R.drawable.ic_attach_file_24)
+                        }
+                    } ?: setImageResource(R.drawable.ic_attach_file_24)
                 } catch (e: Exception) {
                     setImageResource(R.drawable.ic_attach_file_24)
                 }
@@ -182,7 +197,19 @@ class AttachmentPreviewActivity : AppCompatActivity() {
             try {
                 contentResolver.openInputStream(uri)?.use { inputStream ->
                     val bitmap = BitmapFactory.decodeStream(inputStream)
-                    binding.singleImageView.setImageBitmap(bitmap)
+                    if (bitmap != null) {
+                        binding.singleImageView.setImageBitmap(bitmap)
+                    } else {
+                        // Fallback to file preview if bitmap decode fails
+                        binding.singleImageView.visibility = View.GONE
+                        binding.filePreviewContainer.visibility = View.VISIBLE
+                        binding.fileName.text = getFilename(uri)
+                        binding.fileSize.text = Formatter.formatFileSize(this, getFileSize(uri))
+                        binding.fileIcon.setImageResource(R.drawable.ic_attach_file_24)
+                        Toast.makeText(this, "Failed to load image preview", Toast.LENGTH_SHORT).show()
+                    }
+                } ?: run {
+                    Toast.makeText(this, "Failed to open image", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()

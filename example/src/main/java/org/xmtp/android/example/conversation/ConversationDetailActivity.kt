@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.view.View
@@ -63,7 +64,15 @@ class ConversationDetailActivity :
             ActivityResultContracts.StartActivityForResult(),
         ) { result ->
             if (result.resultCode == RESULT_OK) {
-                val uris = result.data?.getParcelableArrayListExtra<Uri>(AttachmentPreviewActivity.RESULT_ATTACHMENTS)
+                val uris = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    result.data?.getParcelableArrayListExtra(
+                        AttachmentPreviewActivity.RESULT_ATTACHMENTS,
+                        Uri::class.java,
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    result.data?.getParcelableArrayListExtra(AttachmentPreviewActivity.RESULT_ATTACHMENTS)
+                }
                 if (!uris.isNullOrEmpty()) {
                     sendAttachments(uris)
                 }
@@ -125,6 +134,8 @@ class ConversationDetailActivity :
     companion object {
         const val EXTRA_CONVERSATION_TOPIC = "EXTRA_CONVERSATION_TOPIC"
         private const val EXTRA_PEER_ADDRESS = "EXTRA_PEER_ADDRESS"
+        private const val KEY_SHOULD_SCROLL = "should_scroll_after_fetch"
+        private const val KEY_CAMERA_URI = "camera_image_uri"
 
         fun intent(
             context: Context,
@@ -140,6 +151,17 @@ class ConversationDetailActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.setConversationTopic(intent.extras?.getString(EXTRA_CONVERSATION_TOPIC))
+
+        // Restore state from saved instance
+        savedInstanceState?.let {
+            shouldScrollAfterFetch = it.getBoolean(KEY_SHOULD_SCROLL, false)
+            cameraImageUri = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                it.getParcelable(KEY_CAMERA_URI, Uri::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                it.getParcelable(KEY_CAMERA_URI)
+            }
+        }
 
         // Load and apply user preferences for hide deleted messages
         val keyUtil = org.xmtp.android.example.utils.KeyUtil(this)
@@ -657,6 +679,12 @@ class ConversationDetailActivity :
         super.onResume()
         // Reload conversation info in case something changed (e.g., group name updated)
         loadConversationInfo()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(KEY_SHOULD_SCROLL, shouldScrollAfterFetch)
+        cameraImageUri?.let { outState.putParcelable(KEY_CAMERA_URI, it) }
     }
 
     private fun ensureUiState(uiState: ConversationDetailViewModel.UiState) {

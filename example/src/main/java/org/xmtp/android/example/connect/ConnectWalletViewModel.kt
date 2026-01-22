@@ -19,7 +19,6 @@ import org.xmtp.android.example.ClientManager
 import org.xmtp.android.example.utils.KeyUtil
 import org.xmtp.android.library.Client
 import org.xmtp.android.library.XMTPEnvironment
-import org.xmtp.android.library.XMTPException
 import org.xmtp.android.library.messages.PrivateKeyBuilder
 import uniffi.xmtpv3.FfiLogLevel
 import uniffi.xmtpv3.FfiLogRotation
@@ -84,8 +83,8 @@ class ConnectWalletViewModel(
                     ConnectUiState.Success(
                         address,
                     )
-            } catch (e: XMTPException) {
-                _uiState.value = ConnectUiState.Error(e.message.orEmpty())
+            } catch (e: Exception) {
+                _uiState.value = ConnectUiState.Error(e.message ?: "Unknown error occurred")
             }
         }
     }

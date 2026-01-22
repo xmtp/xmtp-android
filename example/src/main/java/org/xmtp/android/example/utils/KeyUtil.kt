@@ -16,9 +16,11 @@ class KeyUtil(
 ) {
     private companion object {
         const val ENCRYPTED_PREFS_NAME = "EncryptedKeyPref"
+        const val LEGACY_PREFS_NAME = "EncryptionPref" // Old name for migration
         const val SETTINGS_PREFS = "SettingsPref"
         const val KEY_ENVIRONMENT = "xmtp_environment"
         const val KEY_HIDE_DELETED_MESSAGES = "hide_deleted_messages"
+        const val KEY_MIGRATION_COMPLETE = "migration_complete"
 
         // Key prefixes
         const val PREFIX_DB_KEY = "xmtp-dev-"
@@ -34,17 +36,74 @@ class KeyUtil(
 
     private val encryptedPrefs: SharedPreferences by lazy {
         try {
-            EncryptedSharedPreferences.create(
-                context,
-                ENCRYPTED_PREFS_NAME,
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-            )
+            val prefs =
+                EncryptedSharedPreferences.create(
+                    context,
+                    ENCRYPTED_PREFS_NAME,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+                )
+            // Migrate from legacy prefs if needed
+            migrateLegacyPrefsIfNeeded(prefs)
+            prefs
         } catch (e: Exception) {
             Timber.e(e, "Failed to create EncryptedSharedPreferences, falling back to regular prefs")
             // Fallback to regular SharedPreferences if encryption fails (e.g., on some devices)
             context.getSharedPreferences(ENCRYPTED_PREFS_NAME, Context.MODE_PRIVATE)
+        }
+    }
+
+    /**
+     * Migrate keys from the legacy SharedPreferences name to the new one.
+     * This prevents data loss for existing users when the prefs filename was changed.
+     */
+    private fun migrateLegacyPrefsIfNeeded(newPrefs: SharedPreferences) {
+        // Check if migration is already complete
+        if (newPrefs.getBoolean(KEY_MIGRATION_COMPLETE, false)) {
+            return
+        }
+
+        try {
+            // Try to open the legacy prefs
+            val legacyPrefs =
+                EncryptedSharedPreferences.create(
+                    context,
+                    LEGACY_PREFS_NAME,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+                )
+
+            // Copy all entries from legacy to new
+            val allEntries = legacyPrefs.all
+            if (allEntries.isNotEmpty()) {
+                Timber.d("Migrating ${allEntries.size} keys from legacy prefs")
+                val editor = newPrefs.edit()
+                for ((key, value) in allEntries) {
+                    when (value) {
+                        is String -> editor.putString(key, value)
+                        is Boolean -> editor.putBoolean(key, value)
+                        is Int -> editor.putInt(key, value)
+                        is Long -> editor.putLong(key, value)
+                        is Float -> editor.putFloat(key, value)
+                        is Set<*> -> {
+                            @Suppress("UNCHECKED_CAST")
+                            editor.putStringSet(key, value as Set<String>)
+                        }
+                    }
+                }
+                editor.putBoolean(KEY_MIGRATION_COMPLETE, true)
+                editor.apply()
+                Timber.d("Migration complete")
+            } else {
+                // No legacy data, mark migration as complete
+                newPrefs.edit().putBoolean(KEY_MIGRATION_COMPLETE, true).apply()
+            }
+        } catch (e: Exception) {
+            // Legacy prefs don't exist or can't be read - that's fine for new users
+            Timber.d("No legacy prefs to migrate: ${e.message}")
+            newPrefs.edit().putBoolean(KEY_MIGRATION_COMPLETE, true).apply()
         }
     }
 

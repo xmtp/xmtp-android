@@ -37,6 +37,7 @@ import org.xmtp.android.library.codecs.ReplyCodec
 import org.xmtp.android.library.codecs.TextCodec
 import org.xmtp.android.library.libxmtp.DecodedMessageV2
 import org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupUpdated
+import timber.log.Timber
 import org.xmtp.android.library.libxmtp.Reply as EnrichedReply
 
 class ConversationDetailViewModel(
@@ -175,8 +176,9 @@ class ConversationDetailViewModel(
                                 }
                             }
                         }
-                    }.catch { _ ->
-                        emptyFlow<StreamedMessageResult>()
+                    }.catch { e ->
+                        Timber.e(e, "Error in message stream")
+                        emit(null)
                     }
             } else {
                 emptyFlow()

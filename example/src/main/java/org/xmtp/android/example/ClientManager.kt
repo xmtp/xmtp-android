@@ -23,13 +23,27 @@ import org.xmtp.android.library.messages.PrivateKeyBuilder
 import timber.log.Timber
 import uniffi.xmtpv3.FfiLogLevel
 import java.security.SecureRandom
+import java.util.concurrent.atomic.AtomicReference
 
 object ClientManager {
-    var selectedEnvironment: XMTPEnvironment = XMTPEnvironment.DEV
-    var selectedLogLevel: FfiLogLevel? = null // null means Off
+    // Thread-safe environment and log level using AtomicReference
+    private val _selectedEnvironment = AtomicReference(XMTPEnvironment.DEV)
+    var selectedEnvironment: XMTPEnvironment
+        get() = _selectedEnvironment.get()
+        set(value) = _selectedEnvironment.set(value)
+
+    private val _selectedLogLevel = AtomicReference<FfiLogLevel?>(null)
+    var selectedLogLevel: FfiLogLevel?
+        get() = _selectedLogLevel.get()
+        set(value) = _selectedLogLevel.set(value)
 
     // Application-scoped coroutine scope for client operations
-    private val managerScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var managerScope: CoroutineScope? = null
+
+    private fun getOrCreateScope(): CoroutineScope =
+        managerScope ?: CoroutineScope(SupervisorJob() + Dispatchers.IO).also {
+            managerScope = it
+        }
 
     fun clientOptions(
         appContext: Context,
@@ -71,7 +85,7 @@ object ClientManager {
         appContext: Context,
     ) {
         if (clientState.value is ClientState.Ready) return
-        managerScope.launch {
+        getOrCreateScope().launch {
             try {
                 val keyUtil = KeyUtil(appContext)
                 val privateKeyBytes = keyUtil.retrievePrivateKey(address)
@@ -138,6 +152,9 @@ object ClientManager {
     fun clearClient() {
         _clientState.value = ClientState.Unknown
         _client = null
+        // Cancel the scope to prevent memory leaks from pending coroutines
+        managerScope?.cancel()
+        managerScope = null
     }
 
     sealed class ClientState {
