@@ -14,7 +14,6 @@ import org.xmtp.android.library.Client
 import org.xmtp.android.library.ClientOptions
 import org.xmtp.android.library.XMTPEnvironment
 import org.xmtp.android.library.codecs.AttachmentCodec
-import org.xmtp.android.library.codecs.EditMessageCodec
 import org.xmtp.android.library.codecs.GroupUpdatedCodec
 import org.xmtp.android.library.codecs.ReactionCodec
 import org.xmtp.android.library.codecs.RemoteAttachmentCodec
@@ -37,12 +36,17 @@ object ClientManager {
         get() = _selectedLogLevel.get()
         set(value) = _selectedLogLevel.set(value)
 
+    // Lock for thread-safe operations
+    private val lock = Any()
+
     // Application-scoped coroutine scope for client operations
     private var managerScope: CoroutineScope? = null
 
     private fun getOrCreateScope(): CoroutineScope =
-        managerScope ?: CoroutineScope(SupervisorJob() + Dispatchers.IO).also {
-            managerScope = it
+        synchronized(lock) {
+            managerScope ?: CoroutineScope(SupervisorJob() + Dispatchers.IO).also {
+                managerScope = it
+            }
         }
 
     fun clientOptions(
@@ -84,7 +88,13 @@ object ClientManager {
         address: String,
         appContext: Context,
     ) {
-        if (clientState.value is ClientState.Ready) return
+        // Use compareAndSet to atomically transition from Unknown/Error to Creating
+        // This prevents race conditions with concurrent createClient() calls
+        synchronized(lock) {
+            val currentState = _clientState.value
+            if (currentState is ClientState.Ready || currentState is ClientState.Creating) return
+            _clientState.value = ClientState.Creating
+        }
         getOrCreateScope().launch {
             try {
                 val keyUtil = KeyUtil(appContext)
@@ -127,7 +137,6 @@ object ClientManager {
                 Client.register(codec = ReactionCodec())
                 Client.register(codec = AttachmentCodec())
                 Client.register(codec = RemoteAttachmentCodec())
-                Client.register(codec = EditMessageCodec())
                 _clientState.value = ClientState.Ready
             } catch (e: Exception) {
                 Timber.e(e, "createClient failed")
@@ -138,27 +147,32 @@ object ClientManager {
 
     // Set a client that was created externally (e.g., during wallet generation)
     fun setClient(client: Client) {
-        _client = client
-        Client.register(codec = GroupUpdatedCodec())
-        Client.register(codec = ReplyCodec())
-        Client.register(codec = ReactionCodec())
-        Client.register(codec = AttachmentCodec())
-        Client.register(codec = RemoteAttachmentCodec())
-        Client.register(codec = EditMessageCodec())
-        _clientState.value = ClientState.Ready
+        synchronized(lock) {
+            _client = client
+            Client.register(codec = GroupUpdatedCodec())
+            Client.register(codec = ReplyCodec())
+            Client.register(codec = ReactionCodec())
+            Client.register(codec = AttachmentCodec())
+            Client.register(codec = RemoteAttachmentCodec())
+            _clientState.value = ClientState.Ready
+        }
     }
 
     @UiThread
     fun clearClient() {
-        _clientState.value = ClientState.Unknown
-        _client = null
-        // Cancel the scope to prevent memory leaks from pending coroutines
-        managerScope?.cancel()
-        managerScope = null
+        synchronized(lock) {
+            _clientState.value = ClientState.Unknown
+            _client = null
+            // Cancel the scope to prevent memory leaks from pending coroutines
+            managerScope?.cancel()
+            managerScope = null
+        }
     }
 
     sealed class ClientState {
         data object Unknown : ClientState()
+
+        data object Creating : ClientState()
 
         data object Ready : ClientState()
 

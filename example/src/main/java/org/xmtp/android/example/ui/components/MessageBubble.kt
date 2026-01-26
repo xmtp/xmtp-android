@@ -1,5 +1,7 @@
 package org.xmtp.android.example.ui.components
 
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,7 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -16,6 +20,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Icon
@@ -23,21 +28,53 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.xmtp.android.example.ui.theme.SentMessageBackground
 import org.xmtp.android.example.ui.theme.XMTPTheme
+import java.util.Locale
 
 enum class DeliveryStatus {
     SENDING,
     SENT,
     FAILED,
+}
+
+sealed class MessageAttachment {
+    data class Image(
+        val data: ByteArray,
+        val mimeType: String,
+    ) : MessageAttachment() {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+            other as Image
+            return data.contentEquals(other.data) && mimeType == other.mimeType
+        }
+
+        override fun hashCode(): Int {
+            var result = data.contentHashCode()
+            result = 31 * result + mimeType.hashCode()
+            return result
+        }
+    }
+
+    data class File(
+        val filename: String,
+        val size: Int,
+        val mimeType: String,
+    ) : MessageAttachment()
 }
 
 @Composable
@@ -53,8 +90,10 @@ fun MessageBubble(
     replyPreview: String? = null,
     replyAuthor: String? = null,
     isDeleted: Boolean = false,
+    attachment: MessageAttachment? = null,
     onLongClick: () -> Unit = {},
     onReplyClick: (() -> Unit)? = null,
+    onAttachmentClick: (() -> Unit)? = null,
 ) {
     Row(
         modifier =
@@ -102,8 +141,8 @@ fun MessageBubble(
                         Modifier
                             .width(IntrinsicSize.Max)
                             .padding(
-                                horizontal = 12.dp,
-                                vertical = 8.dp,
+                                horizontal = if (attachment is MessageAttachment.Image) 4.dp else 12.dp,
+                                vertical = if (attachment is MessageAttachment.Image) 4.dp else 8.dp,
                             ),
                 ) {
                     // Reply preview
@@ -170,21 +209,73 @@ fun MessageBubble(
                         }
                     }
 
-                    // Message content
-                    Text(
-                        text = if (isDeleted) "This message was deleted" else message,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (isMe) Color.White else MaterialTheme.colorScheme.onSurface,
-                        fontStyle = if (isDeleted) FontStyle.Italic else FontStyle.Normal,
-                        modifier = if (replyPreview != null) Modifier.fillMaxWidth() else Modifier,
-                    )
+                    // Image attachment
+                    if (attachment is MessageAttachment.Image) {
+                        val bitmap = remember(attachment.data) {
+                            try {
+                                BitmapFactory.decodeByteArray(attachment.data, 0, attachment.data.size)
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+                        if (bitmap != null) {
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = "Image attachment",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .clickable { onAttachmentClick?.invoke() },
+                                contentScale = ContentScale.FillWidth,
+                            )
+                        }
+                    }
+
+                    // File attachment
+                    if (attachment is MessageAttachment.File) {
+                        FileAttachmentView(
+                            filename = attachment.filename,
+                            size = attachment.size,
+                            isMe = isMe,
+                            onClick = onAttachmentClick,
+                        )
+                    }
+
+                    // Message content (show only if there's text and not just an image)
+                    if (message.isNotEmpty() || (attachment == null && !isDeleted)) {
+                        if (attachment is MessageAttachment.Image && message.isEmpty()) {
+                            // Don't show empty text for image-only messages
+                        } else {
+                            val textPadding = if (attachment != null) {
+                                Modifier.padding(
+                                    start = 8.dp,
+                                    end = 8.dp,
+                                    top = if (attachment is MessageAttachment.Image) 4.dp else 0.dp,
+                                )
+                            } else {
+                                Modifier
+                            }
+                            Text(
+                                text = if (isDeleted) "This message was deleted" else message,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (isMe) Color.White else MaterialTheme.colorScheme.onSurface,
+                                fontStyle = if (isDeleted) FontStyle.Italic else FontStyle.Normal,
+                                modifier = textPadding.then(
+                                    if (replyPreview != null) Modifier.fillMaxWidth() else Modifier,
+                                ),
+                            )
+                        }
+                    }
 
                     // Timestamp and delivery status
                     Row(
                         modifier =
                             Modifier
                                 .align(Alignment.End)
-                                .padding(top = 2.dp),
+                                .padding(
+                                    top = 2.dp,
+                                    end = if (attachment is MessageAttachment.Image) 8.dp else 0.dp,
+                                ),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
@@ -274,6 +365,58 @@ fun MessageBubble(
 }
 
 @Composable
+private fun FileAttachmentView(
+    filename: String,
+    size: Int,
+    isMe: Boolean,
+    onClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = if (isMe) Color.White.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface,
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(enabled = onClick != null) { onClick?.invoke() },
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Description,
+                contentDescription = "File",
+                modifier = Modifier.size(32.dp),
+                tint = if (isMe) Color.White else MaterialTheme.colorScheme.primary,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = filename,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = if (isMe) Color.White else MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = formatFileSize(size),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isMe) Color.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+private fun formatFileSize(bytes: Int): String =
+    when {
+        bytes < 1024 -> "$bytes B"
+        bytes < 1024 * 1024 -> "${bytes / 1024} KB"
+        else -> String.format(Locale.getDefault(), "%.1f MB", bytes / (1024.0 * 1024.0))
+    }
+
+@Composable
 fun SystemMessage(
     text: String,
     modifier: Modifier = Modifier,
@@ -361,6 +504,41 @@ private fun DeletedMessagePreview() {
             timestamp = "10:34 AM",
             isMe = true,
             isDeleted = true,
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun FileAttachmentPreview() {
+    XMTPTheme {
+        MessageBubble(
+            message = "",
+            timestamp = "10:35 AM",
+            isMe = true,
+            attachment = MessageAttachment.File(
+                filename = "document.pdf",
+                size = 1024 * 512,
+                mimeType = "application/pdf",
+            ),
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ReceivedFileAttachmentPreview() {
+    XMTPTheme {
+        MessageBubble(
+            message = "",
+            timestamp = "10:36 AM",
+            isMe = false,
+            senderName = "0x1234...5678",
+            attachment = MessageAttachment.File(
+                filename = "presentation.pptx",
+                size = 1024 * 1024 * 2,
+                mimeType = "application/vnd.ms-powerpoint",
+            ),
         )
     }
 }

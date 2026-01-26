@@ -176,3 +176,9 @@ class GroupManagementViewModel(
         ) : ActionState()
     }
 }
+
+data class MemberItem(
+    val member: org.xmtp.android.library.libxmtp.Member,
+    val isCurrentUser: Boolean,
+    val displayAddress: String?,
+)

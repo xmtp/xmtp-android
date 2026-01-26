@@ -49,7 +49,9 @@ class ConversationDetailViewModel(
             null,
         )
 
-    private val conversationTopic = conversationTopicFlow.value
+    // Read from flow to get the current value (supports updates via setConversationTopic)
+    private val conversationTopic: String?
+        get() = conversationTopicFlow.value
 
     fun setConversationTopic(conversationTopic: String?) {
         savedStateHandle[ConversationDetailActivity.EXTRA_CONVERSATION_TOPIC] = conversationTopic
@@ -91,6 +93,11 @@ class ConversationDetailViewModel(
 
     @UiThread
     fun fetchMessages() {
+        val topic = conversationTopic
+        if (topic == null) {
+            _uiState.value = UiState.Error("Conversation topic not set")
+            return
+        }
         when (val uiState = uiState.value) {
             is UiState.Success -> _uiState.value = UiState.Loading(uiState.listItems)
             else -> _uiState.value = UiState.Loading(null)
@@ -99,7 +106,7 @@ class ConversationDetailViewModel(
             val listItems = mutableListOf<MessageListItem>()
             try {
                 if (conversation == null) {
-                    conversation = ClientManager.client.conversations.findConversationByTopic(conversationTopic!!)
+                    conversation = ClientManager.client.conversations.findConversationByTopic(topic)
                 }
                 conversation?.let { conv ->
                     // Sync conversation to get latest messages (including deletions)
@@ -142,46 +149,51 @@ class ConversationDetailViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val streamMessages: StateFlow<StreamedMessageResult?> =
         stateFlow(viewModelScope, null) { subscriptionCount ->
-            // Ensure conversation is initialized
-            if (conversation == null) {
-                conversation = ClientManager.client.conversations.findConversationByTopic(conversationTopic!!)
-            }
-            if (conversation != null) {
-                val isDm = conversation is Conversation.Dm
-                conversation!!
-                    .streamMessages()
-                    .flowWhileShared(
-                        subscriptionCount,
-                        SharingStarted.WhileSubscribed(1000L),
-                    ).flowOn(Dispatchers.IO)
-                    .distinctUntilChanged()
-                    .mapLatest { message ->
-                        // Check if this is a delete, reaction, or edit message - if so, signal a refresh is needed
-                        val contentTypeId = message.encodedContent.type
-                        val isDeleteMessage = contentTypeId?.typeId == "deleteMessage"
-                        val isReactionMessage = contentTypeId?.typeId == "reaction"
-                        val isEditMessage = contentTypeId?.typeId == "editMessage"
+            val topic = conversationTopic
+            if (topic == null) {
+                emptyFlow()
+            } else {
+                // Ensure conversation is initialized
+                if (conversation == null) {
+                    conversation = ClientManager.client.conversations.findConversationByTopic(topic)
+                }
+                val conv = conversation
+                if (conv != null) {
+                    val isDm = conv is Conversation.Dm
+                    conv.streamMessages()
+                        .flowWhileShared(
+                            subscriptionCount,
+                            SharingStarted.WhileSubscribed(1000L),
+                        ).flowOn(Dispatchers.IO)
+                        .distinctUntilChanged()
+                        .mapLatest { message ->
+                            // Check if this is a delete, reaction, or edit message - if so, signal a refresh is needed
+                            val contentTypeId = message.encodedContent.type
+                            val isDeleteMessage = contentTypeId?.typeId == "deleteMessage"
+                            val isReactionMessage = contentTypeId?.typeId == "reaction"
+                            val isEditMessage = contentTypeId?.typeId == "editMessage"
 
-                        if (isDeleteMessage || isReactionMessage || isEditMessage) {
-                            // Return a signal to refresh the message list
-                            // Reactions, deletes, and edits modify existing messages, so we need a full refresh
-                            StreamedMessageResult.RefreshNeeded
-                        } else {
-                            // Convert streamed DecodedMessage to DecodedMessageV2 using findEnrichedMessage
-                            val enrichedMessage =
-                                ClientManager.client.conversations.findEnrichedMessage(message.id)
-                            enrichedMessage?.let {
-                                classifyMessage(it, isDm)?.let { item ->
-                                    StreamedMessageResult.NewMessage(item)
+                            if (isDeleteMessage || isReactionMessage || isEditMessage) {
+                                // Return a signal to refresh the message list
+                                // Reactions, deletes, and edits modify existing messages, so we need a full refresh
+                                StreamedMessageResult.RefreshNeeded
+                            } else {
+                                // Convert streamed DecodedMessage to DecodedMessageV2 using findEnrichedMessage
+                                val enrichedMessage =
+                                    ClientManager.client.conversations.findEnrichedMessage(message.id)
+                                enrichedMessage?.let {
+                                    classifyMessage(it, isDm)?.let { item ->
+                                        StreamedMessageResult.NewMessage(item)
+                                    }
                                 }
                             }
+                        }.catch { e ->
+                            Timber.e(e, "Error in message stream")
+                            emit(null)
                         }
-                    }.catch { e ->
-                        Timber.e(e, "Error in message stream")
-                        emit(null)
-                    }
-            } else {
-                emptyFlow()
+                } else {
+                    emptyFlow()
+                }
             }
         }
 
@@ -201,25 +213,10 @@ class ConversationDetailViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 if (editMessage != null) {
-                    // Send as edit message using native editMessage API
-                    // Check if the original message was a Reply - if so, preserve the Reply structure
-                    val originalContent = editMessage.content<Any>()
-                    val editedContent =
-                        if (originalContent is EnrichedReply) {
-                            // Preserve the Reply structure with the new content
-                            val updatedReply =
-                                Reply(
-                                    reference = originalContent.referenceId,
-                                    content = body,
-                                    contentType = ContentTypeText,
-                                )
-                            ReplyCodec().encode(updatedReply)
-                        } else {
-                            // Regular text message
-                            TextCodec().encode(body)
-                        }
-                    conversation?.editMessage(editMessage.id, editedContent.toByteArray())
+                    // Edit message feature is not yet released in the library
+                    // Clear editing state and show error
                     _editingMessage.value = null
+                    throw UnsupportedOperationException("Edit message feature is not yet available")
                 } else if (replyTo != null) {
                     // Send as reply using Reply codec
                     val replyContent =
@@ -297,18 +294,26 @@ class ConversationDetailViewModel(
     ): SendAttachmentState =
         withContext(Dispatchers.IO) {
             try {
+                Timber.d("sendAttachment: filename=$filename, mimeType=$mimeType, dataSize=${data.size}")
                 val attachment =
                     Attachment(
                         filename = filename,
                         mimeType = mimeType,
                         data = data.toByteString(),
                     )
+                Timber.d("sendAttachment: created Attachment object, conversation=$conversation")
+                if (conversation == null) {
+                    Timber.e("sendAttachment: conversation is null!")
+                    return@withContext SendAttachmentState.Error("Conversation not found")
+                }
                 conversation?.send(
                     content = attachment,
                     options = SendOptions(contentType = ContentTypeAttachment),
                 )
+                Timber.d("sendAttachment: sent successfully")
                 SendAttachmentState.Success
             } catch (e: Exception) {
+                Timber.e(e, "sendAttachment: failed")
                 SendAttachmentState.Error(e.localizedMessage.orEmpty())
             }
         }

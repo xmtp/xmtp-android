@@ -3,30 +3,27 @@ package org.xmtp.android.example.conversation
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.text.format.Formatter
-import android.view.View
-import android.widget.ImageView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.widget.addTextChangedListener
-import org.xmtp.android.example.R
-import org.xmtp.android.example.databinding.ActivityAttachmentPreviewBinding
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import org.xmtp.android.example.ui.screens.AttachmentPreviewItem
+import org.xmtp.android.example.ui.screens.AttachmentPreviewScreen
+import org.xmtp.android.example.ui.theme.XMTPTheme
 
-/**
- * Telegram-style attachment preview activity.
- * Shows selected attachments with caption input before sending.
- */
-class AttachmentPreviewActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityAttachmentPreviewBinding
-
-    private val attachmentUris = mutableListOf<Uri>()
-    private val captions = mutableMapOf<Int, String>()
-    private var currentIndex = 0
-
+class AttachmentPreviewActivity : ComponentActivity() {
     companion object {
         private const val EXTRA_ATTACHMENT_URIS = "attachment_uris"
         const val RESULT_ATTACHMENTS = "result_attachments"
@@ -38,214 +35,118 @@ class AttachmentPreviewActivity : AppCompatActivity() {
         ): Intent =
             Intent(context, AttachmentPreviewActivity::class.java).apply {
                 putParcelableArrayListExtra(EXTRA_ATTACHMENT_URIS, ArrayList(uris))
+                // Grant read permission for URIs so they can be accessed in the preview activity
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
     }
 
+    private val attachmentUris = mutableListOf<Uri>()
+    private val captions = mutableMapOf<Int, String>()
+    private val previewBitmaps = mutableMapOf<Int, Bitmap>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityAttachmentPreviewBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        enableEdgeToEdge()
 
         // Get attachment URIs from intent (API 33+ compatible)
-        val uris =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                intent.getParcelableArrayListExtra(EXTRA_ATTACHMENT_URIS, Uri::class.java)
-            } else {
-                @Suppress("DEPRECATION")
-                intent.getParcelableArrayListExtra(EXTRA_ATTACHMENT_URIS)
-            }
+        val uris = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableArrayListExtra(EXTRA_ATTACHMENT_URIS, Uri::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableArrayListExtra(EXTRA_ATTACHMENT_URIS)
+        }
+
         if (uris.isNullOrEmpty()) {
             finish()
             return
         }
+
         attachmentUris.addAll(uris)
 
-        setupUI()
-        displayAttachment(0)
-    }
+        setContent {
+            XMTPTheme {
+                var currentCaption by remember { mutableStateOf("") }
+                var currentIndex by remember { mutableIntStateOf(0) }
 
-    private fun setupUI() {
-        // Close button
-        binding.closeButton.setOnClickListener {
-            setResult(Activity.RESULT_CANCELED)
-            finish()
-        }
+                // Build attachment preview items
+                val attachments = remember {
+                    mutableStateListOf<AttachmentPreviewItem>().apply {
+                        attachmentUris.forEachIndexed { index, uri ->
+                            val mimeType = contentResolver.getType(uri) ?: "application/octet-stream"
+                            val isImage = mimeType.startsWith("image/")
+                            val filename = getFilename(uri)
+                            val fileSize = Formatter.formatFileSize(
+                                this@AttachmentPreviewActivity,
+                                getFileSize(uri),
+                            )
 
-        // Send button
-        binding.sendButton.setOnClickListener {
-            // Save current caption before sending
-            saveCaptionForCurrentIndex()
-
-            val resultIntent =
-                Intent().apply {
-                    putParcelableArrayListExtra(RESULT_ATTACHMENTS, ArrayList(attachmentUris))
-                    putStringArrayListExtra(
-                        RESULT_CAPTIONS,
-                        ArrayList(
-                            attachmentUris.indices.map { captions[it] ?: "" },
-                        ),
-                    )
-                }
-            setResult(Activity.RESULT_OK, resultIntent)
-            finish()
-        }
-
-        // Caption text change listener
-        binding.captionEditText.addTextChangedListener { text ->
-            captions[currentIndex] = text?.toString() ?: ""
-        }
-
-        // Setup for multiple attachments
-        if (attachmentUris.size > 1) {
-            setupMultipleAttachments()
-        } else {
-            binding.thumbnailContainer.visibility = View.GONE
-            binding.pageIndicator.visibility = View.GONE
-            binding.attachmentViewPager.visibility = View.GONE
-        }
-
-        updateTitle()
-    }
-
-    private fun setupMultipleAttachments() {
-        binding.thumbnailContainer.visibility = View.VISIBLE
-        binding.pageIndicator.visibility = View.VISIBLE
-
-        // Create thumbnail strip
-        val thumbnailStrip = binding.thumbnailStrip
-        thumbnailStrip.removeAllViews()
-
-        attachmentUris.forEachIndexed { index, uri ->
-            val thumbnailView = createThumbnailView(uri, index)
-            thumbnailStrip.addView(thumbnailView)
-        }
-
-        updateThumbnailSelection(0)
-    }
-
-    private fun createThumbnailView(
-        uri: Uri,
-        index: Int,
-    ): View {
-        val thumbnailSize = resources.getDimensionPixelSize(R.dimen.thumbnail_size)
-        val imageView =
-            ImageView(this).apply {
-                layoutParams =
-                    android.widget.LinearLayout.LayoutParams(thumbnailSize, thumbnailSize).apply {
-                        marginEnd = 8
-                    }
-                scaleType = ImageView.ScaleType.CENTER_CROP
-                setBackgroundResource(R.drawable.thumbnail_border)
-                setPadding(4, 4, 4, 4)
-
-                // Load thumbnail with downsampling to prevent OOM
-                try {
-                    contentResolver.openInputStream(uri)?.use { inputStream ->
-                        val options =
-                            BitmapFactory.Options().apply {
-                                inSampleSize = 4 // Downsample for thumbnails
+                            // Load bitmap for images
+                            val bitmap = if (isImage) {
+                                loadBitmap(uri)?.also { previewBitmaps[index] = it }
+                            } else {
+                                null
                             }
-                        val bitmap = BitmapFactory.decodeStream(inputStream, null, options)
-                        if (bitmap != null) {
-                            setImageBitmap(bitmap)
-                        } else {
-                            setImageResource(R.drawable.ic_attach_file_24)
+
+                            add(
+                                AttachmentPreviewItem(
+                                    uri = uri,
+                                    filename = filename,
+                                    fileSize = fileSize,
+                                    mimeType = mimeType,
+                                    thumbnail = bitmap,
+                                    isImage = isImage,
+                                ),
+                            )
                         }
-                    } ?: setImageResource(R.drawable.ic_attach_file_24)
-                } catch (e: Exception) {
-                    setImageResource(R.drawable.ic_attach_file_24)
-                }
-
-                setOnClickListener {
-                    saveCaptionForCurrentIndex()
-                    displayAttachment(index)
-                    updateThumbnailSelection(index)
-                }
-            }
-        imageView.tag = index
-        return imageView
-    }
-
-    private fun updateThumbnailSelection(selectedIndex: Int) {
-        for (i in 0 until binding.thumbnailStrip.childCount) {
-            val child = binding.thumbnailStrip.getChildAt(i)
-            child.alpha = if (i == selectedIndex) 1.0f else 0.5f
-            child.scaleX = if (i == selectedIndex) 1.1f else 1.0f
-            child.scaleY = if (i == selectedIndex) 1.1f else 1.0f
-        }
-    }
-
-    private fun saveCaptionForCurrentIndex() {
-        captions[currentIndex] = binding.captionEditText.text?.toString() ?: ""
-    }
-
-    private fun displayAttachment(index: Int) {
-        currentIndex = index
-        val uri = attachmentUris[index]
-
-        // Load caption for this attachment
-        binding.captionEditText.setText(captions[index] ?: "")
-
-        // Get mime type
-        val mimeType = contentResolver.getType(uri) ?: "application/octet-stream"
-
-        if (mimeType.startsWith("image/")) {
-            // Show image
-            binding.singleImageView.visibility = View.VISIBLE
-            binding.filePreviewContainer.visibility = View.GONE
-
-            try {
-                contentResolver.openInputStream(uri)?.use { inputStream ->
-                    val bitmap = BitmapFactory.decodeStream(inputStream)
-                    if (bitmap != null) {
-                        binding.singleImageView.setImageBitmap(bitmap)
-                    } else {
-                        // Fallback to file preview if bitmap decode fails
-                        binding.singleImageView.visibility = View.GONE
-                        binding.filePreviewContainer.visibility = View.VISIBLE
-                        binding.fileName.text = getFilename(uri)
-                        binding.fileSize.text = Formatter.formatFileSize(this, getFileSize(uri))
-                        binding.fileIcon.setImageResource(R.drawable.ic_attach_file_24)
-                        Toast.makeText(this, "Failed to load image preview", Toast.LENGTH_SHORT).show()
                     }
-                } ?: run {
-                    Toast.makeText(this, "Failed to open image", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
-                Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+
+                AttachmentPreviewScreen(
+                    attachments = attachments,
+                    caption = currentCaption,
+                    selectedIndex = currentIndex,
+                    onCaptionChange = { caption ->
+                        currentCaption = caption
+                        captions[currentIndex] = caption
+                    },
+                    onSelectedIndexChange = { newIndex ->
+                        // Save current caption before switching
+                        captions[currentIndex] = currentCaption
+                        currentIndex = newIndex
+                        // Load caption for new index
+                        currentCaption = captions[newIndex] ?: ""
+                    },
+                    onClose = {
+                        setResult(Activity.RESULT_CANCELED)
+                        finish()
+                    },
+                    onSend = {
+                        // Save current caption before sending
+                        captions[currentIndex] = currentCaption
+
+                        val resultIntent = Intent().apply {
+                            putParcelableArrayListExtra(RESULT_ATTACHMENTS, ArrayList(attachmentUris))
+                            putStringArrayListExtra(
+                                RESULT_CAPTIONS,
+                                ArrayList(attachmentUris.indices.map { idx -> captions[idx] ?: "" }),
+                            )
+                        }
+                        setResult(Activity.RESULT_OK, resultIntent)
+                        finish()
+                    },
+                )
             }
-        } else {
-            // Show file preview
-            binding.singleImageView.visibility = View.GONE
-            binding.filePreviewContainer.visibility = View.VISIBLE
-
-            // Get file info
-            val filename = getFilename(uri)
-            val fileSize = getFileSize(uri)
-
-            binding.fileName.text = filename
-            binding.fileSize.text = Formatter.formatFileSize(this, fileSize)
-
-            // Set appropriate icon based on mime type
-            val iconRes =
-                when {
-                    mimeType.startsWith("video/") -> R.drawable.ic_video_24
-                    mimeType.startsWith("audio/") -> R.drawable.ic_audio_24
-                    mimeType == "application/pdf" -> R.drawable.ic_pdf_24
-                    else -> R.drawable.ic_attach_file_24
-                }
-            binding.fileIcon.setImageResource(iconRes)
         }
-
-        updateTitle()
     }
 
-    private fun updateTitle() {
-        if (attachmentUris.size > 1) {
-            binding.titleText.text = getString(R.string.attachment_count, currentIndex + 1, attachmentUris.size)
-            binding.pageIndicator.text = getString(R.string.attachment_count, currentIndex + 1, attachmentUris.size)
-        } else {
-            binding.titleText.text = getString(R.string.preview)
+    private fun loadBitmap(uri: Uri): Bitmap? {
+        return try {
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                BitmapFactory.decodeStream(inputStream)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+            null
         }
     }
 
@@ -273,5 +174,12 @@ class AttachmentPreviewActivity : AppCompatActivity() {
             }
         }
         return size
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Recycle bitmaps to prevent memory leaks
+        previewBitmaps.values.forEach { it.recycle() }
+        previewBitmaps.clear()
     }
 }

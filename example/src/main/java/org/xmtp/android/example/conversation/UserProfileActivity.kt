@@ -4,42 +4,68 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
-import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.xmtp.android.example.ClientManager
-import org.xmtp.android.example.R
-import org.xmtp.android.example.databinding.ActivityUserProfileBinding
-import org.xmtp.android.example.extension.truncatedAddress
+import org.xmtp.android.example.ui.theme.XMTPTheme
 import org.xmtp.android.library.libxmtp.IdentityKind
 import org.xmtp.android.library.libxmtp.InboxState
 import org.xmtp.android.library.libxmtp.PublicIdentity
 import kotlin.math.abs
 
-class UserProfileActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityUserProfileBinding
-
-    private val avatarColors =
-        listOf(
-            Color.parseColor("#FC4F37"),
-            Color.parseColor("#5856D6"),
-            Color.parseColor("#34C759"),
-            Color.parseColor("#FF9500"),
-            Color.parseColor("#007AFF"),
-            Color.parseColor("#AF52DE"),
-            Color.parseColor("#00C7BE"),
-            Color.parseColor("#FF2D55"),
-        )
-
+class UserProfileActivity : ComponentActivity() {
     companion object {
         private const val EXTRA_WALLET_ADDRESS = "EXTRA_WALLET_ADDRESS"
         private const val EXTRA_INBOX_ID = "EXTRA_INBOX_ID"
@@ -55,137 +81,87 @@ class UserProfileActivity : AppCompatActivity() {
             }
     }
 
+    private val avatarColors = listOf(
+        Color(0xFFFC4F37),
+        Color(0xFF5856D6),
+        Color(0xFF34C759),
+        Color(0xFFFF9500),
+        Color(0xFF007AFF),
+        Color(0xFFAF52DE),
+        Color(0xFF00C7BE),
+        Color(0xFFFF2D55),
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
-        binding = ActivityUserProfileBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        val walletAddress =
-            intent.getStringExtra(EXTRA_WALLET_ADDRESS) ?: run {
-                finish()
-                return
-            }
+        val walletAddress = intent.getStringExtra(EXTRA_WALLET_ADDRESS) ?: run {
+            finish()
+            return
+        }
         val inboxId = intent.getStringExtra(EXTRA_INBOX_ID)
 
-        setupUi(walletAddress, inboxId)
-        setupClickListeners(walletAddress, inboxId)
+        setContent {
+            XMTPTheme {
+                var isLoading by remember { mutableStateOf(false) }
+                var inboxState by remember { mutableStateOf<InboxState?>(null) }
+                var isStartingConversation by remember { mutableStateOf(false) }
 
-        if (inboxId != null) {
-            loadInboxState(inboxId)
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            android.R.id.home -> {
-                finish()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-
-    private fun setupUi(
-        walletAddress: String,
-        inboxId: String?,
-    ) {
-        // Set avatar
-        val avatarText =
-            walletAddress
-                .removePrefix("0x")
-                .take(2)
-                .uppercase()
-        binding.userAvatarText.text = avatarText
-
-        val colorIndex = abs((inboxId ?: walletAddress).hashCode()) % avatarColors.size
-        binding.userAvatarCard.setCardBackgroundColor(avatarColors[colorIndex])
-
-        // Set wallet address
-        binding.walletAddress.text = walletAddress.truncatedAddress()
-        binding.fullWalletAddress.text = walletAddress
-
-        // Set inbox ID
-        binding.inboxId.text = inboxId ?: getString(R.string.unknown)
-    }
-
-    private fun setupClickListeners(
-        walletAddress: String,
-        inboxId: String?,
-    ) {
-        binding.copyAddressButton.setOnClickListener {
-            copyToClipboard("Wallet Address", walletAddress)
-        }
-
-        binding.copyInboxIdButton.setOnClickListener {
-            inboxId?.let { id ->
-                copyToClipboard("Inbox ID", id)
-            }
-        }
-
-        binding.sendMessageButton.setOnClickListener {
-            startConversation(walletAddress)
-        }
-    }
-
-    private fun loadInboxState(inboxId: String) {
-        binding.progress.visibility = View.VISIBLE
-
-        lifecycleScope.launch {
-            try {
-                val inboxStates =
-                    withContext(Dispatchers.IO) {
-                        ClientManager.client.inboxStatesForInboxIds(
-                            refreshFromNetwork = true,
-                            inboxIds = listOf(inboxId),
-                        )
+                // Load inbox state if we have an inbox ID
+                LaunchedEffect(inboxId) {
+                    if (inboxId != null) {
+                        isLoading = true
+                        try {
+                            val inboxStates = withContext(Dispatchers.IO) {
+                                ClientManager.client.inboxStatesForInboxIds(
+                                    refreshFromNetwork = true,
+                                    inboxIds = listOf(inboxId),
+                                )
+                            }
+                            inboxState = inboxStates.firstOrNull()
+                        } catch (e: Exception) {
+                            // Silently fail - we still have basic info
+                        } finally {
+                            isLoading = false
+                        }
                     }
-
-                val inboxState = inboxStates.firstOrNull()
-                if (inboxState != null) {
-                    displayInboxState(inboxState)
                 }
 
-                binding.progress.visibility = View.GONE
-            } catch (e: Exception) {
-                binding.progress.visibility = View.GONE
-                // Silently fail - we still have basic info
+                UserProfileScreen(
+                    walletAddress = walletAddress,
+                    inboxId = inboxId,
+                    inboxState = inboxState,
+                    isLoading = isLoading || isStartingConversation,
+                    avatarColors = avatarColors,
+                    onBackClick = { finish() },
+                    onCopyAddress = { copyToClipboard("Wallet Address", walletAddress) },
+                    onCopyInboxId = {
+                        inboxId?.let { id -> copyToClipboard("Inbox ID", id) }
+                    },
+                    onSendMessage = {
+                        isStartingConversation = true
+                        startConversation(walletAddress)
+                    },
+                )
             }
         }
     }
 
-    private fun displayInboxState(inboxState: InboxState) {
-        val identities = inboxState.identities
-        if (identities.size > 1) {
-            binding.identitiesCard.isVisible = true
-            binding.identitiesList.layoutManager = LinearLayoutManager(this)
-            binding.identitiesList.adapter = IdentityAdapter(identities)
-        }
-    }
-
-    private fun copyToClipboard(
-        label: String,
-        text: String,
-    ) {
+    private fun copyToClipboard(label: String, text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
-        Toast.makeText(this, getString(R.string.copied_to_clipboard, label), Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "$label copied to clipboard", Toast.LENGTH_SHORT).show()
     }
 
     private fun startConversation(walletAddress: String) {
-        binding.progress.visibility = View.VISIBLE
-
         lifecycleScope.launch {
             try {
-                val conversation =
-                    withContext(Dispatchers.IO) {
-                        val publicIdentity = PublicIdentity(IdentityKind.ETHEREUM, walletAddress)
-                        ClientManager.client.conversations.findOrCreateDmWithIdentity(publicIdentity)
-                    }
-
-                binding.progress.visibility = View.GONE
+                val conversation = withContext(Dispatchers.IO) {
+                    val publicIdentity = PublicIdentity(IdentityKind.ETHEREUM, walletAddress)
+                    ClientManager.client.conversations.findOrCreateDmWithIdentity(publicIdentity)
+                }
 
                 startActivity(
                     ConversationDetailActivity.intent(
@@ -196,54 +172,245 @@ class UserProfileActivity : AppCompatActivity() {
                 )
                 finish()
             } catch (e: Exception) {
-                binding.progress.visibility = View.GONE
-                Toast
-                    .makeText(
-                        this@UserProfileActivity,
-                        e.localizedMessage ?: getString(R.string.error),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                Toast.makeText(
+                    this@UserProfileActivity,
+                    e.localizedMessage ?: "Error",
+                    Toast.LENGTH_SHORT,
+                ).show()
             }
         }
     }
 }
 
-// Simple adapter for linked identities
-class IdentityAdapter(
-    private val identities: List<org.xmtp.android.library.libxmtp.PublicIdentity>,
-) : androidx.recyclerview.widget.RecyclerView.Adapter<IdentityAdapter.IdentityViewHolder>() {
-    override fun onCreateViewHolder(
-        parent: android.view.ViewGroup,
-        viewType: Int,
-    ): IdentityViewHolder {
-        val textView =
-            android.widget.TextView(parent.context).apply {
-                layoutParams =
-                    android.view.ViewGroup.LayoutParams(
-                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun UserProfileScreen(
+    walletAddress: String,
+    inboxId: String?,
+    inboxState: InboxState?,
+    isLoading: Boolean,
+    avatarColors: List<Color>,
+    onBackClick: () -> Unit,
+    onCopyAddress: () -> Unit,
+    onCopyInboxId: () -> Unit,
+    onSendMessage: () -> Unit,
+) {
+    val avatarText = walletAddress
+        .removePrefix("0x")
+        .take(2)
+        .uppercase()
+
+    val colorIndex = abs((inboxId ?: walletAddress).hashCode()) % avatarColors.size
+    val avatarColor = avatarColors[colorIndex]
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Profile") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White,
+                ),
+            )
+        },
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Avatar
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(avatarColor),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = avatarText,
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
                     )
-                setPadding(0, 8, 0, 8)
-                setTextColor(parent.context.getColor(R.color.text_secondary))
-                textSize = 14f
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Abbreviated address
+                Text(
+                    text = walletAddress.truncatedAddress(),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Wallet Address Card
+                InfoCard(
+                    title = "Wallet Address",
+                    value = walletAddress,
+                    onCopy = onCopyAddress,
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Inbox ID Card
+                InfoCard(
+                    title = "Inbox ID",
+                    value = inboxId ?: "Unknown",
+                    onCopy = if (inboxId != null) onCopyInboxId else null,
+                )
+
+                // Linked Identities
+                inboxState?.let { state ->
+                    if (state.identities.size > 1) {
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            ),
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                            ) {
+                                Text(
+                                    text = "Linked Identities",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                state.identities.forEach { identity ->
+                                    Text(
+                                        text = identity.identifier,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.padding(vertical = 4.dp),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Send Message Button
+                Button(
+                    onClick = onSendMessage,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    enabled = !isLoading,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Message,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                        )
+                        Text(
+                            text = "Send Message",
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                }
             }
-        return IdentityViewHolder(textView)
-    }
 
-    override fun onBindViewHolder(
-        holder: IdentityViewHolder,
-        position: Int,
-    ) {
-        holder.bind(identities[position])
-    }
-
-    override fun getItemCount(): Int = identities.size
-
-    class IdentityViewHolder(
-        private val textView: android.widget.TextView,
-    ) : androidx.recyclerview.widget.RecyclerView.ViewHolder(textView) {
-        fun bind(identity: org.xmtp.android.library.libxmtp.PublicIdentity) {
-            textView.text = identity.identifier
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun InfoCard(
+    title: String,
+    value: String,
+    onCopy: (() -> Unit)?,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = FontFamily.Monospace,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+            if (onCopy != null) {
+                IconButton(onClick = onCopy) {
+                    Icon(
+                        imageVector = Icons.Default.ContentCopy,
+                        contentDescription = "Copy",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun String.truncatedAddress(): String {
+    if (length >= 10) {
+        val start = 6
+        val end = length - 4
+        return replaceRange(start, end, "...")
+    }
+    return this
 }

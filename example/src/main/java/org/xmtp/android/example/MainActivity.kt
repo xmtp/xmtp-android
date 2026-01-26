@@ -9,21 +9,24 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import android.view.MenuItem
-import android.view.View
-import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -31,32 +34,37 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.connect.ConnectWalletActivity
 import org.xmtp.android.example.conversation.ConversationDetailActivity
-import org.xmtp.android.example.conversation.ConversationsAdapter
-import org.xmtp.android.example.conversation.ConversationsClickListener
 import org.xmtp.android.example.conversation.NewConversationActivity
-import org.xmtp.android.example.databinding.ActivityMainBinding
-import org.xmtp.android.example.logs.LogViewerBottomSheet
 import org.xmtp.android.example.pushnotifications.PushNotificationTokenManager
+import org.xmtp.android.example.ui.components.DrawerState
+import org.xmtp.android.example.ui.screens.ConversationItem
+import org.xmtp.android.example.ui.screens.MainScreen
+import org.xmtp.android.example.ui.sheets.LogFileInfo
+import org.xmtp.android.example.ui.sheets.LogViewerSheet
+import org.xmtp.android.example.ui.sheets.WalletInfo
+import org.xmtp.android.example.ui.sheets.WalletInfoSheet
+import org.xmtp.android.example.ui.sheets.formatFileSize
+import org.xmtp.android.example.ui.theme.XMTPTheme
 import org.xmtp.android.example.utils.KeyUtil
-import org.xmtp.android.example.wallet.WalletInfoBottomSheet
 import org.xmtp.android.library.Client
-import org.xmtp.android.library.Conversation
 import timber.log.Timber
 import uniffi.xmtpv3.FfiLogLevel
 import uniffi.xmtpv3.FfiLogRotation
+import org.xmtp.android.example.extension.truncatedAddress
+import org.xmtp.android.library.Conversation
+import org.xmtp.android.library.codecs.Attachment
+import org.xmtp.android.library.codecs.DeletedMessage
+import org.xmtp.android.library.libxmtp.Reply
+import org.xmtp.proto.mls.message.contents.TranscriptMessages.GroupUpdated
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
-class MainActivity :
-    AppCompatActivity(),
-    ConversationsClickListener,
-    WalletInfoBottomSheet.WalletInfoListener,
-    NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
-    private lateinit var binding: ActivityMainBinding
     private lateinit var accountManager: AccountManager
-    private lateinit var adapter: ConversationsAdapter
-    private lateinit var drawerToggle: ActionBarDrawerToggle
-    private var logsBottomSheet: LogViewerBottomSheet? = null
-    private var walletInfoBottomSheet: WalletInfoBottomSheet? = null
     private val REQUEST_CODE_POST_NOTIFICATIONS = 101
 
     companion object {
@@ -69,6 +77,7 @@ class MainActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         accountManager = AccountManager.get(this)
         checkAndRequestPermissions()
         PushNotificationTokenManager.init(this, DEFAULT_PUSH_SERVER)
@@ -82,44 +91,28 @@ class MainActivity :
 
         ClientManager.createClient(keys, this)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        setSupportActionBar(binding.toolbar)
-
-        // Setup Navigation Drawer
-        setupNavigationDrawer()
-
-        adapter = ConversationsAdapter(clickListener = this)
-        binding.list.layoutManager = LinearLayoutManager(this)
-        binding.list.adapter = adapter
-        binding.refresh.setOnRefreshListener {
-            if (ClientManager.clientState.value is ClientManager.ClientState.Ready) {
-                viewModel.fetchConversations()
+        setContent {
+            XMTPTheme {
+                MainActivityContent(
+                    viewModel = viewModel,
+                    onConversationClick = { conversationId, topic ->
+                        openConversation(topic, conversationId)
+                    },
+                    onNewConversationClick = { openNewConversation() },
+                    onNewGroupClick = { openNewConversation() },
+                    onHideDeletedMessagesToggle = { enabled -> onHideDeletedMessagesToggled(enabled) },
+                    onToggleLogsClick = { enabled -> onLogsToggled(enabled) },
+                    onCopyAddressClick = { copyWalletAddress() },
+                    onDisconnectClick = { disconnectWallet() },
+                    isLogsEnabled = isLogsActivated(),
+                    hideDeletedMessages = KeyUtil(this).getHideDeletedMessages(),
+                )
             }
-        }
-
-        binding.fab.setOnClickListener {
-            openNewConversation()
         }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 ClientManager.clientState.collect(::ensureClientState)
-            }
-        }
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect(::ensureUiState)
-            }
-        }
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.stream.collect(::addStreamedItem)
-            }
-        }
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.messageStream.collect(::handleMessageUpdate)
             }
         }
 
@@ -140,123 +133,6 @@ class MainActivity :
                     }
                 }
             }
-        }
-    }
-
-    private fun setupNavigationDrawer() {
-        drawerToggle =
-            ActionBarDrawerToggle(
-                this,
-                binding.drawerLayout,
-                binding.toolbar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close,
-            )
-        binding.drawerLayout.addDrawerListener(drawerToggle)
-        drawerToggle.syncState()
-
-        binding.navigationView.setNavigationItemSelectedListener(this)
-    }
-
-    private fun updateDrawerHeader() {
-        val headerView = binding.navigationView.getHeaderView(0)
-        val client = ClientManager.client
-
-        headerView.findViewById<TextView>(R.id.drawerWalletAddress).text =
-            client.publicIdentity.identifier
-        headerView.findViewById<TextView>(R.id.drawerEnvironment).text =
-            client.environment.name
-
-        // Update toggle states
-        val menu = binding.navigationView.menu
-        menu.findItem(R.id.nav_toggle_logs)?.isChecked = isLogsActivated()
-
-        // Update hide deleted messages toggle state
-        val keyUtil = KeyUtil(this)
-        val hideDeleted = keyUtil.getHideDeletedMessages()
-        menu.findItem(R.id.nav_hide_deleted_messages)?.isChecked = hideDeleted
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        val isClientReady = ClientManager.clientState.value is ClientManager.ClientState.Ready
-
-        when (item.itemId) {
-            R.id.nav_wallet_info -> {
-                if (isClientReady) {
-                    openWalletInfoBottomSheet()
-                } else {
-                    Toast.makeText(this, "Client not ready", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            R.id.nav_new_conversation -> {
-                if (isClientReady) {
-                    openNewConversation()
-                } else {
-                    Toast.makeText(this, "Client not ready", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            R.id.nav_new_group -> {
-                if (isClientReady) {
-                    openNewConversation()
-                } else {
-                    Toast.makeText(this, "Client not ready", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            R.id.nav_view_logs -> {
-                openLogsViewer()
-            }
-
-            R.id.nav_toggle_logs -> {
-                val newState = !item.isChecked
-                item.isChecked = newState
-                onLogsToggled(newState)
-                return true // Don't close drawer for toggle
-            }
-
-            R.id.nav_hide_deleted_messages -> {
-                val newState = !item.isChecked
-                item.isChecked = newState
-                onHideDeletedMessagesToggled(newState)
-                return true // Don't close drawer for toggle
-            }
-
-            R.id.nav_copy_address -> {
-                if (isClientReady) {
-                    copyWalletAddress()
-                } else {
-                    Toast.makeText(this, "Client not ready", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            R.id.nav_disconnect -> {
-                if (isClientReady) {
-                    disconnectWallet()
-                } else {
-                    // Still allow disconnect to clear broken state
-                    ClientManager.clearClient()
-                    PushNotificationTokenManager.clearXMTPPush()
-                    val accounts = accountManager.getAccountsByType(resources.getString(R.string.account_type))
-                    accounts.forEach { account ->
-                        accountManager.removeAccount(account, null, null, null)
-                    }
-                    showSignIn()
-                }
-            }
-        }
-        binding.drawerLayout.closeDrawer(GravityCompat.START)
-        return true
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        if (::binding.isInitialized && binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
-            @Suppress("DEPRECATION")
-            super.onBackPressed()
         }
     }
 
@@ -310,17 +186,15 @@ class MainActivity :
         // Cancel the retry job to prevent memory leaks
         retryJob?.cancel()
         retryJob = null
-        logsBottomSheet?.dismiss()
-        walletInfoBottomSheet?.dismiss()
         super.onDestroy()
     }
 
-    override fun onConversationClick(conversation: Conversation) {
+    private fun openConversation(topic: String, peerAddress: String) {
         startActivity(
             ConversationDetailActivity.intent(
                 this,
-                topic = conversation.topic,
-                peerAddress = conversation.id,
+                topic = topic,
+                peerAddress = peerAddress,
             ),
         )
     }
@@ -331,8 +205,6 @@ class MainActivity :
             is ClientManager.ClientState.Ready -> {
                 Timber.d("ensureClientState: Ready, fetching conversations...")
                 viewModel.fetchConversations()
-                binding.fab.visibility = View.VISIBLE
-                updateDrawerHeader()
             }
 
             is ClientManager.ClientState.Error -> {
@@ -352,57 +224,9 @@ class MainActivity :
             is ClientManager.ClientState.Unknown -> {
                 Timber.d("ensureClientState: Unknown")
             }
-        }
-    }
 
-    private fun openWalletInfoBottomSheet() {
-        walletInfoBottomSheet = WalletInfoBottomSheet.newInstance()
-        walletInfoBottomSheet?.show(
-            supportFragmentManager,
-            WalletInfoBottomSheet.TAG,
-        )
-    }
-
-    private fun addStreamedItem(item: MainViewModel.MainListItem?) {
-        item?.let {
-            adapter.addItem(item)
-        }
-    }
-
-    private fun handleMessageUpdate(update: MainViewModel.MessageUpdate?) {
-        update?.let {
-            val contentType =
-                it.message.encodedContent
-                    ?.type
-                    ?.typeId
-            // For edit/delete messages, refresh the full conversation to get updated enriched content
-            if (contentType == "editMessage" || contentType == "deleteMessage") {
-                viewModel.fetchConversations()
-            } else {
-                adapter.updateConversationMessage(it.topic, it.message)
-            }
-        }
-    }
-
-    private fun ensureUiState(uiState: MainViewModel.UiState) {
-        binding.progress.visibility = View.GONE
-        when (uiState) {
-            is MainViewModel.UiState.Loading -> {
-                if (uiState.listItems.isNullOrEmpty()) {
-                    binding.progress.visibility = View.VISIBLE
-                } else {
-                    adapter.setData(uiState.listItems)
-                }
-            }
-
-            is MainViewModel.UiState.Success -> {
-                binding.refresh.isRefreshing = false
-                adapter.setData(uiState.listItems)
-            }
-
-            is MainViewModel.UiState.Error -> {
-                binding.refresh.isRefreshing = false
-                showError(uiState.message)
+            is ClientManager.ClientState.Creating -> {
+                Timber.d("ensureClientState: Creating client...")
             }
         }
     }
@@ -421,8 +245,13 @@ class MainActivity :
     private fun disconnectWallet() {
         // Clear the stored private key and environment before clearing the client
         val keyUtil = KeyUtil(this)
-        val address = ClientManager.client.publicIdentity.identifier
-        keyUtil.clearPrivateKey(address)
+        // Safely get address only if client is ready
+        val address = if (ClientManager.clientState.value is ClientManager.ClientState.Ready) {
+            ClientManager.client.publicIdentity.identifier
+        } else {
+            null
+        }
+        address?.let { keyUtil.clearPrivateKey(it) }
         keyUtil.clearEnvironment()
 
         ClientManager.clearClient()
@@ -435,6 +264,10 @@ class MainActivity :
     }
 
     private fun copyWalletAddress() {
+        if (ClientManager.clientState.value !is ClientManager.ClientState.Ready) {
+            Toast.makeText(this, "Client not ready", Toast.LENGTH_SHORT).show()
+            return
+        }
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val walletAddress = ClientManager.client.publicIdentity.identifier
         val clip = ClipData.newPlainText("wallet_address", walletAddress)
@@ -444,14 +277,6 @@ class MainActivity :
 
     private fun openNewConversation() {
         startActivity(NewConversationActivity.intent(this))
-    }
-
-    private fun openLogsViewer() {
-        logsBottomSheet = LogViewerBottomSheet.newInstance()
-        logsBottomSheet?.show(
-            supportFragmentManager,
-            LogViewerBottomSheet.TAG,
-        )
     }
 
     private fun checkAndRequestPermissions() {
@@ -479,8 +304,7 @@ class MainActivity :
         prefs.edit().putBoolean(KEY_LOGS_ACTIVATED, activated).apply()
     }
 
-    // WalletInfoListener implementation
-    override fun onLogsToggled(enabled: Boolean) {
+    private fun onLogsToggled(enabled: Boolean) {
         if (enabled) {
             Client.activatePersistentLibXMTPLogWriter(
                 applicationContext,
@@ -495,22 +319,278 @@ class MainActivity :
             setLogsActivated(false)
             Toast.makeText(this, "Persistent logs deactivated", Toast.LENGTH_SHORT).show()
         }
-        // Update drawer menu item state
-        binding.navigationView.menu
-            .findItem(R.id.nav_toggle_logs)
-            ?.isChecked = enabled
     }
-
-    override fun onDisconnectClicked() {
-        disconnectWallet()
-    }
-
-    override fun isLogsEnabled(): Boolean = isLogsActivated()
 
     private fun onHideDeletedMessagesToggled(enabled: Boolean) {
         val keyUtil = KeyUtil(this)
         keyUtil.setHideDeletedMessages(enabled)
         val message = if (enabled) "Deleted messages will be hidden" else "Deleted messages will be shown"
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+}
+
+@Composable
+private fun MainActivityContent(
+    viewModel: MainViewModel,
+    onConversationClick: (String, String) -> Unit,
+    onNewConversationClick: () -> Unit,
+    onNewGroupClick: () -> Unit,
+    onHideDeletedMessagesToggle: (Boolean) -> Unit,
+    onToggleLogsClick: (Boolean) -> Unit,
+    onCopyAddressClick: () -> Unit,
+    onDisconnectClick: () -> Unit,
+    isLogsEnabled: Boolean,
+    hideDeletedMessages: Boolean,
+) {
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
+    val clientState by ClientManager.clientState.collectAsState()
+
+    // Sheet states
+    var showWalletInfoSheet by remember { mutableStateOf(false) }
+    var showLogViewerSheet by remember { mutableStateOf(false) }
+
+    // Track log and hide deleted states for UI updates
+    var logsEnabled by remember { mutableStateOf(isLogsEnabled) }
+    var hideDeleted by remember { mutableStateOf(hideDeletedMessages) }
+
+    // Convert ViewModel state to UI state
+    val conversations = remember(uiState, clientState) {
+        val items = when (uiState) {
+            is MainViewModel.UiState.Success -> (uiState as MainViewModel.UiState.Success).listItems
+            is MainViewModel.UiState.Loading -> (uiState as MainViewModel.UiState.Loading).listItems ?: emptyList()
+            is MainViewModel.UiState.Error -> emptyList()
+        }
+
+        items.filterIsInstance<MainViewModel.MainListItem.ConversationItem>().map { item ->
+            val isGroup = item.conversation.type == Conversation.Type.GROUP
+            val displayName = when (item.conversation.type) {
+                Conversation.Type.GROUP -> item.displayName
+                Conversation.Type.DM -> item.displayName.truncatedAddress()
+            }
+
+            // Format message time
+            val formattedTime = item.mostRecentMessage?.let { message ->
+                formatMessageTime(message.sentAtNs / 1_000_000)
+            } ?: ""
+
+            // Get message preview
+            val myInboxId = if (clientState is ClientManager.ClientState.Ready) {
+                ClientManager.client.inboxId
+            } else ""
+
+            val messageBody = when (val content = item.mostRecentMessage?.content<Any>()) {
+                is String -> content
+                is Reply -> when (val replyContent = content.content) {
+                    is String -> replyContent
+                    else -> "Message"
+                }
+                is Attachment -> if (content.mimeType.startsWith("image/")) {
+                    if (content.mimeType == "image/gif") "GIF" else "Photo"
+                } else "Attachment"
+                is GroupUpdated -> {
+                    val added = content.addedInboxesList?.size ?: 0
+                    val removed = content.removedInboxesList?.size ?: 0
+                    when {
+                        added > 0 && removed > 0 -> "$added added, $removed removed"
+                        added > 0 -> "$added member${if (added > 1) "s" else ""} added"
+                        removed > 0 -> "$removed member${if (removed > 1) "s" else ""} removed"
+                        else -> "Group updated"
+                    }
+                }
+                is DeletedMessage -> "Message deleted"
+                else -> "Message"
+            }
+
+            val isMe = item.mostRecentMessage?.senderInboxId == myInboxId
+            val lastMessage = if (messageBody.isNotBlank()) {
+                if (isMe) "You: $messageBody" else messageBody
+            } else ""
+
+            ConversationItem(
+                id = item.conversation.topic,
+                name = displayName,
+                lastMessage = lastMessage,
+                timestamp = formattedTime,
+                isGroup = isGroup,
+                memberCount = null, // Would require async call to get member count
+                unreadCount = 0,
+            )
+        }
+    }
+
+    val isLoading = uiState is MainViewModel.UiState.Loading &&
+        (uiState as MainViewModel.UiState.Loading).listItems.isNullOrEmpty()
+
+    // Get wallet info from client state
+    val walletAddress = remember(clientState) {
+        if (clientState is ClientManager.ClientState.Ready) {
+            ClientManager.client.publicIdentity.identifier
+        } else {
+            ""
+        }
+    }
+
+    val environment = remember(clientState) {
+        if (clientState is ClientManager.ClientState.Ready) {
+            ClientManager.client.environment.name
+        } else {
+            ""
+        }
+    }
+
+    val inboxId = remember(clientState) {
+        if (clientState is ClientManager.ClientState.Ready) {
+            ClientManager.client.inboxId
+        } else {
+            ""
+        }
+    }
+
+    val installationId = remember(clientState) {
+        if (clientState is ClientManager.ClientState.Ready) {
+            ClientManager.client.installationId
+        } else {
+            ""
+        }
+    }
+
+    val drawerState = DrawerState(
+        walletAddress = walletAddress,
+        environment = environment,
+        isLogsEnabled = logsEnabled,
+        hideDeletedMessages = hideDeleted,
+    )
+
+    // Find topic for conversation navigation (topic is the conversation id)
+    val conversationTopics = remember(uiState) {
+        val items = when (uiState) {
+            is MainViewModel.UiState.Success -> (uiState as MainViewModel.UiState.Success).listItems
+            is MainViewModel.UiState.Loading -> (uiState as MainViewModel.UiState.Loading).listItems ?: emptyList()
+            else -> emptyList()
+        }
+        items.filterIsInstance<MainViewModel.MainListItem.ConversationItem>()
+            .associate { it.conversation.topic to it.conversation.topic }
+    }
+
+    MainScreen(
+        conversations = conversations,
+        drawerState = drawerState,
+        isLoading = isLoading,
+        onConversationClick = { conversationId ->
+            val topic = conversationTopics[conversationId] ?: ""
+            onConversationClick(conversationId, topic)
+        },
+        onNewConversationClick = onNewConversationClick,
+        onSearchClick = { /* TODO: Implement search */ },
+        onWalletInfoClick = { showWalletInfoSheet = true },
+        onNewGroupClick = onNewGroupClick,
+        onHideDeletedMessagesToggle = { enabled ->
+            hideDeleted = enabled
+            onHideDeletedMessagesToggle(enabled)
+        },
+        onViewLogsClick = { showLogViewerSheet = true },
+        onToggleLogsClick = { enabled ->
+            logsEnabled = enabled
+            onToggleLogsClick(enabled)
+        },
+        onCopyAddressClick = onCopyAddressClick,
+        onDisconnectClick = onDisconnectClick,
+    )
+
+    // Wallet Info Sheet
+    if (showWalletInfoSheet) {
+        val walletInfo = WalletInfo(
+            walletAddress = walletAddress,
+            inboxId = inboxId,
+            installationId = installationId,
+            environment = environment,
+            libXmtpVersion = if (clientState is ClientManager.ClientState.Ready) ClientManager.client.libXMTPVersion else "",
+        )
+
+        WalletInfoSheet(
+            walletInfo = walletInfo,
+            isLogsEnabled = logsEnabled,
+            onDismiss = { showWalletInfoSheet = false },
+            onCopyValue = { label, value ->
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText(label, value)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(context, "$label copied", Toast.LENGTH_SHORT).show()
+            },
+            onLogsToggled = { enabled ->
+                logsEnabled = enabled
+                onToggleLogsClick(enabled)
+            },
+            onDisconnect = {
+                showWalletInfoSheet = false
+                onDisconnectClick()
+            },
+        )
+    }
+
+    // Log Viewer Sheet
+    if (showLogViewerSheet) {
+        val logDir = File(context.filesDir, "xmtp_logs")
+        val logFiles = if (logDir.exists()) {
+            logDir.listFiles()
+                ?.filter { it.isFile && it.name.endsWith(".log") }
+                ?.sortedByDescending { it.lastModified() }
+                ?.map { file ->
+                    LogFileInfo(
+                        file = file,
+                        name = file.name,
+                        size = formatFileSize(file.length()),
+                    )
+                } ?: emptyList()
+        } else {
+            emptyList()
+        }
+
+        LogViewerSheet(
+            logFiles = logFiles,
+            onDismiss = { showLogViewerSheet = false },
+            onShareFile = { file ->
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    file,
+                )
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(shareIntent, "Share Log File"))
+            },
+        )
+    }
+}
+
+private fun formatMessageTime(timestampMs: Long): String {
+    val messageDate = Date(timestampMs)
+    val now = Calendar.getInstance()
+    val messageCalendar = Calendar.getInstance().apply { time = messageDate }
+
+    return when {
+        // Today - show time
+        now.get(Calendar.YEAR) == messageCalendar.get(Calendar.YEAR) &&
+            now.get(Calendar.DAY_OF_YEAR) == messageCalendar.get(Calendar.DAY_OF_YEAR) -> {
+            SimpleDateFormat("HH:mm", Locale.getDefault()).format(messageDate)
+        }
+        // Yesterday
+        now.get(Calendar.YEAR) == messageCalendar.get(Calendar.YEAR) &&
+            now.get(Calendar.DAY_OF_YEAR) - messageCalendar.get(Calendar.DAY_OF_YEAR) == 1 -> {
+            "Yesterday"
+        }
+        // Within the last week - show day name
+        now.get(Calendar.YEAR) == messageCalendar.get(Calendar.YEAR) &&
+            now.get(Calendar.DAY_OF_YEAR) - messageCalendar.get(Calendar.DAY_OF_YEAR) < 7 -> {
+            SimpleDateFormat("EEE", Locale.getDefault()).format(messageDate)
+        }
+        // Older - show date
+        else -> {
+            SimpleDateFormat("MMM d", Locale.getDefault()).format(messageDate)
+        }
     }
 }
