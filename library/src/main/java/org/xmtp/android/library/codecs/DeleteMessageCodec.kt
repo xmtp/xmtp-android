@@ -42,8 +42,7 @@ data class DeleteMessageCodec(
         )
     }
 
-    override fun fallback(content: DeleteMessageRequest): String =
-        "A message deletion was requested"
+    override fun fallback(content: DeleteMessageRequest): String? = null
 
     override fun shouldPush(content: DeleteMessageRequest): Boolean = false
 }
