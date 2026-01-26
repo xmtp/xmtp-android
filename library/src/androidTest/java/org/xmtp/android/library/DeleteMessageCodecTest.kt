@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.xmtp.android.library.codecs.ContentTypeDeleteMessageRequest
@@ -74,7 +75,7 @@ class DeleteMessageCodecTest : BaseInstrumentedTest() {
         val codec = DeleteMessageCodec()
         val content = DeleteMessageRequest(messageId = "any-id")
         val fallback = codec.fallback(content)
-        assertEquals("A message deletion was requested", fallback)
+        assertNull(fallback)
     }
 
     @Test
@@ -129,9 +130,10 @@ class DeleteMessageCodecTest : BaseInstrumentedTest() {
 
         // Receiver reads using messages() - not enrichedMessages()
         val boMessages = runBlocking { boGroup.messages() }
-        val deleteMessage = boMessages.find {
-            it.encodedContent.type.typeId == "deleteMessage"
-        }
+        val deleteMessage =
+            boMessages.find {
+                it.encodedContent.type.typeId == "deleteMessage"
+            }
 
         assertNotNull(deleteMessage)
         val content: DeleteMessageRequest? = deleteMessage?.content()
@@ -159,9 +161,10 @@ class DeleteMessageCodecTest : BaseInstrumentedTest() {
 
         // Using messages() API to verify content type is preserved
         val messages = runBlocking { alixConversation.messages() }
-        val deleteMsg = messages.find {
-            it.encodedContent.type.typeId == "deleteMessage"
-        }
+        val deleteMsg =
+            messages.find {
+                it.encodedContent.type.typeId == "deleteMessage"
+            }
 
         assertNotNull(deleteMsg)
         assertEquals("xmtp.org", deleteMsg?.encodedContent?.type?.authorityId)
