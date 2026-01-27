@@ -952,6 +952,7 @@ $dokka.location:org.xmtp.android.library/Client/reconnectLocalDatabase/#/Pointin
 $dokka.location:org.xmtp.android.library/Client/removeAccount/#org.xmtp.android.library.SigningKey#org.xmtp.android.library.libxmtp.PublicIdentity/PointingToDeclaration/library/org.xmtp.android.library/-client/remove-account.html
 $dokka.location:org.xmtp.android.library/Client/revokeAllOtherInstallations/#org.xmtp.android.library.SigningKey/PointingToDeclaration/library/org.xmtp.android.library/-client/revoke-all-other-installations.html
 $dokka.location:org.xmtp.android.library/Client/revokeInstallations/#org.xmtp.android.library.SigningKey#kotlin.collections.List[kotlin.String]/PointingToDeclaration/library/org.xmtp.android.library/-client/revoke-installations.html
+$dokka.location:org.xmtp.android.library/Client/sendSyncRequest/#/PointingToDeclaration/library/org.xmtp.android.library/-client/send-sync-request.html
 $dokka.location:org.xmtp.android.library/Client/signWithInstallationKey/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/sign-with-installation-key.html
 $dokka.location:org.xmtp.android.library/Client/verifySignature/#kotlin.String#kotlin.ByteArray/PointingToDeclaration/library/org.xmtp.android.library/-client/verify-signature.html
 $dokka.location:org.xmtp.android.library/Client/verifySignatureWithInstallationId/#kotlin.String#kotlin.ByteArray#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library/-client/verify-signature-with-installation-id.html
