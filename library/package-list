@@ -2,6 +2,7 @@ $dokka.format:html-v1
 $dokka.linkExtension:html
 $dokka.location:org.xmtp.android.library.codecs////PointingToDeclaration/library/org.xmtp.android.library.codecs/index.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeAttachment/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-attachment.html
+$dokka.location:org.xmtp.android.library.codecs//ContentTypeDeleteMessageRequest/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-delete-message-request.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeGroupUpdated/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-group-updated.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeLeaveRequest/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-leave-request.html
 $dokka.location:org.xmtp.android.library.codecs//ContentTypeMultiRemoteAttachment/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-multi-remote-attachment.html
@@ -44,6 +45,16 @@ $dokka.location:org.xmtp.android.library.codecs/ContentTypeIdBuilder.Companion/b
 $dokka.location:org.xmtp.android.library.codecs/ContentTypeIdBuilder.Companion/fromFfi/#uniffi.xmtpv3.FfiContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-id-builder/-companion/from-ffi.html
 $dokka.location:org.xmtp.android.library.codecs/ContentTypeIdBuilder///PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-id-builder/index.html
 $dokka.location:org.xmtp.android.library.codecs/ContentTypeIdBuilder/ContentTypeIdBuilder/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-content-type-id-builder/-content-type-id-builder.html
+$dokka.location:org.xmtp.android.library.codecs/DeleteMessageCodec///PointingToDeclaration/library/org.xmtp.android.library.codecs/-delete-message-codec/index.html
+$dokka.location:org.xmtp.android.library.codecs/DeleteMessageCodec/DeleteMessageCodec/#org.xmtp.proto.message.contents.Content.ContentTypeId/PointingToDeclaration/library/org.xmtp.android.library.codecs/-delete-message-codec/-delete-message-codec.html
+$dokka.location:org.xmtp.android.library.codecs/DeleteMessageCodec/contentType/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-delete-message-codec/content-type.html
+$dokka.location:org.xmtp.android.library.codecs/DeleteMessageCodec/decode/#org.xmtp.proto.message.contents.Content.EncodedContent/PointingToDeclaration/library/org.xmtp.android.library.codecs/-delete-message-codec/decode.html
+$dokka.location:org.xmtp.android.library.codecs/DeleteMessageCodec/encode/#org.xmtp.android.library.codecs.DeleteMessageRequest/PointingToDeclaration/library/org.xmtp.android.library.codecs/-delete-message-codec/encode.html
+$dokka.location:org.xmtp.android.library.codecs/DeleteMessageCodec/fallback/#org.xmtp.android.library.codecs.DeleteMessageRequest/PointingToDeclaration/library/org.xmtp.android.library.codecs/-delete-message-codec/fallback.html
+$dokka.location:org.xmtp.android.library.codecs/DeleteMessageCodec/shouldPush/#org.xmtp.android.library.codecs.DeleteMessageRequest/PointingToDeclaration/library/org.xmtp.android.library.codecs/-delete-message-codec/should-push.html
+$dokka.location:org.xmtp.android.library.codecs/DeleteMessageRequest///PointingToDeclaration/library/org.xmtp.android.library.codecs/-delete-message-request/index.html
+$dokka.location:org.xmtp.android.library.codecs/DeleteMessageRequest/DeleteMessageRequest/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.codecs/-delete-message-request/-delete-message-request.html
+$dokka.location:org.xmtp.android.library.codecs/DeleteMessageRequest/messageId/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-delete-message-request/message-id.html
 $dokka.location:org.xmtp.android.library.codecs/DeletedBy.Admin///PointingToDeclaration/library/org.xmtp.android.library.codecs/-deleted-by/-admin/index.html
 $dokka.location:org.xmtp.android.library.codecs/DeletedBy.Admin/Admin/#kotlin.String/PointingToDeclaration/library/org.xmtp.android.library.codecs/-deleted-by/-admin/-admin.html
 $dokka.location:org.xmtp.android.library.codecs/DeletedBy.Admin/inboxId/#/PointingToDeclaration/library/org.xmtp.android.library.codecs/-deleted-by/-admin/inbox-id.html
@@ -1342,6 +1353,7 @@ $dokka.location:uniffi.xmtpv3//connectToBackend/#kotlin.String#kotlin.String?#ko
 $dokka.location:uniffi.xmtpv3//createClient/#uniffi.xmtpv3.XmtpApiClient#uniffi.xmtpv3.XmtpApiClient#kotlin.String?#kotlin.ByteArray?#kotlin.String#uniffi.xmtpv3.FfiIdentifier#kotlin.ULong#kotlin.ByteArray?#kotlin.String?#uniffi.xmtpv3.FfiSyncWorkerMode?#kotlin.Boolean?#uniffi.xmtpv3.FfiForkRecoveryOpts?/PointingToDeclaration/library/uniffi.xmtpv3/create-client.html
 $dokka.location:uniffi.xmtpv3//decodeActions/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-actions.html
 $dokka.location:uniffi.xmtpv3//decodeAttachment/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-attachment.html
+$dokka.location:uniffi.xmtpv3//decodeDeleteMessage/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-delete-message.html
 $dokka.location:uniffi.xmtpv3//decodeGroupUpdated/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-group-updated.html
 $dokka.location:uniffi.xmtpv3//decodeIntent/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-intent.html
 $dokka.location:uniffi.xmtpv3//decodeLeaveRequest/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-leave-request.html
@@ -1356,6 +1368,7 @@ $dokka.location:uniffi.xmtpv3//decodeTransactionReference/#kotlin.ByteArray/Poin
 $dokka.location:uniffi.xmtpv3//decodeWalletSendCalls/#kotlin.ByteArray/PointingToDeclaration/library/uniffi.xmtpv3/decode-wallet-send-calls.html
 $dokka.location:uniffi.xmtpv3//encodeActions/#uniffi.xmtpv3.FfiActions/PointingToDeclaration/library/uniffi.xmtpv3/encode-actions.html
 $dokka.location:uniffi.xmtpv3//encodeAttachment/#uniffi.xmtpv3.FfiAttachment/PointingToDeclaration/library/uniffi.xmtpv3/encode-attachment.html
+$dokka.location:uniffi.xmtpv3//encodeDeleteMessage/#uniffi.xmtpv3.FfiDeleteMessage/PointingToDeclaration/library/uniffi.xmtpv3/encode-delete-message.html
 $dokka.location:uniffi.xmtpv3//encodeIntent/#uniffi.xmtpv3.FfiIntent/PointingToDeclaration/library/uniffi.xmtpv3/encode-intent.html
 $dokka.location:uniffi.xmtpv3//encodeLeaveRequest/#uniffi.xmtpv3.FfiLeaveRequest/PointingToDeclaration/library/uniffi.xmtpv3/encode-leave-request.html
 $dokka.location:uniffi.xmtpv3//encodeMarkdown/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/encode-markdown.html
@@ -2011,6 +2024,10 @@ $dokka.location:uniffi.xmtpv3/FfiDecodedMessageMetadata/kind/#/PointingToDeclara
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageMetadata/senderInboxId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-metadata/sender-inbox-id.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageMetadata/senderInstallationId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-metadata/sender-installation-id.html
 $dokka.location:uniffi.xmtpv3/FfiDecodedMessageMetadata/sentAtNs/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-decoded-message-metadata/sent-at-ns.html
+$dokka.location:uniffi.xmtpv3/FfiDeleteMessage.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-delete-message/-companion/index.html
+$dokka.location:uniffi.xmtpv3/FfiDeleteMessage///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-delete-message/index.html
+$dokka.location:uniffi.xmtpv3/FfiDeleteMessage/FfiDeleteMessage/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-delete-message/-ffi-delete-message.html
+$dokka.location:uniffi.xmtpv3/FfiDeleteMessage/messageId/#/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-delete-message/message-id.html
 $dokka.location:uniffi.xmtpv3/FfiDeletedBy.Admin.Companion///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-deleted-by/-admin/-companion/index.html
 $dokka.location:uniffi.xmtpv3/FfiDeletedBy.Admin///PointingToDeclaration/library/uniffi.xmtpv3/-ffi-deleted-by/-admin/index.html
 $dokka.location:uniffi.xmtpv3/FfiDeletedBy.Admin/Admin/#kotlin.String/PointingToDeclaration/library/uniffi.xmtpv3/-ffi-deleted-by/-admin/-admin.html
