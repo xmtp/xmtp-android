@@ -251,6 +251,7 @@ class DeleteMessageTest : BaseInstrumentedTest() {
         assertNotNull(deletedContent)
         assertTrue(deletedContent?.deletedBy is DeletedBy.Sender)
 
+        // Verify the content type is now deletedMessage
         assertEquals("xmtp.org", boEnrichedAfterDeletion?.contentTypeId?.authorityId)
         assertEquals("deletedMessage", boEnrichedAfterDeletion?.contentTypeId?.typeId)
     }

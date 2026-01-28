@@ -34,7 +34,7 @@ fun <T> Flow<T>.flowWhileShared(
 fun <T> stateFlow(
     scope: CoroutineScope,
     initialValue: T,
-    producer: (subscriptionCount: StateFlow<Int>) -> Flow<T>,
+    producer: suspend (subscriptionCount: StateFlow<Int>) -> Flow<T>,
 ): StateFlow<T> {
     val state = MutableStateFlow(initialValue)
     scope.launch(Dispatchers.IO) {

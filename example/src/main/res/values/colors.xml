@@ -1,5 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- XMTP Brand Colors -->
+    <color name="xmtp_primary">#FC4F37</color>
+    <color name="xmtp_primary_dark">#E0422D</color>
+    <color name="xmtp_primary_light">#FF7A68</color>
+
+    <!-- Surface and Background -->
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F5F5F5</color>
+    <color name="background">#FAFAFA</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#1A1A1A</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_tertiary">#999999</color>
+    <color name="text_on_primary">#FFFFFF</color>
+
+    <!-- Semantic Colors -->
+    <color name="success">#34C759</color>
+    <color name="warning">#FF9500</color>
+    <color name="error">#FF3B30</color>
+    <color name="admin_badge">#5856D6</color>
+
+    <!-- Divider -->
+    <color name="divider">#E0E0E0</color>
+
+    <!-- Message Bubble Colors (Telegram-like) -->
+    <color name="message_sent_background">#EFFDDE</color>
+    <color name="message_sent_text">#1A1A1A</color>
+    <color name="message_sent_time">#6FB87C</color>
+    <color name="message_received_background">#FFFFFF</color>
+    <color name="message_received_text">#1A1A1A</color>
+    <color name="message_received_time">#8E8E93</color>
+    <color name="chat_background">#E5DDD5</color>
+
+    <!-- Message Reply Colors -->
+    <color name="message_reply_sent_author">#4CAF50</color>
+    <color name="message_reply_sent_text">#4A635B</color>
+    <color name="message_reply_received_author">#FC4F37</color>
+    <color name="message_reply_received_text">#666666</color>
+
+    <!-- Sender Name Color (for groups) -->
+    <color name="message_sender_name">#FC4F37</color>
+
+    <!-- Legacy colors (keep for compatibility) -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>

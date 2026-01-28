@@ -13,6 +13,12 @@ const val BASE_LOG_TAG = "WC2"
 class ExampleApp : Application() {
     override fun onCreate() {
         super.onCreate()
+
+        // Initialize Timber for logging
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
+
         val connectionType = ConnectionType.AUTOMATIC
         val relayUrl = "relay.walletconnect.com"
         val serverUrl = "wss://$relayUrl?projectId=${BuildConfig.PROJECT_ID}"

@@ -16,10 +16,12 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.xmtp.android.example.ClientManager
+import org.xmtp.android.example.utils.KeyUtil
 import org.xmtp.android.library.Client
-import org.xmtp.android.library.XMTPException
-import org.xmtp.android.library.codecs.GroupUpdatedCodec
+import org.xmtp.android.library.XMTPEnvironment
 import org.xmtp.android.library.messages.PrivateKeyBuilder
+import uniffi.xmtpv3.FfiLogLevel
+import uniffi.xmtpv3.FfiLogRotation
 
 class ConnectWalletViewModel(
     application: Application,
@@ -32,23 +34,57 @@ class ConnectWalletViewModel(
     val uiState: StateFlow<ConnectUiState> = _uiState
 
     @UiThread
-    fun generateWallet() {
+    fun generateWallet(
+        environment: XMTPEnvironment,
+        logLevel: FfiLogLevel?,
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = ConnectUiState.Loading
             try {
+                // Store the selected environment and log level
+                ClientManager.selectedEnvironment = environment
+                ClientManager.selectedLogLevel = logLevel
+
+                // Activate logging if a log level is selected
+                if (logLevel != null) {
+                    Client.activatePersistentLibXMTPLogWriter(
+                        getApplication(),
+                        logLevel,
+                        FfiLogRotation.MINUTELY,
+                        3,
+                    )
+                }
+
                 val wallet = PrivateKeyBuilder()
+                val address = wallet.publicIdentity.identifier
+
+                // Store the private key and environment for later use on app restart
+                val keyUtil = KeyUtil(getApplication())
+                val privateKeyBytes =
+                    wallet
+                        .getPrivateKey()
+                        .secp256K1.bytes
+                        .toByteArray()
+                keyUtil.storePrivateKey(address, privateKeyBytes)
+                keyUtil.storeEnvironment(environment.name)
+
                 val client =
                     Client.create(
                         wallet,
-                        ClientManager.clientOptions(getApplication(), wallet.publicIdentity.identifier),
+                        ClientManager.clientOptions(
+                            getApplication(),
+                            address,
+                            environment,
+                        ),
                     )
-                Client.register(codec = GroupUpdatedCodec())
+                // Store the client in ClientManager so it can be used by MainActivity
+                ClientManager.setClient(client)
                 _uiState.value =
                     ConnectUiState.Success(
-                        wallet.publicIdentity.identifier,
+                        address,
                     )
-            } catch (e: XMTPException) {
-                _uiState.value = ConnectUiState.Error(e.message.orEmpty())
+            } catch (e: Exception) {
+                _uiState.value = ConnectUiState.Error(e.message ?: "Unknown error occurred")
             }
         }
     }
