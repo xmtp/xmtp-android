@@ -1,6 +1,6 @@
 # xmtp-android
 
-![Test](https://github.com/xmtp/xmtp-android/actions/workflows/test.yml/badge.svg) ![Lint](https://github.com/xmtp/xmtp-android/actions/workflows/lint.yml/badge.svg)
+[![Test](https://github.com/xmtp/xmtp-android/actions/workflows/test.yml/badge.svg)](https://github.com/xmtp/xmtp-android/actions/workflows/test.yml) [![Lint](https://github.com/xmtp/xmtp-android/actions/workflows/lint.yml/badge.svg)](https://github.com/xmtp/xmtp-android/actions/workflows/lint.yml) [![CodeQL](https://github.com/xmtp/xmtp-android/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/xmtp/xmtp-android/actions/workflows/github-code-scanning/codeql)
 
 `xmtp-android` provides a Kotlin implementation of an XMTP message API client for use with Android apps.
 
